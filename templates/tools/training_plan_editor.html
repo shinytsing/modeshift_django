@@ -1,0 +1,1923 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+<div class="plan-editor-container" style="opacity: 0; transition: opacity 0.3s ease;">
+  <!-- 顶部工具栏 -->
+  <div class="editor-toolbar">
+    <div class="toolbar-left">
+      <button class="toolbar-btn back-btn" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> 返回
+      </button>
+      <h1 class="editor-title">训练计划编辑器</h1>
+    </div>
+    <div class="toolbar-center">
+      <input type="text" id="planName" class="plan-name-input" placeholder="输入计划名称..." value="我的五分化计划">
+      <button class="toolbar-btn" onclick="loadTemplate()">
+        <i class="fas fa-magic"></i> 加载模板
+      </button>
+
+    </div>
+    <div class="toolbar-right">
+      <button class="toolbar-btn" onclick="manageWeights()">
+        <i class="fas fa-dumbbell"></i> 重量管理
+      </button>
+      <button class="toolbar-btn" onclick="previewPlan()">
+        <i class="fas fa-eye"></i> 预览
+      </button>
+      <button class="toolbar-btn" onclick="savePlan()">
+        <i class="fas fa-save"></i> 保存
+      </button>
+      <button class="toolbar-btn primary" onclick="publishPlan()">
+        <i class="fas fa-upload"></i> 发布
+      </button>
+    </div>
+  </div>
+
+  <!-- 主编辑区 -->
+  <div class="editor-main">
+    <!-- 左侧：训练模式设置 -->
+    <div class="editor-sidebar">
+      <div class="mode-section">
+        <h3><i class="fas fa-cog"></i> 训练模式</h3>
+        <div class="mode-selector">
+          <div class="mode-option active" data-mode="五分化">
+            <i class="fas fa-dumbbell"></i>
+            <span>五分化</span>
+          </div>
+          <div class="mode-option" data-mode="三分化">
+            <i class="fas fa-fire"></i>
+            <span>三分化</span>
+          </div>
+          <div class="mode-option" data-mode="推拉腿">
+            <i class="fas fa-arrows-alt"></i>
+            <span>推拉腿</span>
+          </div>
+          <div class="mode-option" data-mode="有氧运动">
+            <i class="fas fa-running"></i>
+            <span>有氧运动</span>
+          </div>
+          <div class="mode-option" data-mode="功能性训练">
+            <i class="fas fa-heartbeat"></i>
+            <span>功能性训练</span>
+          </div>
+          <div class="mode-option" data-mode="自定义">
+            <i class="fas fa-cog"></i>
+            <span>自定义</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cycle-section">
+        <h3><i class="fas fa-calendar"></i> 训练周期</h3>
+        <select id="cycleWeeks" class="cycle-select">
+          <option value="4">4周</option>
+          <option value="8" selected>8周</option>
+          <option value="12">12周</option>
+          <option value="16">16周</option>
+        </select>
+      </div>
+      
+      <div class="week-overview">
+        <h3><i class="fas fa-calendar-week"></i> 周安排</h3>
+        <div class="week-cards" id="weekCards">
+          <!-- 周卡片将通过JavaScript动态生成 -->
+        </div>
+        <button class="week-settings-btn" id="weekSettingsBtn">
+          <i class="fas fa-cog"></i> 修改周安排
+        </button>
+      </div>
+      
+      <div class="plan-stats">
+        <h3><i class="fas fa-chart-bar"></i> 计划统计</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="totalExercises">0</div>
+            <div class="stat-label">总动作数</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="trainingDays">5</div>
+            <div class="stat-label">训练天数</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="restDays">2</div>
+            <div class="stat-label">休息天数</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="totalWeight">0.0kg</div>
+            <div class="stat-label">总重量</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：训练内容编辑 -->
+    <div class="editor-content">
+      <div class="content-header">
+        <h2 id="currentDayTitle">周一：胸部</h2>
+        <div class="day-actions">
+          <button class="action-btn" onclick="copyDay()">
+            <i class="fas fa-copy"></i> 复制
+          </button>
+          <button class="action-btn" onclick="clearDay()">
+            <i class="fas fa-trash"></i> 清空
+          </button>
+        </div>
+      </div>
+      
+      <div class="training-modules">
+        <!-- 热身模块 -->
+        <div class="module-section" data-module="warmup">
+          <div class="module-header">
+            <div class="module-toggle">
+              <i class="fas fa-chevron-down"></i>
+              <span>热身</span>
+            </div>
+            <div class="module-actions">
+              <button class="add-exercise-btn" onclick="addExerciseToModule('warmup')">
+                <i class="fas fa-plus"></i> 添加动作
+              </button>
+            </div>
+          </div>
+          <div class="module-content">
+            <div class="exercise-drop-zone" data-module="warmup">
+              <i class="fas fa-plus"></i>
+              <p>拖拽热身动作至此</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主训模块 -->
+        <div class="module-section" data-module="main">
+          <div class="module-header">
+            <div class="module-toggle">
+              <i class="fas fa-chevron-down"></i>
+              <span>主训</span>
+            </div>
+            <div class="module-actions">
+              <button class="add-exercise-btn" onclick="addExerciseToModule('main')">
+                <i class="fas fa-plus"></i> 添加动作
+              </button>
+            </div>
+          </div>
+          <div class="module-content">
+            <div class="exercise-drop-zone" data-module="main">
+              <i class="fas fa-plus"></i>
+              <p>拖拽主训动作至此</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 辅助模块 -->
+        <div class="module-section" data-module="accessory">
+          <div class="module-header">
+            <div class="module-toggle">
+              <i class="fas fa-chevron-down"></i>
+              <span>辅助</span>
+            </div>
+            <div class="module-actions">
+              <button class="add-exercise-btn" onclick="addExerciseToModule('accessory')">
+                <i class="fas fa-plus"></i> 添加动作
+              </button>
+            </div>
+          </div>
+          <div class="module-content">
+            <div class="exercise-drop-zone" data-module="accessory">
+              <i class="fas fa-plus"></i>
+              <p>拖拽辅助动作至此</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 拉伸模块 -->
+        <div class="module-section" data-module="cooldown">
+          <div class="module-header">
+            <div class="module-toggle">
+              <i class="fas fa-chevron-down"></i>
+              <span>拉伸</span>
+            </div>
+            <div class="module-actions">
+              <button class="add-exercise-btn" onclick="addExerciseToModule('cooldown')">
+                <i class="fas fa-plus"></i> 添加动作
+              </button>
+            </div>
+          </div>
+          <div class="module-content">
+            <div class="exercise-drop-zone" data-module="cooldown">
+              <i class="fas fa-plus"></i>
+              <p>拖拽拉伸动作至此</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：动作库 -->
+    <div class="exercise-library">
+      <div class="library-header">
+        <h3><i class="fas fa-dumbbell"></i> 动作库</h3>
+        
+        <!-- 拖拽提醒 -->
+        <div class="drag-reminder" style="
+          background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 147, 30, 0.1) 100%);
+          border: 1px solid rgba(255, 107, 53, 0.3);
+          border-radius: 8px;
+          padding: 12px;
+          margin: 15px 0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          animation: dragPulse 3s ease-in-out infinite;
+        ">
+          <div style="
+            font-size: 1.5rem;
+            color: #ff6b35;
+            animation: dragFloat 2s ease-in-out infinite alternate;
+          ">
+            <i class="fas fa-hand-paper"></i>
+          </div>
+          <div style="flex: 1;">
+            <div style="
+              font-size: 0.85rem;
+              color: #ff6b35;
+              font-weight: 600;
+              margin-bottom: 2px;
+            ">💡 使用提示</div>
+            <div style="
+              font-size: 0.8rem;
+              color: #a8a8a8;
+              line-height: 1.3;
+            ">拖拽动作到左侧训练模块，或点击"添加动作"按钮手动输入</div>
+          </div>
+        </div>
+        
+        <div class="library-search">
+          <input type="text" id="exerciseSearch" placeholder="搜索动作..." onkeyup="searchExercises()">
+        </div>
+      </div>
+      <div class="body-parts">
+        <!-- 动作库内容将通过JavaScript动态生成 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 模板选择模态框 -->
+<div id="templateModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-magic"></i> 选择训练模板</h3>
+      <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="template-grid">
+        <div class="template-card" onclick="selectTemplate('五分化')">
+          <div class="template-icon">
+            <i class="fas fa-dumbbell"></i>
+          </div>
+          <div class="template-info">
+            <h4>五分化训练</h4>
+            <p>胸背肩腿臂，适合增肌</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('三分化')">
+          <div class="template-icon">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="template-info">
+            <h4>三分化训练</h4>
+            <p>推拉腿，高效训练</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('推拉腿')">
+          <div class="template-icon">
+            <i class="fas fa-arrows-alt"></i>
+          </div>
+          <div class="template-info">
+            <h4>推拉腿训练</h4>
+            <p>经典三分化模式</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('有氧运动')">
+          <div class="template-icon">
+            <i class="fas fa-running"></i>
+          </div>
+          <div class="template-info">
+            <h4>有氧运动</h4>
+            <p>减脂塑形专用</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('功能性训练')">
+          <div class="template-icon">
+            <i class="fas fa-heartbeat"></i>
+          </div>
+          <div class="template-info">
+            <h4>功能性训练</h4>
+            <p>提升运动表现</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('自定义')">
+          <div class="template-icon">
+            <i class="fas fa-cog"></i>
+          </div>
+          <div class="template-info">
+            <h4>自定义训练</h4>
+            <p>完全自由定制</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* 训练计划编辑器样式 */
+.plan-editor-container {
+  min-height: 100vh;
+  background: var(--rage-gradient-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 100%));
+  color: var(--rage-text, #e6e6e6);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 工具栏样式 */
+.editor-toolbar {
+  background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,33,62,0.95) 100%));
+  border-bottom: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.toolbar-left, .toolbar-center, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.editor-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rage-primary, #ff6b35);
+  margin: 0;
+}
+
+.toolbar-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: var(--rage-primary, #ff6b35);
+  transform: translateY(-2px);
+}
+
+.toolbar-btn.primary {
+  background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+  color: #000;
+  border: none;
+}
+
+.toolbar-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
+.plan-name-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 200px;
+}
+
+.plan-name-input:focus {
+  outline: none;
+  border-color: var(--rage-primary, #ff6b35);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 主编辑区样式 */
+.editor-main {
+  display: grid;
+  grid-template-columns: 300px 1fr 350px;
+  gap: 20px;
+  padding: 20px;
+  min-height: calc(100vh - 80px);
+}
+
+/* 侧边栏样式 */
+.editor-sidebar {
+  background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,33,62,0.95) 100%));
+  border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.mode-section, .cycle-section, .week-overview, .plan-stats {
+  margin-bottom: 25px;
+}
+
+.mode-section h3, .cycle-section h3, .week-overview h3, .plan-stats h3 {
+  color: var(--rage-primary, #ff6b35);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-selector {
+  display: grid;
+  gap: 8px;
+}
+
+.mode-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-option:hover {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.mode-option.active {
+  background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+  color: #000;
+  border-color: var(--rage-primary, #ff6b35);
+}
+
+.cycle-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.cycle-select:focus {
+  outline: none;
+  border-color: var(--rage-primary, #ff6b35);
+}
+
+.week-cards {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.week-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.week-card:hover {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.week-card.active {
+  background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+  color: #000;
+  border-color: var(--rage-primary, #ff6b35);
+}
+
+.week-card .day-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.week-card .day-parts {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.week-card .day-parts.editable {
+  border-radius: 4px;
+  padding: 2px 4px;
+  transition: all 0.2s ease;
+  cursor: text !important;
+  min-height: 16px;
+  outline: none;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  pointer-events: auto !important;
+}
+
+.week-card .day-parts.editable:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.week-card .day-parts.editable:focus {
+  background: rgba(255, 107, 53, 0.2);
+  border: 1px solid var(--rage-primary, #ff6b35);
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+}
+
+.week-card.active .day-parts.editable:focus {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.week-settings-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.week-settings-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: var(--rage-primary, #ff6b35);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--rage-primary, #ff6b35);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--rage-text-muted, #a8a8a8);
+}
+
+/* 编辑内容区样式 */
+.editor-content {
+  background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,33,62,0.95) 100%));
+  border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content-header h2 {
+  color: var(--rage-primary, #ff6b35);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.day-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.action-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: var(--rage-primary, #ff6b35);
+}
+
+/* 训练模块样式 */
+.training-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.module-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.module-header {
+  background: rgba(255, 107, 53, 0.1);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--rage-primary, #ff6b35);
+}
+
+.module-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.module-toggle.collapsed i {
+  transform: rotate(-90deg);
+}
+
+.module-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-exercise-btn {
+  background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+  border: none;
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.add-exercise-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.module-content {
+  padding: 15px;
+}
+
+.exercise-drop-zone {
+  border: 2px dashed rgba(255, 107, 53, 0.4);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  color: var(--rage-text-muted, #a8a8a8);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.02) 0%, rgba(247, 147, 30, 0.02) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.exercise-drop-zone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+  transition: left 2s ease-in-out;
+}
+
+.exercise-drop-zone:hover::before {
+  left: 100%;
+}
+
+.exercise-drop-zone:hover {
+  border-color: var(--rage-primary, #ff6b35);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(247, 147, 30, 0.08) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+}
+
+.exercise-drop-zone.dragover {
+  border-color: var(--rage-primary, #ff6b35);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+  transform: scale(1.02) translateY(-3px);
+  box-shadow: 0 12px 30px rgba(255, 107, 53, 0.25);
+  border-style: solid;
+}
+
+.exercise-drop-zone i {
+  font-size: 2.5rem;
+  color: var(--rage-primary, #ff6b35);
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+}
+
+.exercise-drop-zone:hover i {
+  transform: scale(1.1) rotate(90deg);
+  color: #f7931e;
+}
+
+.exercise-drop-zone p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--rage-text-muted, #a8a8a8);
+  transition: color 0.3s ease;
+}
+
+.exercise-drop-zone:hover p {
+  color: var(--rage-primary, #ff6b35);
+}
+
+/* 动作库样式 */
+.exercise-library {
+  background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,33,62,0.95) 100%));
+  border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.library-header {
+  margin-bottom: 20px;
+}
+
+.library-header h3 {
+  color: var(--rage-primary, #ff6b35);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.library-search input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--rage-text, #e6e6e6);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.library-search input:focus {
+  outline: none;
+  border-color: var(--rage-primary, #ff6b35);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.body-parts {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.part-category {
+  margin-bottom: 15px;
+}
+
+.part-header {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.part-header:hover {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.part-header i {
+  transition: transform 0.3s ease;
+  color: var(--rage-primary, #ff6b35);
+}
+
+.part-category.active .part-header i {
+  transform: rotate(90deg);
+}
+
+.part-exercises {
+  display: none;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0 0 6px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+}
+
+.part-category.active .part-exercises {
+  display: block;
+}
+
+.exercise-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.exercise-item:hover {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateX(5px);
+}
+
+.exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.favorite-btn {
+  background: none;
+  border: none;
+  color: var(--rage-text-muted, #a8a8a8);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.favorite-btn:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.favorite-btn.favorite-active {
+  color: #ff6b6b;
+}
+
+/* 模态框样式 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(22,33,62,0.95) 100%));
+  border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+  border-radius: 12px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  color: var(--rage-text, #e6e6e6);
+}
+
+.modal-header {
+  background: rgba(255, 107, 53, 0.1);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  color: var(--rage-primary, #ff6b35);
+  margin: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--rage-text, #e6e6e6);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  color: var(--rage-primary, #ff6b35);
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.template-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.template-card:hover {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateY(-3px);
+}
+
+.template-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #000;
+}
+
+.template-info h4 {
+  color: var(--rage-text, #e6e6e6);
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.template-info p {
+  color: var(--rage-text-muted, #a8a8a8);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .editor-main {
+    grid-template-columns: 250px 1fr 300px;
+    gap: 15px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 992px) {
+  .editor-main {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .editor-sidebar, .exercise-library {
+    position: static;
+  }
+  
+  .editor-toolbar {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .toolbar-left, .toolbar-center, .toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .plan-editor-container .editor-main {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .plan-editor-container .editor-toolbar {
+    padding: 10px 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .plan-editor-container .toolbar-left,
+  .plan-editor-container .toolbar-center,
+  .plan-editor-container .toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .plan-editor-container .toolbar-center {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .plan-editor-container .plan-name-input {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .plan-editor-container .toolbar-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .plan-editor-container .toolbar-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    min-height: 44px; /* 触摸友好 */
+  }
+  
+  .plan-editor-container .editor-title {
+    font-size: 1.2rem;
+  }
+  
+  .plan-editor-container .mode-selector {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .plan-editor-container .mode-option {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    min-height: 60px;
+  }
+  
+  .plan-editor-container .mode-option i {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+  
+  .plan-editor-container .mode-option span {
+    display: block;
+    text-align: center;
+  }
+  
+  .plan-editor-container .week-card {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .plan-editor-container .body-part {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    margin: 3px;
+  }
+  
+  .plan-editor-container .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .plan-editor-container .stat-value {
+    font-size: 1.3rem;
+  }
+  
+  .plan-editor-container .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .plan-editor-container .exercise-item {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .plan-editor-container .exercise-name {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .plan-editor-container .exercise-params {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .plan-editor-container .exercise-input {
+    font-size: 0.9rem;
+    padding: 12px 8px;
+    min-height: 44px; /* 触摸友好 */
+  }
+  
+  .plan-editor-container .exercise-actions {
+    margin-top: 8px;
+    justify-content: center;
+  }
+  
+  .plan-editor-container .exercise-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  
+  /* 训练日编辑区域移动端优化 */
+  .plan-editor-container .day-editor {
+    padding: 15px;
+  }
+  
+  .plan-editor-container .day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .plan-editor-container .day-title {
+    font-size: 1.3rem;
+  }
+  
+  .plan-editor-container .body-parts-selector {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .plan-editor-container .module-section {
+    margin-bottom: 20px;
+  }
+  
+  .plan-editor-container .module-header {
+    padding: 12px 15px;
+    font-size: 1rem;
+  }
+}
+
+/* 更小屏幕的额外优化 */
+@media (max-width: 480px) {
+  .plan-editor-container {
+    padding: 0;
+  }
+  
+  .plan-editor-container .editor-toolbar {
+    padding: 8px 10px;
+    border-radius: 0;
+  }
+  
+  .plan-editor-container .toolbar-btn {
+    min-width: 100px;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .plan-editor-container .editor-main {
+    padding: 8px;
+    gap: 8px;
+    border-radius: 0;
+  }
+  
+  .plan-editor-container .mode-selector {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .plan-editor-container .mode-option {
+    padding: 16px;
+    font-size: 0.9rem;
+  }
+  
+  .plan-editor-container .week-cards {
+    gap: 8px;
+  }
+  
+  .plan-editor-container .exercise-params {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .plan-editor-container .exercise-input {
+    padding: 14px 10px;
+    font-size: 0.9rem;
+  }
+  
+  .plan-editor-container .plan-name-input {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .plan-editor-container .mode-option:hover,
+  .plan-editor-container .week-card:hover,
+  .plan-editor-container .exercise-item:hover {
+    transform: none;
+  }
+  
+  .plan-editor-container .mode-option:active {
+    transform: scale(0.98);
+  }
+  
+  .plan-editor-container .toolbar-btn:hover {
+    transform: none;
+  }
+  
+  .plan-editor-container .toolbar-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .plan-editor-container .exercise-btn:hover {
+    transform: none;
+  }
+  
+  .plan-editor-container .exercise-btn:active {
+    transform: scale(0.9);
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.week-card, .exercise-item, .template-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+  .part-exercises {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* 动作卡片样式 */
+  .exercise-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    cursor: move;
+  }
+  
+  .exercise-card[draggable="true"]:hover {
+    cursor: grab;
+  }
+  
+  .exercise-card[draggable="true"]:active {
+    cursor: grabbing;
+  }
+  
+  .exercise-card.dragging {
+    opacity: 0.5;
+    transform: rotate(3deg);
+    z-index: 1000;
+  }
+  
+  .exercise-card.drag-over {
+    border-color: rgba(255, 107, 53, 0.8) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.25);
+  }
+  
+  .exercise-card:hover {
+    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(255, 107, 53, 0.3);
+  }
+  
+  .exercise-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .exercise-card-name {
+    font-weight: 500;
+    color: #e6e6e6;
+  }
+  
+  .exercise-card-controls {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .card-control-btn {
+    background: none;
+    border: none;
+    color: #a8a8a8;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+  
+  .card-control-btn:hover {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+  }
+  
+  .exercise-params {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .param-group {
+    text-align: center;
+  }
+  
+  .param-label {
+    font-size: 0.8rem;
+    color: #a8a8a8;
+    margin-bottom: 3px;
+  }
+  
+  .param-input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e6e6e6;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  
+  .param-input:focus {
+    outline: none;
+    border-color: #ff6b35;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .weight-adjust-btn {
+    background: rgba(255, 107, 53, 0.2);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    color: #ff6b35;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .weight-adjust-btn:hover {
+    background: rgba(255, 107, 53, 0.3);
+    border-color: #ff6b35;
+    transform: scale(1.1);
+  }
+  
+  .weight-adjust-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .weight-suggestion-btn {
+    background: rgba(255, 193, 7, 0.2);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .weight-suggestion-btn:hover {
+    background: rgba(255, 193, 7, 0.3);
+    border-color: #ffc107;
+    transform: scale(1.1);
+  }
+  
+  .weight-suggestion-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* 通知样式 */
+  .notification {
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  .notification.notification-error {
+    background-color: #f44336;
+  }
+  
+  .notification.notification-success {
+    background-color: #4CAF50;
+  }
+  
+  .notification.notification-info {
+    background-color: #2196F3;
+  }
+
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
+  /* 导入计划模态框样式 */
+  .import-plan-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+  }
+
+  .import-plan-item:hover {
+    background: #f0f0f0;
+    border-color: #ff6b35;
+  }
+
+  .plan-info h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 1.1rem;
+  }
+
+  .plan-details {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .plan-details span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .active-badge {
+    color: #28a745 !important;
+    font-weight: 500;
+  }
+
+  .import-btn {
+    background: #ff6b35;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .import-btn:hover {
+    background: #e55a2b;
+    transform: translateY(-1px);
+  }
+
+  .import-loading, .no-plans, .error-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+  }
+
+  .no-plans i, .error-message i {
+    display: block;
+    margin-bottom: 15px;
+  }
+
+  .import-loading i {
+    font-size: 2rem;
+    color: #ff6b35;
+  }
+
+  /* 拖拽提醒动画 */
+  @keyframes dragPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
+    }
+  }
+
+  @keyframes dragFloat {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    100% {
+      transform: translateY(-5px) rotate(5deg);
+    }
+  }
+</style>
+
+<script src="{% static 'js/training_plan_editor.js' %}?v={{ request.GET.t|default:'1' }}"></script>
+
+<script>
+// 确保addExerciseToModule函数被正确定义
+function addExerciseToModule(module) {
+  if (!editor) {
+    alert('编辑器未初始化');
+    return;
+  }
+  
+  // 创建动作输入模态框
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'addExerciseModal';
+  
+  const moduleNames = {
+    warmup: '热身',
+    main: '主训',
+    accessory: '辅助',
+    cooldown: '拉伸'
+  };
+  
+  modal.innerHTML = `
+    <div class="modal-content" style="
+      background: linear-gradient(135deg, rgba(26,26,46,0.98) 0%, rgba(22,33,62,0.98) 100%);
+      border: 2px solid rgba(255, 107, 53, 0.4);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+      color: #e6e6e6;
+      max-width: 500px;
+      width: 90%;
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+    ">
+      <div class="modal-header" style="
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+        border-bottom: 1px solid rgba(255, 107, 53, 0.3);
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+        <h3 style="
+          color: #ff6b35;
+          margin: 0;
+          font-size: 1.3rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        "><i class="fas fa-plus-circle"></i> 添加动作到${moduleNames[module]}模块</h3>
+        <button class="modal-close" onclick="closeAddExerciseModal()" style="
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: #e6e6e6;
+          padding: 8px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 16px;
+        " onmouseover="this.style.background='rgba(255,107,53,0.3)'; this.style.borderColor='#ff6b35';" 
+           onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 25px;">
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600;
+            color: #ff6b35;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">动作名称 *</label>
+          <input type="text" id="exerciseName" placeholder="请输入动作名称，如：杠铃卧推" style="
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+            font-size: 14px;
+            background: rgba(255,255,255,0.05);
+            color: #e6e6e6;
+            transition: all 0.3s ease;
+          " onfocus="this.style.borderColor='#ff6b35'; this.style.background='rgba(255,255,255,0.1)';"
+             onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+          <div class="form-group">
+            <label style="
+              display: block; 
+              margin-bottom: 8px; 
+              font-weight: 600;
+              color: #ff6b35;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">组数</label>
+            <input type="text" id="exerciseSets" value="${getDefaultSetsForModal(module)}" style="
+              width: 100%; 
+              padding: 12px 16px; 
+              border: 2px solid rgba(255,255,255,0.1); 
+              border-radius: 10px; 
+              font-size: 14px;
+              background: rgba(255,255,255,0.05);
+              color: #e6e6e6;
+              transition: all 0.3s ease;
+            " onfocus="this.style.borderColor='#ff6b35'; this.style.background='rgba(255,255,255,0.1)';"
+               onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+          </div>
+          <div class="form-group">
+            <label style="
+              display: block; 
+              margin-bottom: 8px; 
+              font-weight: 600;
+              color: #ff6b35;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">次数/时间</label>
+            <input type="text" id="exerciseReps" value="${getDefaultRepsForModal(module)}" style="
+              width: 100%; 
+              padding: 12px 16px; 
+              border: 2px solid rgba(255,255,255,0.1); 
+              border-radius: 10px; 
+              font-size: 14px;
+              background: rgba(255,255,255,0.05);
+              color: #e6e6e6;
+              transition: all 0.3s ease;
+            " onfocus="this.style.borderColor='#ff6b35'; this.style.background='rgba(255,255,255,0.1)';"
+               onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+          <div class="form-group">
+            <label style="
+              display: block; 
+              margin-bottom: 8px; 
+              font-weight: 600;
+              color: #ff6b35;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">重量(kg)</label>
+            <input type="text" id="exerciseWeight" placeholder="选填，如：60或空杆" style="
+              width: 100%; 
+              padding: 12px 16px; 
+              border: 2px solid rgba(255,255,255,0.1); 
+              border-radius: 10px; 
+              font-size: 14px;
+              background: rgba(255,255,255,0.05);
+              color: #e6e6e6;
+              transition: all 0.3s ease;
+            " onfocus="this.style.borderColor='#ff6b35'; this.style.background='rgba(255,255,255,0.1)';"
+               onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+          </div>
+          <div class="form-group">
+            <label style="
+              display: block; 
+              margin-bottom: 8px; 
+              font-weight: 600;
+              color: #ff6b35;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">休息时间</label>
+            <input type="text" id="exerciseRest" value="${getDefaultRestForModal(module)}" style="
+              width: 100%; 
+              padding: 12px 16px; 
+              border: 2px solid rgba(255,255,255,0.1); 
+              border-radius: 10px; 
+              font-size: 14px;
+              background: rgba(255,255,255,0.05);
+              color: #e6e6e6;
+              transition: all 0.3s ease;
+            " onfocus="this.style.borderColor='#ff6b35'; this.style.background='rgba(255,255,255,0.1)';"
+               onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button onclick="closeAddExerciseModal()" style="
+            padding: 12px 20px; 
+            border: 2px solid rgba(255,255,255,0.2); 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 10px; 
+            cursor: pointer;
+            color: #e6e6e6;
+            font-weight: 500;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.4)';"
+             onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.2)';">
+            取消
+          </button>
+          <button onclick="confirmAddExercise('${module}')" style="
+            padding: 12px 20px; 
+            border: none; 
+            background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%); 
+            color: white; 
+            border-radius: 10px; 
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76, 175, 80, 0.4)';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';">
+            <i class="fas fa-plus"></i> 添加动作
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // 焦点到名称输入框
+  setTimeout(() => {
+    document.getElementById('exerciseName').focus();
+  }, 100);
+  
+  // 支持回车键确认
+  document.getElementById('exerciseName').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      confirmAddExercise(module);
+    }
+  });
+}
+
+// 获取模块默认参数的辅助函数
+function getDefaultSetsForModal(module) {
+  const defaults = {
+    warmup: '2',
+    main: '4', 
+    accessory: '3',
+    cooldown: '1'
+  };
+  return defaults[module] || '3';
+}
+
+function getDefaultRepsForModal(module) {
+  const defaults = {
+    warmup: '15-20',
+    main: '8-10',
+    accessory: '10-12', 
+    cooldown: '10分钟'
+  };
+  return defaults[module] || '10-12';
+}
+
+function getDefaultRestForModal(module) {
+  const defaults = {
+    warmup: '30秒',
+    main: '3分钟',
+    accessory: '90秒',
+    cooldown: '无'
+  };
+  return defaults[module] || '90秒';
+}
+
+// 确认添加动作
+function confirmAddExercise(module) {
+  const exerciseName = document.getElementById('exerciseName').value.trim();
+  const exerciseSets = document.getElementById('exerciseSets').value.trim();
+  const exerciseReps = document.getElementById('exerciseReps').value.trim();
+  const exerciseWeight = document.getElementById('exerciseWeight').value.trim();
+  const exerciseRest = document.getElementById('exerciseRest').value.trim();
+  
+  if (!exerciseName) {
+    alert('请输入动作名称');
+    document.getElementById('exerciseName').focus();
+    return;
+  }
+  
+  // 创建动作对象
+  const exercise = {
+    name: exerciseName,
+    sets: exerciseSets || '3',
+    reps: exerciseReps || '10-12', 
+    weight: exerciseWeight || '',
+    rest: exerciseRest || '90秒'
+  };
+  
+  // 添加到编辑器
+  if (editor) {
+    const currentDay = editor.planData.week_schedule[editor.currentDay];
+    currentDay.modules[module].push(exercise);
+    editor.renderModule(module, currentDay.modules[module]);
+    editor.renderWeekCards();
+    
+    const moduleNames = {
+      warmup: '热身',
+      main: '主训', 
+      accessory: '辅助',
+      cooldown: '拉伸'
+    };
+    
+    editor.showNotification(`已添加"${exerciseName}"到${moduleNames[module]}模块`, 'success');
+  }
+  
+  // 关闭模态框
+  closeAddExerciseModal();
+}
+
+// 关闭添加动作模态框
+function closeAddExerciseModal() {
+  const modal = document.getElementById('addExerciseModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+</script>
+
+{% endblock %}

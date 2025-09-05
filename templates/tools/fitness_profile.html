@@ -1,0 +1,2194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}健身档案 - QAToolBox{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 运动激情主题样式 */
+:root {
+    --fitness-primary: #ff6b35;
+    --fitness-secondary: #f7931e;
+    --fitness-accent: #ff4757;
+    --fitness-success: #2ed573;
+    --fitness-warning: #ffa502;
+    --fitness-dark: #2f3542;
+    --fitness-light: #f1f2f6;
+    --fitness-gradient: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    --fitness-gradient-hover: linear-gradient(135deg, #ff4757 0%, #ff6b35 100%);
+}
+
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--rage-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%));
+    min-height: 100vh;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: var(--fitness-gradient);
+    border-radius: 2px;
+}
+
+.profile-header h1 {
+    color: var(--rage-primary, #ff6b35);
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    font-weight: 800;
+    text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+    letter-spacing: 2px;
+}
+
+.profile-header p {
+    color: var(--rage-text-muted, #a8a8a8);
+    font-size: 1.3rem;
+    line-height: 1.6;
+    font-weight: 500;
+    font-family: var(--rage-font-mono, 'JetBrains Mono', monospace);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+.profile-sidebar {
+    background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(22,33,62,0.9) 100%));
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    height: fit-content;
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+}
+
+.profile-avatar {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.avatar-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--fitness-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin: 0 auto 15px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.avatar-edit {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #28a745;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-edit:hover {
+    transform: scale(1.1);
+}
+
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.profile-level {
+    color: var(--primary-color, #667eea);
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px 15px;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 147, 30, 0.1) 100%);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 107, 53, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-item:hover::before {
+    left: 100%;
+}
+
+.stat-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.2);
+    border-color: rgba(255, 107, 53, 0.4);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--fitness-primary);
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--fitness-dark);
+    font-weight: 600;
+}
+
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.action-btn:hover::before {
+    left: 100%;
+}
+
+.action-btn.primary {
+    background: var(--fitness-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+}
+
+.action-btn.primary:hover {
+    background: var(--fitness-gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(255, 107, 53, 0.4);
+}
+
+.action-btn.secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--fitness-dark);
+    border: 2px solid rgba(255, 107, 53, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: var(--fitness-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
+}
+
+.action-btn.export {
+    background: linear-gradient(135deg, #2ed573 0%, #7bed9f 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(46, 213, 115, 0.3);
+}
+
+.action-btn.export:hover {
+    background: linear-gradient(135deg, #26de81 0%, #2ed573 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(46, 213, 115, 0.4);
+}
+
+.profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.profile-section {
+    background: var(--rage-gradient-card, linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(22,33,62,0.9) 100%));
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--rage-border, rgba(255, 107, 53, 0.3));
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--rage-gradient, linear-gradient(135deg, #ff6b35 0%, #f7931e 100%));
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--fitness-dark);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--fitness-gradient);
+    border-radius: 2px;
+}
+
+.edit-btn {
+    background: var(--fitness-gradient);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+.edit-btn:hover {
+    background: var(--fitness-gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+}
+
+.personal-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-weight: 500;
+    color: #333;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.achievement-item {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.achievement-item:hover {
+    transform: translateY(-5px);
+}
+
+.achievement-item.earned {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.achievement-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin: 0 auto 10px;
+}
+
+.achievement-item.earned .achievement-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.achievement-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.achievement-desc {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.workout-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.workout-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.workout-item:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.workout-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-color, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 16px;
+}
+
+.workout-info {
+    flex: 1;
+}
+
+.workout-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.workout-details {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.workout-date {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.goals-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.goal-item {
+    padding: 20px;
+    border: 2px solid #f0f0f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.goal-item:hover {
+    border-color: var(--primary-color, #667eea);
+}
+
+.goal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.goal-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-color, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.goal-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.goal-progress {
+    margin-bottom: 15px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color, #667eea);
+    transition: width 0.3s ease;
+}
+
+.goal-deadline {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.no-workouts {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-workouts i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.no-workouts p {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.no-workouts p:first-of-type {
+    font-weight: 500;
+    color: #333;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 20px 15px;
+    }
+    
+    .profile-header h1 {
+        font-size: 2rem;
+    }
+    
+    .profile-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .profile-sidebar,
+    .profile-section {
+        padding: 20px;
+    }
+    
+    .personal-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .goals-section {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+/* 力量记录样式 */
+.strength-records {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.strength-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.strength-item:hover {
+    border-color: var(--primary-color, #667eea);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.strength-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.strength-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.strength-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.strength-data {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.strength-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.strength-value .value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color, #667eea);
+}
+
+.strength-value .unit {
+    font-size: 1rem;
+    color: #666;
+}
+
+.strength-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.strength-date {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.strength-goal {
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
+}
+
+.strength-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* 重量记录样式 */
+.weight-records {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.weight-record-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.weight-record-item:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.record-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-color, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 16px;
+}
+
+.record-info {
+    flex: 1;
+}
+
+.record-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.record-details {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.record-1rm {
+    font-size: 0.8rem;
+    color: var(--primary-color, #667eea);
+    font-weight: 500;
+}
+
+.record-date {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.no-records {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-records i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.no-records p {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.no-records p:first-of-type {
+    font-weight: 500;
+    color: #333;
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+    .profile-sidebar,
+    .profile-section {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .profile-name {
+        color: #e2e8f0;
+    }
+    
+    .stat-item {
+        background: #4a5568;
+    }
+    
+    .stat-value {
+        color: #e2e8f0;
+    }
+    
+    .stat-label {
+        color: #a0aec0;
+    }
+    
+    .action-btn.secondary {
+        background: #4a5568;
+        color: #e2e8f0;
+        border-color: #718096;
+    }
+    
+    .action-btn.secondary:hover {
+        background: #2d3748;
+    }
+    
+    .section-title {
+        color: #e2e8f0;
+    }
+    
+    .section-header {
+        border-bottom-color: #4a5568;
+    }
+    
+    .info-value {
+        color: #e2e8f0;
+    }
+    
+    .achievement-item {
+        background: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .workout-item {
+        border-color: #4a5568;
+    }
+    
+    .workout-name {
+        color: #e2e8f0;
+    }
+    
+    .goal-item {
+        border-color: #4a5568;
+    }
+    
+    .goal-title {
+        color: #e2e8f0;
+    }
+    
+    .progress-bar {
+        background: #4a5568;
+    }
+    
+    .strength-item {
+        background: #4a5568;
+        border-color: #718096;
+    }
+    
+    .strength-title {
+        color: #e2e8f0;
+    }
+    
+    .weight-record-item {
+        border-color: #4a5568;
+    }
+    
+    .record-name {
+        color: #e2e8f0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>健身档案</h1>
+        <p>记录您的健身历程，追踪进步，实现目标</p>
+    </div>
+    
+    <div class="profile-content">
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-circle">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        {{ profile.get_display_name|first }}
+                    {% endif %}
+                    <div class="avatar-edit" onclick="editAvatar()">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="profile-name">{{ profile.get_display_name }}</div>
+                {% if profile.selected_badge %}
+                <div style="display:flex;justify-content:center;margin-top:8px;">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background: rgba(255,255,255,0.9);border:1px solid rgba(255,107,53,0.3);">
+                        <i class="{{ profile.selected_badge.icon|default:'fas fa-trophy' }}" style="color: {{ profile.selected_badge.color|default:'#ff6b35' }}"></i>
+                        <span style="font-weight:600;color:#333;">已佩戴徽章：{{ profile.selected_badge.name }}</span>
+                    </span>
+                </div>
+                {% endif %}
+                <div class="profile-level">
+                    {% if profile.fitness_level == 'beginner' %}
+                        初学者 Lv.1
+                    {% elif profile.fitness_level == 'intermediate' %}
+                        进阶者 Lv.3
+                    {% elif profile.fitness_level == 'advanced' %}
+                        高级者 Lv.6
+                    {% elif profile.fitness_level == 'expert' %}
+                        专家级 Lv.10
+                    {% else %}
+                        健身达人 Lv.5
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ profile.total_workouts|default:0 }}</div>
+                    <div class="stat-label">训练次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ current_streak|default:0 }}</div>
+                    <div class="stat-label">连续天数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_duration_hours|default:0 }}</div>
+                    <div class="stat-label">总时长(h)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_achievements|default:0 }}</div>
+                    <div class="stat-label">成就数量</div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="action-btn primary" onclick="editProfile()">
+                    <i class="fas fa-edit"></i>
+                    编辑资料
+                </button>
+                <button class="action-btn export" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    导出数据
+                </button>
+                <button class="action-btn secondary" onclick="shareProfile()">
+                    <i class="fas fa-share"></i>
+                    分享档案
+                </button>
+            </div>
+        </div>
+        
+        <div class="profile-main">
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">个人信息</h2>
+                    <button class="edit-btn" onclick="editPersonalInfo()">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
+                </div>
+                <div class="personal-info">
+                    <div class="info-item">
+                        <div class="info-label">性别</div>
+                        <div class="info-value">{{ body_data.gender|default:'未设置' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">年龄</div>
+                        <div class="info-value">{{ body_data.age|default:'未设置' }}{% if body_data.age %}岁{% endif %}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">身高</div>
+                        <div class="info-value">{{ body_data.height|default:'未设置' }}{% if body_data.height %}cm{% endif %}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">体重</div>
+                        <div class="info-value">{{ body_data.weight|default:'未设置' }}{% if body_data.weight %}kg{% endif %}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">BMI</div>
+                        <div class="info-value">{{ body_data.bmi|default:'未计算' }}{% if body_data.bmi %} ({{ body_data.bmi_status }}){% endif %}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">健身目标</div>
+                        <div class="info-value">{{ profile.primary_goals|join:', '|default:'未设置' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">喜欢的运动</div>
+                        <div class="info-value">{{ profile.favorite_workouts|join:', '|default:'未设置' }}</div>
+                    </div>
+                    {% if profile.bio %}
+                    <div class="info-item">
+                        <div class="info-label">个人简介</div>
+                        <div class="info-value">{{ profile.bio }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 三大项力量记录 -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">三大项力量记录</h2>
+                    <button class="edit-btn" onclick="addWeightRecord()">
+                        <i class="fas fa-plus"></i> 添加记录
+                    </button>
+                </div>
+                <div class="strength-records">
+                    <div class="strength-item">
+                        <div class="strength-header">
+                            <div class="strength-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="strength-title">深蹲 (Squat)</div>
+                        </div>
+                        <div class="strength-data">
+                            <div class="strength-value">
+                                <span class="value">{{ strength_profile.squat_1rm|default:'0' }}</span>
+                                <span class="unit">kg</span>
+                            </div>
+                            <div class="strength-label">1RM</div>
+                            {% if strength_profile.squat_1rm_date %}
+                            <div class="strength-date">{{ strength_profile.squat_1rm_date|date:'Y-m-d' }}</div>
+                            {% endif %}
+                        </div>
+                        {% if strength_profile.squat_goal %}
+                        <div class="strength-goal">
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span>目标: {{ strength_profile.squat_goal }}kg</span>
+                                    <span>{{ strength_profile.get_progress_percentage|floatformat:1 }}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ strength_profile.get_progress_percentage }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="strength-item">
+                        <div class="strength-header">
+                            <div class="strength-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="strength-title">卧推 (Bench Press)</div>
+                        </div>
+                        <div class="strength-data">
+                            <div class="strength-value">
+                                <span class="value">{{ strength_profile.bench_press_1rm|default:'0' }}</span>
+                                <span class="unit">kg</span>
+                            </div>
+                            <div class="strength-label">1RM</div>
+                            {% if strength_profile.bench_press_1rm_date %}
+                            <div class="strength-date">{{ strength_profile.bench_press_1rm_date|date:'Y-m-d' }}</div>
+                            {% endif %}
+                        </div>
+                        {% if strength_profile.bench_press_goal %}
+                        <div class="strength-goal">
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span>目标: {{ strength_profile.bench_press_goal }}kg</span>
+                                    <span>{{ strength_profile.get_progress_percentage|floatformat:1 }}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ strength_profile.get_progress_percentage }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="strength-item">
+                        <div class="strength-header">
+                            <div class="strength-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="strength-title">硬拉 (Deadlift)</div>
+                        </div>
+                        <div class="strength-data">
+                            <div class="strength-value">
+                                <span class="value">{{ strength_profile.deadlift_1rm|default:'0' }}</span>
+                                <span class="unit">kg</span>
+                            </div>
+                            <div class="strength-label">1RM</div>
+                            {% if strength_profile.deadlift_1rm_date %}
+                            <div class="strength-date">{{ strength_profile.deadlift_1rm_date|date:'Y-m-d' }}</div>
+                            {% endif %}
+                        </div>
+                        {% if strength_profile.deadlift_goal %}
+                        <div class="strength-goal">
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span>目标: {{ strength_profile.deadlift_goal }}kg</span>
+                                    <span>{{ strength_profile.get_progress_percentage|floatformat:1 }}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ strength_profile.get_progress_percentage }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 总重量和力量系数 -->
+                <div class="strength-summary">
+                    <div class="summary-item">
+                        <div class="summary-label">三大项总重量</div>
+                        <div class="summary-value">{{ strength_profile.total_1rm|default:'0' }}kg</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">力量等级</div>
+                        <div class="summary-value">{{ strength_profile.get_strength_level }}</div>
+                    </div>
+                    {% if strength_profile.strength_coefficient %}
+                    <div class="summary-item">
+                        <div class="summary-label">力量系数</div>
+                        <div class="summary-value">{{ strength_profile.strength_coefficient }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">成就徽章</h2>
+                </div>
+                <div class="achievements-grid">
+                    {% if achievements %}
+                        {% for achievement in achievements %}
+                        <div class="achievement-item earned">
+                            <div class="achievement-icon" style="color: {{ achievement.achievement.color|default:'#667eea' }};">
+                                <i class="{{ achievement.achievement.icon|default:'fas fa-trophy' }}"></i>
+                            </div>
+                            <div class="achievement-title">{{ achievement.achievement.name }}</div>
+                            <div class="achievement-desc">{{ achievement.achievement.description }}</div>
+                            <button onclick="equipBadge({{ achievement.achievement.id }})" style="margin-top:8px;padding:6px 10px;border:none;border-radius:6px;background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);color:#000;cursor:pointer;font-weight:600;">佩戴</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="achievement-title">连续训练</div>
+                            <div class="achievement-desc">连续训练30天</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="achievement-title">力量突破</div>
+                            <div class="achievement-desc">深蹲突破100kg</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <div class="achievement-title">跑步达人</div>
+                            <div class="achievement-desc">累计跑步100km</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="achievement-title">健身大师</div>
+                            <div class="achievement-desc">训练次数达到500次</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-yoga"></i>
+                            </div>
+                            <div class="achievement-title">瑜伽专家</div>
+                            <div class="achievement-desc">完成100次瑜伽练习</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <div class="achievement-title">全能选手</div>
+                            <div class="achievement-desc">尝试所有训练类型</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 最近重量记录 -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">最近重量记录</h2>
+                    <button class="edit-btn" onclick="addWeightRecord()">
+                        <i class="fas fa-plus"></i> 添加记录
+                    </button>
+                </div>
+                <div class="weight-records">
+                    {% if recent_weight_records %}
+                        {% for record in recent_weight_records %}
+                        <div class="weight-record-item">
+                            <div class="record-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-name">{{ record.get_exercise_type_display }}</div>
+                                <div class="record-details">
+                                    {{ record.weight }}kg × {{ record.reps }}次
+                                    {% if record.sets > 1 %} × {{ record.sets }}组{% endif %}
+                                    {% if record.rpe %} • RPE {{ record.rpe }}{% endif %}
+                                </div>
+                                <div class="record-1rm">
+                                    估算1RM: {{ record.get_estimated_1rm }}kg
+                                </div>
+                            </div>
+                            <div class="record-date">
+                                {{ record.workout_date|date:'m月d日' }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-records">
+                            <i class="fas fa-dumbbell"></i>
+                            <p>还没有重量记录</p>
+                            <p>添加您的第一次重量记录吧！</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">最近训练</h2>
+                    <button class="edit-btn" onclick="viewAllWorkouts()">
+                        查看全部
+                    </button>
+                </div>
+                <div class="workout-history">
+                    {% if recent_workouts %}
+                        {% for workout in recent_workouts %}
+                        <div class="workout-item">
+                            <div class="workout-icon">
+                                {% if workout.detail and workout.detail.workout_type %}
+                                    {% if workout.detail.workout_type == 'strength' %}
+                                        <i class="fas fa-dumbbell"></i>
+                                    {% elif workout.detail.workout_type == 'cardio' %}
+                                        <i class="fas fa-running"></i>
+                                    {% elif workout.detail.workout_type == 'yoga' %}
+                                        <i class="fas fa-yoga"></i>
+                                    {% elif workout.detail.workout_type == 'hiit' %}
+                                        <i class="fas fa-fire"></i>
+                                    {% elif workout.detail.workout_type == 'flexibility' %}
+                                        <i class="fas fa-child"></i>
+                                    {% else %}
+                                        <i class="fas fa-heartbeat"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-heartbeat"></i>
+                                {% endif %}
+                            </div>
+                            <div class="workout-info">
+                                <div class="workout-name">
+                                    {% if workout.detail and workout.detail.workout_type %}
+                                        {% if workout.detail.workout_type == 'strength' %}
+                                            力量训练
+                                        {% elif workout.detail.workout_type == 'cardio' %}
+                                            有氧训练
+                                        {% elif workout.detail.workout_type == 'yoga' %}
+                                            瑜伽
+                                        {% elif workout.detail.workout_type == 'hiit' %}
+                                            高强度间歇
+                                        {% elif workout.detail.workout_type == 'flexibility' %}
+                                            柔韧性训练
+                                        {% else %}
+                                            {{ workout.detail.workout_type }}
+                                        {% endif %}
+                                    {% else %}
+                                        健身训练
+                                    {% endif %}
+                                    {% if workout.detail and workout.detail.training_parts %}
+                                        - {{ workout.detail.training_parts|join:', ' }}
+                                    {% endif %}
+                                </div>
+                                <div class="workout-details">
+                                    {% if workout.detail and workout.detail.duration %}
+                                        {{ workout.detail.duration }}分钟
+                                    {% else %}
+                                        时长未知
+                                    {% endif %}
+                                    {% if workout.detail and workout.detail.training_parts %}
+                                        • {{ workout.detail.training_parts|length }}个部位
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="workout-date">
+                                {% if workout.date == today %}
+                                    今天
+                                {% elif workout.date == yesterday %}
+                                    昨天
+                                {% else %}
+                                    {{ workout.date|date:'m月d日' }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-workouts">
+                            <i class="fas fa-dumbbell"></i>
+                            <p>还没有训练记录</p>
+                            <p>开始您的第一次训练吧！</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="section-header">
+                    <h2 class="section-title">健身目标</h2>
+                    <button class="edit-btn" onclick="editGoals()">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
+                </div>
+                <div class="goals-section">
+                    {% if fitness_goals %}
+                        {% for goal in fitness_goals %}
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <div class="goal-icon">
+                                    <i class="{{ goal.icon }}"></i>
+                                </div>
+                                <div class="goal-title">{{ goal.title }}</div>
+                            </div>
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span class="progress-text">当前: {{ goal.current }}{{ goal.unit }}</span>
+                                    <span class="progress-text">目标: {{ goal.target }}{{ goal.unit }}</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ goal.progress }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="goal-deadline">截止日期: {{ goal.deadline }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <div class="goal-icon">
+                                    <i class="fas fa-weight"></i>
+                                </div>
+                                <div class="goal-title">减重目标</div>
+                            </div>
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span class="progress-text">当前: 70kg</span>
+                                    <span class="progress-text">目标: 65kg</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%;"></div>
+                                </div>
+                            </div>
+                            <div class="goal-deadline">截止日期: 2024年12月31日</div>
+                        </div>
+                        
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <div class="goal-icon">
+                                    <i class="fas fa-dumbbell"></i>
+                                </div>
+                                <div class="goal-title">力量目标</div>
+                            </div>
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span class="progress-text">当前: 150kg</span>
+                                    <span class="progress-text">目标: 180kg</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 80%;"></div>
+                                </div>
+                            </div>
+                            <div class="goal-deadline">截止日期: 2024年11月30日</div>
+                        </div>
+                        
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <div class="goal-icon">
+                                    <i class="fas fa-running"></i>
+                                </div>
+                                <div class="goal-title">跑步目标</div>
+                            </div>
+                            <div class="goal-progress">
+                                <div class="progress-info">
+                                    <span class="progress-text">当前: 5km</span>
+                                    <span class="progress-text">目标: 10km</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%;"></div>
+                                </div>
+                            </div>
+                            <div class="goal-deadline">截止日期: 2024年10月31日</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 编辑头像
+function editAvatar() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 这里可以添加上传头像的逻辑
+            alert('头像上传功能开发中...');
+        }
+    };
+    input.click();
+}
+
+// 编辑个人资料
+function editProfile() {
+    alert('编辑个人资料功能开发中...');
+}
+
+// 导出数据
+function exportData() {
+    alert('数据导出功能开发中...');
+}
+
+// 分享档案
+function shareProfile() {
+    if (navigator.share) {
+        navigator.share({
+            title: '我的健身档案',
+            text: '来看看我的健身成果！',
+            url: window.location.href
+        });
+    } else {
+        alert('分享功能开发中...');
+    }
+}
+
+// 编辑个人信息
+function editPersonalInfo() {
+    alert('编辑个人信息功能开发中...');
+}
+
+// 查看所有训练记录
+function viewAllWorkouts() {
+    alert('查看所有训练记录功能开发中...');
+}
+
+// 编辑目标
+function editGoals() {
+    alert('编辑健身目标功能开发中...');
+}
+
+// 添加重量记录
+function addWeightRecord() {
+    // 创建模态框
+    const modal = document.createElement('div');
+    modal.className = 'weight-record-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加重量记录</h3>
+                <button class="close-btn" onclick="closeWeightRecordModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="weightRecordForm">
+                    <div class="form-group">
+                        <label>锻炼类型</label>
+                        <select name="exercise_type" required>
+                            <option value="">选择锻炼类型</option>
+                            <option value="squat">深蹲</option>
+                            <option value="bench_press">卧推</option>
+                            <option value="deadlift">硬拉</option>
+                            <option value="overhead_press">推举</option>
+                            <option value="barbell_row">杠铃划船</option>
+                            <option value="pull_up">引体向上</option>
+                            <option value="dip">双杠臂屈伸</option>
+                            <option value="lunge">弓步蹲</option>
+                            <option value="leg_press">腿举</option>
+                            <option value="leg_curl">腿弯举</option>
+                            <option value="leg_extension">腿伸展</option>
+                            <option value="calf_raise">提踵</option>
+                            <option value="bicep_curl">弯举</option>
+                            <option value="tricep_extension">臂屈伸</option>
+                            <option value="shoulder_press">肩推</option>
+                            <option value="lateral_raise">侧平举</option>
+                            <option value="rear_delt_fly">后三角肌飞鸟</option>
+                            <option value="chest_fly">飞鸟</option>
+                            <option value="lat_pulldown">高位下拉</option>
+                            <option value="face_pull">面拉</option>
+                            <option value="shrug">耸肩</option>
+                            <option value="upright_row">直立划船</option>
+                            <option value="good_morning">早安式</option>
+                            <option value="romanian_deadlift">罗马尼亚硬拉</option>
+                            <option value="sumo_deadlift">相扑硬拉</option>
+                            <option value="front_squat">前蹲</option>
+                            <option value="back_squat">后蹲</option>
+                            <option value="box_squat">箱式深蹲</option>
+                            <option value="pause_squat">暂停深蹲</option>
+                            <option value="close_grip_bench">窄握卧推</option>
+                            <option value="wide_grip_bench">宽握卧推</option>
+                            <option value="incline_bench">上斜卧推</option>
+                            <option value="decline_bench">下斜卧推</option>
+                            <option value="dumbbell_bench">哑铃卧推</option>
+                            <option value="dumbbell_squat">哑铃深蹲</option>
+                            <option value="goblet_squat">高脚杯深蹲</option>
+                            <option value="bulgarian_split_squat">保加利亚分腿蹲</option>
+                            <option value="step_up">台阶上</option>
+                            <option value="hip_thrust">臀桥</option>
+                            <option value="glute_bridge">臀桥</option>
+                            <option value="plank">平板支撑</option>
+                            <option value="side_plank">侧平板</option>
+                            <option value="crunch">卷腹</option>
+                            <option value="sit_up">仰卧起坐</option>
+                            <option value="russian_twist">俄罗斯转体</option>
+                            <option value="mountain_climber">登山者</option>
+                            <option value="burpee">波比跳</option>
+                            <option value="jumping_jack">开合跳</option>
+                            <option value="high_knee">高抬腿</option>
+                            <option value="butt_kick">后踢腿</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>重量 (kg)</label>
+                            <input type="number" name="weight" step="0.5" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>次数</label>
+                            <input type="number" name="reps" min="1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>组数</label>
+                            <input type="number" name="sets" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>RPE (1-10)</label>
+                            <input type="number" name="rpe" min="1" max="10">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>训练日期</label>
+                        <input type="date" name="workout_date" value="${new Date().toISOString().split('T')[0]}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>备注</label>
+                        <textarea name="notes" rows="3" placeholder="训练感受、技术要点等..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeWeightRecordModal()">取消</button>
+                        <button type="submit" class="btn-primary">保存记录</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // 添加模态框样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .weight-record-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-primary,
+        .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: var(--primary-color, #667eea);
+            color: white;
+        }
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+    
+    // 处理表单提交
+    document.getElementById('weightRecordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        // 发送API请求
+        fetch('/tools/fitness/add_weight_record/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('重量记录添加成功！');
+                closeWeightRecordModal();
+                location.reload(); // 刷新页面显示新记录
+            } else {
+                alert('添加失败：' + result.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('添加失败，请重试');
+        });
+    });
+}
+
+// 关闭重量记录模态框
+function closeWeightRecordModal() {
+    const modal = document.querySelector('.weight-record-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 获取CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// 页面加载完成后的初始化
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 添加一些交互效果
+    addHoverEffects();
+    
+    // 初始化进度条动画
+    animateProgressBars();
+
+    // 绑定徽章佩戴
+    window.equipBadge = async function(achievementId) {
+        try {
+            const resp = await fetch('/tools/api/fitness/equip_badge/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ achievement_id: achievementId })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                showNotification('徽章已佩戴', 'success');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showNotification(data.error || '佩戴失败', 'error');
+            }
+        } catch (e) {
+            showNotification('网络错误，请稍后重试', 'error');
+        }
+    }
+});
+
+// 添加悬停效果
+function addHoverEffects() {
+    const workoutItems = document.querySelectorAll('.workout-item');
+    workoutItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+        });
+    });
+}
+
+// 进度条动画
+function animateProgressBars() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+}
+
+// 编辑资料功能
+function editProfile() {
+    const modal = document.createElement('div');
+    modal.className = 'edit-profile-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> 编辑健身资料</h3>
+                <button class="close-btn" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>健身水平</label>
+                            <select name="fitness_level" required>
+                                <option value="beginner" ${profile.fitness_level === 'beginner' ? 'selected' : ''}>初学者</option>
+                                <option value="intermediate" ${profile.fitness_level === 'intermediate' ? 'selected' : ''}>进阶者</option>
+                                <option value="advanced" ${profile.fitness_level === 'advanced' ? 'selected' : ''}>高级者</option>
+                                <option value="expert" ${profile.fitness_level === 'expert' ? 'selected' : ''}>专家级</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>主要目标</label>
+                            <select name="primary_goals" multiple>
+                                <option value="weight_loss">减重</option>
+                                <option value="muscle_gain">增肌</option>
+                                <option value="strength">力量训练</option>
+                                <option value="endurance">耐力训练</option>
+                                <option value="flexibility">柔韧性</option>
+                                <option value="general_fitness">一般健身</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>喜欢的运动</label>
+                        <input type="text" name="favorite_workouts" value="${profile.favorite_workouts || ''}" placeholder="例如：深蹲、卧推、跑步...">
+                    </div>
+                    <div class="form-group">
+                        <label>个人简介</label>
+                        <textarea name="bio" rows="4" placeholder="分享您的健身理念和目标...">${profile.bio || ''}</textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
+                        <button type="submit" class="btn-primary">保存更改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // 添加模态框样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .edit-profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+            background: var(--fitness-gradient);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .close-btn:hover {
+            transform: scale(1.1);
+        }
+        .modal-body {
+            padding: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--fitness-dark);
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 107, 53, 0.2);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--fitness-primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        .btn-primary,
+        .btn-secondary {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: var(--fitness-gradient);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--fitness-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 107, 53, 0.4);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--fitness-dark);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: var(--fitness-primary);
+            transform: translateY(-2px);
+        }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+    
+    // 处理表单提交
+    document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        // 发送API请求
+        fetch('/tools/fitness/update_profile/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showNotification('资料更新成功！', 'success');
+                closeEditModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('更新失败：' + result.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('更新失败，请重试', 'error');
+        });
+    });
+}
+
+// 关闭编辑模态框
+function closeEditModal() {
+    const modal = document.querySelector('.edit-profile-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 导出数据功能
+function exportData() {
+    showNotification('正在准备导出数据...', 'info');
+    
+    // 收集所有数据
+    const exportData = {
+        profile: {
+            name: '{{ profile.get_display_name }}',
+            level: '{{ profile.fitness_level }}',
+            goals: '{{ profile.primary_goals|join:", " }}',
+            bio: '{{ profile.bio|default:"" }}'
+        },
+        stats: {
+            total_workouts: {{ profile.total_workouts|default:0 }},
+            current_streak: {{ current_streak|default:0 }},
+            total_duration: {{ total_duration_hours|default:0 }},
+            achievements: {{ total_achievements|default:0 }}
+        },
+        body_data: {
+            gender: '{{ body_data.gender|default:"" }}',
+            age: {{ body_data.age|default:0 }},
+            height: {{ body_data.height|default:0 }},
+            weight: {{ body_data.weight|default:0 }},
+            bmi: {{ body_data.bmi|default:0 }}
+        },
+        strength_records: {
+            squat: {{ strength_profile.squat_1rm|default:0 }},
+            bench_press: {{ strength_profile.bench_press_1rm|default:0 }},
+            deadlift: {{ strength_profile.deadlift_1rm|default:0 }}
+        },
+        export_date: new Date().toISOString()
+    };
+    
+    // 创建CSV内容
+    const csvContent = createCSVContent(exportData);
+    
+    // 创建下载链接
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fitness_profile_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('数据导出成功！', 'success');
+}
+
+// 创建CSV内容
+function createCSVContent(data) {
+    const headers = [
+        '健身档案数据',
+        '姓名', '健身水平', '主要目标', '个人简介',
+        '训练次数', '连续天数', '总时长(小时)', '成就数量',
+        '性别', '年龄', '身高(cm)', '体重(kg)', 'BMI',
+        '深蹲1RM(kg)', '卧推1RM(kg)', '硬拉1RM(kg)',
+        '导出日期'
+    ];
+    
+    const values = [
+        '',
+        data.profile.name,
+        data.profile.level,
+        data.profile.goals,
+        data.profile.bio,
+        data.stats.total_workouts,
+        data.stats.current_streak,
+        data.stats.total_duration,
+        data.stats.achievements,
+        data.body_data.gender,
+        data.body_data.age,
+        data.body_data.height,
+        data.body_data.weight,
+        data.body_data.bmi,
+        data.strength_records.squat,
+        data.strength_records.bench_press,
+        data.strength_records.deadlift,
+        data.export_date
+    ];
+    
+    return headers.join(',') + '\n' + values.join(',');
+}
+
+// 显示通知
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    // 添加通知样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .notification-success {
+            background: var(--fitness-success);
+        }
+        .notification-error {
+            background: var(--fitness-accent);
+        }
+        .notification-info {
+            background: var(--fitness-primary);
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    
+    if (!document.querySelector('.notification-style')) {
+        style.className = 'notification-style';
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// 分享档案功能
+function shareProfile() {
+    const shareData = {
+        title: '我的健身档案',
+        text: '查看我的健身历程和成就！',
+        url: window.location.href
+    };
+    
+    if (navigator.share) {
+        navigator.share(shareData);
+    } else {
+        // 复制链接到剪贴板
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showNotification('链接已复制到剪贴板！', 'success');
+        });
+    }
+}
+</script>
+{% endblock %}
+

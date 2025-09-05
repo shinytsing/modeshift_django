@@ -1,0 +1,172 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qatoolbox"
+version = "1.0.0"
+description = "QA工具箱 - 一个综合性的工具集合平台"
+authors = [
+    {name = "QA工具箱团队", email = "team@qatoolbox.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+]
+dependencies = [
+    "beautifulsoup4>=4.13.5",
+    "celery>=5.5.3",
+    "channels>=4.3.1",
+    "channels-redis>=4.3.0",
+    "crispy-bootstrap5>=2025.6",
+    "daphne>=4.2.1",
+    "django>=5.2.6",
+    "django-celery-beat>=2.8.1",
+    "django-cors-headers>=4.7.0",
+    "django-crispy-forms>=2.4",
+    "django-csp>=4.0",
+    "django-debug-toolbar>=6.0.0",
+    "django-extensions>=4.1",
+    "django-filter>=25.1",
+    "django-health-check>=3.20.0",
+    "django-ranged-response>=0.2.0",
+    "django-ratelimit>=4.1.0",
+    "django-simple-captcha>=0.6.2",
+    "djangorestframework>=3.16.1",
+    "docx2pdf>=0.1.8",
+    "gevent>=25.8.2",
+    "gunicorn>=23.0.0",
+    "html5lib>=1.1",
+    "lxml>=6.0.1",
+    "matplotlib>=3.10.6",
+    "multitasking>=0.0.12",
+    "mutagen>=1.47.0",
+    "numpy>=2.3.2",
+    "opencv-python>=4.11.0.86",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.2",
+    "pdf2docx>=0.5.8",
+    "pdfminer-six>=20250506",
+    "pdfplumber>=0.11.7",
+    "peewee>=3.18.2",
+    "pillow>=11.3.0",
+    "pillow-heif>=1.1.0",
+    "prettytable>=3.16.0",
+    "psutil>=7.0.0",
+    "pydub>=0.25.1",
+    "pypdfium2>=4.30.0",
+    "pytesseract>=0.3.13",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.1.1",
+    "python-pptx>=1.0.2",
+    "pyyaml>=6.0.2",
+    "qrcode>=8.2",
+    "ratelimit>=2.2.1",
+    "redis>=6.4.0",
+    "reportlab>=4.4.3",
+    "requests>=2.32.5",
+    "selenium>=4.35.0",
+    "sentry-sdk>=2.36.0",
+    "simplejson>=3.20.1",
+    "structlog>=25.4.0",
+    "tenacity>=9.1.2",
+    "webdriver-manager>=4.0.2",
+    "whitenoise>=6.9.0",
+    "xlrd>=2.0.2",
+    "xlwt>=1.3.0",
+    "xmind>=1.2.0",
+    "yfinance>=0.2.65",
+]
+
+[tool.black]
+line-length = 127
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+multi_line_output = 3
+known_django = "django"
+known_third_party = ["requests", "celery", "redis"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "django.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--strict-markers --strict-config"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["apps", "config"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/settings/*",
+    "manage.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "test", "migrations"]
+skips = ["B101", "B601"]

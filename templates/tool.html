@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<div id="tool-container" style="min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  
+  <!-- 搞怪的标题区域 -->
+  <div id="tool-title" style="text-align: center; margin-bottom: 3rem; animation: bounce 2s infinite;">
+    <h1 style="font-size: 3.5rem; font-weight: bold; color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); margin-bottom: 1rem;">
+      🤔 你想请求哪里呢？😂
+    </h1>
+    <p style="font-size: 1.5rem; color: #f0f0f0; font-style: italic; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      选择你的冒险之旅吧！✨
+    </p>
+  </div>
+
+  <!-- 模式选择区域 -->
+  <div class="mode-selection" style="margin-bottom: 4rem;">
+    <h2 style="text-align: center; color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      🎭 选择你的模式
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+      
+      <!-- 极客模式 -->
+      <div class="mode-card" onclick="selectMode('work')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">💻</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">极客模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">代码、测试、PDF转换...技术宅的天堂！</p>
+      </div>
+
+      <!-- 生活模式 -->
+      <div class="mode-card" onclick="selectMode('life')" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🌱</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">生活模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">日记、健身、冥想...让生活更美好！</p>
+      </div>
+
+      <!-- 狂暴模式 -->
+      <div class="mode-card" onclick="selectMode('training')" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">狂暴模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">高强度训练、极限挑战...释放你的能量！</p>
+      </div>
+
+      <!-- Emo模式 -->
+      <div class="mode-card" onclick="selectMode('emo')" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🎭</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">Emo模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">情感分析、创意写作...探索内心的世界！</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 工具选择区域 -->
+  <div id="tool-selection" style="display: none;">
+    <h2 id="mode-title" style="text-align: center; color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      🛠️ 选择你的工具
+    </h2>
+    <div id="tool-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto;">
+      <!-- 工具卡片将通过JavaScript动态生成 -->
+    </div>
+    
+    <!-- 返回按钮 -->
+    <div style="text-align: center; margin-top: 3rem;">
+      <button onclick="showModeSelection()" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 1rem 2rem; border-radius: 50px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);">
+        🔙 返回模式选择
+      </button>
+    </div>
+  </div>
+
+  <!-- 随机提示区域 -->
+  <div id="random-tip" style="position: fixed; bottom: 2rem; right: 2rem; background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); max-width: 300px; display: none;">
+    <p style="margin: 0; font-size: 0.9rem; color: #333;">💡 <span id="tip-text">点击模式卡片开始你的冒险！</span></p>
+  </div>
+
+</div>
+
+<style>
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.mode-card:hover {
+  transform: translateY(-10px) scale(1.05);
+  border-color: rgba(255,255,255,0.5) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
+}
+
+.mode-card:active {
+  animation: shake 0.5s ease-in-out;
+}
+
+.tool-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.2);
+  color: white;
+}
+
+.tool-card:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-5px);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.tool-card:active {
+  animation: pulse 0.3s ease-in-out;
+}
+</style>
+
+<script>
+// 工具数据
+const toolsData = {
+  work: [
+    { name: '测试用例生成器', url: '/tools/test_case_generator/', icon: '🧪', desc: '自动生成测试用例，让代码更可靠！' },
+    { name: 'PDF转换器', url: '/tools/pdf_converter/', icon: '📄', desc: 'PDF转Word，文档处理神器！' },
+    { name: '网页爬虫', url: '/tools/web_crawler/', icon: '🕷️', desc: '智能爬取网页数据！' },
+    { name: 'ZIP文件处理', url: '/tools/zip-tool/', icon: '📦', desc: '多文件打包、单文件压缩，文件处理利器！' }
+  ],
+  life: [
+    { name: '生活日记', url: '/tools/simple-diary/', icon: '📖', desc: '记录美好生活，降低记录门槛，让记录本身成为一种乐趣！' },
+    { name: 'FitMatrix', url: '/tools/fitness/', icon: '💪', desc: '智能健身矩阵，重塑身体边界！' },
+    { name: '冥想指南', url: '/tools/meditation_guide/', icon: '🧘', desc: '静心冥想，找回内心的平静！' },
+    { name: '音乐疗愈', url: '/tools/music_healing/', icon: '🎵', desc: '用音乐治愈心灵！' },
+{ name: '美食选择器', url: '/tools/food_randomizer/', icon: '🍽️', desc: '智能美食推荐，解决选择困难！' },
+{ name: '本地美食图库', url: '/tools/local_food_display/', icon: '🍜', desc: '精美食物图片展示，食物与图片完美匹配！' }
+  ],
+  training: [
+    { name: '自我分析', url: '/tools/self_analysis/', icon: '🔍', desc: '深度分析自我，发现潜能！' },
+    { name: '故事板', url: '/tools/storyboard/', icon: '🎬', desc: '创意故事板，激发灵感！' },
+    { name: '命运分析', url: '/tools/fortune_analyzer/', icon: '🔮', desc: '探索命运的奥秘！' }
+  ],
+  emo: [
+    { name: '情感日记', url: '/tools/emo_diary/', icon: '💭', desc: '记录情感波动，了解自己！' },
+{ name: '创意写作', url: '/tools/creative_writer/', icon: '✍️', desc: 'AI助你创作，释放创意！' }
+  ]
+};
+
+// 随机提示
+const randomTips = [
+  '💡 点击模式卡片开始你的冒险！',
+  '🎯 每个模式都有独特的工具等你发现！',
+  '🚀 选择你感兴趣的模式，开始探索吧！',
+  '✨ 工具虽多，但总有一款适合你！',
+  '🎨 不同的模式，不同的体验！',
+  '🌟 让AI助手帮你完成各种任务！',
+  '🎪 这里是一个神奇的工具马戏团！',
+  '🎭 选择你的角色，开始表演吧！'
+];
+
+let currentMode = null;
+let preferredMode = '{{ preferred_mode|default:"work" }}';
+let modeNames = {
+  work: '极客模式',
+  life: '生活模式',
+  training: '狂暴模式',
+  emo: 'Emo模式'
+};
+
+// 记录模式点击到服务器
+async function recordModeClick(mode) {
+  try {
+    const response = await fetch('/tools/api/mode/record_click/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ mode: mode })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+
+    } else {
+      console.error('模式点击记录失败:', data.error);
+    }
+  } catch (error) {
+    console.error('记录模式点击时出错:', error);
+  }
+}
+
+// 获取CSRF Token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// 选择模式
+async function selectMode(mode) {
+  currentMode = mode;
+  
+  // 记录模式点击
+  await recordModeClick(mode);
+  
+  showToolSelection();
+  showRandomTip();
+  
+  // 添加点击动画
+  event.target.closest('.mode-card').style.animation = 'pulse 0.5s ease-in-out';
+  setTimeout(() => {
+    event.target.closest('.mode-card').style.animation = '';
+  }, 500);
+}
+
+// 显示工具选择
+function showToolSelection() {
+  document.querySelector('.mode-selection').style.display = 'none';
+  document.getElementById('tool-selection').style.display = 'block';
+  
+  document.getElementById('mode-title').innerHTML = `🛠️ ${modeNames[currentMode]} - 选择你的工具`;
+  
+  const toolGrid = document.getElementById('tool-grid');
+  toolGrid.innerHTML = '';
+  
+  toolsData[currentMode].forEach(tool => {
+    const toolCard = document.createElement('div');
+    toolCard.className = 'tool-card';
+    toolCard.innerHTML = `
+      <div style="font-size: 3rem; margin-bottom: 1rem;">${tool.icon}</div>
+      <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">${tool.name}</h3>
+      <p style="font-size: 0.9rem; opacity: 0.9;">${tool.desc}</p>
+    `;
+    toolCard.onclick = () => {
+      toolCard.style.animation = 'pulse 0.3s ease-in-out';
+      setTimeout(() => {
+        window.location.href = tool.url;
+      }, 300);
+    };
+    toolGrid.appendChild(toolCard);
+  });
+}
+
+// 显示模式选择
+function showModeSelection() {
+  document.querySelector('.mode-selection').style.display = 'block';
+  document.getElementById('tool-selection').style.display = 'none';
+  currentMode = null;
+  showRandomTip();
+}
+
+// 显示随机提示
+function showRandomTip() {
+  const tipElement = document.getElementById('random-tip');
+  const tipText = document.getElementById('tip-text');
+  tipText.textContent = randomTips[Math.floor(Math.random() * randomTips.length)];
+  
+  tipElement.style.display = 'block';
+  tipElement.style.animation = 'bounce 1s ease-in-out';
+  
+  setTimeout(() => {
+    tipElement.style.display = 'none';
+  }, 5000);
+}
+
+// 获取用户偏好模式
+async function getUserPreferredMode() {
+  try {
+    const response = await fetch('/tools/api/mode/preferred/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      return data.preferred_mode;
+    } else {
+      console.error('获取用户偏好模式失败:', data.error);
+      return 'work'; // 默认极客模式
+    }
+  } catch (error) {
+    console.error('获取用户偏好模式时出错:', error);
+    return 'work'; // 默认极客模式
+  }
+}
+
+// 自动选择用户偏好模式
+async function autoSelectPreferredMode() {
+  // 检查是否有模式点击记录
+  try {
+    const response = await fetch('/tools/api/mode/preferred/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    if (data.success && data.mode_stats) {
+      // 检查是否有任何模式被点击过
+      const hasAnyClicks = data.mode_stats.some(stat => stat.click_count > 0);
+      
+      if (hasAnyClicks) {
+        // 自动选择最偏好的模式
+        currentMode = preferredMode;
+        showToolSelection();
+        
+        // 创建提示元素
+        const autoSelectTip = document.createElement('div');
+        autoSelectTip.id = 'auto-select-tip';
+        autoSelectTip.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          padding: 15px 20px;
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          z-index: 1000;
+          font-size: 14px;
+          max-width: 300px;
+          animation: slideInRight 0.5s ease-out;
+        `;
+        autoSelectTip.innerHTML = `
+          🎯 根据您的使用习惯，已自动选择 <strong>${modeNames[preferredMode]}</strong>
+          <br><small>您可以点击"返回模式选择"来切换其他模式</small>
+        `;
+        
+        document.body.appendChild(autoSelectTip);
+        
+        // 3秒后自动隐藏提示
+        setTimeout(() => {
+          if (autoSelectTip.parentNode) {
+            autoSelectTip.style.animation = 'slideOutRight 0.5s ease-in';
+            setTimeout(() => {
+              if (autoSelectTip.parentNode) {
+                autoSelectTip.parentNode.removeChild(autoSelectTip);
+              }
+            }, 500);
+          }
+        }, 3000);
+      }
+    }
+  } catch (error) {
+    console.error('检查模式统计时出错:', error);
+  }
+}
+
+// 页面加载时显示提示
+document.addEventListener('DOMContentLoaded', function() {
+  // 自动选择用户偏好模式
+  autoSelectPreferredMode();
+  
+  setTimeout(() => {
+    showRandomTip();
+  }, 1000);
+  
+  // 定期更换提示
+  setInterval(() => {
+    if (document.getElementById('random-tip').style.display === 'none') {
+      showRandomTip();
+    }
+  }, 8000);
+});
+</script>
+
+{% else %}
+<div style="min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+  <div style="text-align: center; background: rgba(255,255,255,0.9); padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px);">
+    <h2 style="color: #333; margin-bottom: 1rem; font-size: 2rem;">🔒 需要登录</h2>
+    <p style="color: #666; margin-bottom: 2rem; font-size: 1.1rem;">请先登录以使用我们的神奇工具！✨</p>
+    <div>
+      <a href="{% url 'users:login' %}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 50px; margin-right: 1rem; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+        <i class="fas fa-sign-in-alt"></i> 登录
+      </a>
+      <a href="{% url 'users:register' %}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; border-radius: 50px; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+        <i class="fas fa-user-plus"></i> 注册
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

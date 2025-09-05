@@ -1,0 +1,1255 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ user.username }} 的个人资料{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- 个人资料头部 -->
+    <div class="profile-hero">
+        <div class="profile-cover">
+            <div class="profile-avatar-container">
+                <div class="profile-avatar">
+                    <img id="profile-avatar" src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}{% static 'img/default-avatar.svg' %}{% endif %}" alt="用户头像">
+                    <div class="avatar-edit-overlay">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户信息卡片 -->
+    <div class="profile-card">
+        <div class="profile-info">
+            <h1 class="profile-name">{{ user.first_name|default:user.username }}</h1>
+            <p class="profile-username">@{{ user.username }}</p>
+            <p class="profile-email">
+                <i class="fas fa-envelope"></i>
+                {{ user.email|default:"未设置邮箱" }}
+            </p>
+            
+            <div class="profile-bio">
+                <p>欢迎来到MODESHIFT！这里是您的个人空间，记录您的成长轨迹。</p>
+            </div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ user.date_joined|date:"Y" }}</div>
+                <div class="stat-label">注册年份</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ user.last_login|date:"m"|default:"0" }}</div>
+                <div class="stat-label">活跃月份</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">无限可能</div>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="profile-btn primary" onclick="toggleUserDropdown()">
+                <i class="fas fa-cog"></i>
+                账户设置
+            </button>
+            <a href="{% url 'users:logout' %}" class="profile-btn secondary">
+                <i class="fas fa-sign-out-alt"></i>
+                退出登录
+            </a>
+        </div>
+    </div>
+
+    <!-- 用户下拉菜单 -->
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-section">
+            <div class="dropdown-header">账户设置</div>
+            <div class="dropdown-item" onclick="editAvatar()">
+                <i class="fas fa-user"></i>
+                <span>编辑头像</span>
+            </div>
+            <div class="dropdown-item" onclick="editProfile()">
+                <i class="fas fa-user-edit"></i>
+                <span>个人资料</span>
+            </div>
+        </div>
+        
+        <div class="dropdown-divider"></div>
+        
+        <div class="dropdown-section">
+            <div class="dropdown-header">界面模式</div>
+            <div class="dropdown-subtitle">快捷键: Ctrl+1/2/3/4</div>
+            <div class="dropdown-item" onclick="switchTheme('life')">
+                <i class="fas fa-palette" style="color: #ff69b4;"></i>
+                <span>生活模式</span>
+            </div>
+            <div class="dropdown-item active" onclick="switchTheme('geek')">
+                <i class="fas fa-laptop-code" style="color: #00d4ff;"></i>
+                <span>极客模式</span>
+                <div class="active-indicator"></div>
+            </div>
+            <div class="dropdown-item" onclick="switchTheme('rage')">
+                <i class="fas fa-dumbbell" style="color: #ff4757;"></i>
+                <span>狂暴模式</span>
+            </div>
+            <div class="dropdown-item" onclick="switchTheme('emo')">
+                <i class="fas fa-heart-broken" style="color: #5352ed;"></i>
+                <span>Emo模式</span>
+            </div>
+        </div>
+        
+        <div class="dropdown-divider"></div>
+        
+        <div class="dropdown-section">
+            <div class="dropdown-header">音乐控制</div>
+            <div class="dropdown-item" onclick="toggleMusic()">
+                <i class="fas fa-music"></i>
+                <span>播放/暂停音乐</span>
+            </div>
+            <div class="dropdown-item" onclick="nextSong()">
+                <i class="fas fa-forward"></i>
+                <span>▶ 下一首歌曲</span>
+            </div>
+            <div class="dropdown-item" onclick="toggleMusicInfo()">
+                <i class="fas fa-info-circle"></i>
+                <span>● 显示/隐藏音乐信息</span>
+            </div>
+        </div>
+        
+        <div class="dropdown-divider"></div>
+        
+        <div class="dropdown-section">
+            <div class="dropdown-header">系统设置</div>
+            <div class="dropdown-item" onclick="showSuggestions()">
+                <i class="fas fa-lightbulb"></i>
+                <span>我的建议</span>
+            </div>
+            <div class="dropdown-item" onclick="showFeedback()">
+                <i class="fas fa-comment-dots"></i>
+                <span>● 意见反馈</span>
+                <div class="notification-dot"></div>
+            </div>
+        </div>
+        
+        <div class="dropdown-divider"></div>
+        
+        <div class="dropdown-section">
+            <div class="dropdown-header">语言设置</div>
+            <div class="dropdown-item active" onclick="switchLanguage('zh')">
+                <i class="fas fa-language"></i>
+                <span>中文</span>
+                <div class="checkmark">✓</div>
+            </div>
+            <div class="dropdown-item" onclick="switchLanguage('en')">
+                <i class="fas fa-language"></i>
+                <span>A English</span>
+            </div>
+        </div>
+        
+        <div class="dropdown-divider"></div>
+        
+        <div class="dropdown-section">
+            <div class="dropdown-item logout-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>登出</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能卡片区域 -->
+    <div class="profile-sections">
+        <!-- 最近活动 -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-history"></i> 最近活动</h3>
+            </div>
+            <div class="section-content">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="activity-info">
+                        <div class="activity-title">登录系统</div>
+                        <div class="activity-time">{{ user.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="activity-info">
+                        <div class="activity-title">加入MODESHIFT</div>
+                        <div class="activity-time">{{ user.date_joined|date:"Y年m月d日" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快捷功能 -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3><i class="fas fa-bolt"></i> 快捷功能</h3>
+            </div>
+            <div class="section-content">
+                <div class="quick-action-grid">
+                    <div class="quick-action-item" onclick="showThemeSettings()">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="quick-action-title">主题设置</div>
+                    </div>
+                    <div class="quick-action-item" onclick="showPrivacySettings()">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="quick-action-title">隐私设置</div>
+                    </div>
+                    <div class="quick-action-item" onclick="showNotificationSettings()">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="quick-action-title">通知设置</div>
+                    </div>
+                    <div class="quick-action-item" onclick="showSecuritySettings()">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="quick-action-title">安全设置</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏的开发者信息 -->
+    <div class="hidden-author-info">
+        <button class="secret-btn" onclick="toggleAuthorInfo()" title="关于开发者">
+            <i class="fas fa-code"></i>
+        </button>
+        
+        <div class="author-card hidden" id="authorCard">
+            <div class="author-header">
+                <h3 class="author-title">
+                    <i class="fas fa-heart"></i>
+                    关于开发者
+                </h3>
+                <p class="author-subtitle">一个热爱技术的测试工程师</p>
+            </div>
+            
+            <div class="author-content">
+                <div class="author-bio">
+                    <p>👨‍💻 测试工程师 | 🎵 音乐爱好者 | 🚀 技术探索者</p>
+                    <p>热爱自动化测试、性能优化和用户体验设计，致力于创造有趣且实用的工具。</p>
+                </div>
+                
+                <div class="author-links">
+                    <a href="/media/高杰-测试工程师.pdf" target="_blank" class="author-link">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>查看简历</span>
+                    </a>
+                    <a href="https://github.com/shinytsing/QAToolBox" target="_blank" class="author-link">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://music.163.com/#/user/home?id=555356040" target="_blank" class="author-link">
+                        <i class="fab fa-netease"></i>
+                        <span>网易云音乐</span>
+                    </a>
+                    <a href="#" class="author-link" onclick="showWeChatQR()">
+                        <i class="fab fa-weixin"></i>
+                        <span>微信联系</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 微信二维码模态框 -->
+<div class="qr-modal" id="weChatQRModal">
+    <div class="qr-content">
+        <div class="qr-header">
+            <h3>微信联系</h3>
+            <button class="qr-close" onclick="hideWeChatQR()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="qr-body">
+            <img src="/media/vx.jpg" alt="微信二维码" class="qr-image">
+            <p>扫描二维码添加微信好友</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0;
+    background: transparent;
+    position: relative;
+}
+
+/* 个人资料头部 */
+.profile-hero {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.profile-cover {
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.8) 0%, rgba(255, 105, 180, 0.8) 50%, rgba(138, 43, 226, 0.8) 100%);
+    height: 200px;
+    border-radius: 20px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 2rem;
+    margin-bottom: 80px;
+}
+
+.profile-avatar-container {
+    position: absolute;
+    bottom: -60px;
+    left: 2rem;
+}
+
+.profile-avatar {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: white;
+    padding: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.profile-avatar:hover .avatar-edit-overlay {
+    opacity: 1;
+}
+
+/* 用户信息卡片 */
+.profile-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 0 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.profile-info {
+    margin-bottom: 2rem;
+}
+
+.profile-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.profile-username {
+    font-size: 1.2rem;
+    color: #666;
+    margin: 0 0 1rem 0;
+    font-weight: 500;
+}
+
+.profile-email {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    margin: 0 0 1.5rem 0;
+    font-size: 1rem;
+}
+
+.profile-bio {
+    background: rgba(255, 182, 193, 0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid #ff69b4;
+}
+
+.profile-bio p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* 统计信息 */
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 182, 193, 0.05);
+    border-radius: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ff69b4;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 操作按钮 */
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.profile-btn.primary {
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+}
+
+.profile-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+}
+
+.profile-btn.secondary {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.profile-btn.secondary:hover {
+    background: #f8f9fa;
+    border-color: #ff69b4;
+    color: #ff69b4;
+    transform: translateY(-2px);
+}
+
+/* 用户下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 2rem;
+    width: 280px;
+    background: rgba(40, 44, 52, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-section {
+    padding: 0.5rem 0;
+}
+
+.dropdown-header {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #61dafb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dropdown-subtitle {
+    padding: 0.25rem 1rem;
+    font-size: 0.7rem;
+    color: #abb2bf;
+    font-style: italic;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #abb2bf;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.dropdown-item.active {
+    background: rgba(97, 218, 251, 0.1);
+    color: #61dafb;
+}
+
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.dropdown-item span {
+    flex: 1;
+}
+
+.active-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #61dafb;
+    border-radius: 0 2px 2px 0;
+}
+
+.checkmark {
+    color: #61dafb;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.notification-dot {
+    width: 6px;
+    height: 6px;
+    background: #61dafb;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+.logout-item {
+    color: #ff6b6b !important;
+}
+
+.logout-item:hover {
+    background: rgba(255, 107, 107, 0.1) !important;
+    color: #ff6b6b !important;
+}
+
+/* 功能卡片区域 */
+.profile-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin: 2rem;
+}
+
+.section-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.section-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(255, 182, 193, 0.2);
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header h3 i {
+    color: #ff69b4;
+}
+
+/* 活动项目 */
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 182, 193, 0.05);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255, 182, 193, 0.1);
+    transform: translateX(5px);
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.activity-info {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* 快捷功能网格 */
+.quick-action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.quick-action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    background: rgba(255, 182, 193, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.quick-action-item:hover {
+    background: rgba(255, 182, 193, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.2);
+}
+
+.quick-action-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.quick-action-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* 隐藏的开发者信息 */
+.hidden-author-info {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.secret-btn {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+    transition: all 0.3s ease;
+}
+
+.secret-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+}
+
+.author-card {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.author-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.author-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.author-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.author-subtitle {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.author-bio {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.author-bio p {
+    margin: 0.5rem 0;
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.author-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.author-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 182, 193, 0.1);
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+}
+
+.author-link:hover {
+    background: linear-gradient(135deg, #ff69b4, #8a2be2);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+}
+
+.author-link i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* 微信二维码模态框 */
+.qr-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.qr-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.qr-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+}
+
+.qr-modal.show .qr-content {
+    transform: scale(1);
+}
+
+.qr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.qr-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.qr-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.qr-close:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.qr-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.qr-body p {
+    color: #666;
+    margin: 0;
+}
+
+.author-card.hidden {
+    display: none;
+}
+
+.author-card.show {
+    display: block;
+    animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 0;
+    }
+    
+    .profile-cover {
+        margin: 0 1rem 80px 1rem;
+        padding: 1rem;
+    }
+    
+    .profile-avatar-container {
+        left: 1rem;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-card {
+        margin: 0 1rem;
+        padding: 1.5rem;
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+    }
+    
+    .profile-sections {
+        margin: 1rem;
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .profile-actions {
+        justify-content: center;
+    }
+    
+    .user-dropdown {
+        right: 1rem;
+        width: calc(100vw - 2rem);
+        max-width: 280px;
+    }
+    
+    .author-card {
+        width: 280px;
+        right: -20px;
+    }
+    
+    .hidden-author-info {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    .secret-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+    
+    .quick-action-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
+<script>
+// 用户下拉菜单控制
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// 点击外部关闭下拉菜单
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('userDropdown');
+    const toggleBtn = document.querySelector('.profile-btn.primary');
+    
+    if (dropdown && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// 主题切换功能
+function switchTheme(theme) {
+    const themes = {
+        'life': '生活模式',
+        'geek': '极客模式', 
+        'rage': '狂暴模式',
+        'emo': 'Emo模式'
+    };
+    
+    // 更新活动状态
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('active');
+        const indicator = item.querySelector('.active-indicator');
+        if (indicator) indicator.remove();
+    });
+    
+    const activeItem = event.target.closest('.dropdown-item');
+    if (activeItem) {
+        activeItem.classList.add('active');
+        if (!activeItem.querySelector('.active-indicator')) {
+            const indicator = document.createElement('div');
+            indicator.className = 'active-indicator';
+            activeItem.appendChild(indicator);
+        }
+    }
+    
+    // 调用主题切换API
+    if (typeof window.switchTheme === 'function') {
+        window.switchTheme(theme);
+    } else {
+
+    }
+}
+
+// 语言切换
+function switchLanguage(lang) {
+    const languages = {
+        'zh': '中文',
+        'en': 'English'
+    };
+    
+    // 更新选中状态
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('active');
+        const checkmark = item.querySelector('.checkmark');
+        if (checkmark) checkmark.remove();
+    });
+    
+    const activeItem = event.target.closest('.dropdown-item');
+    if (activeItem) {
+        activeItem.classList.add('active');
+        if (!activeItem.querySelector('.checkmark')) {
+            const checkmark = document.createElement('div');
+            checkmark.className = 'checkmark';
+            checkmark.textContent = '✓';
+            activeItem.appendChild(checkmark);
+        }
+    }
+
+}
+
+// 音乐控制功能
+function toggleMusic() {
+
+    // 这里可以集成实际的音乐播放器
+}
+
+function nextSong() {
+
+    // 这里可以集成实际的音乐播放器
+}
+
+function toggleMusicInfo() {
+
+    // 这里可以集成实际的音乐播放器
+}
+
+// 系统设置功能
+function showSuggestions() {
+
+    // 这里可以跳转到建议页面
+}
+
+function showFeedback() {
+
+    // 这里可以跳转到反馈页面
+}
+
+// 快捷功能
+function editAvatar() {
+
+    // 这里可以实现头像编辑功能
+}
+
+function editProfile() {
+    window.location.href = "{% url 'users:profile_edit' %}";
+}
+
+function showThemeSettings() {
+
+    // 这里可以显示主题设置面板
+}
+
+function showPrivacySettings() {
+
+    // 这里可以显示隐私设置面板
+}
+
+function showNotificationSettings() {
+
+    // 这里可以显示通知设置面板
+}
+
+function showSecuritySettings() {
+
+    // 这里可以显示安全设置面板
+}
+
+function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        window.location.href = "{% url 'users:logout' %}";
+    }
+}
+
+// 微信二维码功能
+function showWeChatQR() {
+    document.getElementById('weChatQRModal').classList.add('show');
+}
+
+function hideWeChatQR() {
+    document.getElementById('weChatQRModal').classList.remove('show');
+}
+
+function toggleAuthorInfo() {
+    const authorCard = document.getElementById('authorCard');
+    if (authorCard) {
+        authorCard.classList.toggle('show');
+        authorCard.classList.toggle('hidden');
+    }
+}
+
+// 键盘快捷键支持
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey) {
+        switch(e.key) {
+            case '1':
+                e.preventDefault();
+                switchTheme('life');
+                break;
+            case '2':
+                e.preventDefault();
+                switchTheme('geek');
+                break;
+            case '3':
+                e.preventDefault();
+                switchTheme('rage');
+                break;
+            case '4':
+                e.preventDefault();
+                switchTheme('emo');
+                break;
+        }
+    }
+});
+
+// 页面加载完成后的初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 微信二维码模态框外部点击关闭
+    const modal = document.getElementById('weChatQRModal');
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            hideWeChatQR();
+        }
+    });
+    
+    // 点击作者卡片外部关闭
+    document.addEventListener('click', function(e) {
+        const authorCard = document.getElementById('authorCard');
+        const secretBtn = document.querySelector('.secret-btn');
+        
+        if (authorCard && !authorCard.contains(e.target) && !secretBtn.contains(e.target)) {
+            authorCard.classList.remove('show');
+            authorCard.classList.add('hidden');
+        }
+    });
+    
+    // 头像点击事件
+    const avatar = document.querySelector('.profile-avatar');
+    if (avatar) {
+        avatar.addEventListener('click', function() {
+            editAvatar();
+        });
+    }
+
+});
+</script>
+{% endblock %}
