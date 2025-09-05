@@ -1,0 +1,1175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block tool_title_inner %}灵境塔罗{% endblock %}
+{% block tool_title_display %}灵境塔罗{% endblock %}
+
+{% block extra_css %}
+<style>
+.tarot-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #7f8c8d 50%, #95a5a6 75%, #bdc3c7 100%);
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.tarot-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(44, 62, 80, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(52, 73, 94, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(127, 140, 141, 0.2) 0%, transparent 50%);
+  z-index: -1;
+}
+
+.tarot-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.tarot-title {
+  font-size: 3rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #e74c3c, #f39c12, #f1c40f, #2ecc71, #3498db, #9b59b6);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.tarot-subtitle {
+  font-size: 1.2rem;
+  color: #bdc3c7;
+  margin-top: 1rem;
+}
+
+.tarot-section {
+  background: rgba(44, 62, 80, 0.8);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tarot-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #f39c12;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
+  border-radius: 1px;
+}
+
+/* 每日能量区域 */
+.daily-energy-section {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(243, 156, 18, 0.1));
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.daily-energy-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.energy-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.energy-level {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+}
+
+.energy-type {
+  font-size: 1.1rem;
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.lucky-info {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.lucky-item {
+  text-align: center;
+}
+
+.lucky-label {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  margin-bottom: 0.3rem;
+}
+
+.lucky-value {
+  font-size: 1.1rem;
+  color: #f39c12;
+  font-weight: bold;
+}
+
+/* 牌阵选择区域 */
+.spread-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.spread-card {
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.spread-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(243, 156, 18, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.spread-card:hover::before {
+  left: 100%;
+}
+
+.spread-card:hover {
+  transform: translateY(-5px);
+  border-color: #f39c12;
+  box-shadow: 0 10px 25px rgba(243, 156, 18, 0.3);
+}
+
+.spread-card.selected {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.2);
+  transform: scale(1.02);
+}
+
+.spread-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+}
+
+.spread-type {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  margin-bottom: 1rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(52, 73, 94, 0.8);
+  border-radius: 15px;
+  display: inline-block;
+}
+
+.spread-description {
+  color: #bdc3c7;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.spread-cards {
+  font-size: 0.9rem;
+  color: #e74c3c;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+/* 问题输入区域 */
+.question-form {
+  margin-top: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(52, 73, 94, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline: none;
+  border-color: #f39c12;
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+  transform: translateY(-1px);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.mood-selector {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.mood-option {
+  padding: 0.5rem 1rem;
+  background: rgba(52, 73, 94, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.mood-option:hover {
+  background: rgba(243, 156, 18, 0.3);
+  border-color: #f39c12;
+  transform: translateY(-2px);
+}
+
+.mood-option.selected {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: #e74c3c;
+  color: #e74c3c;
+  transform: scale(1.05);
+}
+
+/* 按钮样式 */
+.btn-tarot {
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-tarot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-tarot:hover::before {
+  left: 100%;
+}
+
+.btn-tarot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+}
+
+.btn-tarot:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #f39c12;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #bdc3c7;
+  font-size: 1.1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* 占卜结果区域 */
+.reading-result {
+  margin-top: 2rem;
+  display: none;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cards-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card-item {
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
+}
+
+.card-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+}
+
+.card-position {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  margin-bottom: 1rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(52, 73, 94, 0.8);
+  border-radius: 15px;
+  display: inline-block;
+}
+
+.card-meaning {
+  color: #bdc3c7;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.card-reversed {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(231, 76, 60, 0.2);
+  border-radius: 15px;
+  display: inline-block;
+}
+
+.card-keywords {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.keyword-tag {
+  padding: 0.2rem 0.6rem;
+  background: rgba(52, 144, 220, 0.3);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #3498db;
+}
+
+/* 解读区域 */
+.interpretation-section {
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  padding: 2rem;
+  margin-top: 2rem;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.interpretation-text {
+  color: #bdc3c7;
+  line-height: 1.8;
+  font-size: 1rem;
+  white-space: pre-line;
+}
+
+/* 反馈区域 */
+.feedback-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feedback-title {
+  font-size: 1.3rem;
+  color: #f39c12;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.star {
+  font-size: 2rem;
+  cursor: pointer;
+  color: #95a5a6;
+  transition: all 0.3s ease;
+}
+
+.star:hover,
+.star.active {
+  color: #f39c12;
+  transform: scale(1.1);
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 1rem;
+  background: rgba(44, 62, 80, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: #f39c12;
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}
+
+/* 历史记录区域 */
+.history-section {
+  margin-top: 3rem;
+}
+
+.history-item {
+  background: rgba(52, 73, 94, 0.9);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-item:hover {
+  background: rgba(52, 73, 94, 1);
+  transform: translateX(5px);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
+.history-title {
+  font-size: 1.1rem;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+}
+
+.history-meta {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  margin-bottom: 0.5rem;
+}
+
+.history-question {
+  color: #bdc3c7;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .tarot-container {
+    padding: 1rem;
+  }
+  
+  .tarot-title {
+    font-size: 2rem;
+  }
+  
+  .spread-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cards-display {
+    grid-template-columns: 1fr;
+  }
+  
+  .daily-energy-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .mood-selector {
+    justify-content: center;
+  }
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 错误提示 */
+.error-message {
+  background: rgba(231, 76, 60, 0.2);
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.success-message {
+  background: rgba(46, 204, 113, 0.2);
+  border: 1px solid #2ecc71;
+  color: #2ecc71;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tarot-container">
+  <div class="tarot-header">
+    <h1 class="tarot-title">灵境塔罗</h1>
+    <p class="tarot-subtitle">探索命运的奥秘，寻找内心的答案</p>
+  </div>
+
+  <!-- 每日能量 -->
+  <div class="tarot-section daily-energy-section" id="dailyEnergySection" style="display: none;">
+    <h2 class="section-title">今日能量</h2>
+    <div class="daily-energy-content" id="dailyEnergyContent">
+      <!-- 每日能量内容将通过JavaScript动态加载 -->
+    </div>
+  </div>
+
+  <!-- 牌阵选择 -->
+  <div class="tarot-section">
+    <h2 class="section-title">选择牌阵</h2>
+    <div class="spread-grid" id="spreadGrid">
+      <!-- 牌阵将通过JavaScript动态加载 -->
+    </div>
+  </div>
+
+  <!-- 问题输入 -->
+  <div class="tarot-section" id="questionSection" style="display: none;">
+    <h2 class="section-title">提出你的问题</h2>
+    <form class="question-form" id="questionForm">
+      <div class="form-group">
+        <label class="form-label">占卜类型</label>
+        <select class="form-select" id="readingType">
+          <option value="custom">自定义占卜</option>
+          <option value="love">爱情占卜</option>
+          <option value="career">事业占卜</option>
+          <option value="health">健康占卜</option>
+          <option value="spiritual">灵性占卜</option>
+          <option value="daily">每日运势</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">你的问题</label>
+        <textarea class="form-textarea" id="question" placeholder="请详细描述你想要占卜的问题..." required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">当前心情</label>
+        <div class="mood-selector">
+          <div class="mood-option" data-mood="平静">平静</div>
+          <div class="mood-option" data-mood="焦虑">焦虑</div>
+          <div class="mood-option" data-mood="兴奋">兴奋</div>
+          <div class="mood-option" data-mood="困惑">困惑</div>
+          <div class="mood-option" data-mood="期待">期待</div>
+          <div class="mood-option" data-mood="担忧">担忧</div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn-tarot" id="startReading">开始占卜</button>
+    </form>
+  </div>
+
+  <!-- 加载状态 -->
+  <div class="loading" id="loadingSection" style="display: none;">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">正在为您抽取塔罗牌...</p>
+  </div>
+
+  <!-- 占卜结果 -->
+  <div class="reading-result" id="readingResult">
+    <div class="tarot-section">
+      <h2 class="section-title">抽到的牌</h2>
+      <div class="cards-display" id="cardsDisplay">
+        <!-- 牌面将通过JavaScript动态显示 -->
+      </div>
+    </div>
+    
+    <div class="interpretation-section">
+      <h2 class="section-title">AI解读</h2>
+      <div class="interpretation-text" id="interpretationText">
+        <!-- 解读内容将通过JavaScript动态显示 -->
+      </div>
+    </div>
+
+    <!-- 反馈区域 -->
+    <div class="feedback-section" id="feedbackSection" style="display: none;">
+      <h3 class="feedback-title">您的反馈</h3>
+      <div class="rating-stars" id="ratingStars">
+        <span class="star" data-rating="1">★</span>
+        <span class="star" data-rating="2">★</span>
+        <span class="star" data-rating="3">★</span>
+        <span class="star" data-rating="4">★</span>
+        <span class="star" data-rating="5">★</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">占卜后心情</label>
+        <div class="mood-selector" id="moodAfterSelector">
+          <div class="mood-option" data-mood="满意">满意</div>
+          <div class="mood-option" data-mood="困惑">困惑</div>
+          <div class="mood-option" data-mood="安心">安心</div>
+          <div class="mood-option" data-mood="担忧">担忧</div>
+          <div class="mood-option" data-mood="启发">启发</div>
+          <div class="mood-option" data-mood="期待">期待</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">您的感受和建议</label>
+        <textarea class="feedback-textarea" id="feedbackText" placeholder="请分享您对这次占卜的感受和建议..."></textarea>
+      </div>
+      <button type="button" class="btn-tarot" id="submitFeedback">提交反馈</button>
+    </div>
+  </div>
+
+  <!-- 历史记录 -->
+  <div class="history-section" id="historySection" style="display: none;">
+    <div class="tarot-section">
+      <h2 class="section-title">历史占卜</h2>
+      <div id="historyList">
+        <!-- 历史记录将通过JavaScript动态加载 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedSpread = null;
+let selectedMood = null;
+let selectedMoodAfter = null;
+let selectedRating = 0;
+let currentReadingId = null;
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+  initializeTarotData();
+  loadDailyEnergy();
+  loadSpreads();
+  loadHistory();
+  setupEventListeners();
+});
+
+// 初始化塔罗牌数据
+async function initializeTarotData() {
+  try {
+    const response = await fetch('/tools/api/tarot/initialize-data/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+
+    }
+  } catch (error) {
+    console.error('初始化塔罗牌数据失败:', error);
+  }
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+  // 心情选择
+  document.querySelectorAll('.mood-option').forEach(option => {
+    option.addEventListener('click', function() {
+      const parent = this.closest('.mood-selector');
+      parent.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+      this.classList.add('selected');
+      
+      if (parent.id === 'moodAfterSelector') {
+        selectedMoodAfter = this.dataset.mood;
+      } else {
+        selectedMood = this.dataset.mood;
+      }
+    });
+  });
+  
+  // 评分星级
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function() {
+      const rating = parseInt(this.dataset.rating);
+      selectedRating = rating;
+      
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+      for (let i = 1; i <= rating; i++) {
+        document.querySelector(`[data-rating="${i}"]`).classList.add('active');
+      }
+    });
+  });
+  
+  // 表单提交
+  document.getElementById('questionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    startReading();
+  });
+  
+  // 反馈提交
+  document.getElementById('submitFeedback').addEventListener('click', function() {
+    submitFeedback();
+  });
+}
+
+// 加载每日能量
+async function loadDailyEnergy() {
+  try {
+    const response = await fetch('/tools/api/tarot/daily-energy/');
+    const data = await response.json();
+    
+    if (data.success) {
+      const dailyEnergy = data.daily_energy;
+      const content = document.getElementById('dailyEnergyContent');
+      
+      content.innerHTML = `
+        <div class="energy-card">
+          <div class="energy-level">${dailyEnergy.energy_level}/10</div>
+          <div class="energy-type">${dailyEnergy.energy_type}</div>
+          <p>${dailyEnergy.description}</p>
+        </div>
+        <div class="energy-card">
+          <h4>推荐牌</h4>
+          <p>${dailyEnergy.recommended_cards.join(', ') || '今日无特殊推荐'}</p>
+          <div class="lucky-info">
+            <div class="lucky-item">
+              <div class="lucky-label">幸运色</div>
+              <div class="lucky-value">${dailyEnergy.lucky_color || '未知'}</div>
+            </div>
+            <div class="lucky-item">
+              <div class="lucky-label">幸运数字</div>
+              <div class="lucky-value">${dailyEnergy.lucky_number || '未知'}</div>
+            </div>
+          </div>
+        </div>
+        <div class="energy-card">
+          <h4>今日建议</h4>
+          <p>${dailyEnergy.special_reading}</p>
+        </div>
+      `;
+      
+      document.getElementById('dailyEnergySection').style.display = 'block';
+    }
+  } catch (error) {
+    console.error('加载每日能量失败:', error);
+  }
+}
+
+// 加载牌阵
+async function loadSpreads() {
+  try {
+    const response = await fetch('/tools/api/tarot/spreads/');
+    const data = await response.json();
+    
+    if (data.success) {
+      const spreadGrid = document.getElementById('spreadGrid');
+      spreadGrid.innerHTML = '';
+      
+      data.spreads.forEach(spread => {
+        const spreadCard = document.createElement('div');
+        spreadCard.className = 'spread-card';
+        spreadCard.dataset.spreadId = spread.id;
+        
+        spreadCard.innerHTML = `
+          <div class="spread-name">${spread.name}</div>
+          <div class="spread-type">${spread.spread_type}</div>
+          <div class="spread-description">${spread.description}</div>
+          <div class="spread-cards">${spread.card_count}张牌</div>
+        `;
+        
+        spreadCard.addEventListener('click', function() {
+          selectSpread(spread);
+        });
+        
+        spreadGrid.appendChild(spreadCard);
+      });
+    }
+  } catch (error) {
+    console.error('加载牌阵失败:', error);
+  }
+}
+
+// 选择牌阵
+function selectSpread(spread) {
+  selectedSpread = spread;
+  
+  // 更新UI
+  document.querySelectorAll('.spread-card').forEach(card => {
+    card.classList.remove('selected');
+  });
+  document.querySelector(`[data-spread-id="${spread.id}"]`).classList.add('selected');
+  
+  // 显示问题输入区域
+  document.getElementById('questionSection').style.display = 'block';
+  document.getElementById('questionSection').classList.add('fade-in');
+}
+
+// 开始占卜
+async function startReading() {
+  if (!selectedSpread) {
+    showMessage('请先选择牌阵', 'error');
+    return;
+  }
+  
+  const question = document.getElementById('question').value.trim();
+  if (!question) {
+    showMessage('请输入你的问题', 'error');
+    return;
+  }
+  
+  const readingType = document.getElementById('readingType').value;
+  
+  // 显示加载状态
+  document.getElementById('loadingSection').style.display = 'block';
+  document.getElementById('questionSection').style.display = 'none';
+  document.getElementById('readingResult').style.display = 'none';
+  
+  try {
+    const response = await fetch('/tools/api/tarot/create-reading/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        spread_id: selectedSpread.id,
+        reading_type: readingType,
+        question: question,
+        mood_before: selectedMood
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      currentReadingId = data.reading.id;
+      displayReadingResult(data.reading);
+    } else {
+      showMessage('占卜失败: ' + data.message, 'error');
+    }
+  } catch (error) {
+    console.error('占卜失败:', error);
+    showMessage('占卜失败，请重试', 'error');
+  } finally {
+    document.getElementById('loadingSection').style.display = 'none';
+  }
+}
+
+// 显示占卜结果
+function displayReadingResult(reading) {
+  const cardsDisplay = document.getElementById('cardsDisplay');
+  const interpretationText = document.getElementById('interpretationText');
+  
+  // 显示牌面
+  cardsDisplay.innerHTML = '';
+  reading.drawn_cards.forEach((cardData, index) => {
+    const cardItem = document.createElement('div');
+    cardItem.className = 'card-item';
+    cardItem.style.animationDelay = `${index * 0.2}s`;
+    cardItem.classList.add('slide-in');
+    
+    const keywords = cardData.keywords || [];
+    const keywordTags = keywords.map(keyword => 
+      `<span class="keyword-tag">${keyword}</span>`
+    ).join('');
+    
+    cardItem.innerHTML = `
+      <div class="card-name">${cardData.card.name}</div>
+      <div class="card-position">${cardData.position}</div>
+      <div class="card-meaning">${cardData.meaning}</div>
+      ${cardData.is_reversed ? '<div class="card-reversed">逆位</div>' : ''}
+      <div class="card-keywords">${keywordTags}</div>
+    `;
+    
+    cardsDisplay.appendChild(cardItem);
+  });
+  
+  // 显示解读
+  interpretationText.textContent = reading.ai_interpretation;
+  
+  // 显示结果区域
+  document.getElementById('readingResult').style.display = 'block';
+  document.getElementById('readingResult').classList.add('fade-in');
+  
+  // 显示反馈区域
+  document.getElementById('feedbackSection').style.display = 'block';
+  
+  // 重新加载历史记录
+  loadHistory();
+  
+  // 滚动到结果区域
+  document.getElementById('readingResult').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 提交反馈
+async function submitFeedback() {
+  if (!currentReadingId) {
+    showMessage('无法提交反馈，请重新进行占卜', 'error');
+    return;
+  }
+  
+  const feedback = document.getElementById('feedbackText').value.trim();
+  
+  try {
+    const response = await fetch(`/tools/api/tarot/reading/${currentReadingId}/feedback/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        feedback: feedback,
+        rating: selectedRating,
+        mood_after: selectedMoodAfter
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showMessage('反馈提交成功，感谢您的参与！', 'success');
+      document.getElementById('feedbackSection').style.display = 'none';
+    } else {
+      showMessage('反馈提交失败: ' + data.message, 'error');
+    }
+  } catch (error) {
+    console.error('提交反馈失败:', error);
+    showMessage('反馈提交失败，请重试', 'error');
+  }
+}
+
+// 加载历史记录
+async function loadHistory() {
+  try {
+    const response = await fetch('/tools/api/tarot/readings/');
+    const data = await response.json();
+    
+    if (data.success && data.readings.length > 0) {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+      
+      data.readings.forEach(reading => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        historyItem.innerHTML = `
+          <div class="history-title">${reading.spread_name} - ${reading.reading_type}</div>
+          <div class="history-meta">${reading.created_at} | ${reading.drawn_cards_count}张牌</div>
+          <div class="history-question">${reading.question}</div>
+        `;
+        
+        historyItem.addEventListener('click', function() {
+          loadReadingDetail(reading.id);
+        });
+        
+        historyList.appendChild(historyItem);
+      });
+      
+      document.getElementById('historySection').style.display = 'block';
+    }
+  } catch (error) {
+    console.error('加载历史记录失败:', error);
+  }
+}
+
+// 加载占卜详情
+async function loadReadingDetail(readingId) {
+  try {
+    const response = await fetch(`/tools/api/tarot/reading/${readingId}/`);
+    const data = await response.json();
+    
+    if (data.success) {
+      currentReadingId = readingId;
+      displayReadingResult(data.reading);
+      
+      // 滚动到结果区域
+      document.getElementById('readingResult').scrollIntoView({ behavior: 'smooth' });
+    }
+  } catch (error) {
+    console.error('加载占卜详情失败:', error);
+    showMessage('加载占卜详情失败', 'error');
+  }
+}
+
+// 显示消息
+function showMessage(message, type) {
+  // 移除现有消息
+  const existingMessage = document.querySelector('.error-message, .success-message');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+  
+  // 创建新消息
+  const messageDiv = document.createElement('div');
+  messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+  messageDiv.textContent = message;
+  
+  // 插入到页面顶部
+  const container = document.querySelector('.tarot-container');
+  container.insertBefore(messageDiv, container.firstChild);
+  
+  // 3秒后自动移除
+  setTimeout(() => {
+    if (messageDiv.parentNode) {
+      messageDiv.remove();
+    }
+  }, 3000);
+}
+
+// 获取CSRF Token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %} 

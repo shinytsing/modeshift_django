@@ -1,0 +1,844 @@
+/* 极客模式 - 科技未来风格 */
+
+:root {
+  /* 极客模式色彩系统 */
+  --geek-bg: #0a0e17;
+  --geek-card-bg: #1a1f2e;
+  --geek-primary: #00ffe7;
+  --geek-accent: #00bfff;
+  --geek-secondary: #ff6b9d;
+  --geek-text: #e6e6e6;
+  --geek-text-muted: #8a9ba8;
+  --geek-border: rgba(0, 255, 231, 0.1);
+  --geek-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  --geek-shadow-hover: 0 8px 32px rgba(0,255,231,0.2);
+  --geek-radius: 16px;
+  --geek-radius-lg: 24px;
+  --geek-font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --geek-font-sans: 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --geek-gradient: linear-gradient(135deg, #00ffe7 0%, #00bfff 50%, #ff6b9d 100%);
+  --geek-gradient-card: linear-gradient(135deg, rgba(26,31,46,0.9) 0%, rgba(0,255,231,0.1) 100%);
+  
+  /* 赛博哥特故障艺术变量 */
+  --cyber-glitch-offset: 2px;
+  --cyber-glitch-blur: 0.5px;
+  --cyber-glitch-duration: 0.3s;
+  --cyber-bg: #0a0a0a;
+  --cyber-primary: #ff0040;
+  --cyber-accent: #00ffff;
+  --cyber-secondary: #ffff00;
+  --cyber-text: #ffffff;
+  --cyber-text-muted: #888888;
+  --cyber-border: rgba(255, 0, 64, 0.3);
+  --cyber-shadow: 0 8px 32px rgba(255, 0, 64, 0.3);
+  --cyber-gradient: linear-gradient(135deg, #ff0040 0%, #00ffff 50%, #ffff00 100%);
+}
+
+body.geek-theme {
+  background: var(--geek-bg);
+  color: var(--geek-text);
+  font-family: var(--geek-font-sans);
+  transition: all 0.3s ease;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* 极客模式背景动画 */
+body.geek-theme::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 231, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 107, 157, 0.05) 0%, transparent 50%);
+  z-index: -1;
+  animation: geekMatrix 25s ease-in-out infinite;
+}
+
+@keyframes geekMatrix {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.8;
+  }
+  33% { 
+    transform: translateY(-10px) rotate(0.5deg);
+    opacity: 1;
+  }
+  66% { 
+    transform: translateY(5px) rotate(-0.5deg);
+    opacity: 0.9;
+  }
+}
+
+/* 极客模式卡片样式 */
+.geek-card {
+  background: var(--geek-gradient-card);
+  border: 1px solid var(--geek-border);
+  border-radius: var(--geek-radius);
+  box-shadow: var(--geek-shadow);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  padding: 24px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.geek-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--geek-gradient);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.geek-card:hover::after {
+  transform: scaleX(1);
+}
+
+.geek-card:hover {
+  box-shadow: var(--geek-shadow-hover);
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--geek-primary);
+}
+
+/* 极客模式标题样式 */
+.geek-title {
+  color: var(--geek-primary);
+  font-size: 2.8rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(0, 255, 231, 0.5);
+  animation: geekGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes geekGlow {
+  from { text-shadow: 0 0 20px rgba(0, 255, 231, 0.5); }
+  to { text-shadow: 0 0 30px rgba(0, 255, 231, 0.8), 0 0 40px rgba(0, 255, 231, 0.3); }
+}
+
+.geek-subtitle {
+  color: var(--geek-text-muted);
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 400;
+  font-family: var(--geek-font-mono);
+}
+
+/* 极客模式工具网格 */
+.geek-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 2rem;
+}
+
+.geek-tool-card {
+  background: var(--geek-card-bg);
+  border: 2px solid var(--geek-border);
+  border-radius: var(--geek-radius-lg);
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.geek-tool-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, var(--geek-primary), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: geekRotate 4s linear infinite;
+}
+
+.geek-tool-card:hover::before {
+  opacity: 0.1;
+}
+
+@keyframes geekRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.geek-tool-card:hover {
+  border-color: var(--geek-primary);
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 16px 60px rgba(0, 255, 231, 0.2);
+}
+
+.geek-tool-icon {
+  font-size: 3.5rem;
+  color: var(--geek-primary);
+  margin-bottom: 1rem;
+  animation: geekPulse 2s ease-in-out infinite;
+}
+
+@keyframes geekPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.geek-tool-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--geek-text);
+  margin-bottom: 0.5rem;
+  font-family: var(--geek-font-mono);
+  letter-spacing: 1px;
+}
+
+.geek-tool-description {
+  color: var(--geek-text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+/* 极客模式按钮样式 */
+.geek-btn {
+  background: var(--geek-gradient);
+  color: var(--geek-bg);
+  border: none;
+  border-radius: var(--geek-radius);
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--geek-font-mono);
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 255, 231, 0.2);
+}
+
+.geek-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.geek-btn:hover::before {
+  left: 100%;
+}
+
+.geek-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 255, 231, 0.4);
+  color: var(--geek-bg);
+  text-decoration: none;
+}
+
+.geek-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.geek-btn-secondary {
+  background: transparent;
+  color: var(--geek-primary);
+  border: 2px solid var(--geek-primary);
+  box-shadow: 0 4px 15px rgba(0, 255, 231, 0.1);
+}
+
+.geek-btn-secondary:hover {
+  background: var(--geek-primary);
+  color: var(--geek-bg);
+  box-shadow: 0 8px 25px rgba(0, 255, 231, 0.3);
+}
+
+/* 极客模式终端样式 */
+.geek-terminal {
+  background: #111417;
+  color: var(--geek-primary);
+  font-family: var(--geek-font-mono);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  font-size: 1.1rem;
+  position: relative;
+  border: 1px solid var(--geek-border);
+}
+
+.geek-terminal::before {
+  content: '$ ';
+  color: var(--geek-accent);
+  font-weight: bold;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.5; }
+}
+
+/* 极客模式导航栏 - 现代化设计 */
+.geek-navbar {
+  background: linear-gradient(135deg, var(--geek-bg) 0%, var(--geek-card-bg) 50%, #16213e 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid var(--geek-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 231, 0.15) !important;
+  width: 100% !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+}
+
+/* 极客模式导航栏悬浮效果 */
+.geek-navbar:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 255, 231, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 极客模式导航栏背景动画 */
+.geek-navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.1), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.geek-navbar:hover::before {
+  left: 100%;
+}
+
+/* 极客模式导航栏容器 */
+.geek-navbar .container-fluid {
+  padding: 0.75rem 2rem !important;
+  max-width: none !important;
+}
+
+.geek-navbar .navbar-brand {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(0, 255, 231, 0.1) !important;
+  border: 1px solid rgba(0, 255, 231, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.geek-navbar .navbar-brand::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.geek-navbar .navbar-brand:hover {
+  background: rgba(0, 255, 231, 0.15) !important;
+  border-color: rgba(0, 255, 231, 0.3) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 231, 0.2) !important;
+}
+
+.geek-navbar .navbar-brand:hover::before {
+  left: 100%;
+}
+
+.geek-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-family: var(--geek-font-mono);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  line-height: 1 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  background: rgba(0, 255, 231, 0.08) !important;
+  border: 1px solid rgba(0, 255, 231, 0.15) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin: 0 0.25rem !important;
+}
+
+.geek-navbar .nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.15), transparent);
+  transition: left 0.4s ease;
+}
+
+.geek-navbar .nav-link:hover::before {
+  left: 100%;
+}
+
+.geek-navbar .nav-link i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  color: #ffffff !important;
+}
+
+.geek-navbar .nav-link span {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.geek-navbar .nav-link:hover {
+  color: var(--geek-primary);
+  text-shadow: 0 0 10px rgba(0, 255, 231, 0.5);
+}
+
+/* 极客模式用户菜单 */
+.geek-user-menu {
+  background: var(--geek-card-bg);
+  border: 1px solid var(--geek-border);
+  border-radius: var(--geek-radius);
+  box-shadow: var(--geek-shadow);
+}
+
+.geek-mode-indicator {
+  background: var(--geek-gradient);
+  color: var(--geek-bg);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 8px;
+  font-family: var(--geek-font-mono);
+  letter-spacing: 1px;
+  animation: geekPulse 2s ease-in-out infinite;
+}
+
+/* 极客模式响应式设计 */
+@media (max-width: 768px) {
+  .geek-tools-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .geek-title {
+    font-size: 2.2rem;
+  }
+  
+  .geek-subtitle {
+    font-size: 1rem;
+  }
+  
+  .geek-tool-icon {
+    font-size: 2.5rem;
+  }
+}
+
+/* 极客模式切换按钮 */
+.geek-mode-btn {
+  background: var(--geek-gradient-card);
+  border: 1px solid var(--geek-border);
+  color: var(--geek-text);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.geek-mode-btn:hover {
+  border-color: var(--geek-primary);
+  box-shadow: var(--geek-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.geek-mode-btn.active {
+  border-color: var(--geek-primary);
+  background: rgba(0, 255, 231, 0.1);
+  box-shadow: var(--geek-shadow-hover);
+}
+
+/* 极客模式文件上传按钮样式 */
+.geek-file-upload {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--geek-radius);
+  background: var(--geek-gradient-card);
+  border: 2px dashed var(--geek-border);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.geek-file-upload:hover {
+  border-color: var(--geek-primary);
+  background: var(--geek-gradient-card);
+  transform: translateY(-2px);
+  box-shadow: var(--geek-shadow-hover);
+}
+
+.geek-file-upload::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--geek-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.geek-file-upload:hover::before {
+  opacity: 0.1;
+}
+
+.geek-file-upload input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.geek-file-upload .upload-icon {
+  font-size: 3rem;
+  color: var(--geek-primary);
+  margin-bottom: 1rem;
+  display: block;
+  animation: geekPulse 2s ease-in-out infinite;
+}
+
+.geek-file-upload .upload-text {
+  color: var(--geek-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.geek-file-upload .upload-hint {
+  color: var(--geek-text-muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  line-height: 1.4;
+}
+
+.geek-file-upload.dragover {
+  border-color: var(--geek-primary);
+  background: rgba(0, 255, 231, 0.1);
+  transform: scale(1.02);
+}
+
+.geek-file-upload.has-file {
+  border-color: var(--geek-accent);
+  background: rgba(0, 191, 255, 0.1);
+}
+
+.geek-file-upload.has-file .upload-icon {
+  color: var(--geek-accent);
+  animation: geekRotate 1s ease-in-out;
+}
+
+/* 极客风格的文件选择按钮 */
+.geek-file-btn {
+  background: var(--geek-gradient);
+  color: var(--geek-bg);
+  border: none;
+  border-radius: var(--geek-radius);
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--geek-font-mono);
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 255, 231, 0.2);
+  margin: 1rem 0;
+}
+
+.geek-file-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.geek-file-btn:hover::before {
+  left: 100%;
+}
+
+.geek-file-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 255, 231, 0.4);
+  color: var(--geek-bg);
+  text-decoration: none;
+}
+
+.geek-file-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.geek-file-btn i {
+  font-size: 1.1rem;
+}
+
+/* 极客风格的文件上传区域 */
+.geek-upload-area {
+  background: var(--geek-gradient-card);
+  border: 2px dashed var(--geek-border);
+  border-radius: var(--geek-radius);
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  margin: 2rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.geek-upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--geek-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.geek-upload-area:hover::before {
+  opacity: 0.05;
+}
+
+.geek-upload-area:hover {
+  border-color: var(--geek-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--geek-shadow-hover);
+}
+
+.geek-upload-area.dragover {
+  border-color: var(--geek-primary);
+  background: rgba(0, 255, 231, 0.1);
+  transform: scale(1.02);
+}
+
+.geek-upload-area .upload-icon {
+  font-size: 4rem;
+  color: var(--geek-primary);
+  margin-bottom: 1.5rem;
+  display: block;
+  animation: geekPulse 2s ease-in-out infinite;
+}
+
+.geek-upload-area .upload-text {
+  color: var(--geek-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.geek-upload-area .upload-hint {
+  color: var(--geek-text-muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  line-height: 1.4;
+}
+
+.geek-upload-area .geek-file-btn {
+  position: relative;
+  z-index: 2;
+}
+
+/* 极客风格的文件列表 */
+.geek-file-list {
+  background: var(--geek-card-bg);
+  border: 1px solid var(--geek-border);
+  border-radius: var(--geek-radius);
+  padding: 1rem;
+  margin: 1rem 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.geek-file-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 255, 231, 0.05);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--geek-border);
+  transition: all 0.3s ease;
+}
+
+.geek-file-item:hover {
+  background: rgba(0, 255, 231, 0.1);
+  border-color: var(--geek-primary);
+}
+
+.geek-file-item:last-child {
+  margin-bottom: 0;
+}
+
+.geek-file-item .file-icon {
+  font-size: 1.5rem;
+  color: var(--geek-primary);
+  min-width: 24px;
+}
+
+.geek-file-item .file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.geek-file-item .file-name {
+  color: var(--geek-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.geek-file-item .file-size {
+  color: var(--geek-text-muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.geek-file-item .file-remove {
+  background: none;
+  border: none;
+  color: var(--geek-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.geek-file-item .file-remove:hover {
+  background: rgba(255, 107, 157, 0.1);
+  color: var(--geek-secondary);
+}
+
+/* 极客风格的文件上传进度 */
+.geek-upload-progress {
+  background: var(--geek-card-bg);
+  border: 1px solid var(--geek-border);
+  border-radius: var(--geek-radius);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.geek-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 255, 231, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.geek-progress-fill {
+  height: 100%;
+  background: var(--geek-gradient);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.geek-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: geekShimmer 2s ease-in-out infinite;
+}
+
+@keyframes geekShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.geek-progress-text {
+  color: var(--geek-text);
+  font-family: var(--geek-font-mono);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* 极客风格文件上传动画 */
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-20px); }
+}

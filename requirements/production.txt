@@ -1,0 +1,16 @@
+# QAToolBox 生产环境依赖
+-r base.txt
+
+# ===== 生产环境特定 =====
+gunicorn>=21.2.0
+gevent>=23.9.0
+sentry-sdk[django]>=1.38.0
+
+# ===== 监控和日志 =====
+structlog>=23.2.0
+
+# ===== 安全 =====
+django-csp>=3.7
+
+# ===== 性能优化 =====
+django-cacheops>=7.0.0
