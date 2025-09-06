@@ -1,3 +1,7 @@
+import os
+
+from django.http import JsonResponse
+
 import requests
 from rest_framework import status
 from rest_framework.response import Response
@@ -12,7 +16,9 @@ class SimpleTestAPI(APIView):
             requirement = request.data.get("requirement", "test")
 
             # 直接调用 DeepSeek API
-            api_key = "sk-c4a84c8bbff341cbb3006ecaf84030fe"
+            api_key = os.getenv("DEEPSEEK_API_KEY")
+            if not api_key:
+                return JsonResponse({"error": "DEEPSEEK_API_KEY not configured"}, status=500)
             url = "https://api.deepseek.com/v1/chat/completions"
 
             headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}

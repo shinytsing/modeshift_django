@@ -22,6 +22,15 @@ try:
 except ImportError:
     FITZ_AVAILABLE = False
     print("警告: PyMuPDF (fitz) 未安装，PDF转换功能将受限")
+
+try:
+    import pdfplumber
+    import pypdf
+
+    PYPDF_AVAILABLE = True
+except ImportError:
+    PYPDF_AVAILABLE = False
+    print("警告: pypdf/pdfplumber 未安装，PDF转换功能将受限")
 import base64
 import io
 import uuid
@@ -1141,8 +1150,13 @@ class PDFConverter:
     def pdf_to_text(self, pdf_file):
         """PDF转文本"""
         try:
-            if not FITZ_AVAILABLE:
-                return False, "PyMuPDF (fitz) 库未安装，无法进行PDF转文本转换", None
+            # 优先使用PyMuPDF，如果不可用则使用pypdf
+            if FITZ_AVAILABLE:
+                return self._pdf_to_text_fitz(pdf_file)
+            elif PYPDF_AVAILABLE:
+                return self._pdf_to_text_pypdf(pdf_file)
+            else:
+                return False, "PDF处理库未安装，无法进行PDF转文本转换", None
 
             # 创建临时文件
             import os
@@ -1228,6 +1242,101 @@ class PDFConverter:
         except Exception as e:
             logger.error(f"TXT文件转PDF失败: {str(e)}")
             return False, f"转换失败: {str(e)}", None
+
+    def _pdf_to_text_fitz(self, pdf_file):
+        """使用PyMuPDF进行PDF转文本"""
+        # 创建临时文件
+        import os
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+            # 写入PDF内容
+            for chunk in pdf_file.chunks():
+                temp_pdf.write(chunk)
+            temp_pdf_path = temp_pdf.name
+
+        try:
+            # 打开PDF文件
+            doc = fitz.open(temp_pdf_path)
+
+            # 检查PDF是否为空或损坏
+            if len(doc) == 0:
+                doc.close()
+                return False, "PDF文件为空或损坏", None
+
+            text_content = ""
+            total_pages = len(doc)
+
+            # 逐页提取文本
+            for page_num in range(total_pages):
+                try:
+                    page = doc.load_page(page_num)
+                    page_text = page.get_text()
+                    text_content += page_text
+                    if page_num < total_pages - 1:
+                        text_content += "\n\n"  # 页面间添加空行
+                except Exception as page_error:
+                    logger.warning(f"提取第{page_num + 1}页文本时出错: {str(page_error)}")
+                    text_content += f"\n[第{page_num + 1}页文本提取失败]\n"
+
+            doc.close()
+
+            # 检查提取的文本内容
+            if not text_content.strip():
+                return False, "PDF文件不包含可提取的文本内容（可能是扫描版PDF，建议使用OCR工具）", None
+
+            # 如果文本内容很少，可能是扫描版PDF
+            if len(text_content.strip()) < 10:
+                return False, "提取的文本内容过少，可能是扫描版PDF，建议使用OCR工具", None
+
+            return True, text_content, "pdf_to_text"
+
+        finally:
+            # 清理临时文件
+            if os.path.exists(temp_pdf_path):
+                os.unlink(temp_pdf_path)
+
+    def _pdf_to_text_pypdf(self, pdf_file):
+        """使用pypdf进行PDF转文本"""
+        try:
+            # 重置文件指针
+            pdf_file.seek(0)
+
+            # 使用pypdf读取PDF
+            pdf_reader = pypdf.PdfReader(pdf_file)
+
+            # 检查PDF是否为空或损坏
+            if len(pdf_reader.pages) == 0:
+                return False, "PDF文件为空或损坏", None
+
+            text_content = ""
+            total_pages = len(pdf_reader.pages)
+
+            # 逐页提取文本
+            for page_num in range(total_pages):
+                try:
+                    page = pdf_reader.pages[page_num]
+                    page_text = page.extract_text()
+                    text_content += page_text
+                    if page_num < total_pages - 1:
+                        text_content += "\n\n"  # 页面间添加空行
+                except Exception as page_error:
+                    logger.warning(f"提取第{page_num + 1}页文本时出错: {str(page_error)}")
+                    text_content += f"\n[第{page_num + 1}页文本提取失败]\n"
+
+            # 检查提取的文本内容
+            if not text_content.strip():
+                return False, "PDF文件不包含可提取的文本内容（可能是扫描版PDF，建议使用OCR工具）", None
+
+            # 如果文本内容很少，可能是扫描版PDF
+            if len(text_content.strip()) < 10:
+                return False, "提取的文本内容过少，可能是扫描版PDF，建议使用OCR工具", None
+
+            return True, text_content, "pdf_to_text"
+
+        except Exception as e:
+            logger.error(f"pypdf PDF转文本失败: {str(e)}")
+            return False, f"pypdf PDF转文本失败: {str(e)}", None
 
 
 @csrf_exempt
