@@ -19,6 +19,7 @@ class EnhancedMapService:
     def __init__(self):
         # 高德地图API配置
         import os
+
         self.amap_key = os.getenv("AMAP_API_KEY")
         if not self.amap_key:
             logger.warning("AMAP_API_KEY环境变量未设置，地图功能将不可用")
@@ -73,7 +74,7 @@ class EnhancedMapService:
         if not self.amap_key:
             logger.error("AMAP_API_KEY环境变量未设置，无法搜索地址")
             return []
-            
+
         url = f"{self.amap_base_url}/place/text"
         params = {"key": self.amap_key, "keywords": query, "offset": limit, "page": 1, "extensions": "all", "output": "json"}
 

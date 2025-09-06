@@ -1,0 +1,597 @@
+./QAToolBox/celery.py:3:1: E265 block comment should start with '# '
+./QAToolBox/celery.py:148:5: F841 local variable 'e' is assigned to but never used
+./QAToolBox/celery.py:243:1: E402 module level import not at top of file
+./apps/content/urls.py:5:1: E402 module level import not at top of file
+./apps/content/urls.py:29:1: E402 module level import not at top of file
+./apps/content/utils.py:11:1: C901 'extract_favicon_url' is too complex (14)
+./apps/content/utils.py:65:1: C901 'download_and_save_icon' is too complex (12)
+./apps/content/views.py:250:1: C901 'suggestions_api' is too complex (13)
+./apps/content/views.py:333:1: C901 'feedback_api' is too complex (13)
+./apps/content/views.py:581:1: C901 'admin_batch_process_suggestions' is too complex (12)
+./apps/content/views.py:688:1: C901 'announcement_admin_api' is too complex (16)
+./apps/content/views_admin_features.py:109:1: C901 'admin_batch_update_features_api' is too complex (13)
+./apps/content/views_admin_features.py:153:1: C901 'admin_update_feature_api' is too complex (14)
+./apps/share/models.py:36:5: F811 redefinition of unused 'Meta' from line 9
+./apps/share/models.py:61:5: F811 redefinition of unused 'Meta' from line 49
+./apps/share/models.py:82:5: F811 redefinition of unused 'Meta' from line 74
+./apps/share/utils.py:159:24: E226 missing whitespace around arithmetic operator
+./apps/share/utils.py:161:24: E226 missing whitespace around arithmetic operator
+./apps/tools/async_task_manager.py:223:5: C901 'AsyncTaskManager._execute_task' is too complex (12)
+./apps/tools/consumers.py:69:5: C901 'ChatConsumer.connect' is too complex (11)
+./apps/tools/consumers.py:212:5: C901 'ChatConsumer.receive' is too complex (12)
+./apps/tools/consumers.py:625:5: C901 'ChatConsumer.record_disconnect_time' is too complex (11)
+./apps/tools/fitness_tools_views.py:580:1: C901 'calculate_body_composition_api' is too complex (20)
+./apps/tools/generate_redbook_api.py:24:5: C901 'GenerateRedBookAPI.post' is too complex (11)
+./apps/tools/generate_redbook_api.py:172:37: F541 f-string is missing placeholders
+./apps/tools/generate_redbook_api.py:291:5: C901 'GenerateRedBookAPI._parse_redbook_response' is too complex (13)
+./apps/tools/generate_test_cases_api.py:110:5: C901 'GenerateTestCasesAPI.post' is too complex (17)
+./apps/tools/generate_test_cases_api.py:288:5: C901 'GenerateTestCasesAPI._parse_test_cases' is too complex (14)
+./apps/tools/generate_test_cases_api.py:348:5: C901 'GenerateTestCasesAPI._generate_freemind' is too complex (13)
+./apps/tools/guitar_training_views.py:1269:1: E304 blank lines found after function decorator
+./apps/tools/guitar_training_views.py:1272:1: E304 blank lines found after function decorator
+./apps/tools/guitar_training_views.py:1275:1: E304 blank lines found after function decorator
+./apps/tools/guitar_training_views.py:1278:1: E304 blank lines found after function decorator
+./apps/tools/guitar_training_views.py:1279:1: C901 'get_achievements_api' is too complex (17)
+./apps/tools/legacy_views.py:44:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:83:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:84:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:86:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:94:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:127:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:128:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:131:1: E402 module level import not at top of file
+./apps/tools/legacy_views.py:284:1: C901 'heart_link_chat' is too complex (16)
+./apps/tools/legacy_views.py:522:1: C901 'chat_enhanced' is too complex (11)
+./apps/tools/legacy_views.py:736:1: C901 'music_api' is too complex (13)
+./apps/tools/legacy_views.py:1165:1: C901 'life_diary_api' is too complex (21)
+./apps/tools/legacy_views.py:1216:1: C901 'save_life_diary' is too complex (12)
+./apps/tools/legacy_views.py:1385:1: C901 'save_life_goal' is too complex (29)
+./apps/tools/legacy_views.py:1784:1: C901 'search_diaries' is too complex (15)
+./apps/tools/legacy_views.py:1851:1: C901 'get_mood_analysis' is too complex (19)
+./apps/tools/legacy_views.py:2249:1: C901 'disconnect_inactive_users' is too complex (13)
+./apps/tools/legacy_views.py:2303:1: C901 'create_heart_link_request_api' is too complex (11)
+./apps/tools/legacy_views.py:2476:1: C901 'check_heart_link_status_api' is too complex (15)
+./apps/tools/legacy_views.py:2603:1: C901 'cleanup_heart_link_api' is too complex (13)
+./apps/tools/legacy_views.py:2706:1: C901 'get_chat_messages_api' is too complex (11)
+./apps/tools/legacy_views.py:2804:1: C901 'send_message_api' is too complex (12)
+./apps/tools/legacy_views.py:2927:1: C901 'update_online_status_api' is too complex (13)
+./apps/tools/legacy_views.py:2994:9: F841 local variable 'e' is assigned to but never used
+./apps/tools/legacy_views.py:3170:1: C901 'export_diary_data' is too complex (14)
+./apps/tools/legacy_views.py:3955:9: F841 local variable 'sin_points' is assigned to but never used
+./apps/tools/legacy_views.py:4143:9: F841 local variable 'sin_points' is assigned to but never used
+./apps/tools/legacy_views.py:4196:1: C901 'send_image_api' is too complex (14)
+./apps/tools/legacy_views.py:4343:1: C901 'send_audio_api' is too complex (14)
+./apps/tools/legacy_views.py:4667:60: E226 missing whitespace around arithmetic operator
+./apps/tools/legacy_views.py:5170:1: C901 'travel_guide_api' is too complex (14)
+./apps/tools/legacy_views.py:5513:1: C901 'format_travel_guide_for_export' is too complex (84)
+./apps/tools/legacy_views.py:5944:1: C901 'parse_deepseek_travel_guide' is too complex (23)
+./apps/tools/legacy_views.py:6018:1: C901 'generate_travel_guide_with_deepseek' is too complex (16)
+./apps/tools/legacy_views.py:6361:1: C901 'fitness_profile' is too complex (13)
+./apps/tools/legacy_views.py:6720:1: C901 'like_fitness_post_api' is too complex (12)
+./apps/tools/legacy_views.py:7037:1: C901 'feature_recommendations_api' is too complex (13)
+./apps/tools/legacy_views.py:7051:13: F841 local variable 'force_show' is assigned to but never used
+./apps/tools/legacy_views.py:7349:1: C901 'start_food_randomization_api' is too complex (19)
+./apps/tools/legacy_views.py:7628:1: C901 'rate_food_api' is too complex (14)
+./apps/tools/legacy_views.py:7853:1: C901 'get_checkin_calendar_api' is too complex (12)
+./apps/tools/legacy_views.py:7853:1: F811 redefinition of unused 'get_checkin_calendar_api' from line 7700
+./apps/tools/legacy_views.py:8098:1: C901 'audio_converter_api' is too complex (22)
+./apps/tools/legacy_views.py:8243:1: C901 'convert_audio_file' is too complex (52)
+./apps/tools/legacy_views.py:8350:72: E226 missing whitespace around arithmetic operator
+./apps/tools/legacy_views.py:8494:1: C901 'decrypt_ncm_file' is too complex (52)
+./apps/tools/legacy_views.py:8623:27: F541 f-string is missing placeholders
+./apps/tools/legacy_views.py:8789:1: C901 'decrypt_ncm_file_fallback' is too complex (22)
+./apps/tools/legacy_views.py:9142:1: C901 'convert_ncm_file_native' is too complex (43)
+./apps/tools/legacy_views.py:9192:49: E226 missing whitespace around arithmetic operator
+./apps/tools/legacy_views.py:9405:1: C901 'user_generated_travel_guide_api' is too complex (17)
+./apps/tools/legacy_views.py:9886:1: C901 'shipbao_items_api' is too complex (15)
+./apps/tools/legacy_views.py:10022:1: C901 'shipbao_initiate_transaction_api' is too complex (17)
+./apps/tools/legacy_views.py:10423:9: F841 local variable 'member' is assigned to but never used
+./apps/tools/legacy_views.py:10438:1: C901 'buddy_approve_member_api' is too complex (11)
+./apps/tools/legacy_views.py:10580:1: C901 'decrypt_ncm_file_correct' is too complex (24)
+./apps/tools/management/commands/calibrate_food_images.py:35:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/calibrate_food_images.py:51:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/calibrate_food_images.py:52:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/calibrate_food_images.py:53:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/calibrate_food_images.py:54:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/calibrate_food_images.py:55:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/cleanup_chat_rooms.py:33:5: C901 'Command.handle' is too complex (11)
+./apps/tools/management/commands/create_complete_office_food_library.py:580:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:565:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:571:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:572:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:573:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:574:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/create_deepseek_office_food_library.py:575:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/expand_food_library_200.py:627:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/expand_food_library_200.py:633:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/expand_food_library_200.py:635:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/expand_food_library_200.py:636:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/expand_food_library_200.py:637:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/init_accurate_food_data_v3.py:10:5: C901 'Command.handle' is too complex (12)
+./apps/tools/management/commands/init_features.py:300:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/init_social_subscriptions.py:43:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/init_social_subscriptions.py:45:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/manage_proxy_pool.py:84:52: F541 f-string is missing placeholders
+./apps/tools/management/commands/manage_proxy_pool.py:149:50: F541 f-string is missing placeholders
+./apps/tools/management/commands/manage_proxy_pool.py:151:50: F541 f-string is missing placeholders
+./apps/tools/management/commands/manage_versions.py:14:1: E402 module level import not at top of file
+./apps/tools/management/commands/map_food_images.py:13:5: C901 'Command.handle' is too complex (26)
+./apps/tools/management/commands/map_food_images.py:178:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/map_food_images.py:179:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/map_food_images.py:182:58: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/map_food_images.py:182:70: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/map_food_images.py:186:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/populate_rich_nutrition_data.py:16:5: C901 'Command.handle' is too complex (25)
+./apps/tools/management/commands/quick_expand_200.py:376:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/quick_expand_200.py:379:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/quick_expand_200.py:380:51: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/quick_expand_200.py:380:55: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/run_bilibili_crawler.py:23:5: C901 'Command.handle' is too complex (12)
+./apps/tools/management/commands/run_bilibili_crawler.py:29:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_bilibili_crawler.py:114:31: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:108:90: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:109:93: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:112:90: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:113:87: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:118:32: F541 f-string is missing placeholders
+./apps/tools/management/commands/run_social_crawler.py:120:90: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_food_image_mapping.py:13:5: C901 'Command.handle' is too complex (37)
+./apps/tools/management/commands/smart_food_image_mapping.py:224:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_food_image_mapping.py:225:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_food_image_mapping.py:230:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_food_image_mapping.py:231:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_food_image_mapping.py:232:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_map_food_images.py:13:5: C901 'Command.handle' is too complex (47)
+./apps/tools/management/commands/smart_map_food_images.py:270:46: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_map_food_images.py:271:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_map_food_images.py:274:58: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/smart_map_food_images.py:274:70: E226 missing whitespace around arithmetic operator
+./apps/tools/management/commands/smart_map_food_images.py:279:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/smart_map_food_images.py:289:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/update_food_images_deepseek.py:16:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/update_food_images_deepseek.py:36:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/update_food_images_deepseek.py:52:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/update_food_images_deepseek.py:58:27: F541 f-string is missing placeholders
+./apps/tools/management/commands/update_food_images_deepseek.py:63:46: F541 f-string is missing placeholders
+./apps/tools/models/base_models.py:60:5: F811 redefinition of unused 'Meta' from line 13
+./apps/tools/models/diary_models.py:355:41: E226 missing whitespace around arithmetic operator
+./apps/tools/models/legacy_models.py:3037:5: F811 redefinition of unused 'Meta' from line 2996
+./apps/tools/models/legacy_models.py:3042:5: F811 redefinition of unused '__str__' from line 3002
+./apps/tools/models/legacy_models.py:3085:5: F811 redefinition of unused 'Meta' from line 3037
+./apps/tools/models/legacy_models.py:3090:5: F811 redefinition of unused '__str__' from line 3042
+./apps/tools/models/legacy_models.py:3961:9: F841 local variable 'best_records' is assigned to but never used
+./apps/tools/nutrition_models.py:1:1: W391 blank line at end of file
+./apps/tools/pdf_converter_api.py:27:5: F401 'pdfplumber' imported but unused
+./apps/tools/pdf_converter_api.py:133:5: C901 'PDFConverter.pdf_to_word' is too complex (43)
+./apps/tools/pdf_converter_api.py:329:5: C901 'PDFConverter._ocr_pdf_to_word_from_path' is too complex (30)
+./apps/tools/pdf_converter_api.py:481:5: C901 'PDFConverter.word_to_pdf' is too complex (110)
+./apps/tools/pdf_converter_api.py:1058:5: C901 'PDFConverter.text_to_pdf' is too complex (16)
+./apps/tools/pdf_converter_api.py:1086:17: F811 redefinition of unused 'UnicodeCIDFont' from line 1066
+./apps/tools/pdf_converter_api.py:1150:5: C901 'PDFConverter.pdf_to_text' is too complex (14)
+./apps/tools/pdf_converter_api.py:1344:1: C901 'pdf_converter_api' is too complex (49)
+./apps/tools/pdf_converter_api.py:1543:48: E226 missing whitespace around arithmetic operator
+./apps/tools/proxy_view.py:206:5: C901 'ProxyManager.get_current_ip' is too complex (15)
+./apps/tools/proxy_view.py:548:1: C901 'web_proxy_api' is too complex (61)
+./apps/tools/proxy_view.py:887:57: F541 f-string is missing placeholders
+./apps/tools/services/boss_zhipin_api.py:50:5: C901 'BossZhipinAPI.generate_qr_code' is too complex (16)
+./apps/tools/services/boss_zhipin_api.py:404:5: C901 'BossZhipinAPI.generate_qr_code_with_selenium' is too complex (12)
+./apps/tools/services/boss_zhipin_selenium.py:133:5: C901 'BossZhipinSeleniumService.check_login_status' is too complex (14)
+./apps/tools/services/boss_zhipin_selenium.py:203:5: C901 'BossZhipinSeleniumService.get_user_token' is too complex (14)
+./apps/tools/services/browser_proxy_config.py:385:5: C901 'BrowserProxyConfig.get_proxy_status' is too complex (17)
+./apps/tools/services/clash_auto_setup.py:105:5: C901 'ClashAutoSetup.download_clash_binary' is too complex (15)
+./apps/tools/services/clash_auto_setup.py:122:50: E226 missing whitespace around arithmetic operator
+./apps/tools/services/clash_auto_setup.py:169:66: E226 missing whitespace around arithmetic operator
+./apps/tools/services/clash_auto_setup.py:172:44: E226 missing whitespace around arithmetic operator
+./apps/tools/services/clash_service.py:339:5: C901 'ClashEmbeddedService.download_clash_binary' is too complex (13)
+./apps/tools/services/clash_service.py:354:50: E226 missing whitespace around arithmetic operator
+./apps/tools/services/clash_service.py:648:56: W291 trailing whitespace
+./apps/tools/services/database_cleanup.py:129:13: F841 local variable 'cutoff_date' is assigned to but never used
+./apps/tools/services/deepseek_image_recognition.py:53:5: C901 'DeepSeekImageRecognition.recognize_food_image' is too complex (13)
+./apps/tools/services/douyin_analyzer.py:136:58: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_analyzer.py:137:89: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_analyzer.py:138:67: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_analyzer.py:195:5: C901 'DouyinAnalyzer._call_deepseek_api' is too complex (12)
+./apps/tools/services/douyin_crawler.py:179:5: C901 'DouyinCrawler._extract_user_from_video_url' is too complex (12)
+./apps/tools/services/douyin_crawler.py:249:5: C901 'DouyinCrawler.crawl_user_profile' is too complex (16)
+./apps/tools/services/douyin_crawler.py:380:5: C901 'DouyinCrawler._parse_user_profile_html' is too complex (12)
+./apps/tools/services/douyin_crawler.py:744:39: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_crawler.py:753:95: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_crawler.py:755:82: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_crawler.py:756:82: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_crawler.py:764:5: C901 'DouyinCrawler.analyze_user_content' is too complex (15)
+./apps/tools/services/douyin_crawler.py:859:57: E226 missing whitespace around arithmetic operator
+./apps/tools/services/douyin_crawler.py:878:1: W293 blank line contains whitespace
+./apps/tools/services/douyin_crawler.py:884:1: W293 blank line contains whitespace
+./apps/tools/services/douyin_crawler.py:889:1: W293 blank line contains whitespace
+./apps/tools/services/enhanced_compression_service.py:225:5: C901 'EnhancedCompressionService.compress_files' is too complex (28)
+./apps/tools/services/enhanced_compression_service.py:346:5: C901 'EnhancedCompressionService.get_compression_info' is too complex (24)
+./apps/tools/services/enhanced_http_client.py:178:5: C901 'EnhancedHTTPClient._try_request_with_config' is too complex (12)
+./apps/tools/services/enhanced_http_client.py:225:5: C901 'EnhancedHTTPClient._try_direct_request' is too complex (13)
+./apps/tools/services/enhanced_map_service.py:8:1: F401 'django.conf.settings' imported but unused
+./apps/tools/services/enhanced_travel_service_v2.py:596:5: C901 'MultiAPITravelService.get_travel_guide_with_local_data' is too complex (12)
+./apps/tools/services/enhanced_travel_service_v2.py:667:5: C901 'MultiAPITravelService.get_travel_guide' is too complex (17)
+./apps/tools/services/enhanced_travel_service_v2.py:740:17: F841 local variable 'deepseek_fallback_data' is assigned to but never used
+./apps/tools/services/enhanced_travel_service_v2.py:1305:37: F541 f-string is missing placeholders
+./apps/tools/services/feature_recommendation_engine.py:390:29: F541 f-string is missing placeholders
+./apps/tools/services/feature_recommendation_engine.py:393:22: F541 f-string is missing placeholders
+./apps/tools/services/ip_location_service.py:32:5: C901 'IPLocationService.get_location_by_ip' is too complex (12)
+./apps/tools/services/job_search_service.py:154:5: C901 'JobSearchService.start_auto_job_search' is too complex (12)
+./apps/tools/services/local_food_images.py:22:5: F601 dictionary key '烧鹅' repeated with different values
+./apps/tools/services/local_food_images.py:36:5: F601 dictionary key '烧鹅' repeated with different values
+./apps/tools/services/local_food_images.py:68:5: F601 dictionary key '汉堡包' repeated with different values
+./apps/tools/services/local_food_images.py:86:5: F601 dictionary key '汉堡包' repeated with different values
+./apps/tools/services/monitoring_service.py:373:9: F841 local variable 'pattern' is assigned to but never used
+./apps/tools/services/nutrition_coach_service.py:269:32: F541 f-string is missing placeholders
+./apps/tools/services/overview_data_service.py:228:5: C901 'OverviewDataService._get_timezone_info' is too complex (15)
+./apps/tools/services/overview_data_service.py:283:83: E226 missing whitespace around arithmetic operator
+./apps/tools/services/peace_music_service.py:104:5: C901 'PeaceMusicService._categorize_music_file' is too complex (11)
+./apps/tools/services/performance_monitor.py:232:17: F811 redefinition of unused 'connection' from line 226
+./apps/tools/services/proxy_pool.py:314:5: C901 'ProxyPool._parse_proxy_response' is too complex (15)
+./apps/tools/services/proxy_pool.py:815:1: C901 'If 815' is too complex (22)
+./apps/tools/services/proxy_pool.py:833:15: F541 f-string is missing placeholders
+./apps/tools/services/proxy_pool.py:837:15: F541 f-string is missing placeholders
+./apps/tools/services/proxy_service.py:55:5: C901 'ProxyService.make_request' is too complex (11)
+./apps/tools/services/real_data_travel_service.py:216:5: C901 'RealDataTravelService._call_deepseek_api' is too complex (11)
+./apps/tools/services/real_data_travel_service.py:340:5: C901 'RealDataTravelService._extract_attractions_from_text' is too complex (13)
+./apps/tools/services/real_data_travel_service.py:443:5: C901 'RealDataTravelService._extract_foods_from_text' is too complex (13)
+./apps/tools/services/real_data_travel_service.py:751:5: C901 'RealDataTravelService._clean_json_response' is too complex (17)
+./apps/tools/services/real_data_travel_service.py:1416:21: F541 f-string is missing placeholders
+./apps/tools/services/real_data_travel_service.py:1512:5: C901 'RealDataTravelService._generate_detailed_guide_text' is too complex (30)
+./apps/tools/services/real_image_recognition.py:204:5: C901 'RealFoodImageRecognition.match_food_category' is too complex (13)
+./apps/tools/services/reconnection_manager.py:371:5: C901 'ReconnectionManager.handle_message' is too complex (11)
+./apps/tools/services/tarot_service.py:56:84: E226 missing whitespace around arithmetic operator
+./apps/tools/services/tarot_service.py:247:32: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:86:5: C901 'TravelDataService._数据抓取阶段' is too complex (17)
+./apps/tools/services/travel_data_service.py:101:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:110:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:119:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:128:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:137:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:146:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:155:19: F541 f-string is missing placeholders
+./apps/tools/services/travel_data_service.py:411:5: C901 'TravelDataService._信息结构化' is too complex (22)
+./apps/tools/services/travel_data_service.py:1237:22: E226 missing whitespace around arithmetic operator
+./apps/tools/services/travel_data_service.py:1240:22: E226 missing whitespace around arithmetic operator
+./apps/tools/services/travel_data_service.py:1359:25: E226 missing whitespace around arithmetic operator
+./apps/tools/services/travel_data_service.py:1359:45: E226 missing whitespace around arithmetic operator
+./apps/tools/services/travel_data_service.py:1361:20: E226 missing whitespace around arithmetic operator
+./apps/tools/services/travel_data_service.py:1361:34: E226 missing whitespace around arithmetic operator
+./apps/tools/services/zip_service.py:30:5: C901 'ZipService.create_zip_from_files' is too complex (23)
+./apps/tools/services/zip_service.py:140:5: C901 'ZipService.create_zip_from_directory' is too complex (13)
+./apps/tools/urls.py:288:1: F811 redefinition of unused 'follow_fitness_user_api' from line 196
+./apps/tools/urls.py:288:1: F811 redefinition of unused 'get_fitness_achievements_api' from line 193
+./apps/tools/urls.py:288:1: F811 redefinition of unused 'share_achievement_api' from line 193
+./apps/tools/urls.py:348:1: F811 redefinition of unused 'location_api' from line 205
+./apps/tools/urls.py:389:1: F811 redefinition of unused 'save_user_location_api' from line 348
+./apps/tools/urls.py:432:1: F811 redefinition of unused 'map_picker_api' from line 348
+./apps/tools/utils/__init__.py:75:5: C901 'DeepSeekClient.generate_test_cases' is too complex (20)
+./apps/tools/utils/__init__.py:290:9: F841 local variable 'test_case_count' is assigned to but never used
+./apps/tools/utils/__init__.py:291:9: F841 local variable 'module_count' is assigned to but never used
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.add_social_subscription_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.admin_required' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.audio_converter_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.audio_converter_view' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.chat_debug_view' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.chat_enhanced' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.check_heart_link_status_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.cleanup_expired_heart_link_requests' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.complete_daily_task_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.convert_audio_file' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.copilot_page' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.create_code_workout_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.create_copilot_collaboration_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.create_exhaustion_proof_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.create_fitness_workout_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.create_heart_link_request_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.creative_writer' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.creative_writer_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.decrypt_ncm_file' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.disconnect_inactive_users' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.douyin_analysis_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.douyin_analyzer' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.emo_diary' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.emo_diary_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.export_travel_guide_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.fitness_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.fitness_community' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.fitness_profile' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.fitness_tools' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.food_randomizer' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.format_travel_guide_for_export' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.generate_product_preview_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.generate_travel_guide' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.generate_travel_guide_with_deepseek' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_active_chat_rooms_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_ai_dependency_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_chat_messages_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_douyin_analysis_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_douyin_analysis_list_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_notifications_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_online_users_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_pain_currency_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_subscription_stats_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_subscriptions_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_user_preferred_mode_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.get_workout_dashboard_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.heart_link' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.heart_link_chat' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.is_admin' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.life_diary_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.mark_notification_read_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.meditation_guide' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.pause_food_randomization_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.peace_meditation_view' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.rate_food_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.record_exhaustion_audio_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.record_mode_click_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.send_message_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.start_food_randomization_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.triple_awakening_dashboard' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.update_online_status_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.update_subscription_api' imported but unused
+./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.validate_budget_range' imported but unused
+./apps/tools/views/achievement_views.py:21:1: C901 'achievements_api' is too complex (14)
+./apps/tools/views/achievement_views.py:368:27: F541 f-string is missing placeholders
+./apps/tools/views/base.py:147:1: C901 'validate_request_data' is too complex (16)
+./apps/tools/views/base_views.py:404:1: F811 redefinition of unused 'create_job_search_request_api' from line 158
+./apps/tools/views/base_views.py:460:1: F811 redefinition of unused 'get_job_search_requests_api' from line 209
+./apps/tools/views/basic_tools_views.py:122:1: W293 blank line contains whitespace
+./apps/tools/views/basic_tools_views.py:128:1: W293 blank line contains whitespace
+./apps/tools/views/browser_proxy_views.py:109:1: C901 'test_proxy_connection' is too complex (11)
+./apps/tools/views/chat_views.py:773:1: C901 'heart_link_chat' is too complex (16)
+./apps/tools/views/chat_views.py:1080:1: C901 'download_chat_file' is too complex (11)
+./apps/tools/views/enhanced_fitness_views.py:31:1: C901 'enhanced_fitness_center' is too complex (15)
+./apps/tools/views/enhanced_fitness_views.py:156:1: C901 'exercise_library' is too complex (13)
+./apps/tools/views/enhanced_fitness_views.py:278:1: C901 'plan_library' is too complex (13)
+./apps/tools/views/enhanced_fitness_views.py:358:1: C901 'plan_detail' is too complex (12)
+./apps/tools/views/file_download_views.py:15:1: C901 'generic_file_download' is too complex (12)
+./apps/tools/views/fitness_views.py:165:1: C901 'fitness_profile' is too complex (13)
+./apps/tools/views/fitness_views.py:1174:1: C901 'apply_training_plan_template_api' is too complex (17)
+./apps/tools/views/fitness_views.py:1303:1: C901 'save_training_plan_editor_api' is too complex (12)
+./apps/tools/views/food_image_views.py:20:1: C901 'api_photos' is too complex (17)
+./apps/tools/views/food_image_views.py:80:41: E226 missing whitespace around arithmetic operator
+./apps/tools/views/food_randomizer_views.py:25:1: C901 'food_randomizer_pure_random_api' is too complex (13)
+./apps/tools/views/food_randomizer_views.py:200:1: C901 'food_randomizer_statistics_api' is too complex (11)
+./apps/tools/views/food_randomizer_views.py:353:1: C901 'food_randomizer_rate_api' is too complex (12)
+./apps/tools/views/food_views.py:127:1: C901 'api_save_food_photo_bindings' is too complex (12)
+./apps/tools/views/meetsomeone_views.py:230:1: C901 'create_person_profile_api' is too complex (11)
+./apps/tools/views/meetsomeone_views.py:443:1: C901 'get_timeline_data_api' is too complex (18)
+./apps/tools/views/meetsomeone_views.py:549:1: C901 'get_graph_data_api' is too complex (18)
+./apps/tools/views/multi_chat_views.py:14:1: C901 'multi_chat_room' is too complex (11)
+./apps/tools/views/multi_chat_views.py:100:9: F841 local variable 'chat_room' is assigned to but never used
+./apps/tools/views/pdf_converter_views.py:64:1: C901 'pdf_converter_stats_api' is too complex (13)
+./apps/tools/views/shipbao_views.py:83:1: C901 'shipbao_favorites_api' is too complex (11)
+./apps/tools/views/shipbao_views.py:138:1: C901 'shipbao_items_api' is too complex (32)
+./apps/tools/views/shipbao_views.py:155:9: F841 local variable 'user_city' is assigned to but never used
+./apps/tools/views/shipbao_views.py:328:1: C901 'shipbao_initiate_transaction_api' is too complex (11)
+./apps/tools/views/shipbao_views.py:388:1: C901 'shipbao_contact_seller_api' is too complex (19)
+./apps/tools/views/shipbao_views.py:630:1: C901 'shipbao_want_item_api' is too complex (12)
+./apps/tools/views/tarot_views.py:446:84: E226 missing whitespace around arithmetic operator
+./apps/tools/views/tarot_views.py:626:36: F541 f-string is missing placeholders
+./apps/tools/views/travel_post_views.py:28:1: C901 'travel_post_list_api' is too complex (19)
+./apps/tools/views/travel_post_views.py:51:9: F841 local variable 'max_distance' is assigned to but never used
+./apps/tools/views/travel_post_views.py:183:1: C901 'travel_post_create_api' is too complex (15)
+./apps/tools/views/travel_post_views.py:389:1: C901 'travel_post_comment_api' is too complex (12)
+./apps/tools/views/travel_views.py:64:1: C901 'travel_guide_api' is too complex (14)
+./apps/tools/views/travel_views.py:405:1: C901 'format_travel_guide_for_export' is too complex (84)
+./apps/tools/views/vanity_views.py:135:9: F841 local variable 'sin_points' is assigned to but never used
+./apps/tools/views/vanity_views.py:323:9: F841 local variable 'sin_points' is assigned to but never used
+./apps/tools/views/zip_views.py:39:1: C901 'create_zip_from_uploaded_files_api' is too complex (13)
+./apps/users/security.py:208:5: C901 'SecurityMiddleware._has_malicious_content' is too complex (11)
+./apps/users/views.py:858:1: C901 'upload_avatar' is too complex (20)
+./config/settings/aliyun.py:6:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/aliyun.py:21:17: F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+./config/settings/aliyun.py:45:5: F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+./config/settings/aliyun.py:102:24: F405 'INSTALLED_APPS' may be undefined, or defined from star imports: .base
+./config/settings/aliyun.py:103:5: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:5:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/aliyun_production.py:24:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:25:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:26:21: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:27:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:28:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:39:21: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:133:14: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:134:18: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:136:19: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:137:23: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:138:22: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:141:21: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:142:25: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/aliyun_production.py:158:1: E402 module level import not at top of file
+./config/settings/development.py:5:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/development.py:17:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/development.py:18:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/development.py:19:21: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/development.py:20:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/development.py:21:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/development.py:52:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/development.py:53:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/development.py:54:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/development.py:55:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/development.py:86:9: F401 'debug_toolbar' imported but unused
+./config/settings/development.py:88:35: F405 'INSTALLED_APPS' may be undefined, or defined from star imports: .base
+./config/settings/development.py:89:13: F405 'INSTALLED_APPS' may be undefined, or defined from star imports: .base
+./config/settings/development.py:90:69: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./config/settings/development.py:91:13: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./config/settings/development.py:105:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/docker_build.py:6:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/docker_build.py:15:17: F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+./config/settings/docker_build.py:66:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/docker_minimal.py:6:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/docker_minimal.py:15:17: F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+./config/settings/docker_minimal.py:66:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/docker_production.py:286:7: F541 f-string is missing placeholders
+./config/settings/fixed_prod.py:5:1: F401 'os' imported but unused
+./config/settings/local.py:6:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/local.py:77:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/local.py:78:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/local.py:79:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/local.py:80:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/local.py:87:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/local.py:92:9: F401 'debug_toolbar' imported but unused
+./config/settings/local.py:94:35: F405 'INSTALLED_APPS' may be undefined, or defined from star imports: .base
+./config/settings/local.py:95:13: F405 'INSTALLED_APPS' may be undefined, or defined from star imports: .base
+./config/settings/local.py:96:69: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./config/settings/local.py:97:13: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./config/settings/local.py:126:1: F405 'TEMPLATES' may be undefined, or defined from star imports: .base
+./config/settings/local.py:128:7: F541 f-string is missing placeholders
+./config/settings/monitoring.py:1:1: W391 blank line at end of file
+./config/settings/production.py:5:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/production.py:24:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:25:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:26:21: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:27:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:28:17: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:56:14: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:57:18: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:59:19: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:60:23: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:61:22: F405 'os' may be undefined, or defined from star imports: .base
+./config/settings/production.py:64:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/production.py:65:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/production.py:66:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/production.py:67:1: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/production.py:75:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/production_complete.py:22:9: E731 do not assign a lambda expression, use a def
+./config/settings/production_complete.py:183:5: F401 'redis' imported but unused
+./config/settings/production_complete.py:226:5: F401 'whitenoise' imported but unused
+./config/settings/production_complete.py:330:5: F401 'celery' imported but unused
+./config/settings/production_complete.py:347:5: F401 'apps.users.models.User' imported but unused
+./config/settings/production_complete.py:380:7: F541 f-string is missing placeholders
+./config/settings/production_simple.py:6:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/production_simple.py:25:17: F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+./config/settings/production_simple.py:79:1: F405 'REST_FRAMEWORK' may be undefined, or defined from star imports: .base
+./config/settings/test_minimal.py:6:1: F401 'os' imported but unused
+./config/settings/test_minimal.py:8:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/test_minimal.py:8:1: F401 '.base.*' imported but unused
+./config/settings/testing.py:7:1: F403 'from .base import *' used; unable to detect undefined names
+./config/settings/testing.py:84:11: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/testing.py:96:28: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./local_proxy_server.py:8:1: F401 'time' imported but unused
+./local_proxy_server.py:49:5: C901 'LocalProxyServer.handle_client' is too complex (15)
+./middleware/performance.py:7:1: F401 'django.http.JsonResponse' imported but unused
+./monitor_github_actions.py:7:1: F401 'json' imported but unused
+./monitor_github_actions.py:87:1: C901 'monitor_workflow' is too complex (11)
+./monitor_github_actions.py:105:11: F541 f-string is missing placeholders
+./monitor_github_actions.py:118:15: F541 f-string is missing placeholders
+./monitor_github_actions.py:134:23: F541 f-string is missing placeholders
+./monitor_github_actions.py:144:19: F541 f-string is missing placeholders
+./monitor_github_actions.py:147:19: F541 f-string is missing placeholders
+./monitor_github_actions.py:150:15: F541 f-string is missing placeholders
+./monitoring/health_check.py:9:1: F401 'subprocess' imported but unused
+./monitoring/health_check.py:13:1: F401 'datetime.timedelta' imported but unused
+./monitoring/health_check.py:15:1: F401 'typing.Optional' imported but unused
+./monitoring/health_check.py:25:1: E402 module level import not at top of file
+./monitoring/health_check.py:29:1: E402 module level import not at top of file
+./monitoring/health_check.py:30:1: E402 module level import not at top of file
+./monitoring/health_check.py:31:1: F401 'django.db.connections' imported but unused
+./monitoring/health_check.py:31:1: E402 module level import not at top of file
+./monitoring/health_check.py:150:27: W291 trailing whitespace
+./monitoring/health_check.py:489:1: C901 'main' is too complex (11)
+./run_simple_tests.py:12:1: F401 'django.conf.settings' imported but unused
+./scripts/deployment_verification.py:247:15: F541 f-string is missing placeholders
+./scripts/post_deployment_verification.py:7:1: F401 'json' imported but unused
+./scripts/post_deployment_verification.py:127:23: F541 f-string is missing placeholders
+./test_admin_login.py:1:1: W391 blank line at end of file
+./test_ci_fix.py:88:13: F841 local variable 'result' is assigned to but never used
+./test_ci_locally.py:43:1: C901 'main' is too complex (18)
+./test_upload_limits.py:1:1: W391 blank line at end of file
+./tests/conftest.py:12:1: F401 'django.core.management.call_command' imported but unused
+./tests/conftest_simple.py:7:1: F401 'sys' imported but unused
+./tests/conftest_simple.py:18:1: E402 module level import not at top of file
+./tests/integration/test_api.py:6:1: F401 'json' imported but unused
+./tests/integration/test_api.py:9:1: F401 'django.urls.reverse' imported but unused
+./tests/integration/test_api.py:51:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:84:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:89:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:112:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:127:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:150:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:156:9: F841 local variable 'other_user' is assigned to but never used
+./tests/integration/test_api.py:161:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_api.py:212:9: F841 local variable 'response' is assigned to but never used
+./tests/integration/test_database.py:173:9: F841 local variable 'active_users' is assigned to but never used
+./tests/integration/test_database.py:174:9: F841 local variable 'inactive_users' is assigned to but never used
+./tests/integration/test_database.py:194:9: F841 local variable 'users' is assigned to but never used
+./tests/integration/test_database.py:220:9: F401 'django.test.override_settings' imported but unused
+./tests/integration/test_database.py:229:9: F841 local variable 'users' is assigned to but never used
+./tests/performance/locustfile.py:6:1: F401 'json' imported but unused
+./tests/unit/test_basic.py:8:1: F401 'pytest' imported but unused
+./tests/unit/test_basic.py:221:13: F401 'django.urls.reverse' imported but unused
+./tests/unit/test_basic_coverage.py:11:1: F401 'unittest.mock.MagicMock' imported but unused
+./tests/unit/test_basic_coverage.py:11:1: F401 'unittest.mock.patch' imported but unused
+./tests/unit/test_basic_coverage.py:17:1: E402 module level import not at top of file
+./tests/unit/test_basic_coverage.py:18:1: E402 module level import not at top of file
+./tests/unit/test_basic_coverage.py:151:13: F841 local variable 'result' is assigned to but never used
+./tests/unit/test_comprehensive.py:6:1: F401 'json' imported but unused
+./tests/unit/test_comprehensive.py:8:1: F401 'unittest.mock.MagicMock' imported but unused
+./tests/unit/test_comprehensive.py:8:1: F401 'unittest.mock.patch' imported but unused
+./tests/unit/test_comprehensive.py:11:1: F401 'django.core.exceptions.ValidationError' imported but unused
+./tests/unit/test_comprehensive.py:12:1: F401 'django.db.IntegrityError' imported but unused
+./tests/unit/test_comprehensive.py:14:1: F401 'django.urls.reverse' imported but unused
+./tests/unit/test_comprehensive.py:398:9: F841 local variable 'response' is assigned to but never used
+./tests/unit/test_coverage.py:6:1: F401 'datetime' imported but unused
+./tests/unit/test_coverage.py:7:1: F401 'json' imported but unused
+./tests/unit/test_coverage.py:9:1: F401 'sys' imported but unused
+./tests/unit/test_coverage.py:10:1: F401 'time' imported but unused
+./tests/unit/test_coverage.py:11:1: F401 'unittest.mock.MagicMock' imported but unused
+./tests/unit/test_coverage.py:11:1: F401 'unittest.mock.patch' imported but unused
+./tests/unit/test_coverage.py:17:1: E402 module level import not at top of file
+./tests/unit/test_coverage.py:18:1: F401 'django.conf.settings' imported but unused
+./tests/unit/test_coverage.py:18:1: E402 module level import not at top of file
+./tests/unit/test_minimal.py:236:9: F841 local variable 'response' is assigned to but never used
+./tests/unit/test_minimal_ci.py:11:1: F401 'pytest' imported but unused
+./tests/unit/test_models.py:10:1: E402 module level import not at top of file
+./tests/unit/test_models.py:12:1: E402 module level import not at top of file
+./tests/unit/test_models.py:13:1: F401 'django.core.exceptions.ValidationError' imported but unused
+./tests/unit/test_models.py:13:1: E402 module level import not at top of file
+./tests/unit/test_models.py:14:1: F401 'django.db.IntegrityError' imported but unused
+./tests/unit/test_models.py:14:1: E402 module level import not at top of file
+./tests/unit/test_models.py:15:1: E402 module level import not at top of file
+./tests/unit/test_models.py:16:1: E402 module level import not at top of file
+./tests/unit/test_models.py:18:1: E402 module level import not at top of file
+./tests/unit/test_models.py:20:1: E402 module level import not at top of file
+./tests/unit/test_models.py:21:1: E402 module level import not at top of file
+./tests/unit/test_models.py:24:1: E402 module level import not at top of file
+./tests/unit/test_models.py:25:1: E402 module level import not at top of file
+./tests/unit/test_no_db.py:143:13: F401 'django' imported but unused
+./tests/unit/test_no_db.py:146:13: F401 'django.test.TestCase' imported but unused
+./tests/unit/test_no_db.py:147:13: F401 'django.utils.timezone' imported but unused
+./tests/unit/test_no_db.py:162:13: F401 'django.db.models' imported but unused
+./tests/unit/test_no_db.py:176:13: F401 'django.views.generic.View' imported but unused
+./tests/unit/test_no_db.py:270:13: F401 'apps.users' imported but unused
+./tests/unit/test_no_db.py:274:13: F401 'config.settings' imported but unused
+./tests/unit/test_no_db.py:332:9: F401 'django' imported but unused
+./tests/unit/test_no_db.py:333:9: F401 'django.conf.settings' imported but unused
+./tests/unit/test_no_db.py:334:9: F401 'django.test.TestCase' imported but unused
+./tests/unit/test_no_db.py:347:9: F841 local variable 'initial_memory' is assigned to but never used
+./tests/unit/test_simple.py:11:1: F401 'unittest.mock.MagicMock' imported but unused
+./tests/unit/test_simple.py:11:1: F401 'unittest.mock.patch' imported but unused
+./tests/unit/test_simple.py:17:1: E402 module level import not at top of file
+./tests/unit/test_simple.py:18:1: E402 module level import not at top of file
+./tests/unit/test_simple.py:172:13: F841 local variable 'result' is assigned to but never used
+./tests/unit/test_views.py:103:9: F841 local variable 'response' is assigned to but never used
+./tests/unit/test_views.py:288:9: F841 local variable 'content' is assigned to but never used
+./tests/unit/test_views.py:347:9: F841 local variable 'content' is assigned to but never used
+./urls.py:23:1: F401 'django.http.HttpResponse' imported but unused
+./urls.py:29:1: F401 'views.tool_view' imported but unused
+./views.py:6:1: F401 'django.http.HttpResponse' imported but unused
+./views.py:7:1: F401 'django.shortcuts.redirect' imported but unused
+150   C901 'extract_favicon_url' is too complex (14)
+35    E226 missing whitespace around arithmetic operator
+1     E265 block comment should start with '# '
+4     E304 blank lines found after function decorator
+35    E402 module level import not at top of file
+1     E731 do not assign a lambda expression, use a def
+125   F401 'pdfplumber' imported but unused
+10    F403 'from .base import *' used; unable to detect undefined names
+64    F405 'BASE_DIR' may be undefined, or defined from star imports: .base
+82    F541 f-string is missing placeholders
+4     F601 dictionary key '烧鹅' repeated with different values
+19    F811 redefinition of unused 'Meta' from line 9
+39    F841 local variable 'e' is assigned to but never used
+2     W291 trailing whitespace
+5     W293 blank line contains whitespace
+4     W391 blank line at end of file
+580

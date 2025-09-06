@@ -16,7 +16,7 @@ class MeditationAudioService:
     def __init__(self):
         self.pixabay_api_key = os.getenv("PIXABAY_API_KEY")
         self.pixabay_base_url = "https://pixabay.com/api/"
-        
+
         # 检查API密钥是否存在
         if not self.pixabay_api_key:
             logger.warning("PIXABAY_API_KEY环境变量未设置，冥想音效功能将不可用")
@@ -88,7 +88,7 @@ class MeditationAudioService:
         if not self.pixabay_api_key:
             logger.error("PIXABAY_API_KEY环境变量未设置，无法获取冥想音效")
             return None
-            
+
         try:
             sound_config = self.meditation_sounds[category]
             keywords = sound_config["keywords"]
@@ -153,7 +153,7 @@ class MeditationAudioService:
         if not self.pixabay_api_key:
             logger.error("PIXABAY_API_KEY环境变量未设置，无法搜索冥想音效")
             return []
-            
+
         try:
             params = {
                 "key": self.pixabay_api_key,
