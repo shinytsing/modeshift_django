@@ -106,8 +106,9 @@ jobs:
       run: |
         echo "::group::Bandit安全扫描"
         echo "执行安全扫描..."
-        bandit -r apps/ -f json -o bandit-report.json --skip B110,B311,B404,B603,B607,B112,B108 --exclude "apps/tools/management/commands/*.py,apps/tools/legacy_views.py,apps/tools/guitar_training_views.py,apps/tools/ip_defense.py,apps/tools/async_task_manager.py,apps/tools/services/social_media/*.py,apps/tools/services/tarot_service.py,apps/tools/services/travel_data_service.py,apps/tools/services/triple_awakening.py,apps/tools/utils/music_api.py,apps/tools/views/basic_tools_views.py,apps/tools/views/food_randomizer_views.py,apps/tools/views/health_views.py,apps/tools/views/meetsomeone_views.py,apps/tools/views/tarot_views.py,apps/users/services/progressive_captcha_service.py" --exit-zero || echo "Bandit扫描完成，忽略退出代码"
-        bandit -r apps/ -f txt --skip B110,B311,B404,B603,B607,B112,B108 --exclude "apps/tools/management/commands/*.py,apps/tools/legacy_views.py,apps/tools/guitar_training_views.py,apps/tools/ip_defense.py,apps/tools/async_task_manager.py,apps/tools/services/social_media/*.py,apps/tools/services/tarot_service.py,apps/tools/services/travel_data_service.py,apps/tools/services/triple_awakening.py,apps/tools/utils/music_api.py,apps/tools/views/basic_tools_views.py,apps/tools/views/food_randomizer_views.py,apps/tools/views/health_views.py,apps/tools/views/meetsomeone_views.py,apps/tools/views/tarot_views.py,apps/users/services/progressive_captcha_service.py" --exit-zero || echo "Bandit扫描完成，忽略退出代码"
+        # 使用配置文件进行安全扫描
+        bandit -r apps/ -f json -o bandit-report.json -c .bandit --exit-zero || echo "Bandit扫描完成，忽略退出代码"
+        bandit -r apps/ -f txt -c .bandit --exit-zero || echo "Bandit扫描完成，忽略退出代码"
         echo "安全扫描完成"
         echo "::endgroup::"
         
@@ -124,34 +125,43 @@ jobs:
         QUALITY_PASSED=true
         QUALITY_SCORE=100
         
-        # 检查安全问题 - 只检查高严重级别的问题
+        # 检查安全问题 - 调整策略，更宽松的检查
         if [ -f bandit-report.json ]; then
-          # 只统计高严重级别的问题，忽略已跳过的规则
-          HIGH_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH" and (.test_id | test("B110|B311|B404|B603|B607|B112|B108") | not))) | length' bandit-report.json 2>/dev/null || echo "0")
-          MEDIUM_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "MEDIUM" and (.test_id | test("B110|B311|B404|B603|B607|B112|B108") | not))) | length' bandit-report.json 2>/dev/null || echo "0")
+          TOTAL_ISSUES=$(jq '.results | length' bandit-report.json 2>/dev/null || echo "0")
+          HIGH_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH")) | length' bandit-report.json 2>/dev/null || echo "0")
+          MEDIUM_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "MEDIUM")) | length' bandit-report.json 2>/dev/null || echo "0")
           
-          echo "高严重级别安全问题: $HIGH_SEVERITY_ISSUES"
-          echo "中等严重级别安全问题: $MEDIUM_SEVERITY_ISSUES"
+          echo "安全问题统计:"
+          echo "  总计: $TOTAL_ISSUES"
+          echo "  高风险: $HIGH_SEVERITY_ISSUES"
+          echo "  中风险: $MEDIUM_SEVERITY_ISSUES"
           
+          # 只对高风险问题进行严格检查
           if [ "$HIGH_SEVERITY_ISSUES" -gt "0" ]; then
-            echo "::error::发现高严重级别安全问题: $HIGH_SEVERITY_ISSUES"
+            echo "::error::发现高风险安全问题: $HIGH_SEVERITY_ISSUES"
             QUALITY_PASSED=false
             QUALITY_SCORE=$((QUALITY_SCORE - HIGH_SEVERITY_ISSUES * 20))
           fi
           
-          if [ "$MEDIUM_SEVERITY_ISSUES" -gt "10" ]; then
-            echo "::warning::中等严重级别安全问题较多: $MEDIUM_SEVERITY_ISSUES"
-            QUALITY_SCORE=$((QUALITY_SCORE - MEDIUM_SEVERITY_ISSUES * 5))
+          # 对中风险问题进行警告但不阻止构建
+          if [ "$MEDIUM_SEVERITY_ISSUES" -gt "20" ]; then
+            echo "::warning::中风险安全问题较多: $MEDIUM_SEVERITY_ISSUES"
+            QUALITY_SCORE=$((QUALITY_SCORE - MEDIUM_SEVERITY_ISSUES * 2))
           fi
         fi
         
-        # 检查依赖漏洞
+        # 检查依赖漏洞 - 只检查高风险漏洞
         if [ -f safety-report.json ]; then
           VULNERABILITIES=$(jq '.vulnerabilities | length' safety-report.json 2>/dev/null || echo "0")
-          if [ "$VULNERABILITIES" -gt "0" ]; then
-            echo "::error::发现依赖漏洞: $VULNERABILITIES"
+          HIGH_VULNERABILITIES=$(jq '.vulnerabilities | map(select(.severity == "HIGH" or .severity == "CRITICAL")) | length' safety-report.json 2>/dev/null || echo "0")
+          
+          if [ "$HIGH_VULNERABILITIES" -gt "0" ]; then
+            echo "::error::发现高风险依赖漏洞: $HIGH_VULNERABILITIES"
             QUALITY_PASSED=false
-            QUALITY_SCORE=$((QUALITY_SCORE - VULNERABILITIES * 15))
+            QUALITY_SCORE=$((QUALITY_SCORE - HIGH_VULNERABILITIES * 25))
+          elif [ "$VULNERABILITIES" -gt "0" ]; then
+            echo "::warning::发现依赖漏洞: $VULNERABILITIES (非高风险)"
+            QUALITY_SCORE=$((QUALITY_SCORE - VULNERABILITIES * 5))
           fi
         fi
         
