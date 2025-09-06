@@ -1,1 +1,411 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="3" time="3.303" timestamp="2025-09-06T19:02:04.060832" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.026" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.001" /><testcase time="0.001" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="58" time="7.068" timestamp="2025-09-07T03:30:41.638501" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.026" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.062" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.212" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_secret_key" time="0.001" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_media_url" time="0.001" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_static_url" time="0.001" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_cache_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_session_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_loggers_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_middleware_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_security_middleware" time="0.001" /><testcase classname="tests.unit.test_basic.TestURLConfiguration" name="test_root_urls" time="0.001" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_engines" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_language_code" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_time_zone" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_use_i18n" time="0.001" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_file_upload_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_media_root" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_python_basics" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_apps" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_string_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_datetime_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_error_handling" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_performance_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_memory_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_app_imports" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_configuration" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_life_goal_creation" time="0.091"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:24: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_tool_usage_log_creation" time="0.084"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:24: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_vanity_wealth_creation" time="0.085"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:24: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_article_creation" time="0.085"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:68: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_comment_creation" time="0.085"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:68: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_profile_creation" time="0.086"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:101: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_role_creation" time="0.084"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:101: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_status_creation" time="0.092"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:101: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_link_creation" time="0.087"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:143: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_record_creation" time="0.085"><failure message="django.db.utils.OperationalError: no such table: auth_user">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: no such table: auth_user
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:143: in setUp
+    self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:175: in create_user
+    return self._create_user(username, email, password, **extra_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/models.py:163: in _create_user
+    user.save(using=self._db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/contrib/auth/base_user.py:65: in save
+    super().save(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: no such table: auth_user</failure></testcase></testsuite></testsuites>

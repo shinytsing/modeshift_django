@@ -701,7 +701,7 @@ class PDFConverter:
                                     for rel_id, rel_part in doc.part.related_parts.items():
                                         if hasattr(rel_part, "content_type") and "image" in rel_part.content_type:
                                             # 创建一个虚拟的图片元素
-                                            from lxml.etree import Element
+                                            from defusedxml.lxml import Element
 
                                             virtual_elem = Element("virtual_image")
                                             virtual_elem.set("embed", rel_id)

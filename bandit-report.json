@@ -1,14 +1,14 @@
 {
   "errors": [],
-  "generated_at": "2025-09-06T11:01:15Z",
+  "generated_at": "2025-09-06T18:34:47Z",
   "metrics": {
     "_totals": {
-      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
+      "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 53759,
@@ -1784,12 +1784,12 @@
       "skipped_tests": 0
     },
     "apps/tools/pdf_converter_api.py": {
-      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
+      "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 1166,
@@ -3357,5 +3357,26 @@
       "skipped_tests": 0
     }
   },
-  "results": []
+  "results": [
+    {
+      "code": "703                                             # \u521b\u5efa\u4e00\u4e2a\u865a\u62df\u7684\u56fe\u7247\u5143\u7d20\n704                                             from lxml.etree import Element\n705 \n",
+      "col_offset": 44,
+      "end_col_offset": 74,
+      "filename": "apps/tools/pdf_converter_api.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Using Element to parse untrusted XML data is known to be vulnerable to XML attacks. Replace Element with the equivalent defusedxml package.",
+      "line_number": 704,
+      "line_range": [
+        704
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b410-import-lxml",
+      "test_id": "B410",
+      "test_name": "blacklist"
+    }
+  ]
 }

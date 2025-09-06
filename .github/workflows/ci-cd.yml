@@ -217,6 +217,18 @@ jobs:
         sleep 15
         echo "服务启动完成"
     
+    - name: 运行数据库迁移
+      run: |
+        echo "运行数据库迁移..."
+        python manage.py migrate --settings=config.settings.testing
+      env:
+        DJANGO_SETTINGS_MODULE: config.settings.testing
+        POSTGRES_HOST: postgres
+        POSTGRES_DB: test_modeshift_django
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        REDIS_URL: redis://localhost:6379/0
+    
     - name: 运行单元测试
       id: tests
       continue-on-error: true

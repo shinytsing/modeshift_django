@@ -33,20 +33,30 @@ INSTALLED_APPS = [
 ]
 
 # 使用PostgreSQL测试数据库（与生产环境一致）
-# 完全覆盖base.py中的PostgreSQL配置
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "modeshift_django_test"),
-        "USER": os.environ.get("DB_USER", "gaojie"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-        "OPTIONS": {
-            "connect_timeout": 10,
-        },
+# 在CI/CD环境中使用PostgreSQL，本地开发使用SQLite
+if os.environ.get("CI") or os.environ.get("POSTGRES_HOST"):
+    # CI/CD环境使用PostgreSQL
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "test_modeshift_django"),
+            "USER": os.environ.get("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+            "OPTIONS": {
+                "connect_timeout": 10,
+            },
+        }
     }
-}
+else:
+    # 本地开发环境使用SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    }
 
 # 测试环境缓存配置
 CACHES = {
@@ -65,8 +75,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
 
 
-# 测试环境迁移配置 - 允许迁移但使用内存数据库
-# MIGRATION_MODULES = DisableMigrations()  # 注释掉以允许迁移
+# 测试环境迁移配置 - 允许迁移
+# 确保测试环境能够正确运行数据库迁移
+MIGRATION_MODULES = {}
 
 # 测试环境密码验证器（简化）
 AUTH_PASSWORD_VALIDATORS = []

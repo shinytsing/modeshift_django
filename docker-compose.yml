@@ -113,6 +113,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.production.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl_certs:/etc/nginx/ssl:ro
       - static_data:/var/www/static:ro
       - media_data:/var/www/media:ro
     depends_on:
