@@ -7,7 +7,7 @@ class ShareRecord(models.Model):
     """分享记录模型"""
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
 
     SHARE_PLATFORMS = [
         ("wechat", "微信"),
@@ -34,7 +34,7 @@ class ShareRecord(models.Model):
     user_agent = models.TextField(blank=True, verbose_name="用户代理")
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
         verbose_name = "分享记录"
         verbose_name_plural = "分享记录"
         ordering = ["-share_time"]
@@ -47,7 +47,7 @@ class ShareLink(models.Model):
     """分享链接模型"""
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
 
     original_url = models.URLField(verbose_name="原始URL")
     short_code = models.CharField(max_length=10, unique=True, verbose_name="短链接代码")
@@ -59,7 +59,7 @@ class ShareLink(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="是否激活")
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
         verbose_name = "分享链接"
         verbose_name_plural = "分享链接"
         ordering = ["-created_at"]
@@ -72,7 +72,7 @@ class ShareAnalytics(models.Model):
     """分享分析模型"""
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
 
     date = models.DateField(verbose_name="日期")
     platform = models.CharField(max_length=20, choices=ShareRecord.SHARE_PLATFORMS, verbose_name="平台")
@@ -80,7 +80,7 @@ class ShareAnalytics(models.Model):
     click_count = models.PositiveIntegerField(default=0, verbose_name="点击次数")
 
     class Meta:
-        app_label = "share"
+        app_label = "apps.share"
         verbose_name = "分享分析"
         verbose_name_plural = "分享分析"
         unique_together = ["date", "platform"]

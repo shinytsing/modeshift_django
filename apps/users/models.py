@@ -15,7 +15,7 @@ class UserRole(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户角色"
         verbose_name_plural = "用户角色"
 
@@ -44,7 +44,7 @@ class UserStatus(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户状态"
         verbose_name_plural = "用户状态"
 
@@ -77,7 +77,7 @@ class UserMembership(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户会员"
         verbose_name_plural = "用户会员"
 
@@ -119,7 +119,7 @@ class UserActionLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="操作时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         ordering = ["-created_at"]
         verbose_name = "用户操作日志"
         verbose_name_plural = "用户操作日志"
@@ -153,7 +153,7 @@ class UserActivityLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户活动日志"
         verbose_name_plural = "用户活动日志"
         ordering = ["-created_at"]
@@ -178,7 +178,7 @@ class UserSessionStats(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="是否活跃")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户会话统计"
         verbose_name_plural = "用户会话统计"
         ordering = ["-session_start"]
@@ -200,7 +200,7 @@ class APIUsageStats(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="访问时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "API使用统计"
         verbose_name_plural = "API使用统计"
         ordering = ["-created_at"]
@@ -248,7 +248,7 @@ class UserTheme(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户主题"
         verbose_name_plural = "用户主题"
 
@@ -285,7 +285,7 @@ class UserModePreference(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
+        app_label = "apps.users"
         verbose_name = "用户模式偏好"
         verbose_name_plural = "用户模式偏好"
         unique_together = ["user", "mode"]
