@@ -33,16 +33,16 @@ INSTALLED_APPS = [
 ]
 
 # 使用PostgreSQL测试数据库（与生产环境一致）
-# 在CI/CD环境中使用PostgreSQL，本地开发使用SQLite
-if os.environ.get("CI") or os.environ.get("POSTGRES_HOST"):
-    # CI/CD环境使用PostgreSQL
+# 优先使用PostgreSQL，确保与生产环境一致
+if os.environ.get("CI") or os.environ.get("POSTGRES_HOST") or os.environ.get("POSTGRES_USER"):
+    # CI/CD环境或本地测试环境使用PostgreSQL
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": os.environ.get("POSTGRES_DB", "test_modeshift_django"),
             "USER": os.environ.get("POSTGRES_USER", "postgres"),
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
+            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             "OPTIONS": {
                 "connect_timeout": 10,
@@ -50,7 +50,7 @@ if os.environ.get("CI") or os.environ.get("POSTGRES_HOST"):
         }
     }
 else:
-    # 本地开发环境使用SQLite
+    # 回退到SQLite（仅在没有PostgreSQL环境变量时）
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

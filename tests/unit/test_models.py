@@ -57,7 +57,9 @@ class TestToolUsageLog(TestCase):
     def test_tool_usage_log_ordering(self):
         """测试工具使用日志排序"""
         log1 = ToolUsageLog.objects.create(user=self.user, tool_type="TEST_CASE", input_data="test1", output_file="test1.txt")
-        log2 = ToolUsageLog.objects.create(user=self.user, tool_type="QUALITY_CHECK", input_data="test2", output_file="test2.txt")
+        log2 = ToolUsageLog.objects.create(
+            user=self.user, tool_type="QUALITY_CHECK", input_data="test2", output_file="test2.txt"
+        )
         logs = list(ToolUsageLog.objects.all())
         self.assertEqual(len(logs), 2)
         self.assertIn(log1, logs)

@@ -9,7 +9,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestUserRegistrationFlow:
     """用户注册流程测试"""
 
@@ -64,7 +64,7 @@ class TestUserRegistrationFlow:
         expect(page.locator("text=密码不匹配")).to_be_visible()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestUserLoginFlow:
     """用户登录流程测试"""
 
@@ -112,7 +112,7 @@ class TestUserLoginFlow:
         expect(page.locator("text=登录")).to_be_visible()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestToolUsageFlow:
     """工具使用流程测试"""
 
@@ -159,7 +159,7 @@ class TestToolUsageFlow:
         # 注意：文件上传测试需要准备测试文件
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestMobileResponsiveness:
     """移动端响应式测试"""
 
@@ -195,6 +195,7 @@ class TestMobileResponsiveness:
         assert box["height"] >= 44  # iOS推荐的最小触摸目标
 
 
+@pytest.mark.django_db(transaction=True)
 class TestAccessibility:
     """可访问性测试"""
 
@@ -224,6 +225,7 @@ class TestAccessibility:
         assert h1_count == 1  # 页面应该只有一个h1标题
 
 
+@pytest.mark.django_db(transaction=True)
 class TestPerformance:
     """性能测试"""
 
@@ -256,6 +258,7 @@ class TestPerformance:
         assert len(failed_requests) == 0, f"Failed requests: {failed_requests}"
 
 
+@pytest.mark.django_db(transaction=True)
 class TestSecurity:
     """安全测试"""
 

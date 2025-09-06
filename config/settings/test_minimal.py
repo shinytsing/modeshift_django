@@ -11,11 +11,11 @@ from .base import *
 DEBUG = True
 TESTING = True
 
-# 使用SQLite内存数据库
+# 使用SQLite文件数据库用于测试
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
+        "NAME": "test_db.sqlite3",
         "OPTIONS": {
             "init_command": "PRAGMA foreign_keys=OFF;",
         },

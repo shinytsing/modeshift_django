@@ -16,7 +16,7 @@ from django.urls import reverse
 import pytest
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestToolsModels(TestCase):
     """工具模型测试"""
 
@@ -60,7 +60,7 @@ class TestToolsModels(TestCase):
             self.skipTest("VanityWealth模型不存在")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestContentModels(TestCase):
     """内容模型测试"""
 

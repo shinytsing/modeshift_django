@@ -11,18 +11,12 @@
 ./apps/content/views.py:688:1: C901 'announcement_admin_api' is too complex (16)
 ./apps/content/views_admin_features.py:109:1: C901 'admin_batch_update_features_api' is too complex (13)
 ./apps/content/views_admin_features.py:153:1: C901 'admin_update_feature_api' is too complex (14)
-./apps/share/models.py:36:5: F811 redefinition of unused 'Meta' from line 9
-./apps/share/models.py:61:5: F811 redefinition of unused 'Meta' from line 49
-./apps/share/models.py:82:5: F811 redefinition of unused 'Meta' from line 74
-./apps/share/utils.py:159:24: E226 missing whitespace around arithmetic operator
-./apps/share/utils.py:161:24: E226 missing whitespace around arithmetic operator
 ./apps/tools/async_task_manager.py:223:5: C901 'AsyncTaskManager._execute_task' is too complex (12)
 ./apps/tools/consumers.py:69:5: C901 'ChatConsumer.connect' is too complex (11)
 ./apps/tools/consumers.py:212:5: C901 'ChatConsumer.receive' is too complex (12)
 ./apps/tools/consumers.py:625:5: C901 'ChatConsumer.record_disconnect_time' is too complex (11)
 ./apps/tools/fitness_tools_views.py:580:1: C901 'calculate_body_composition_api' is too complex (20)
 ./apps/tools/generate_redbook_api.py:24:5: C901 'GenerateRedBookAPI.post' is too complex (11)
-./apps/tools/generate_redbook_api.py:172:37: F541 f-string is missing placeholders
 ./apps/tools/generate_redbook_api.py:291:5: C901 'GenerateRedBookAPI._parse_redbook_response' is too complex (13)
 ./apps/tools/generate_test_cases_api.py:110:5: C901 'GenerateTestCasesAPI.post' is too complex (17)
 ./apps/tools/generate_test_cases_api.py:288:5: C901 'GenerateTestCasesAPI._parse_test_cases' is too complex (14)
@@ -153,23 +147,18 @@
 ./apps/tools/management/commands/update_food_images_deepseek.py:52:27: F541 f-string is missing placeholders
 ./apps/tools/management/commands/update_food_images_deepseek.py:58:27: F541 f-string is missing placeholders
 ./apps/tools/management/commands/update_food_images_deepseek.py:63:46: F541 f-string is missing placeholders
-./apps/tools/models/base_models.py:60:5: F811 redefinition of unused 'Meta' from line 13
-./apps/tools/models/diary_models.py:355:41: E226 missing whitespace around arithmetic operator
 ./apps/tools/models/legacy_models.py:3037:5: F811 redefinition of unused 'Meta' from line 2996
 ./apps/tools/models/legacy_models.py:3042:5: F811 redefinition of unused '__str__' from line 3002
 ./apps/tools/models/legacy_models.py:3085:5: F811 redefinition of unused 'Meta' from line 3037
 ./apps/tools/models/legacy_models.py:3090:5: F811 redefinition of unused '__str__' from line 3042
 ./apps/tools/models/legacy_models.py:3961:9: F841 local variable 'best_records' is assigned to but never used
 ./apps/tools/nutrition_models.py:1:1: W391 blank line at end of file
-./apps/tools/pdf_converter_api.py:27:5: F401 'pdfplumber' imported but unused
-./apps/tools/pdf_converter_api.py:133:5: C901 'PDFConverter.pdf_to_word' is too complex (43)
-./apps/tools/pdf_converter_api.py:329:5: C901 'PDFConverter._ocr_pdf_to_word_from_path' is too complex (30)
-./apps/tools/pdf_converter_api.py:481:5: C901 'PDFConverter.word_to_pdf' is too complex (110)
-./apps/tools/pdf_converter_api.py:1058:5: C901 'PDFConverter.text_to_pdf' is too complex (16)
-./apps/tools/pdf_converter_api.py:1086:17: F811 redefinition of unused 'UnicodeCIDFont' from line 1066
-./apps/tools/pdf_converter_api.py:1150:5: C901 'PDFConverter.pdf_to_text' is too complex (14)
-./apps/tools/pdf_converter_api.py:1344:1: C901 'pdf_converter_api' is too complex (49)
-./apps/tools/pdf_converter_api.py:1543:48: E226 missing whitespace around arithmetic operator
+./apps/tools/pdf_converter_api.py:132:5: C901 'PDFConverter.pdf_to_word' is too complex (43)
+./apps/tools/pdf_converter_api.py:328:5: C901 'PDFConverter._ocr_pdf_to_word_from_path' is too complex (30)
+./apps/tools/pdf_converter_api.py:480:5: C901 'PDFConverter.word_to_pdf' is too complex (110)
+./apps/tools/pdf_converter_api.py:1057:5: C901 'PDFConverter.text_to_pdf' is too complex (16)
+./apps/tools/pdf_converter_api.py:1147:5: C901 'PDFConverter.pdf_to_text' is too complex (14)
+./apps/tools/pdf_converter_api.py:1341:1: C901 'pdf_converter_api' is too complex (49)
 ./apps/tools/proxy_view.py:206:5: C901 'ProxyManager.get_current_ip' is too complex (15)
 ./apps/tools/proxy_view.py:548:1: C901 'web_proxy_api' is too complex (61)
 ./apps/tools/proxy_view.py:887:57: F541 f-string is missing placeholders
@@ -331,7 +320,6 @@
 ./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.update_subscription_api' imported but unused
 ./apps/tools/views/__init__.py:5:1: F401 '..legacy_views.validate_budget_range' imported but unused
 ./apps/tools/views/achievement_views.py:21:1: C901 'achievements_api' is too complex (14)
-./apps/tools/views/achievement_views.py:368:27: F541 f-string is missing placeholders
 ./apps/tools/views/base.py:147:1: C901 'validate_request_data' is too complex (16)
 ./apps/tools/views/base_views.py:404:1: F811 redefinition of unused 'create_job_search_request_api' from line 158
 ./apps/tools/views/base_views.py:460:1: F811 redefinition of unused 'get_job_search_requests_api' from line 209
@@ -466,8 +454,8 @@
 ./config/settings/test_minimal.py:8:1: F403 'from .base import *' used; unable to detect undefined names
 ./config/settings/test_minimal.py:8:1: F401 '.base.*' imported but unused
 ./config/settings/testing.py:7:1: F403 'from .base import *' used; unable to detect undefined names
-./config/settings/testing.py:84:11: F405 'LOGGING' may be undefined, or defined from star imports: .base
-./config/settings/testing.py:96:28: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
+./config/settings/testing.py:95:11: F405 'LOGGING' may be undefined, or defined from star imports: .base
+./config/settings/testing.py:107:28: F405 'MIDDLEWARE' may be undefined, or defined from star imports: .base
 ./local_proxy_server.py:8:1: F401 'time' imported but unused
 ./local_proxy_server.py:49:5: C901 'LocalProxyServer.handle_client' is too complex (15)
 ./middleware/performance.py:7:1: F401 'django.http.JsonResponse' imported but unused
@@ -579,19 +567,19 @@
 ./views.py:6:1: F401 'django.http.HttpResponse' imported but unused
 ./views.py:7:1: F401 'django.shortcuts.redirect' imported but unused
 150   C901 'extract_favicon_url' is too complex (14)
-35    E226 missing whitespace around arithmetic operator
+31    E226 missing whitespace around arithmetic operator
 1     E265 block comment should start with '# '
 4     E304 blank lines found after function decorator
 35    E402 module level import not at top of file
 1     E731 do not assign a lambda expression, use a def
-125   F401 'pdfplumber' imported but unused
+124   F401 'django.conf.settings' imported but unused
 10    F403 'from .base import *' used; unable to detect undefined names
 64    F405 'BASE_DIR' may be undefined, or defined from star imports: .base
-82    F541 f-string is missing placeholders
+80    F541 f-string is missing placeholders
 4     F601 dictionary key '烧鹅' repeated with different values
-19    F811 redefinition of unused 'Meta' from line 9
+14    F811 redefinition of unused 'get_checkin_calendar_api' from line 7700
 39    F841 local variable 'e' is assigned to but never used
 2     W291 trailing whitespace
 5     W293 blank line contains whitespace
 4     W391 blank line at end of file
-580
+568
