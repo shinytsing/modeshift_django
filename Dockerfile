@@ -63,17 +63,15 @@ RUN mkdir -p /app/logs \
     && mkdir -p /app/staticfiles \
     && mkdir -p /app/task_storage
 
+# 创建非root用户
+RUN useradd --create-home --shell /bin/bash app
+
 # 设置权限
 RUN chmod +x /app/manage.py \
-    && chmod +x /app/start.sh
-
-# 在构建阶段跳过collectstatic，在运行时执行
-# 使用最小化Docker构建设置，避免所有依赖问题
-# 完全跳过collectstatic步骤，在容器启动时执行
-
-# 创建非root用户
-RUN useradd --create-home --shell /bin/bash app \
+    && chmod +x /app/start.sh \
     && chown -R app:app /app
+
+# 切换到非root用户
 USER app
 
 # 暴露端口
