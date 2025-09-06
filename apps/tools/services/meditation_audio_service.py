@@ -13,7 +13,7 @@ class MeditationAudioService:
     """冥想音效服务 - 使用PeaceMusicService获取本地冥想音乐"""
 
     def __init__(self):
-        self.pixabay_api_key = "36817612-8c0c4c8c8c8c8c8c8c8c8c8c"  # 请替换为实际的API密钥
+        self.pixabay_api_key = os.getenv("PIXABAY_API_KEY")
         self.pixabay_base_url = "https://pixabay.com/api/"
 
         # 冥想音效分类
