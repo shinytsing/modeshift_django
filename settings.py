@@ -67,10 +67,10 @@ INSTALLED_APPS = [
     "django.contrib.sites",  # 用于CAPTCHA
     "rest_framework",  # DRF框架
     # 自定义应用
-    "apps.users",
-    "apps.content",
-    "apps.tools",
-    "apps.share",
+    "apps.users.apps.UsersConfig",
+    "apps.content.apps.ContentConfig",
+    "apps.tools.apps.ToolsConfig",
+    "apps.share.apps.ShareConfig",
 ]
 
 MIDDLEWARE = [
