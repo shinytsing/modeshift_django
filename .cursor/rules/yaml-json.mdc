@@ -1,0 +1,349 @@
+---
+globs: *.yml,*.yaml,*.json
+description: YAML和JSON配置文件规则
+---
+
+# YAML和JSON配置文件规则
+
+基于awesome-cursorrules的配置文件最佳实践。
+
+## YAML最佳实践
+
+### 基本格式
+```yaml
+# 使用2个空格缩进，不要使用制表符
+name: "项目名称"
+version: "1.0.0"
+description: "项目描述"
+
+# 使用引号包围包含特殊字符的字符串
+api_key: "sk-1234567890abcdef"
+url: "https://api.example.com/v1"
+
+# 多行字符串使用 | 或 >
+description: |
+  这是一个多行描述
+  可以包含换行符
+  保持格式
+
+# 数组格式
+dependencies:
+  - django>=4.0
+  - requests>=2.25
+  - celery>=5.0
+
+# 对象格式
+database:
+  host: localhost
+  port: 5432
+  name: myapp
+  user: postgres
+```
+
+### GitHub Actions工作流
+```yaml
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run tests
+        run: pytest
+```
+
+### Docker Compose配置
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgresql://user:pass@db:5432/mydb
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+  static_volume:
+```
+
+## JSON最佳实践
+
+### 基本格式
+```json
+{
+  "name": "项目名称",
+  "version": "1.0.0",
+  "description": "项目描述",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "mongoose": "^7.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "webpack": "^5.0.0"
+  }
+}
+```
+
+### package.json规范
+```json
+{
+  "name": "@scope/package-name",
+  "version": "1.0.0",
+  "description": "包的描述",
+  "keywords": ["keyword1", "keyword2"],
+  "homepage": "https://github.com/user/repo#readme",
+  "bugs": {
+    "url": "https://github.com/user/repo/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "作者姓名",
+    "email": "author@example.com"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  }
+}
+```
+
+### tsconfig.json配置
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
+}
+```
+
+## 环境配置文件
+
+### .env文件格式
+```bash
+# 数据库配置
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+REDIS_URL=redis://localhost:6379/0
+
+# API密钥
+OPENAI_API_KEY=sk-1234567890abcdef
+STRIPE_SECRET_KEY=sk_test_1234567890
+
+# 应用配置
+DEBUG=False
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=localhost,127.0.0.1,example.com
+
+# 邮件配置
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+```
+
+### 配置验证
+```yaml
+# 使用schema验证配置
+$schema: "https://json.schemastore.org/github-workflow.json"
+
+name: "CI/CD"
+on:
+  push:
+    branches: [main]
+```
+
+## 最佳实践
+
+### 1. 注释和文档
+```yaml
+# 这是YAML注释
+# 在JSON中不能使用注释，但可以在字段名中包含说明
+{
+  "// 这是配置说明": "注释在JSON中不被支持",
+  "config": {
+    "// 数据库配置": "说明",
+    "database": {
+      "host": "localhost",
+      "port": 5432
+    }
+  }
+}
+```
+
+### 2. 环境特定配置
+```yaml
+# config.yml
+default: &default
+  database:
+    host: localhost
+    port: 5432
+
+development:
+  <<: *default
+  database:
+    name: myapp_dev
+
+production:
+  <<: *default
+  database:
+    host: prod-db.example.com
+    name: myapp_prod
+```
+
+### 3. 配置验证
+```json
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "my-package",
+  "version": "1.0.0",
+  "scripts": {
+    "validate": "ajv validate -s schema.json -d data.json"
+  }
+}
+```
+
+### 4. 敏感信息处理
+```yaml
+# 不要将敏感信息直接写在配置文件中
+# 使用环境变量或密钥管理服务
+database:
+  host: ${DB_HOST}
+  password: ${DB_PASSWORD}
+  # 或者使用密钥引用
+  # password: !vault secret/database/password
+```
+
+### 5. 配置分层
+```yaml
+# 基础配置
+base_config: &base
+  timeout: 30
+  retries: 3
+
+# 服务特定配置
+api_service:
+  <<: *base
+  endpoint: "/api/v1"
+  rate_limit: 100
+
+web_service:
+  <<: *base
+  endpoint: "/"
+  static_files: true
+```
+
+## 工具和验证
+
+### YAML验证工具
+```bash
+# 使用yamllint验证YAML文件
+yamllint config.yml
+
+# 使用yq处理YAML文件
+yq eval '.services.web.ports' docker-compose.yml
+```
+
+### JSON验证工具
+```bash
+# 使用jq处理JSON文件
+jq '.dependencies' package.json
+
+# 使用ajv验证JSON schema
+ajv validate -s schema.json -d data.json
+```
+
+### 配置文件模板
+```yaml
+# 创建配置模板
+template: |
+  name: "{{ project_name }}"
+  version: "{{ version }}"
+  description: "{{ description }}"
+  
+  # 使用模板变量
+  database:
+    host: "{{ db_host }}"
+    port: {{ db_port }}
+```
