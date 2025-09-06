@@ -519,18 +519,42 @@ jobs:
             echo "✅ 已复制生产环境配置"
           elif [ ! -f ".env" ]; then
             echo "⚠️ 未找到环境配置文件，创建基础配置..."
-            echo "DEBUG=False" > .env
-            echo "DJANGO_SECRET_KEY=django-production-secret-key-change-me" >> .env
-            echo "DB_NAME=qatoolbox_production" >> .env
-            echo "DB_USER=qatoolbox" >> .env
-            echo "DB_PASSWORD=qatoolbox123" >> .env
-            echo "DB_HOST=db" >> .env
-            echo "DB_PORT=5432" >> .env
-            echo "REDIS_URL=redis://:redis123@redis:6379/0" >> .env
-            echo "ALLOWED_HOSTS=47.103.143.152,localhost,127.0.0.1,shenyiqing.xin,www.shenyiqing.xin" >> .env
-            echo "DEEPSEEK_API_KEY=sk-c4a84c8bbff341cbb3006ecaf84030fe" >> .env
-            echo "PIXABAY_API_KEY=36817612-8c0c4c8c8c8c8c8c8c8c8c8c" >> .env
-            echo "AMAP_API_KEY=a825cd9231f473717912d3203a62c53e" >> .env
+            cat > .env << 'EOF'
+# Django 基础配置
+DEBUG=False
+DJANGO_SECRET_KEY=django-production-secret-key-change-me
+DJANGO_SETTINGS_MODULE=config.settings.production
+
+# 数据库配置
+DB_NAME=qatoolbox_production
+DB_USER=qatoolbox
+DB_PASSWORD=qatoolbox123
+DB_HOST=db
+DB_PORT=5432
+
+# Redis配置
+REDIS_PASSWORD=redis123
+REDIS_URL=redis://:redis123@redis:6379/0
+
+# 第三方API配置
+DEEPSEEK_API_KEY=sk-c4a84c8bbff341cbb3006ecaf84030fe
+PIXABAY_API_KEY=36817612-8c0c4c8c8c8c8c8c8c8c8c8c
+AMAP_API_KEY=a825cd9231f473717912d3203a62c53e
+
+# 邮件配置
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-email-password
+DEFAULT_FROM_EMAIL=noreply@shenyiqing.xin
+
+# 安全配置
+SECURE_SSL_REDIRECT=False
+
+# 允许的主机
+ALLOWED_HOSTS=47.103.143.152,shenyiqing.xin,www.shenyiqing.xin,localhost,127.0.0.1,0.0.0.0
+EOF
+            echo "✅ 环境配置文件已创建"
           fi
           
           # 检查Docker是否运行

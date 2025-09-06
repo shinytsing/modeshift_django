@@ -9,7 +9,20 @@ echo "🚀 启动 QAToolBox 生产环境..."
 
 # 等待数据库连接
 echo "⏳ 等待数据库连接..."
-python manage.py migrate --noinput --settings=config.settings.production
+for i in {1..30}; do
+    if python manage.py migrate --noinput --settings=config.settings.production 2>/dev/null; then
+        echo "✅ 数据库迁移成功"
+        break
+    else
+        echo "⏳ 等待数据库连接... (尝试 $i/30)"
+        sleep 2
+    fi
+    
+    if [ $i -eq 30 ]; then
+        echo "❌ 数据库连接超时，但继续启动..."
+        break
+    fi
+done
 
 # 收集静态文件
 echo "📦 收集静态文件..."

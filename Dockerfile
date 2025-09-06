@@ -1,6 +1,6 @@
 # QAToolBox Docker配置
-# 使用Python 3.12官方镜像作为基础镜像
-FROM python:3.12-slim
+# 使用Python 3.13官方镜像作为基础镜像
+FROM python:3.13-slim
 
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \

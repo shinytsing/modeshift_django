@@ -89,7 +89,20 @@ sleep 15
 
 # 运行数据库迁移
 echo "📊 运行数据库迁移..."
-docker-compose exec -T web python manage.py migrate --noinput || echo "⚠️ 数据库迁移失败，但继续部署"
+for i in {1..10}; do
+    if docker-compose exec -T web python manage.py migrate --noinput 2>/dev/null; then
+        echo "✅ 数据库迁移成功"
+        break
+    else
+        echo "⏳ 等待数据库连接... (尝试 $i/10)"
+        sleep 5
+    fi
+    
+    if [ $i -eq 10 ]; then
+        echo "⚠️ 数据库迁移失败，但继续部署"
+        break
+    fi
+done
 
 # 收集静态文件
 echo "📁 收集静态文件..."
