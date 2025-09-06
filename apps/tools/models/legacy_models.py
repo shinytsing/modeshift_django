@@ -1707,7 +1707,7 @@ class CheckInDetail(models.Model):
     """打卡详情模型"""
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
 
     checkin = models.OneToOneField(CheckInCalendar, on_delete=models.CASCADE, related_name="detail")
 

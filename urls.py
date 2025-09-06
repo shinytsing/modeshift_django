@@ -25,7 +25,7 @@ from django.shortcuts import render
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from apps.tools.views.health_views import DetailedHealthCheckView, HealthCheckView
+# from apps.tools.views.health_views import DetailedHealthCheckView, HealthCheckView
 from views import (
     custom_static_serve,
     help_page_view,
@@ -51,8 +51,8 @@ def health_check_view(request):
 
 
 urlpatterns = [
-    path("health/", HealthCheckView.as_view(), name="health_check"),
-    path("health/detailed/", DetailedHealthCheckView.as_view(), name="detailed_health_check"),
+    # path("health/", HealthCheckView.as_view(), name="health_check"),
+    # path("health/detailed/", DetailedHealthCheckView.as_view(), name="detailed_health_check"),
     path("", home_view, name="home"),
     path("welcome/", welcome_view, name="welcome"),
     path("theme-demo/", theme_demo_view, name="theme_demo"),
@@ -62,7 +62,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # 工具主页面路由
     # 工具子路由（包含测试用例生成器等）
-    path("tools/", include("apps.tools.urls", namespace="tools")),
+    # path("tools/", include("apps.tools.urls", namespace="tools")),
     path("users/", include("apps.users.urls", namespace="users")),
     path("content/", include("apps.content.urls", namespace="content")),
     path("share/", include("apps.share.urls", namespace="share")),

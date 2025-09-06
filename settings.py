@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     "rest_framework",  # DRF框架
     # 自定义应用
     "apps.users.apps.UsersConfig",
-    "apps.content.apps.ContentConfig",
+    "apps.content.apps.ContentConfig", 
     "apps.tools.apps.ToolsConfig",
     "apps.share.apps.ShareConfig",
 ]
