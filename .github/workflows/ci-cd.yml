@@ -388,13 +388,25 @@ jobs:
           
           # 根据环境选择目录
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            cd ~/modeshift_django || exit 1
+            PROJECT_DIR="$HOME/modeshift_django"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "❌ 生产环境目录不存在，创建中..."
+              mkdir -p "$PROJECT_DIR"
+              cd "$PROJECT_DIR"
+              git clone https://github.com/shinytsing/modeshift_django.git .
+            else
+              cd "$PROJECT_DIR" || exit 1
+            fi
           else
-            cd ~/modeshift_django-staging || {
+            STAGING_DIR="$HOME/modeshift_django-staging"
+            if [ ! -d "$STAGING_DIR" ]; then
               echo "暂存目录不存在，创建中..."
-              git clone https://github.com/shinytsing/modeshift_django.git modeshift_django-staging
-              cd modeshift_django-staging
-            }
+              mkdir -p "$STAGING_DIR"
+              cd "$STAGING_DIR"
+              git clone https://github.com/shinytsing/modeshift_django.git .
+            else
+              cd "$STAGING_DIR" || exit 1
+            fi
           fi
           
           # 拉取最新代码
@@ -443,7 +455,12 @@ jobs:
         command_timeout: 30s
         script: |
           echo "📦 创建部署前备份..."
-          cd ~/modeshift_django || exit 1
+          PROJECT_DIR="$HOME/modeshift_django"
+          if [ ! -d "$PROJECT_DIR" ]; then
+            echo "❌ 项目目录不存在，跳过备份"
+            exit 0
+          fi
+          cd "$PROJECT_DIR" || exit 1
           
           BACKUP_DIR="./backups/auto-deploy-$(date +%Y%m%d-%H%M%S)"
           mkdir -p $BACKUP_DIR
@@ -478,13 +495,15 @@ jobs:
           echo "🚀 执行零停机自动部署..."
           
           # 检查项目目录是否存在
-          if [ ! -d "~/modeshift_django" ]; then
+          PROJECT_DIR="$HOME/modeshift_django"
+          if [ ! -d "$PROJECT_DIR" ]; then
             echo "❌ 项目目录不存在，创建目录..."
-            mkdir -p ~/modeshift_django
-            cd ~/modeshift_django
+            mkdir -p "$PROJECT_DIR"
+            cd "$PROJECT_DIR"
             git clone https://github.com/shinytsing/modeshift_django.git .
           else
-            cd ~/modeshift_django || exit 1
+            echo "✅ 项目目录已存在，进入目录..."
+            cd "$PROJECT_DIR" || exit 1
           fi
           
           # 拉取最新代码
@@ -568,7 +587,15 @@ jobs:
         script: |
           echo "🚨 执行紧急部署..."
           
-          cd ~/modeshift_django || exit 1
+          PROJECT_DIR="$HOME/modeshift_django"
+          if [ ! -d "$PROJECT_DIR" ]; then
+            echo "❌ 项目目录不存在，创建中..."
+            mkdir -p "$PROJECT_DIR"
+            cd "$PROJECT_DIR"
+            git clone https://github.com/shinytsing/modeshift_django.git .
+          else
+            cd "$PROJECT_DIR" || exit 1
+          fi
           
           # 拉取最新代码
           git pull origin main
