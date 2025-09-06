@@ -378,6 +378,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
+        script_stop: true
         script: |
           echo "🚀 开始部署到${{ github.event.inputs.environment }}环境..."
           
@@ -433,6 +434,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
+        script_stop: true
         script: |
           echo "📦 创建部署前备份..."
           cd ~/modeshift_django || exit 1
@@ -463,6 +465,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
+        script_stop: true
         script: |
           echo "🚀 执行零停机自动部署..."
           
@@ -543,6 +546,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
+        script_stop: true
         script: |
           echo "🚨 执行紧急部署..."
           
