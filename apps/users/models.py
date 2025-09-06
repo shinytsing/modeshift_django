@@ -16,7 +16,6 @@ class UserRole(models.Model):
 
     class Meta:
         app_label = "users"
-        app_label = "users"
         verbose_name = "用户角色"
         verbose_name_plural = "用户角色"
 
@@ -45,7 +44,6 @@ class UserStatus(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "users"
         app_label = "users"
         verbose_name = "用户状态"
         verbose_name_plural = "用户状态"
