@@ -253,13 +253,13 @@ jobs:
         docker ps -a | grep postgres || echo "PostgreSQL容器未找到"
         docker ps -a | grep redis || echo "Redis容器未找到"
         
-        # 检查网络连接
+        # 检查网络连接 - 使用localhost而不是postgres
         echo "检查网络连接..."
-        ping -c 3 postgres || echo "无法ping postgres主机"
+        ping -c 3 localhost || echo "无法ping localhost"
         netstat -tlnp | grep 5432 || echo "5432端口未监听"
         
-        # 尝试连接
-        pg_isready -h postgres -p 5432 -U postgres || echo "PostgreSQL未就绪"
+        # 尝试连接 - 使用localhost
+        pg_isready -h localhost -p 5432 -U postgres || echo "PostgreSQL未就绪"
         echo "检查Redis状态..."
         redis-cli -h localhost -p 6379 ping || echo "Redis未就绪"
         echo "服务启动完成"
@@ -268,29 +268,29 @@ jobs:
       run: |
         echo "检查PostgreSQL连接..."
         
-        # 直接测试连接
-        if pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
+        # 直接测试连接 - 使用localhost
+        if pg_isready -h localhost -p 5432 -U postgres -d test_modeshift_django; then
           echo "PostgreSQL已就绪"
         else
           echo "PostgreSQL未就绪，显示诊断信息："
           echo "1. 容器状态："
           docker ps -a | grep postgres || echo "PostgreSQL容器未找到"
           echo "2. 网络连接："
-          ping -c 2 postgres || echo "无法ping postgres"
+          ping -c 2 localhost || echo "无法ping localhost"
           echo "3. 端口监听："
           netstat -tlnp | grep 5432 || echo "5432端口未监听"
           echo "4. 尝试直接连接："
-          psql -h postgres -p 5432 -U postgres -d test_modeshift_django -c "SELECT 1;" || echo "直接连接失败"
+          psql -h localhost -p 5432 -U postgres -d test_modeshift_django -c "SELECT 1;" || echo "直接连接失败"
           exit 1
         fi
         
-        # 使用psycopg连接测试
+        # 使用psycopg连接测试 - 使用localhost
         python -c "
         import os
         import psycopg
         try:
             conn = psycopg.connect(
-                host='postgres',
+                host='localhost',
                 dbname='test_modeshift_django',
                 user='postgres',
                 password='postgres',
@@ -310,7 +310,7 @@ jobs:
             exit(1)
         "
       env:
-        POSTGRES_HOST: postgres
+        POSTGRES_HOST: localhost
         POSTGRES_DB: test_modeshift_django
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
@@ -323,7 +323,7 @@ jobs:
       env:
         CI: true
         DJANGO_SETTINGS_MODULE: config.settings.testing
-        POSTGRES_HOST: postgres
+        POSTGRES_HOST: localhost
         POSTGRES_DB: test_modeshift_django
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
@@ -354,7 +354,7 @@ jobs:
       env:
         CI: true
         DJANGO_SETTINGS_MODULE: config.settings.testing
-        POSTGRES_HOST: postgres
+        POSTGRES_HOST: localhost
         POSTGRES_DB: test_modeshift_django
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
