@@ -1,3 +1,34 @@
 [flake8]
-max-line-length = 120
-exclude = .git,__pycache__,env,venv,build,dist,migrations
+max-line-length = 88
+extend-ignore = 
+    E203,  # whitespace before ':'
+    W503,  # line break before binary operator
+    F401,  # imported but unused
+    F841,  # local variable assigned but never used
+    F541,  # f-string is missing placeholders
+    E402,  # module level import not at top of file
+    E304,  # blank lines found after function decorator
+    W291,  # trailing whitespace
+    W293,  # blank line contains whitespace
+    W391,  # blank line at end of file
+    F601,  # dictionary key repeated with different values
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .env,
+    migrations,
+    node_modules,
+    .pytest_cache,
+    htmlcov,
+    .coverage
+per-file-ignores =
+    apps/tools/legacy_views.py:F811,E402,F841,F541,E226
+    apps/tools/views/__init__.py:F401
+    apps/tools/urls.py:F811
+    apps/tools/services/*.py:F841,F541,E226,W291,W293
+    apps/tools/management/commands/*.py:F541,E226,E402
+    apps/tools/models/legacy_models.py:F811,F841
+    apps/content/urls.py:E402

@@ -10,9 +10,6 @@ from django.utils import timezone
 class ToolUsageLog(models.Model):
     """工具使用日志模型"""
 
-    class Meta:
-        app_label = "apps.tools"
-
     TOOL_CHOICES = [
         ("TEST_CASE", "Test Case Generator"),
         ("QUALITY_CHECK", "Code Quality Check"),

@@ -352,7 +352,7 @@ class DiaryTemplate(models.Model):
         if self.questions:
             # 如果questions是列表，转换为字符串
             if isinstance(self.questions, list):
-                return "\n".join([f"问题{i+1}: {q}" for i, q in enumerate(self.questions)])
+                return "\n".join([f"问题{i + 1}: {q}" for i, q in enumerate(self.questions)])
             # 如果questions是字符串，直接返回
             elif isinstance(self.questions, str):
                 return self.questions

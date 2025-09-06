@@ -365,7 +365,7 @@ def share_achievement_api(request):
             "achievement_id": achievement_id,
             "platform": platform,
             "share_url": f"https://qatoolbox.com/achievements/{achievement_id}",
-            "share_text": f"我在QAToolBox解锁了成就！🎉",
+            "share_text": "我在QAToolBox解锁了成就！🎉",
             "shared_at": datetime.now().isoformat(),
             "user_id": request.user.id,
         }
