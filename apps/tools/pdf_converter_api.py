@@ -24,7 +24,6 @@ except ImportError:
     print("警告: PyMuPDF (fitz) 未安装，PDF转换功能将受限")
 
 try:
-    import pdfplumber
     import pypdf
 
     PYPDF_AVAILABLE = True
@@ -1083,8 +1082,6 @@ class PDFConverter:
             # 设置中文字体支持
             try:
                 # 使用reportlab内置的中文字体
-                from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-
                 pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
                 normal_style.fontName = "STSong-Light"
                 normal_style.fontSize = 12
@@ -1540,7 +1537,7 @@ def pdf_converter_api(request):
                     # 解码base64图片数据
                     img_bytes = base64.b64decode(img_data["data"])
                     # 添加到ZIP文件
-                    zip_file.writestr(f"page_{i+1}.png", img_bytes)
+                    zip_file.writestr(f"page_{i + 1}.png", img_bytes)
 
             zip_content = zip_buffer.getvalue()
             zip_buffer.close()

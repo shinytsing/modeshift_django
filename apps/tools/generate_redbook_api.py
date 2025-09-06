@@ -169,7 +169,7 @@ class GenerateRedBookAPI(APIView):
                     # 转换为RGB模式（HEIC可能是RGBA）
                     if img.mode in ("RGBA", "LA", "P"):
                         img = img.convert("RGB")
-                        logger.info(f"转换为RGB模式")
+                        logger.info("转换为RGB模式")
 
                     # 保存为JPEG格式
                     img.save(jpeg_file.name, "JPEG", quality=95)

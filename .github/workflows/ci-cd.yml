@@ -226,11 +226,11 @@ jobs:
         echo "检查PostgreSQL连接..."
         python -c "
         import os
-        import psycopg2
+        import psycopg
         try:
-            conn = psycopg2.connect(
+            conn = psycopg.connect(
                 host='postgres',
-                database='test_modeshift_django',
+                dbname='test_modeshift_django',
                 user='postgres',
                 password='postgres',
                 port=5432

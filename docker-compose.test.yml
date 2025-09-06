@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: test_modeshift_django
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    command: >
+      sh -c "
+        echo '等待服务启动...' &&
+        sleep 15 &&
+        echo '检查PostgreSQL状态...' &&
+        pg_isready -h postgres -p 5432 -U postgres &&
+        echo '检查Redis状态...' &&
+        redis-cli -h redis -p 6379 ping &&
+        echo '检查数据库连接...' &&
+        python -c \"
+        import psycopg
+        try:
+            conn = psycopg.connect(
+                host='postgres',
+                dbname='test_modeshift_django',
+                user='postgres',
+                password='postgres',
+                port=5432
+            )
+            print('数据库连接成功')
+            conn.close()
+        except Exception as e:
+            print(f'数据库连接失败: {e}')
+            exit(1)
+        \" &&
+        echo '运行数据库迁移...' &&
+        python manage.py migrate --settings=config.settings.testing --verbosity=2 &&
+        echo '运行测试...' &&
+        pytest tests/ --cov=apps --cov-report=xml --cov-report=html --junit-xml=test-results.xml --html=test-report.html --self-contained-html -v --maxfail=10 --tb=short --durations=10
+      "
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.testing
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=test_modeshift_django
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./test-results:/app/test-results

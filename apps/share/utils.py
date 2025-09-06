@@ -156,6 +156,6 @@ def format_share_count(count):
     if count < 1000:
         return str(count)
     elif count < 1000000:
-        return f"{count/1000:.1f}K"
+        return f"{count / 1000:.1f}K"
     else:
-        return f"{count/1000000:.1f}M"
+        return f"{count / 1000000:.1f}M"
