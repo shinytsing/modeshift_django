@@ -197,20 +197,23 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_modeshift_django
           POSTGRES_USER: postgres
+          POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
         options: >-
           --health-cmd "pg_isready -U postgres -d test_modeshift_django"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 10s
         ports:
           - 5432:5432
       redis:
         image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 10s
         ports:
           - 6379:6379
     
@@ -252,15 +255,23 @@ jobs:
       run: |
         echo "检查PostgreSQL连接..."
         # 等待数据库完全启动
-        for i in {1..30}; do
-          if pg_isready -h postgres -p 5432 -U postgres; then
+        for i in {1..60}; do
+          if pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
             echo "PostgreSQL已就绪"
             break
           fi
-          echo "等待PostgreSQL启动... ($i/30)"
+          echo "等待PostgreSQL启动... ($i/60)"
           sleep 2
         done
         
+        # 检查数据库是否真的可用
+        if ! pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
+          echo "PostgreSQL启动失败，显示服务状态："
+          docker ps -a | grep postgres || echo "PostgreSQL容器未找到"
+          exit 1
+        fi
+        
+        # 使用psycopg连接测试
         python -c "
         import os
         import psycopg
@@ -271,9 +282,15 @@ jobs:
                 user='postgres',
                 password='postgres',
                 port=5432,
-                connect_timeout=10
+                connect_timeout=30
             )
             print('数据库连接成功')
+            # 测试查询
+            cur = conn.cursor()
+            cur.execute('SELECT version();')
+            version = cur.fetchone()
+            print(f'PostgreSQL版本: {version[0]}')
+            cur.close()
             conn.close()
         except Exception as e:
             print(f'数据库连接失败: {e}')
