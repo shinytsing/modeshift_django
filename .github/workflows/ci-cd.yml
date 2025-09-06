@@ -215,12 +215,43 @@ jobs:
       run: |
         echo "等待PostgreSQL和Redis服务启动..."
         sleep 15
+        echo "检查PostgreSQL状态..."
+        pg_isready -h postgres -p 5432 -U postgres || echo "PostgreSQL未就绪"
+        echo "检查Redis状态..."
+        redis-cli -h localhost -p 6379 ping || echo "Redis未就绪"
         echo "服务启动完成"
+    
+    - name: 检查数据库连接
+      run: |
+        echo "检查PostgreSQL连接..."
+        python -c "
+        import os
+        import psycopg2
+        try:
+            conn = psycopg2.connect(
+                host='postgres',
+                database='test_modeshift_django',
+                user='postgres',
+                password='postgres',
+                port=5432
+            )
+            print('数据库连接成功')
+            conn.close()
+        except Exception as e:
+            print(f'数据库连接失败: {e}')
+            exit(1)
+        "
+      env:
+        POSTGRES_HOST: postgres
+        POSTGRES_DB: test_modeshift_django
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
     
     - name: 运行数据库迁移
       run: |
         echo "运行数据库迁移..."
-        python manage.py migrate --settings=config.settings.testing
+        python manage.py migrate --settings=config.settings.testing --verbosity=2
+        echo "数据库迁移完成"
       env:
         DJANGO_SETTINGS_MODULE: config.settings.testing
         POSTGRES_HOST: postgres
