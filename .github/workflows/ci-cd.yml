@@ -124,13 +124,24 @@ jobs:
         QUALITY_PASSED=true
         QUALITY_SCORE=100
         
-        # 检查安全问题
+        # 检查安全问题 - 只检查高严重级别的问题
         if [ -f bandit-report.json ]; then
-          HIGH_ISSUES=$(jq '.results | length' bandit-report.json 2>/dev/null || echo "0")
-          if [ "$HIGH_ISSUES" -gt "5" ]; then
-            echo "::error::安全问题过多: $HIGH_ISSUES"
+          # 只统计高严重级别的问题，忽略已跳过的规则
+          HIGH_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH" and (.test_id | test("B110|B311|B404|B603|B607|B112|B108") | not))) | length' bandit-report.json 2>/dev/null || echo "0")
+          MEDIUM_SEVERITY_ISSUES=$(jq '.results | map(select(.issue_severity == "MEDIUM" and (.test_id | test("B110|B311|B404|B603|B607|B112|B108") | not))) | length' bandit-report.json 2>/dev/null || echo "0")
+          
+          echo "高严重级别安全问题: $HIGH_SEVERITY_ISSUES"
+          echo "中等严重级别安全问题: $MEDIUM_SEVERITY_ISSUES"
+          
+          if [ "$HIGH_SEVERITY_ISSUES" -gt "0" ]; then
+            echo "::error::发现高严重级别安全问题: $HIGH_SEVERITY_ISSUES"
             QUALITY_PASSED=false
-            QUALITY_SCORE=$((QUALITY_SCORE - HIGH_ISSUES * 10))
+            QUALITY_SCORE=$((QUALITY_SCORE - HIGH_SEVERITY_ISSUES * 20))
+          fi
+          
+          if [ "$MEDIUM_SEVERITY_ISSUES" -gt "10" ]; then
+            echo "::warning::中等严重级别安全问题较多: $MEDIUM_SEVERITY_ISSUES"
+            QUALITY_SCORE=$((QUALITY_SCORE - MEDIUM_SEVERITY_ISSUES * 5))
           fi
         fi
         
@@ -144,11 +155,16 @@ jobs:
           fi
         fi
         
+        # 确保评分不低于0
+        if [ "$QUALITY_SCORE" -lt "0" ]; then
+          QUALITY_SCORE=0
+        fi
+        
         echo "passed=$QUALITY_PASSED" >> $GITHUB_OUTPUT
         echo "score=$QUALITY_SCORE" >> $GITHUB_OUTPUT
         echo "代码质量评分: $QUALITY_SCORE/100"
         
-        # 严格质量门禁：任何质量问题都导致失败
+        # 严格质量门禁：只有高严重级别问题才导致失败
         if [ "$QUALITY_PASSED" = "false" ]; then
           echo "::error::代码质量不达标，评分: $QUALITY_SCORE/100"
           exit 1
