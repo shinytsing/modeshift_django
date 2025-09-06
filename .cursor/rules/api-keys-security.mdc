@@ -1,0 +1,67 @@
+---
+alwaysApply: true
+description: API密钥安全管理和环境变量使用规范
+---
+
+# API密钥安全管理规范
+
+## 环境变量管理
+
+所有第三方API密钥必须通过环境变量管理，严禁硬编码在代码中。
+
+### 当前配置的API密钥
+
+- **DEEPSEEK_API_KEY**: DeepSeek AI API密钥
+- **PIXABAY_API_KEY**: Pixabay图片API密钥  
+- **AMAP_API_KEY**: 高德地图API密钥
+- **GOOGLE_API_KEY**: Google API密钥
+- **GOOGLE_CSE_ID**: Google自定义搜索ID
+- **OPENWEATHER_API_KEY**: OpenWeather API密钥
+
+### 环境变量文件
+
+- **生产环境**: [env.production](mdc:env.production) - 包含所有生产环境变量
+- **开发环境**: [env.example](mdc:env.example) - 环境变量模板
+- **Docker配置**: [docker-compose.yml](mdc:docker-compose.yml) - 容器环境变量传递
+
+### 代码中的使用方式
+
+```python
+import os
+
+# ✅ 正确方式 - 使用环境变量
+api_key = os.getenv("API_KEY_NAME")
+if not api_key:
+    logger.warning("API_KEY_NAME环境变量未设置")
+    return None
+
+# ❌ 错误方式 - 硬编码
+api_key = "sk-1234567890abcdef"
+```
+
+### 服务层实现示例
+
+参考以下文件中的正确实现：
+- [apps/tools/services/meditation_audio_service.py](mdc:apps/tools/services/meditation_audio_service.py)
+- [apps/tools/services/enhanced_map_service.py](mdc:apps/tools/services/enhanced_map_service.py)
+
+### 部署时的环境变量传递
+
+1. **本地开发**: 从 `.env` 文件加载
+2. **Docker部署**: 通过 `docker-compose.yml` 传递
+3. **CI/CD部署**: 通过GitHub Secrets传递到服务器
+
+### 安全检查
+
+- 使用 `bandit` 扫描硬编码密钥
+- 使用 `safety` 检查依赖漏洞
+- 定期轮换API密钥
+- 监控API使用情况
+
+### 安全注意事项
+
+1. **永远不要**将API密钥提交到版本控制
+2. **永远不要**在日志中输出API密钥
+3. **永远不要**在错误消息中暴露API密钥
+4. 使用 `.gitignore` 忽略包含密钥的文件
+5. 定期审查代码中的密钥使用情况

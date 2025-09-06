@@ -1,0 +1,193 @@
+---
+globs: *.py
+description: Django开发模式和最佳实践
+---
+
+# Django开发模式和最佳实践
+
+## 项目结构模式
+
+### 应用组织
+- **apps/tools/**: 核心工具应用，包含所有业务功能
+- **apps/users/**: 用户管理应用
+- **apps/content/**: 内容管理应用
+- **apps/share/**: 分享功能应用
+
+### 模型组织模式
+- **按功能分类**: 模型文件按功能领域分类到不同文件
+- **基础模型**: [apps/tools/models/base_models.py](mdc:apps/tools/models/base_models.py)
+- **功能模型**: 聊天、健身、旅游、塔罗牌等独立模型文件
+- **Legacy模型**: [apps/tools/models/legacy_models.py](mdc:apps/tools/models/legacy_models.py) - 逐步迁移
+
+### 服务层模式
+- **服务目录**: [apps/tools/services/](mdc:apps/tools/services/)
+- **单一职责**: 每个服务类负责特定业务领域
+- **依赖注入**: 使用环境变量注入配置
+- **错误处理**: 统一的异常处理和日志记录
+
+## Django最佳实践
+
+### 模型设计
+```python
+# 使用适当的字段类型和约束
+class SomeModel(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'some_table'
+        indexes = [
+            models.Index(fields=['name']),
+        ]
+    
+    def __str__(self):
+        return self.name
+```
+
+### 视图设计
+```python
+# 使用类视图优先
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class SomeListView(LoginRequiredMixin, ListView):
+    model = SomeModel
+    template_name = 'tools/some_list.html'
+    context_object_name = 'objects'
+    paginate_by = 20
+```
+
+### 服务层设计
+```python
+# 服务类示例
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SomeService:
+    def __init__(self):
+        self.api_key = os.getenv("API_KEY_NAME")
+        if not self.api_key:
+            logger.warning("API_KEY_NAME环境变量未设置")
+    
+    def process_data(self, data):
+        try:
+            # 业务逻辑处理
+            return processed_data
+        except Exception as e:
+            logger.error(f"处理数据时出错: {e}")
+            raise
+```
+
+### 管理命令模式
+- **位置**: [apps/tools/management/commands/](mdc:apps/tools/management/commands/)
+- **命名**: 使用下划线命名，如 `import_data.py`
+- **结构**: 继承 `BaseCommand` 类
+
+```python
+from django.core.management.base import BaseCommand
+
+class Command(BaseCommand):
+    help = '命令描述'
+    
+    def add_arguments(self, parser):
+        parser.add_argument('--option', type=str, help='选项描述')
+    
+    def handle(self, *args, **options):
+        # 命令逻辑
+        pass
+```
+
+## 配置管理
+
+### 环境配置
+- **开发环境**: [config/settings/development.py](mdc:config/settings/development.py)
+- **生产环境**: [config/settings/production.py](mdc:config/settings/production.py)
+- **基础配置**: [config/settings/base.py](mdc:config/settings/base.py)
+
+### 环境变量使用
+```python
+import os
+
+# 正确方式
+api_key = os.getenv("API_KEY_NAME")
+if not api_key:
+    logger.warning("API_KEY_NAME环境变量未设置")
+    return None
+
+# 错误方式 - 硬编码
+api_key = "sk-1234567890abcdef"
+```
+
+## 安全实践
+
+### API密钥管理
+- 所有API密钥通过环境变量管理
+- 使用 `os.getenv()` 获取环境变量
+- 在 [env.production](mdc:env.production) 中配置生产环境密钥
+- 在 [docker-compose.yml](mdc:docker-compose.yml) 中传递环境变量
+
+### 安全扫描
+- 使用 `bandit` 进行安全漏洞扫描
+- 使用 `safety` 检查依赖漏洞
+- 定期更新依赖包
+
+## 测试模式
+
+### 测试结构
+- **单元测试**: [tests/unit/](mdc:tests/unit/)
+- **集成测试**: [tests/integration/](mdc:tests/integration/)
+- **端到端测试**: [tests/e2e/](mdc:tests/e2e/)
+
+### 测试配置
+- 使用 `pytest` 作为测试框架
+- 配置在 [pytest.ini](mdc:pytest.ini)
+- 使用 `pytest-django` 进行Django集成
+
+### 测试数据管理
+```python
+from django.test import TestCase
+from apps.tools.models import SomeModel
+
+class TestSomeFeature(TestCase):
+    def setUp(self):
+        self.test_data = SomeModel.objects.create(
+            field1='test_value',
+            field2='another_value'
+        )
+    
+    def test_some_functionality(self):
+        # 测试逻辑
+        self.assertEqual(self.test_data.field1, 'test_value')
+```
+
+## 部署模式
+
+### Docker化部署
+- **主配置**: [docker-compose.yml](mdc:docker-compose.yml)
+- **应用镜像**: [Dockerfile](mdc:Dockerfile)
+- **环境变量**: 通过Docker环境变量传递
+
+### CI/CD集成
+- **工作流**: [.github/workflows/ci-cd.yml](mdc:.github/workflows/ci-cd.yml)
+- **部署脚本**: [deploy-ci.sh](mdc:deploy-ci.sh)
+- **健康检查**: 部署后验证服务状态
+
+## 性能优化
+
+### 数据库优化
+- 使用适当的索引
+- 避免N+1查询问题
+- 使用 `select_related` 和 `prefetch_related`
+
+### 缓存策略
+- 使用Redis进行缓存
+- 合理设置缓存过期时间
+- 使用缓存装饰器
+
+### 静态文件处理
+- 使用 `collectstatic` 收集静态文件
+- 配置CDN加速
+- 压缩CSS和JS文件
