@@ -250,7 +250,7 @@ class DouyinAnalyzer:
                 print(error_msg)
 
                 if attempt == max_retries - 1:
-                    return f"API调用超时: 所有重试尝试都已超时，请稍后再试"
+                    return "API调用超时: 所有重试尝试都已超时，请稍后再试"
 
                 # 等待后重试
                 time.sleep(retry_delays[attempt])
@@ -261,7 +261,7 @@ class DouyinAnalyzer:
                 print(error_msg)
 
                 if attempt == max_retries - 1:
-                    return f"网络连接错误: 无法连接到DeepSeek API服务器"
+                    return "网络连接错误: 无法连接到DeepSeek API服务器"
 
                 # 等待后重试
                 time.sleep(retry_delays[attempt])

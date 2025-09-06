@@ -110,18 +110,15 @@ def self_analysis_api(request):
         try:
             data = json.loads(request.body)
             question = data.get("question", "")
-            context = data.get("context", "")
 
             if not question:
                 return JsonResponse({"success": False, "error": "问题不能为空"})
 
             # 构建分析提示词
-            prompt = f"""
+            prompt = """
             作为一个专业的心理咨询师和人生导师，请基于以下信息进行分析：
 
             用户问题：{question}
-            
-            背景信息：{context}
             
             请从以下角度进行分析：
             1. 心理层面：情绪状态、思维模式、行为动机

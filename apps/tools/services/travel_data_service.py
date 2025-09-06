@@ -168,7 +168,7 @@ class TravelDataService:
             query = f"{destination} 旅游攻略 景点 美食"
             urllib.parse.quote(query)
 
-            url = f"https://api.duckduckgo.com/"
+            url = "https://api.duckduckgo.com/"
             params = {"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"}
 
             response = self.session.get(url, params=params, timeout=10)
@@ -241,7 +241,7 @@ class TravelDataService:
         try:
             # 使用OpenTripMap API (免费，无需密钥)
             # 首先获取地理坐标
-            geocode_url = f"https://api.opentripmap.com/0.1/zh/places/geocode"
+            geocode_url = "https://api.opentripmap.com/0.1/zh/places/geocode"
             params = {"name": destination, "limit": 1, "format": "json"}
 
             response = self.session.get(geocode_url, params=params, timeout=10)
@@ -253,7 +253,7 @@ class TravelDataService:
                     lon = location.get("lon")
 
                     # 获取景点信息
-                    places_url = f"https://api.opentripmap.com/0.1/zh/places/radius"
+                    places_url = "https://api.opentripmap.com/0.1/zh/places/radius"
                     places_params = {
                         "radius": 5000,  # 5公里半径
                         "lon": lon,
@@ -390,7 +390,7 @@ class TravelDataService:
         """获取时区数据（免费Time API）"""
         try:
             # 使用免费的时区API
-            url = f"http://worldtimeapi.org/api/timezone/Asia/Shanghai"
+            url = "http://worldtimeapi.org/api/timezone/Asia/Shanghai"
 
             response = self.session.get(url, timeout=10)
             if response.status_code == 200:

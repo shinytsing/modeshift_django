@@ -646,7 +646,7 @@ def generate_ai_interpretation(spread, drawn_cards, question, reading_type):
     """生成AI解读"""
     try:
         # 构建提示词
-        prompt = f"""
+        prompt = """
 作为一位经验丰富的塔罗牌解读师，请为以下占卜提供专业的解读：
 
 占卜类型：{reading_type}

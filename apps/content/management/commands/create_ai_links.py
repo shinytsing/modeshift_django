@@ -113,7 +113,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"AI友情链接创建完成！\n"
+                "AI友情链接创建完成！\n"
                 f"✅ 新创建: {created_count} 个\n"
                 f"🔄 更新: {updated_count} 个\n"
                 f"📊 总计: {AILink.objects.count()} 个链接"

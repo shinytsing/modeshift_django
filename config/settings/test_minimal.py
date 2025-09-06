@@ -61,15 +61,15 @@ ALLOWED_HOSTS = ["testserver", "localhost", "127.0.0.1"]
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 
-# 禁用迁移以加速测试
+# 启用迁移以支持测试
 MIGRATION_MODULES = {
-    "auth": None,
-    "contenttypes": None,
-    "sessions": None,
-    "users": None,
-    "tools": None,
-    "content": None,
-    "share": None,
+    "auth": "django.contrib.auth.migrations",
+    "contenttypes": "django.contrib.contenttypes.migrations",
+    "sessions": "django.contrib.sessions.migrations",
+    "users": "apps.users.migrations",
+    "tools": "apps.tools.migrations",
+    "content": "apps.content.migrations",
+    "share": "apps.share.migrations",
 }
 
 # 简化日志配置
@@ -79,6 +79,12 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "WARNING",
         },
     },
     "root": {
