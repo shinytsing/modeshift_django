@@ -3,11 +3,7 @@ from django.contrib import admin
 
 # 导入模型
 try:
-    from .models import (
-        SocialMediaNotification,
-        SocialMediaSubscription,
-        ToolUsageLog,
-    )
+    from .models import SocialMediaNotification, SocialMediaSubscription, ToolUsageLog
 
     @admin.register(ToolUsageLog)
     class ToolUsageLogAdmin(admin.ModelAdmin):

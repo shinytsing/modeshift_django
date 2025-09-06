@@ -121,12 +121,21 @@ def pytest_configure(config):
     # 测试数据库配置
     settings.DATABASES["default"]["NAME"] = ":memory:"
 
-    # 禁用缓存
+    # 测试缓存配置
     settings.CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
-        }
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "test-cache",
+        },
+        "session": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "test-session-cache",
+        },
     }
+
+    # 会话配置
+    settings.SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    settings.SESSION_CACHE_ALIAS = "session"
 
     # 禁用Celery
     settings.CELERY_TASK_ALWAYS_EAGER = True
@@ -163,6 +172,31 @@ class UserFactory:
 
         User = get_user_model()
         return User.objects.create_user(**kwargs)
+
+    @staticmethod
+    def create_batch(count, **kwargs):
+        """批量创建用户"""
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        users = []
+        for i in range(count):
+            user_kwargs = kwargs.copy()
+            user_kwargs.setdefault("username", f"user{i}")
+            user_kwargs.setdefault("email", f"user{i}@example.com")
+            users.append(User.objects.create_user(**user_kwargs))
+        return users
+
+    def __init__(self, **kwargs):
+        """支持实例化语法"""
+        self._kwargs = kwargs
+        self._user = None
+
+    def __getattr__(self, name):
+        """代理属性访问到用户对象"""
+        if self._user is None:
+            self._user = self.create(**self._kwargs)
+        return getattr(self._user, name)
 
 
 class AdminUserFactory(UserFactory):
