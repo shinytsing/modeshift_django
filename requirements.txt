@@ -32,6 +32,9 @@ django-oauth-toolkit==1.7.1
 cryptography==41.0.7
 PyJWT==2.8.0
 
+# ===== 序列化器兼容性 =====
+marshmallow==3.20.1
+
 # ===== 文件处理 =====
 Pillow==10.4.0
 openpyxl==3.1.2
@@ -71,7 +74,7 @@ isort==5.13.2
 flake8==6.1.0
 mypy==1.8.0
 bandit==1.7.5
-safety==3.0.1
+safety==2.3.5
 pylint==3.0.3
 
 # 测试工具
