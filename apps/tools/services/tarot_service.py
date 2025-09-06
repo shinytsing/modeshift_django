@@ -123,7 +123,7 @@ class TarotService:
 
     def _build_interpretation_prompt(self, spread, drawn_cards, question, reading_type):
         """构建解读提示词"""
-        prompt = f"""
+        prompt = """
 作为一位经验丰富的塔罗牌解读师，请为以下占卜提供专业的解读：
 
 占卜类型：{reading_type}

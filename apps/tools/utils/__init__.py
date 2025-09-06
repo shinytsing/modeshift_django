@@ -290,7 +290,7 @@ API_RATE_LIMIT=10/minute
         test_case_count = current_content.count("TC-")
         module_count = current_content.count("## ")
 
-        return f"""
+        return """
 请继续生成测试用例，确保内容完整且连续，用例数量充足，格式一致。
 
 当前已生成的内容统计：

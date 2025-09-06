@@ -362,8 +362,8 @@ class GenerateRedBookAPI(APIView):
             f"title={encoded_title}&"
             f"content={encoded_content}&"
             f"tags={encoded_tags}&"
-            f"auto_fill=true&"
-            f"source=web_tool"
+            "auto_fill=true&"
+            "source=web_tool"
         )
 
         return publish_url
@@ -389,8 +389,8 @@ class GenerateRedBookAPI(APIView):
             f"title={encoded_title}&"
             f"content={encoded_content}&"
             f"tags={encoded_tags}&"
-            f"auto_fill=true&"
-            f"source=web_tool"
+            "auto_fill=true&"
+            "source=web_tool"
         )
 
         return app_url
@@ -416,15 +416,15 @@ class GenerateRedBookAPI(APIView):
             f"title={encoded_title}&"
             f"content={encoded_content}&"
             f"tags={encoded_tags}&"
-            f"auto_fill=true&"
-            f"source=web_tool"
+            "auto_fill=true&"
+            "source=web_tool"
         )
 
         return app_url
 
     def _get_desktop_publish_guide(self, result):
         """获取电脑端发布指南"""
-        return f"""
+        return """
 ## 💻 电脑端发布步骤：
 
 ### 🚀 一键发布（推荐）
@@ -467,7 +467,7 @@ class GenerateRedBookAPI(APIView):
 
     def _get_mobile_publish_guide(self, result):
         """获取手机端发布指南"""
-        return f"""
+        return """
 ## 📱 手机端发布步骤：
 
 ### 🚀 一键发布（推荐）

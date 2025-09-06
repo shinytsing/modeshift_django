@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.content",
     "apps.tools",
+    "apps.share",
 ]
 
 MIDDLEWARE = [
