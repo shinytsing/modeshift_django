@@ -3,19 +3,11 @@
 """
 
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 import pytest
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestBasicFunctionality(TestCase):
     """基础功能测试"""
 
@@ -63,14 +55,6 @@ class TestBasicFunctionality(TestCase):
             self.fail("无法导入tools工具函数")
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestAPIConfiguration(TestCase):
     """API配置测试"""
 
@@ -89,14 +73,6 @@ class TestAPIConfiguration(TestCase):
         self.assertIn("default", settings.DATABASES)
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestSecurityConfiguration(TestCase):
     """安全配置测试"""
 
@@ -115,14 +91,6 @@ class TestSecurityConfiguration(TestCase):
         self.assertTrue(hasattr(settings, "ALLOWED_HOSTS"))
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestStaticFiles(TestCase):
     """静态文件测试"""
 
@@ -137,14 +105,6 @@ class TestStaticFiles(TestCase):
         self.assertTrue(settings.MEDIA_URL.startswith("/"))
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestCacheConfiguration(TestCase):
     """缓存配置测试"""
 
@@ -158,14 +118,6 @@ class TestCacheConfiguration(TestCase):
         self.assertTrue(hasattr(settings, "SESSION_ENGINE"))
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestLoggingConfiguration(TestCase):
     """日志配置测试"""
 
@@ -181,14 +133,6 @@ class TestLoggingConfiguration(TestCase):
         self.assertIn("handlers", settings.LOGGING)
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestMiddlewareConfiguration(TestCase):
     """中间件配置测试"""
 
@@ -204,14 +148,6 @@ class TestMiddlewareConfiguration(TestCase):
         self.assertIn("django.middleware.csrf.CsrfViewMiddleware", settings.MIDDLEWARE)
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestURLConfiguration(TestCase):
     """URL配置测试"""
 
@@ -226,14 +162,6 @@ class TestURLConfiguration(TestCase):
             self.fail("URL配置有问题")
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestTemplateConfiguration(TestCase):
     """模板配置测试"""
 
@@ -250,14 +178,6 @@ class TestTemplateConfiguration(TestCase):
             self.assertIn("DIRS", template)
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestInternationalization(TestCase):
     """国际化配置测试"""
 
@@ -277,14 +197,6 @@ class TestInternationalization(TestCase):
         self.assertTrue(settings.USE_I18N)
 
 
-@override_settings(
-    DATABASES={
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
-        }
-    }
-)
 class TestFileUpload(TestCase):
     """文件上传配置测试"""
 

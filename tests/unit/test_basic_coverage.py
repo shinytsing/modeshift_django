@@ -237,5 +237,5 @@ class TestBasicCoverage:
         assert hasattr(settings, "DATABASES")
         assert "default" in settings.DATABASES
         db_config = settings.DATABASES["default"]
-        assert db_config["ENGINE"] == "django.db.backends.sqlite3"
-        assert db_config["NAME"] == ":memory:"
+        assert db_config["ENGINE"] == "django.db.backends.postgresql"
+        assert db_config["NAME"] == "test_modeshift_django"

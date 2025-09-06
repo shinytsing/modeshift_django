@@ -27,11 +27,8 @@ fake = Faker("zh_CN")
 @pytest.fixture(scope="session")
 def django_db_setup():
     """数据库设置"""
-    # 使用SQLite数据库进行本地测试
-    settings.DATABASES["default"] = {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    }
+    # 使用测试环境配置的数据库
+    pass
 
 
 @pytest.fixture
@@ -118,8 +115,8 @@ def pytest_configure(config):
         "content": None,
     }
 
-    # 测试数据库配置
-    settings.DATABASES["default"]["NAME"] = ":memory:"
+    # 测试数据库配置 - 使用环境变量配置的数据库
+    pass
 
     # 测试缓存配置
     settings.CACHES = {
