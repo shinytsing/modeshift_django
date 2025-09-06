@@ -11,7 +11,7 @@ class ToolUsageLog(models.Model):
     """工具使用日志模型"""
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
 
     TOOL_CHOICES = [
         ("TEST_CASE", "Test Case Generator"),

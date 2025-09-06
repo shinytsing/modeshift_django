@@ -12,6 +12,7 @@ class Article(models.Model):
     is_published = models.BooleanField(default=False, verbose_name="是否发布")
 
     class Meta:
+        app_label = "content"
         verbose_name = "文章"
         verbose_name_plural = "文章"
         ordering = ["-created_at"]
@@ -28,6 +29,7 @@ class Comment(models.Model):
     is_approved = models.BooleanField(default=True, verbose_name="是否审核通过")
 
     class Meta:
+        app_label = "content"
         verbose_name = "评论"
         verbose_name_plural = "评论"
         ordering = ["-created_at"]
@@ -67,6 +69,7 @@ class Suggestion(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
+        app_label = "content"
         verbose_name = "用户建议"
         verbose_name_plural = "用户建议"
         ordering = ["-created_at"]
@@ -103,6 +106,7 @@ class Feedback(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
+        app_label = "content"
         verbose_name = "用户反馈"
         verbose_name_plural = "用户反馈"
         ordering = ["-created_at"]
@@ -137,6 +141,7 @@ class Announcement(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
+        app_label = "content"
         verbose_name = "系统公告"
         verbose_name_plural = "系统公告"
         ordering = ["-priority", "-created_at"]
@@ -177,6 +182,7 @@ class AILink(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
+        app_label = "content"
         verbose_name = "AI友情链接"
         verbose_name_plural = "AI友情链接"
         ordering = ["sort_order", "-created_at"]
@@ -257,6 +263,7 @@ class FeatureAccess(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
+        app_label = "content"
         verbose_name = "功能入口"
         verbose_name_plural = "功能入口"
         ordering = ["sort_order", "feature_name"]
@@ -296,6 +303,7 @@ class UserFeatureAccess(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     class Meta:
+        app_label = "content"
         unique_together = ["user", "feature"]
         verbose_name = "用户功能访问"
         verbose_name_plural = "用户功能访问"

@@ -34,7 +34,7 @@ class ShareRecord(models.Model):
     user_agent = models.TextField(blank=True, verbose_name="用户代理")
 
     class Meta:
-        app_label = "apps.share"
+        app_label = "share"
         verbose_name = "分享记录"
         verbose_name_plural = "分享记录"
         ordering = ["-share_time"]
@@ -59,7 +59,7 @@ class ShareLink(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="是否激活")
 
     class Meta:
-        app_label = "apps.share"
+        app_label = "share"
         verbose_name = "分享链接"
         verbose_name_plural = "分享链接"
         ordering = ["-created_at"]
@@ -80,7 +80,7 @@ class ShareAnalytics(models.Model):
     click_count = models.PositiveIntegerField(default=0, verbose_name="点击次数")
 
     class Meta:
-        app_label = "apps.share"
+        app_label = "share"
         verbose_name = "分享分析"
         verbose_name_plural = "分享分析"
         unique_together = ["date", "platform"]
