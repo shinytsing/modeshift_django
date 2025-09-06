@@ -34,7 +34,9 @@ class RealDataTravelService:
         self.session.timeout = (5, 30)  # (连接超时, 读取超时) - 减少等待时间
 
         # DeepSeek API配置
-        self.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "sk-c4a84c8bbff341cbb3006ecaf84030fe")
+        self.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
+        if not self.deepseek_api_key:
+            raise ValueError("DEEPSEEK_API_KEY environment variable is required")
         self.deepseek_base_url = "https://api.deepseek.com/v1"
 
         # 免费API配置

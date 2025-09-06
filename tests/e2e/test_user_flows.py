@@ -9,6 +9,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 
+@pytest.mark.django_db
 class TestUserRegistrationFlow:
     """用户注册流程测试"""
 
@@ -63,6 +64,7 @@ class TestUserRegistrationFlow:
         expect(page.locator("text=密码不匹配")).to_be_visible()
 
 
+@pytest.mark.django_db
 class TestUserLoginFlow:
     """用户登录流程测试"""
 
@@ -110,6 +112,7 @@ class TestUserLoginFlow:
         expect(page.locator("text=登录")).to_be_visible()
 
 
+@pytest.mark.django_db
 class TestToolUsageFlow:
     """工具使用流程测试"""
 
@@ -156,6 +159,7 @@ class TestToolUsageFlow:
         # 注意：文件上传测试需要准备测试文件
 
 
+@pytest.mark.django_db
 class TestMobileResponsiveness:
     """移动端响应式测试"""
 

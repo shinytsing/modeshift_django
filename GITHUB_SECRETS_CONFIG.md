@@ -74,7 +74,7 @@ EMAIL_PASSWORD=c9d5&b5z
 ### 🔑 API密钥配置
 
 ```
-DEEPSEEK_API_KEY=sk-c4a84c8bbff341cbb3006ecaf84030fe
+DEEPSEEK_API_KEY=your_actual_deepseek_api_key_here
 ```
 
 ### 🌐 其他API密钥（需要你提供）
@@ -117,7 +117,7 @@ OPENWEATHER_API_KEY=<你的天气API密钥>
 
 #### ✅ API密钥（必需）
 - **Name**: `DEEPSEEK_API_KEY`
-- **Value**: `sk-c4a84c8bbff341cbb3006ecaf84030fe`
+- **Value**: `your_actual_deepseek_api_key_here`
 
 #### ❓ 其他API密钥（可选）
 如果你有这些API密钥，也可以添加：

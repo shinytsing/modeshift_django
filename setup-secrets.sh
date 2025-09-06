@@ -47,7 +47,8 @@ gh secret set EMAIL_PASSWORD --body "c9d5&b5z"
 
 # API密钥配置
 echo "🔑 配置API密钥..."
-gh secret set DEEPSEEK_API_KEY --body "sk-c4a84c8bbff341cbb3006ecaf84030fe"
+# 请手动设置DEEPSEEK_API_KEY，不要在此脚本中硬编码API密钥
+# gh secret set DEEPSEEK_API_KEY --body "your_actual_deepseek_api_key_here"
 
 # 其他可选API密钥
 echo "❓ 配置其他API密钥（可选）..."
