@@ -198,21 +198,22 @@ jobs:
           POSTGRES_DB: test_modeshift_django
           POSTGRES_USER: postgres
           POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+          PGDATA: /var/lib/postgresql/data/pgdata
         options: >-
           --health-cmd "pg_isready -U postgres -d test_modeshift_django"
-          --health-interval 5s
+          --health-interval 10s
           --health-timeout 5s
-          --health-retries 20
-          --health-start-period 10s
+          --health-retries 5
+          --health-start-period 30s
         ports:
           - 5432:5432
       redis:
         image: redis:7
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 5s
+          --health-interval 10s
           --health-timeout 5s
-          --health-retries 20
+          --health-retries 5
           --health-start-period 10s
         ports:
           - 6379:6379
@@ -246,6 +247,18 @@ jobs:
         # 安装PostgreSQL客户端工具
         sudo apt-get update
         sudo apt-get install -y postgresql-client redis-tools
+        
+        # 检查服务状态
+        echo "检查Docker服务状态..."
+        docker ps -a | grep postgres || echo "PostgreSQL容器未找到"
+        docker ps -a | grep redis || echo "Redis容器未找到"
+        
+        # 检查网络连接
+        echo "检查网络连接..."
+        ping -c 3 postgres || echo "无法ping postgres主机"
+        netstat -tlnp | grep 5432 || echo "5432端口未监听"
+        
+        # 尝试连接
         pg_isready -h postgres -p 5432 -U postgres || echo "PostgreSQL未就绪"
         echo "检查Redis状态..."
         redis-cli -h localhost -p 6379 ping || echo "Redis未就绪"
@@ -254,20 +267,20 @@ jobs:
     - name: 检查数据库连接
       run: |
         echo "检查PostgreSQL连接..."
-        # 等待数据库完全启动
-        for i in {1..60}; do
-          if pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
-            echo "PostgreSQL已就绪"
-            break
-          fi
-          echo "等待PostgreSQL启动... ($i/60)"
-          sleep 2
-        done
         
-        # 检查数据库是否真的可用
-        if ! pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
-          echo "PostgreSQL启动失败，显示服务状态："
+        # 直接测试连接
+        if pg_isready -h postgres -p 5432 -U postgres -d test_modeshift_django; then
+          echo "PostgreSQL已就绪"
+        else
+          echo "PostgreSQL未就绪，显示诊断信息："
+          echo "1. 容器状态："
           docker ps -a | grep postgres || echo "PostgreSQL容器未找到"
+          echo "2. 网络连接："
+          ping -c 2 postgres || echo "无法ping postgres"
+          echo "3. 端口监听："
+          netstat -tlnp | grep 5432 || echo "5432端口未监听"
+          echo "4. 尝试直接连接："
+          psql -h postgres -p 5432 -U postgres -d test_modeshift_django -c "SELECT 1;" || echo "直接连接失败"
           exit 1
         fi
         
@@ -282,7 +295,7 @@ jobs:
                 user='postgres',
                 password='postgres',
                 port=5432,
-                connect_timeout=30
+                connect_timeout=10
             )
             print('数据库连接成功')
             # 测试查询
