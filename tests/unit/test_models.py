@@ -35,29 +35,29 @@ class TestToolUsageLog(TestCase):
     def test_tool_usage_log_creation(self):
         """测试工具使用日志创建"""
         log = ToolUsageLog.objects.create(
-            user=self.user, tool_name="test_tool", action="test_action", details={"test": "data"}
+            user=self.user, tool_type="TEST_CASE", input_data="test input", output_file="test.txt"
         )
         self.assertEqual(log.user, self.user)
-        self.assertEqual(log.tool_name, "test_tool")
-        self.assertEqual(log.action, "test_action")
-        self.assertEqual(log.details, {"test": "data"})
+        self.assertEqual(log.tool_type, "TEST_CASE")
+        self.assertEqual(log.input_data, "test input")
+        self.assertEqual(log.success, True)
 
     def test_tool_usage_log_str(self):
         """测试工具使用日志字符串表示"""
-        log = ToolUsageLog.objects.create(user=self.user, tool_name="test_tool", action="test_action")
-        self.assertIn("test_tool", str(log))
-        self.assertIn("test_action", str(log))
+        log = ToolUsageLog.objects.create(user=self.user, tool_type="TEST_CASE", input_data="test", output_file="test.txt")
+        self.assertIn("TEST_CASE", str(log))
+        self.assertIn("test", str(log))
 
     def test_tool_usage_log_defaults(self):
         """测试工具使用日志默认值"""
-        log = ToolUsageLog.objects.create(user=self.user, tool_name="default_tool", action="default_action")
+        log = ToolUsageLog.objects.create(user=self.user, tool_type="QUALITY_CHECK", input_data="test", output_file="test.txt")
         self.assertIsNotNone(log.created_at)
-        self.assertIsNone(log.details)
+        self.assertEqual(log.success, True)
 
     def test_tool_usage_log_ordering(self):
         """测试工具使用日志排序"""
-        log1 = ToolUsageLog.objects.create(user=self.user, tool_name="tool1", action="action1")
-        log2 = ToolUsageLog.objects.create(user=self.user, tool_name="tool2", action="action2")
+        log1 = ToolUsageLog.objects.create(user=self.user, tool_type="TEST_CASE", input_data="test1", output_file="test1.txt")
+        log2 = ToolUsageLog.objects.create(user=self.user, tool_type="QUALITY_CHECK", input_data="test2", output_file="test2.txt")
         logs = list(ToolUsageLog.objects.all())
         self.assertEqual(len(logs), 2)
         self.assertIn(log1, logs)
@@ -131,21 +131,22 @@ class TestVanityWealth(TestCase):
 
     def test_vanity_wealth_creation(self):
         """测试虚荣财富创建"""
-        wealth = VanityWealth.objects.create(user=self.user, virtual_wealth=1000, wealth_type="gold")
+        wealth = VanityWealth.objects.create(user=self.user, virtual_wealth=1000, code_lines=100)
         self.assertEqual(wealth.user, self.user)
         self.assertEqual(wealth.virtual_wealth, 1000)
-        self.assertEqual(wealth.wealth_type, "gold")
+        self.assertEqual(wealth.code_lines, 100)
 
     def test_vanity_wealth_str(self):
         """测试虚荣财富字符串表示"""
-        wealth = VanityWealth.objects.create(user=self.user, virtual_wealth=500, wealth_type="silver")
-        self.assertEqual(str(wealth), "500")
+        wealth = VanityWealth.objects.create(user=self.user, virtual_wealth=500, code_lines=50)
+        self.assertIn("500", str(wealth))
+        self.assertIn("testuser", str(wealth))
 
     def test_vanity_wealth_defaults(self):
         """测试虚荣财富默认值"""
         wealth = VanityWealth.objects.create(user=self.user, virtual_wealth=100)
-        self.assertEqual(wealth.wealth_type, "gold")
-        self.assertIsNotNone(wealth.created_at)
+        self.assertEqual(wealth.code_lines, 0)
+        self.assertEqual(wealth.page_views, 0)
 
 
 @pytest.mark.django_db
@@ -157,23 +158,22 @@ class TestSinPoints(TestCase):
 
     def test_sin_points_creation(self):
         """测试罪恶点数创建"""
-        sin = SinPoints.objects.create(user=self.user, points=100, sin_type="laziness", description="测试罪恶")
+        sin = SinPoints.objects.create(user=self.user, action_type="code_line", points_earned=100)
         self.assertEqual(sin.user, self.user)
-        self.assertEqual(sin.points, 100)
-        self.assertEqual(sin.sin_type, "laziness")
-        self.assertEqual(sin.description, "测试罪恶")
+        self.assertEqual(sin.points_earned, 100)
+        self.assertEqual(sin.action_type, "code_line")
 
     def test_sin_points_defaults(self):
         """测试罪恶点数默认值"""
-        sin = SinPoints.objects.create(user=self.user, points=50)
-        self.assertEqual(sin.sin_type, "general")
-        self.assertEqual(sin.description, "")
+        sin = SinPoints.objects.create(user=self.user, action_type="deep_work", points_earned=50)
+        self.assertEqual(sin.action_type, "deep_work")
+        self.assertEqual(sin.points_earned, 50)
 
     def test_sin_points_str(self):
         """测试罪恶点数字符串表示"""
-        sin = SinPoints.objects.create(user=self.user, points=75, sin_type="greed")
+        sin = SinPoints.objects.create(user=self.user, action_type="manual_code", points_earned=75)
         self.assertIn("75", str(sin))
-        self.assertIn("greed", str(sin))
+        self.assertIn("手写代码", str(sin))
 
 
 @pytest.mark.django_db
