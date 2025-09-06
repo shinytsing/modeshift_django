@@ -2,14 +2,40 @@
 
 一个基于Django的QA工具箱，提供多种实用工具和功能。
 
+## 🚀 快速开始
+
+### 本地开发环境
+
+1. **克隆项目**
+```bash
+git clone https://github.com/shinytsing/modeshift_django.git
+cd modeshift_django
+```
+
+2. **激活开发环境**
+```bash
+# 使用便捷激活脚本
+source activate_env.sh
+
+# 或者手动激活
+source venv/bin/activate
+```
+
+3. **安装依赖** (如果venv环境不存在)
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## 🚀 快速部署
 
 ### 阿里云一键部署
 
 1. **克隆项目**
 ```bash
-git clone https://github.com/shinytsing/QAToolBox.git
-cd QAToolBox
+git clone https://github.com/shinytsing/modeshift_django.git
+cd modeshift_django
 ```
 
 2. **配置环境变量**
