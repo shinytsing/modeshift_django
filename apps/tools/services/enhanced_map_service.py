@@ -18,7 +18,8 @@ class EnhancedMapService:
 
     def __init__(self):
         # 高德地图API配置
-        self.amap_key = getattr(settings, "AMAP_API_KEY", None)
+        import os
+        self.amap_key = os.getenv("AMAP_API_KEY")
         if not self.amap_key:
             logger.warning("AMAP_API_KEY环境变量未设置，地图功能将不可用")
         self.amap_base_url = "https://restapi.amap.com/v3"

@@ -24,6 +24,11 @@ if [ ! -f .env.production ]; then
     exit 1
 fi
 
+# 复制生产环境配置
+echo "📋 复制生产环境配置..."
+cp .env.production .env
+echo "✅ 环境配置已复制"
+
 # 停止现有容器
 echo "🛑 停止现有容器..."
 docker-compose down --remove-orphans
