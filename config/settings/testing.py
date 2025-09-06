@@ -32,14 +32,18 @@ INSTALLED_APPS = [
     "apps.share",
 ]
 
-# 使用SQLite内存数据库进行测试（本地测试）
+# 使用PostgreSQL测试数据库（与生产环境一致）
 # 完全覆盖base.py中的PostgreSQL配置
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "modeshift_django_test"),
+        "USER": os.environ.get("DB_USER", "gaojie"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
         "OPTIONS": {
-            "timeout": 20,
+            "connect_timeout": 10,
         },
     }
 }
@@ -49,11 +53,16 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "test-cache",
-    }
+    },
+    "session": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "test-session-cache",
+    },
 }
 
 # 测试环境会话配置
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "session"
 
 
 # 测试环境迁移配置 - 允许迁移但使用内存数据库

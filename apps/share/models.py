@@ -6,6 +6,9 @@ from django.utils import timezone
 class ShareRecord(models.Model):
     """分享记录模型"""
 
+    class Meta:
+        app_label = "share"
+
     SHARE_PLATFORMS = [
         ("wechat", "微信"),
         ("weibo", "微博"),
@@ -43,6 +46,9 @@ class ShareRecord(models.Model):
 class ShareLink(models.Model):
     """分享链接模型"""
 
+    class Meta:
+        app_label = "share"
+
     original_url = models.URLField(verbose_name="原始URL")
     short_code = models.CharField(max_length=10, unique=True, verbose_name="短链接代码")
     title = models.CharField(max_length=200, verbose_name="标题")
@@ -64,6 +70,9 @@ class ShareLink(models.Model):
 
 class ShareAnalytics(models.Model):
     """分享分析模型"""
+
+    class Meta:
+        app_label = "share"
 
     date = models.DateField(verbose_name="日期")
     platform = models.CharField(max_length=20, choices=ShareRecord.SHARE_PLATFORMS, verbose_name="平台")

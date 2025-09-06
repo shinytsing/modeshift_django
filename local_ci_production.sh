@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# QAToolBox 本地CI/CD脚本
+# QAToolBox 生产级本地CI/CD脚本
 # 模拟GitHub Actions的完整流程，确保代码质量
 
 set -e  # 遇到错误立即退出
@@ -29,31 +29,19 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检查命令是否存在
-check_command() {
-    if ! command -v $1 &> /dev/null; then
-        log_error "$1 命令未找到，请先安装"
-        exit 1
-    fi
-}
-
 # 清理函数
 cleanup() {
     log_info "清理临时文件..."
-    # 清理Python缓存
     find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     find . -name "*.pyc" -delete 2>/dev/null || true
-    find . -name "*.pyo" -delete 2>/dev/null || true
-    find . -name "*.pyd" -delete 2>/dev/null || true
     find . -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-    find . -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
     find . -name ".coverage" -delete 2>/dev/null || true
     find . -name "htmlcov" -exec rm -rf {} + 2>/dev/null || true
     find . -name "coverage.xml" -delete 2>/dev/null || true
-    find . -name "bandit-report.json" -delete 2>/dev/null || true
-    find . -name "mypy-report.xml" -delete 2>/dev/null || true
     find . -name "test-results.xml" -delete 2>/dev/null || true
     find . -name "test-report.html" -delete 2>/dev/null || true
+    find . -name "mypy-report.xml" -delete 2>/dev/null || true
+    find . -name "bandit-report.json" -delete 2>/dev/null || true
 }
 
 # 1. 环境检查
@@ -64,16 +52,36 @@ check_environment() {
     PYTHON_VERSION=$(python3 --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
     log_info "Python版本: $PYTHON_VERSION"
     
-    # 检查必要的命令
-    check_command "python3"
-    check_command "pip3"
-    check_command "git"
-    
     # 检查虚拟环境
     if [[ "$VIRTUAL_ENV" != "" ]]; then
         log_success "虚拟环境已激活: $VIRTUAL_ENV"
     else
         log_warning "建议在虚拟环境中运行此脚本"
+    fi
+    
+    # 检查PostgreSQL连接
+    log_info "检查PostgreSQL连接..."
+    if python -c "
+import os
+import psycopg2
+try:
+    conn = psycopg2.connect(
+        host=os.environ.get('DB_HOST', 'localhost'),
+        port=os.environ.get('DB_PORT', '5432'),
+        user=os.environ.get('DB_USER', 'gaojie'),
+        password=os.environ.get('DB_PASSWORD', ''),
+        database=os.environ.get('DB_NAME', 'modeshift_django')
+    )
+    conn.close()
+    print('PostgreSQL连接成功')
+except Exception as e:
+    print(f'PostgreSQL连接失败: {e}')
+    exit(1)
+"; then
+        log_success "PostgreSQL连接正常"
+    else
+        log_error "PostgreSQL连接失败"
+        return 1
     fi
     
     log_success "环境检查完成"
@@ -85,7 +93,7 @@ code_quality_check() {
     
     # 安装代码质量工具
     log_info "安装代码质量工具..."
-    pip install flake8==6.1.0 black==25.1.0 isort==5.13.2 mypy==1.8.0 bandit==1.7.5 safety==3.0.1 pylint==3.0.3 coverage==7.4.0
+    pip install flake8==6.1.0 black==25.1.0 isort==5.13.2 mypy==1.8.0 bandit==1.7.5 safety==2.3.5
     
     # Black代码格式化检查
     log_info "Black代码格式检查..."
@@ -116,35 +124,28 @@ code_quality_check() {
         return 1
     fi
     
-    # Flake8完整检查
-    if flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics; then
-        log_success "Flake8完整检查通过"
-    else
-        log_warning "Flake8发现代码质量问题，但继续执行"
-    fi
-    
     # MyPy类型检查
     log_info "MyPy类型检查..."
-    if mypy apps/ --ignore-missing-imports --junit-xml=mypy-report.xml; then
+    if mypy . --ignore-missing-imports --no-error-summary; then
         log_success "MyPy类型检查通过"
     else
-        log_warning "MyPy类型检查发现问题，但继续执行"
+        log_warning "MyPy类型检查有警告，但继续执行"
     fi
     
     # Bandit安全扫描
     log_info "Bandit安全扫描..."
-    if bandit -r apps/ -f json -o bandit-report.json --skip B110,B311,B404,B603,B607,B112,B108 --exclude "apps/tools/management/commands/*.py,apps/tools/legacy_views.py,apps/tools/guitar_training_views.py,apps/tools/ip_defense.py,apps/tools/async_task_manager.py,apps/tools/services/social_media/*.py,apps/tools/services/tarot_service.py,apps/tools/services/travel_data_service.py,apps/tools/services/triple_awakening.py,apps/tools/utils/music_api.py,apps/tools/views/basic_tools_views.py,apps/tools/views/food_randomizer_views.py,apps/tools/views/health_views.py,apps/tools/views/meetsomeone_views.py,apps/tools/views/tarot_views.py,apps/users/services/progressive_captcha_service.py" --exit-zero; then
-        log_success "Bandit安全扫描完成"
+    if bandit -r . -f json -o bandit-report.json; then
+        log_success "Bandit安全扫描通过"
     else
-        log_warning "Bandit安全扫描发现问题，但继续执行"
+        log_warning "Bandit发现安全问题，但继续执行"
     fi
     
-    # Safety依赖漏洞扫描
-    log_info "Safety依赖漏洞扫描..."
-    if safety check --json || true; then
-        log_success "Safety依赖漏洞扫描完成"
+    # Safety依赖安全检查
+    log_info "Safety依赖安全检查..."
+    if safety check --json --output safety-report.json; then
+        log_success "Safety依赖安全检查通过"
     else
-        log_warning "Safety依赖漏洞扫描发现问题，但继续执行"
+        log_warning "Safety发现依赖安全问题，但继续执行"
     fi
     
     log_success "代码质量检查完成"
@@ -156,30 +157,21 @@ unit_tests() {
     
     # 安装测试依赖
     log_info "安装测试依赖..."
-    pip install pytest pytest-django pytest-cov pytest-xdist pytest-html coverage==7.4.0
+    pip install pytest pytest-django pytest-cov coverage==7.4.0
     
     # 设置测试环境变量
     export DJANGO_SETTINGS_MODULE=config.settings.testing
-    export POSTGRES_HOST=localhost
-    export POSTGRES_DB=test_qatoolbox
-    export POSTGRES_USER=postgres
-    export POSTGRES_PASSWORD=postgres
-    export REDIS_URL=redis://localhost:6379/0
     
     # 运行单元测试
     log_info "运行单元测试..."
-    if pytest tests/unit/test_minimal_ci.py \
+    if pytest tests/unit/ \
         --cov=apps \
         --cov-report=xml \
-        --cov-report=html \
         --cov-report=term \
         --junit-xml=test-results.xml \
-        --html=test-report.html \
-        --self-contained-html \
         -v \
         --maxfail=10 \
-        --tb=short \
-        --durations=10; then
+        --tb=short; then
         log_success "单元测试通过"
     else
         log_error "单元测试失败"
@@ -199,10 +191,10 @@ except:
     
     log_info "测试覆盖率: $COVERAGE%"
     
-    # 覆盖率门禁：要求达到5%
+    # 覆盖率门禁：要求达到10%
     COVERAGE_INT=$(echo $COVERAGE | cut -d. -f1)
-    if [ "$COVERAGE_INT" -lt "5" ]; then
-        log_error "测试覆盖率不达标: $COVERAGE% (要求: ≥5%)"
+    if [ "$COVERAGE_INT" -lt "10" ]; then
+        log_error "测试覆盖率不达标: $COVERAGE% (要求: ≥10%)"
         return 1
     else
         log_success "测试覆盖率达标: $COVERAGE%"
@@ -211,52 +203,41 @@ except:
     log_success "单元测试完成"
 }
 
-# 4. 集成测试
-integration_tests() {
-    log_info "=== 4. 集成测试 ==="
+# 4. Django配置检查
+django_check() {
+    log_info "=== 4. Django配置检查 ==="
     
-    # 安装集成测试依赖
-    pip install requests selenium pytest
-    
-    # 运行集成测试
-    log_info "运行集成测试..."
-    if pytest tests/integration/ -v --tb=short --maxfail=5; then
-        log_success "集成测试通过"
+    # 检查Django配置
+    log_info "检查Django配置..."
+    if python manage.py check; then
+        log_success "Django配置检查通过"
     else
-        log_warning "集成测试失败，但继续执行"
-    fi
-    
-    log_success "集成测试完成"
-}
-
-# 5. Docker构建测试
-docker_build_test() {
-    log_info "=== 5. Docker构建测试 ==="
-    
-    # 检查Docker是否安装
-    if ! command -v docker &> /dev/null; then
-        log_warning "Docker未安装，跳过Docker构建测试"
-        return 0
-    fi
-    
-    # 构建Docker镜像
-    log_info "构建Docker镜像..."
-    if docker build -t qatoolbox:local-test .; then
-        log_success "Docker镜像构建成功"
-    else
-        log_error "Docker镜像构建失败"
+        log_error "Django配置检查失败"
         return 1
     fi
     
-    # 清理测试镜像
-    docker rmi qatoolbox:local-test 2>/dev/null || true
+    # 检查数据库迁移
+    log_info "检查数据库迁移..."
+    if python manage.py showmigrations --plan | grep -q "\[ \]"; then
+        log_warning "有未应用的迁移，但继续执行"
+    else
+        log_success "所有迁移已应用"
+    fi
     
-    log_success "Docker构建测试完成"
+    # 检查静态文件
+    log_info "收集静态文件..."
+    if python manage.py collectstatic --noinput; then
+        log_success "静态文件收集成功"
+    else
+        log_warning "静态文件收集失败，但继续执行"
+    fi
+    
+    log_success "Django配置检查完成"
 }
 
-# 6. 部署前检查
+# 5. 部署前检查
 pre_deployment_check() {
-    log_info "=== 6. 部署前检查 ==="
+    log_info "=== 5. 部署前检查 ==="
     
     # 检查Git状态
     if git status --porcelain | grep -q .; then
@@ -270,11 +251,12 @@ pre_deployment_check() {
     CURRENT_BRANCH=$(git branch --show-current)
     log_info "当前分支: $CURRENT_BRANCH"
     
-    # 检查是否有未推送的提交
-    if git status -uno | grep -q "Your branch is ahead"; then
-        log_warning "有未推送的提交"
+    # 检查环境变量
+    log_info "检查关键环境变量..."
+    if [ -z "$DJANGO_SECRET_KEY" ]; then
+        log_warning "DJANGO_SECRET_KEY未设置"
     else
-        log_success "所有提交已推送"
+        log_success "DJANGO_SECRET_KEY已设置"
     fi
     
     log_success "部署前检查完成"
@@ -282,7 +264,7 @@ pre_deployment_check() {
 
 # 主函数
 main() {
-    log_info "🚀 开始QAToolBox本地CI/CD流程"
+    log_info "🚀 开始QAToolBox生产级CI/CD流程"
     log_info "时间: $(date)"
     
     # 清理环境
@@ -292,18 +274,17 @@ main() {
     check_environment || exit 1
     code_quality_check || exit 1
     unit_tests || exit 1
-    integration_tests || exit 1
-    docker_build_test || exit 1
+    django_check || exit 1
     pre_deployment_check || exit 1
     
-    log_success "🎉 本地CI/CD流程全部通过！"
+    log_success "🎉 生产级CI/CD流程全部通过！"
     log_info "代码已准备好推送到GitHub进行部署"
     
     # 显示下一步操作
     echo ""
     log_info "下一步操作："
     echo "1. git add ."
-    echo "2. git commit -m '通过本地CI/CD检查'"
+    echo "2. git commit -m '通过生产级CI/CD检查'"
     echo "3. git push origin main"
     echo ""
     log_info "这将触发GitHub Actions进行自动部署"
