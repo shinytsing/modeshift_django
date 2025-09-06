@@ -1,1 +1,181 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="48" time="3.153" timestamp="2025-09-07T06:14:07.325533" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.021" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.042" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.111" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_secret_key" time="0.001" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_media_url" time="0.001" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_static_url" time="0.001" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_cache_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_session_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_loggers_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_logging_config" time="0.024" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_middleware_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_security_middleware" time="0.001" /><testcase classname="tests.unit.test_basic.TestURLConfiguration" name="test_root_urls" time="0.001" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_engines" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_language_code" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_time_zone" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_use_i18n" time="0.001" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_file_upload_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_media_root" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_python_basics" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_apps" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_string_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_datetime_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_error_handling" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_performance_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_memory_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_app_imports" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_configuration" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_database_config" time="0.006" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="10" failures="0" skipped="0" tests="10" time="4.785" timestamp="2025-09-07T06:54:23.865090" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_success[chromium]" time="0.421"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_validation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_success[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_failure[chromium]" time="0.009"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_logout[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_chat_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_fitness_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_pdf_converter_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_navigation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_forms[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+    test_case._pre_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
+    cls._fixture_setup()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
+    cls.atomics = cls._enter_atomics()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
+    atomic.__enter__()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
+    real_ensure_connection(self, *args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
+    raise SynchronousOnlyOperation(message)
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase></testsuite></testsuites>

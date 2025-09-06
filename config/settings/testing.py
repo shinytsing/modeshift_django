@@ -4,7 +4,7 @@
 
 import os
 
-from .base import *
+from .base import *  # noqa: F403
 
 # 测试环境配置
 DEBUG = True
@@ -50,11 +50,18 @@ if os.environ.get("CI") or os.environ.get("POSTGRES_HOST") or os.environ.get("PO
         }
     }
 else:
-    # 回退到SQLite（仅在没有PostgreSQL环境变量时）
+    # 回退到PostgreSQL（确保与生产环境一致）
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "test_modeshift_django",
+            "USER": "postgres",
+            "PASSWORD": "postgres",
+            "HOST": "localhost",
+            "PORT": "5432",
+            "OPTIONS": {
+                "connect_timeout": 10,
+            },
         }
     }
 
