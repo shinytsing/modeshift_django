@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="10" failures="0" skipped="0" tests="10" time="6.004" timestamp="2025-09-06T16:51:17.217995" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.047"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.009"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.008"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.000"><error message="failed on setup with &quot;django.db.utils.OperationalError: connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;Multiple connection attempts failed. All failures were:&#10;- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at &quot;::1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&#10;- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at &quot;127.0.0.1&quot;, port 5432 failed: FATAL:  database &quot;:memory:&quot; does not exist&quot;">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+
+The above exception was the direct cause of the following exception:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
+    if not connection.get_autocommit():
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
+    self.ensure_connection()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:278: in ensure_connection
+    with self.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:279: in ensure_connection
+    self.connect()
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:256: in connect
+    self.connection = self.get_new_connection(conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py:332: in get_new_connection
+    connection = self.Database.connect(**conn_params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/connection.py:125: in connect
+    raise type(last_ex)("\n".join(lines)).with_traceback(None)
+E   django.db.utils.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database ":memory:" does not exist
+E   - host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database ":memory:" does not exist</error></testcase></testsuite></testsuites>
