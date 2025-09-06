@@ -72,7 +72,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         # 确保代码质量工具版本一致
-        pip install flake8==6.1.0 black==24.10.0 isort==5.13.2 mypy==1.8.0 bandit==1.7.5 safety==2.3.5 pylint==3.0.3 coverage==7.4.0
+        pip install flake8==6.1.0 black==23.12.1 isort==5.13.2 mypy==1.8.0 bandit==1.7.5 safety==2.3.4 pylint==3.0.3 coverage==7.4.0
     
     - name: 代码格式化检查
       run: |
@@ -112,8 +112,8 @@ jobs:
         echo "::endgroup::"
         
         echo "::group::依赖漏洞扫描"
-        # 使用较旧版本的safety避免兼容性问题
-        pip install safety==2.3.5
+        # 使用兼容版本的safety
+        pip install safety==2.3.4
         safety check --json || true
         safety check || true
         echo "::endgroup::"
