@@ -20,7 +20,7 @@ class EnhancedMapService:
         # 高德地图API配置
         self.amap_key = getattr(settings, "AMAP_API_KEY", None)
         if not self.amap_key:
-            raise ValueError("AMAP_API_KEY environment variable is required")
+            logger.warning("AMAP_API_KEY环境变量未设置，地图功能将不可用")
         self.amap_base_url = "https://restapi.amap.com/v3"
 
         # 缓存配置
@@ -68,6 +68,11 @@ class EnhancedMapService:
 
     def _search_with_amap(self, query: str, city: str = None, limit: int = 10) -> List[Dict]:
         """使用高德地图API搜索地址"""
+        # 检查API密钥是否存在
+        if not self.amap_key:
+            logger.error("AMAP_API_KEY环境变量未设置，无法搜索地址")
+            return []
+            
         url = f"{self.amap_base_url}/place/text"
         params = {"key": self.amap_key, "keywords": query, "offset": limit, "page": 1, "extensions": "all", "output": "json"}
 
