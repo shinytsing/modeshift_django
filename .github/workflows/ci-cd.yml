@@ -438,7 +438,7 @@ jobs:
       needs.build.result == 'success'
     environment: 
       name: production
-      url: http://47.103.143.152
+      url: https://shenyiqing.xin
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
@@ -572,7 +572,7 @@ jobs:
       github.event.inputs.workflow_type == 'emergency-deploy'
     environment: 
       name: production
-      url: http://47.103.143.152
+      url: https://shenyiqing.xin
     steps:
     - name: 检出代码
       uses: actions/checkout@v4

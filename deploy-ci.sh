@@ -143,7 +143,7 @@ for i in {1..5}; do
 done
 
 echo "✅ 部署成功！"
-echo "🌐 访问地址: http://47.103.143.152"
-echo "🌐 域名访问: http://shenyiqing.xin"
+echo "🌐 访问地址: https://47.103.143.152"
+echo "🌐 域名访问: https://shenyiqing.xin"
 echo "👤 管理员账号: admin / admin123"
 echo "🎉 CI/CD部署完成！"
