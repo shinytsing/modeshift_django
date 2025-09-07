@@ -1,6 +1,6 @@
-# ModeShift Django 项目依赖文件 - 统一版本
+# ModeShift Django 项目依赖文件 - CI/CD优化版本
 # =============================================
-# 本地开发和CI/CD环境使用完全相同的依赖版本
+# 确保与Python 3.11完全兼容，避免版本冲突
 
 # ===== 核心Django框架 =====
 Django==5.0.1
@@ -34,7 +34,7 @@ cryptography==42.0.5
 PyJWT==2.10.1
 
 # ===== 序列化器兼容性 =====
-marshmallow==3.20.1
+marshmallow==3.21.0
 
 # ===== 文件处理 =====
 Pillow==11.1.0
@@ -59,13 +59,13 @@ beautifulsoup4==4.12.2
 lxml==4.9.3
 
 # ===== 数据处理 =====
-pandas==2.2.0
-numpy==1.26.2
+pandas==2.1.4
+numpy==1.24.4
 
 # ===== 机器学习和图像处理 =====
 opencv-python==4.8.1.78
-torch==2.1.0
-torchvision==0.16.0
+torch==2.1.2
+torchvision==0.16.2
 scikit-learn==1.3.2
 
 # ===== 任务队列 =====
@@ -82,12 +82,12 @@ django-health-check==3.17.0
 
 # ===== 开发工具 =====
 # 代码质量工具
-black==23.11.0
-isort==5.12.0
+black==24.1.1
+isort==5.13.2
 flake8==6.1.0
-mypy==1.7.1
+mypy==1.8.0
 bandit==1.7.5
-safety==2.3.5
+safety==3.0.1
 pylint==3.0.3
 
 # 测试工具
