@@ -1,0 +1,2 @@
+Requirement already satisfied: psycopg[binary] in ./venv/lib/python3.13/site-packages (3.2.9)
+Requirement already satisfied: psycopg-binary==3.2.9 in ./venv/lib/python3.13/site-packages (from psycopg[binary]) (3.2.9)
