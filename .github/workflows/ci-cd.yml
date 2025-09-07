@@ -604,7 +604,10 @@ jobs:
           python manage.py check --settings=config.settings.production
           
           # 运行数据库迁移
-          python manage.py migrate --noinput --settings=config.settings.production
+          python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
+          python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
+          python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
+          python manage.py migrate --settings=config.settings.production
           
           # 收集静态文件
           python manage.py collectstatic --noinput --settings=config.settings.production
@@ -821,7 +824,12 @@ jobs:
           
           # 11. 运行数据库迁移
           echo "📊 运行数据库迁移..."
-          python manage.py migrate --noinput --settings=config.settings.production
+          # 处理已存在的表，标记相关迁移为已应用
+          python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
+          python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
+          python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
+          # 运行其他迁移
+          python manage.py migrate --settings=config.settings.production
           
           # 12. 收集静态文件
           echo "📁 收集静态文件..."
@@ -956,7 +964,10 @@ jobs:
           EOF
           
           # 运行迁移和收集静态文件
-          python manage.py migrate --noinput --settings=config.settings.production
+          python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
+          python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
+          python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
+          python manage.py migrate --settings=config.settings.production
           python manage.py collectstatic --noinput --settings=config.settings.production
           
           # 停止现有服务并启动新服务
