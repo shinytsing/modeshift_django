@@ -28,10 +28,15 @@ class TestToolsModels(TestCase):
         try:
             from apps.tools.models import ToolUsageLog
 
-            log = ToolUsageLog.objects.create(user=self.user, tool_name="test_tool", usage_count=1)
+            log = ToolUsageLog.objects.create(
+                user=self.user, 
+                tool_type="TEST_CASE", 
+                input_data="test input",
+                output_file="test_output.txt"
+            )
             self.assertEqual(log.user, self.user)
-            self.assertEqual(log.tool_name, "test_tool")
-            self.assertEqual(log.usage_count, 1)
+            self.assertEqual(log.tool_type, "TEST_CASE")
+            self.assertEqual(log.input_data, "test input")
         except ImportError:
             self.skipTest("ToolUsageLog模型不存在")
 
@@ -52,10 +57,15 @@ class TestToolsModels(TestCase):
         try:
             from apps.tools.models import VanityWealth
 
-            wealth = VanityWealth.objects.create(user=self.user, item_name="测试物品", value=1000)
+            wealth = VanityWealth.objects.create(
+                user=self.user, 
+                virtual_wealth=1000.00,
+                code_lines=1000,
+                page_views=500
+            )
             self.assertEqual(wealth.user, self.user)
-            self.assertEqual(wealth.item_name, "测试物品")
-            self.assertEqual(wealth.value, 1000)
+            self.assertEqual(wealth.virtual_wealth, 1000.00)
+            self.assertEqual(wealth.code_lines, 1000)
         except ImportError:
             self.skipTest("VanityWealth模型不存在")
 
@@ -72,10 +82,15 @@ class TestContentModels(TestCase):
         try:
             from apps.content.models import Article
 
-            article = Article.objects.create(title="测试文章", content="这是测试内容", author=self.user, status="published")
+            article = Article.objects.create(
+                title="测试文章", 
+                content="这是测试内容", 
+                author=self.user, 
+                is_published=True
+            )
             self.assertEqual(article.title, "测试文章")
             self.assertEqual(article.author, self.user)
-            self.assertEqual(article.status, "published")
+            self.assertEqual(article.is_published, True)
         except ImportError:
             self.skipTest("Article模型不存在")
 
@@ -84,8 +99,16 @@ class TestContentModels(TestCase):
         try:
             from apps.content.models import Article, Comment
 
-            article = Article.objects.create(title="测试文章", content="测试内容", author=self.user)
-            comment = Comment.objects.create(article=article, author=self.user, content="测试评论")
+            article = Article.objects.create(
+                title="测试文章", 
+                content="测试内容", 
+                author=self.user
+            )
+            comment = Comment.objects.create(
+                article=article, 
+                author=self.user, 
+                content="测试评论"
+            )
             self.assertEqual(comment.article, article)
             self.assertEqual(comment.author, self.user)
             self.assertEqual(comment.content, "测试评论")
@@ -105,10 +128,10 @@ class TestUserModels(TestCase):
         try:
             from apps.users.models import UserRole
 
-            role = UserRole.objects.create(user=self.user, role_name="test_role", is_active=True)
+            role = UserRole.objects.create(user=self.user, role="admin")
             self.assertEqual(role.user, self.user)
-            self.assertEqual(role.role_name, "test_role")
-            self.assertTrue(role.is_active)
+            self.assertEqual(role.role, "admin")
+            self.assertTrue(role.is_admin)
         except ImportError:
             self.skipTest("UserRole模型不存在")
 
