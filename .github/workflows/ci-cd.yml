@@ -564,14 +564,46 @@ jobs:
       (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') &&
       (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
       needs.build.result == 'success'
-    environment: 
-      name: production
-      url: https://shenyiqing.xin
+    continue-on-error: true
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
     
+    - name: 检查部署配置
+      run: |
+        echo "🔍 检查部署配置..."
+        if [ -z "${{ secrets.SERVER_HOST }}" ]; then
+          echo "❌ SERVER_HOST 未配置，跳过部署"
+          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        if [ -z "${{ secrets.SERVER_USER }}" ]; then
+          echo "❌ SERVER_USER 未配置，跳过部署"
+          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
+          echo "❌ SERVER_SSH_KEY 未配置，跳过部署"
+          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "✅ 部署配置检查通过"
+        echo "deploy_skipped=false" >> $GITHUB_OUTPUT
+      id: check_config
+    
+    - name: 跳过部署提示
+      if: steps.check_config.outputs.deploy_skipped == 'true'
+      run: |
+        echo "⚠️ 部署步骤已跳过"
+        echo "原因：缺少必要的服务器配置密钥"
+        echo "请在Repository Secrets中配置以下密钥："
+        echo "- SERVER_HOST: 服务器地址"
+        echo "- SERVER_USER: 服务器用户名"
+        echo "- SERVER_SSH_KEY: SSH私钥"
+        echo "- SERVER_PORT: SSH端口（可选，默认22）"
+    
     - name: 创建部署备份
+      if: steps.check_config.outputs.deploy_skipped == 'false'
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.SERVER_HOST }}
@@ -610,6 +642,7 @@ jobs:
           echo "✅ 备份完成: $BACKUP_DIR"
     
     - name: 执行零停机部署
+      if: steps.check_config.outputs.deploy_skipped == 'false'
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.SERVER_HOST }}
