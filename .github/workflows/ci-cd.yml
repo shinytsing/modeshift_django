@@ -514,6 +514,9 @@ jobs:
         script: |
           echo "🚀 开始部署到${{ github.event.inputs.environment }}环境..."
           
+          # 设置错误处理
+          set -e
+          
           # 根据环境选择目录
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
             PROJECT_DIR="$HOME/modeshift_django"
@@ -544,8 +547,8 @@ jobs:
           echo "🚀 使用Django部署方案..."
           
           # 检查Python环境
-          python3 --version
-          pip3 --version
+          python3 --version || echo "Python3未安装"
+          pip3 --version || echo "pip3未安装"
           
           # 创建并激活虚拟环境
           if [ ! -d "venv" ]; then
@@ -558,13 +561,21 @@ jobs:
           pip install -r requirements.txt
           pip install django-environ gunicorn
           
-          # 安装系统依赖
-          apt-get update
-          apt-get install -y postgresql postgresql-contrib redis-server curl
+          # 安装系统依赖（如果不存在）
+          if ! command -v psql &> /dev/null; then
+              echo "安装PostgreSQL..."
+              apt-get update
+              apt-get install -y postgresql postgresql-contrib
+          fi
+          
+          if ! command -v redis-server &> /dev/null; then
+              echo "安装Redis..."
+              apt-get install -y redis-server
+          fi
           
           # 配置PostgreSQL
-          systemctl start postgresql
-          systemctl enable postgresql
+          systemctl start postgresql || echo "PostgreSQL启动失败"
+          systemctl enable postgresql || echo "PostgreSQL启用失败"
           
           # 创建数据库和用户
           sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';" 2>/dev/null || echo "用户已存在"
@@ -572,8 +583,8 @@ jobs:
           sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE qatoolbox_production TO qatoolbox;" 2>/dev/null || echo "权限已设置"
           
           # 配置Redis
-          systemctl start redis-server
-          systemctl enable redis-server
+          systemctl start redis-server || echo "Redis启动失败"
+          systemctl enable redis-server || echo "Redis启用失败"
           
           # 创建环境配置文件
           cat > .env << 'EOF'
@@ -746,6 +757,9 @@ jobs:
         script: |
           echo "🚀 执行Django应用部署..."
           
+          # 设置错误处理
+          set -e
+          
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
           if [ ! -d "$PROJECT_DIR" ]; then
@@ -766,8 +780,8 @@ jobs:
           
           # 3. 检查Python环境
           echo "🐍 检查Python环境..."
-          python3 --version
-          pip3 --version
+          python3 --version || echo "Python3未安装"
+          pip3 --version || echo "pip3未安装"
           
           # 4. 创建并激活虚拟环境
           echo "📦 设置虚拟环境..."
@@ -782,25 +796,29 @@ jobs:
           pip install -r requirements.txt
           pip install django-environ gunicorn
           
-          # 6. 安装系统依赖
-          echo "🗄️ 安装系统依赖..."
-          apt-get update
-          apt-get install -y postgresql postgresql-contrib redis-server curl
+          # 6. 安装系统依赖（如果不存在）
+          echo "🗄️ 检查系统依赖..."
+          if ! command -v psql &> /dev/null; then
+              echo "安装PostgreSQL..."
+              apt-get update
+              apt-get install -y postgresql postgresql-contrib
+          fi
           
-          # 7. 配置PostgreSQL
-          echo "🔧 配置PostgreSQL..."
-          systemctl start postgresql
-          systemctl enable postgresql
+          if ! command -v redis-server &> /dev/null; then
+              echo "安装Redis..."
+              apt-get install -y redis-server
+          fi
           
-          # 创建数据库和用户
+          # 7. 启动服务
+          echo "🔧 启动服务..."
+          systemctl start postgresql || echo "PostgreSQL启动失败"
+          systemctl start redis-server || echo "Redis启动失败"
+          
+          # 8. 配置数据库
+          echo "🔧 配置数据库..."
           sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';" 2>/dev/null || echo "用户已存在"
           sudo -u postgres psql -c "CREATE DATABASE qatoolbox_production OWNER qatoolbox;" 2>/dev/null || echo "数据库已存在"
           sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE qatoolbox_production TO qatoolbox;" 2>/dev/null || echo "权限已设置"
-          
-          # 8. 配置Redis
-          echo "🔧 配置Redis..."
-          systemctl start redis-server
-          systemctl enable redis-server
           
           # 9. 创建环境配置文件
           echo "🔧 创建环境配置文件..."
@@ -873,8 +891,8 @@ jobs:
           
           # 17. 检查服务状态
           echo "🔍 检查服务状态..."
-          ps aux | grep gunicorn | grep -v grep
-          netstat -tlnp | grep 8000
+          ps aux | grep gunicorn | grep -v grep || echo "Gunicorn进程未找到"
+          netstat -tlnp | grep 8000 || echo "端口8000未监听"
           
           # 18. 测试服务
           echo "🧪 测试服务..."
@@ -926,6 +944,9 @@ jobs:
         script: |
           echo "🚨 执行紧急部署..."
           
+          # 设置错误处理
+          set -e
+          
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
           if [ ! -d "$PROJECT_DIR" ]; then
@@ -958,7 +979,8 @@ jobs:
           fi
           
           # 确保服务运行
-          systemctl start postgresql redis-server
+          systemctl start postgresql || echo "PostgreSQL启动失败"
+          systemctl start redis-server || echo "Redis启动失败"
           
           # 创建基础环境配置
           cat > .env << 'EOF'
