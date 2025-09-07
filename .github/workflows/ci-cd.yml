@@ -745,46 +745,47 @@ jobs:
             timeout: 120s
             command_timeout: 60s
             script: |
-              echo "🚀 执行Django应用部署..."
-              
-              # 设置严格错误处理 - 任何命令失败立即退出
-              set -e
-              set -o pipefail
-              
-              # 1. 进入项目目录
-              PROJECT_DIR="$HOME/modeshift_django"
-              if [ ! -d "$PROJECT_DIR" ]; then
-                echo "❌ 项目目录不存在，创建目录..."
-                mkdir -p "$PROJECT_DIR"
-                cd "$PROJECT_DIR"
-                git clone https://github.com/shinytsing/modeshift_django.git .
-              else
-                echo "✅ 项目目录已存在，进入目录..."
-                cd "$PROJECT_DIR" || exit 1
-              fi
-              
-              # 2. 拉取最新代码
-              echo "📥 拉取最新代码..."
-              git fetch origin
-              git checkout main
-              git reset --hard origin/main
-              
-              # 3. 检查Python环境
-              echo "🐍 检查Python环境..."
-              python3 --version
-              pip3 --version
-              
-              # 4. 创建并激活虚拟环境
-              echo "📦 设置虚拟环境..."
-              if [ ! -d "venv" ]; then
-                  python3 -m venv venv
-              fi
-              source venv/bin/activate
-              
-              # 5. 安装依赖
-              echo "📥 安装依赖..."
-              pip install --upgrade pip
-              pip install -r requirements.txt
+          echo "🚀 执行Django应用部署..."
+          
+          # 设置严格错误处理 - 任何命令失败立即退出
+          set -e
+          set -o pipefail
+          
+          # 1. 进入项目目录
+          PROJECT_DIR="$HOME/modeshift_django"
+          if [ ! -d "$PROJECT_DIR" ]; then
+            echo "❌ 项目目录不存在，创建目录..."
+            mkdir -p "$PROJECT_DIR"
+            cd "$PROJECT_DIR"
+            git clone https://github.com/shinytsing/modeshift_django.git .
+          else
+            echo "✅ 项目目录已存在，进入目录..."
+            cd "$PROJECT_DIR" || exit 1
+          fi
+          
+          # 2. 拉取最新代码
+          echo "📥 拉取最新代码..."
+          git fetch origin
+          git checkout main
+          git reset --hard origin/main
+          
+          # 3. 检查Python环境
+          echo "🐍 检查Python环境..."
+          python3 --version
+          pip3 --version
+          
+          # 4. 创建并激活虚拟环境
+          echo "📦 设置虚拟环境..."
+          if [ ! -d "venv" ]; then
+              python3 -m venv venv
+          fi
+          source venv/bin/activate
+          
+          # 5. 安装依赖
+          echo "📥 安装依赖..."
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install django-environ gunicorn
           
           # 6. 安装系统依赖
           echo "🗄️ 安装系统依赖..."
