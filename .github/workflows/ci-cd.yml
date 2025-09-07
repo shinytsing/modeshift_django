@@ -71,7 +71,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         echo "安装CI/CD依赖..."
-        pip install -r requirements-ci.txt
+        pip install -r requirements.txt
         echo "依赖安装完成"
     
     - name: 代码格式化检查
@@ -232,7 +232,7 @@ jobs:
       run: |
         echo "安装GitHub Actions依赖..."
         python -m pip install --upgrade pip
-        pip install -r requirements-ci.txt
+        pip install -r requirements.txt
     
     - name: 等待服务启动
       run: |
@@ -460,7 +460,7 @@ jobs:
     - name: 安装依赖
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-ci.txt
+        pip install -r requirements.txt
         pip install selenium
     
     - name: 运行集成测试
