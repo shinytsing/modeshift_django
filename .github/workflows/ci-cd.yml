@@ -41,7 +41,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   NOTIFICATION_EMAIL: "1009383129@qq.com"
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
 
 jobs:
   # ===== 1. 代码质量检查 =====
@@ -70,7 +70,9 @@ jobs:
     - name: 安装依赖
       run: |
         python -m pip install --upgrade pip
+        echo "安装基础依赖..."
         pip install -r requirements.txt
+        echo "依赖安装完成"
         # 质量检查工具已在requirements.txt中定义，无需重复安装
     
     - name: 代码格式化检查
