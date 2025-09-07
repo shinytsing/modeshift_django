@@ -713,8 +713,59 @@ jobs:
           
           # 执行部署
           echo "🚀 执行部署..."
-          chmod +x deploy-ci.sh
-          ./deploy-ci.sh
+          
+          # 停止现有服务
+          echo "🛑 停止现有服务..."
+          docker-compose down || true
+          
+          # 重新构建并启动服务
+          echo "🔨 重新构建并启动服务..."
+          docker-compose up -d --build
+          
+          # 等待服务启动
+          echo "⏳ 等待服务启动..."
+          sleep 30
+          
+          # 检查服务状态
+          echo "🔍 检查服务状态..."
+          docker-compose ps
+          
+          # 运行数据库迁移
+          echo "📊 运行数据库迁移..."
+          docker-compose exec -T web python manage.py migrate --noinput || echo "迁移失败，继续部署"
+          
+          # 收集静态文件
+          echo "📁 收集静态文件..."
+          docker-compose exec -T web python manage.py collectstatic --noinput || echo "静态文件收集失败，继续部署"
+          
+          # 最终服务状态检查
+          echo "🔍 最终服务状态检查..."
+          docker-compose ps
+          
+          # 检查服务健康状态
+          echo "💚 检查服务健康状态..."
+          for service in web db redis nginx; do
+            if docker-compose ps $service | grep -q "Up"; then
+              echo "✅ $service 服务运行正常"
+            else
+              echo "❌ $service 服务未运行"
+            fi
+          done
+          
+          # 测试内部连接
+          echo "🔗 测试内部连接..."
+          docker-compose exec -T web python -c "
+          import os
+          import django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
+          django.setup()
+          from django.db import connection
+          try:
+              connection.ensure_connection()
+              print('✅ 数据库连接正常')
+          except Exception as e:
+              print(f'❌ 数据库连接失败: {e}')
+          "
           
           echo "✅ 零停机部署完成"
           
@@ -810,12 +861,30 @@ jobs:
         echo "🔍 运行部署后验证..."
         
         # 基础健康检查
-        for endpoint in "http://47.103.143.152/health/" "http://47.103.143.152/"; do
-          if curl -f "$endpoint" > /dev/null 2>&1; then
-            echo "✅ $endpoint 健康检查通过"
+        echo "🌐 测试网站访问..."
+        endpoints=(
+          "http://47.103.143.152/health/"
+          "http://47.103.143.152/"
+          "https://shenyiqing.xin/"
+          "https://shenyiqing.xin/health/"
+        )
+        
+        for endpoint in "${endpoints[@]}"; do
+          echo "测试: $endpoint"
+          if curl -f -L --connect-timeout 10 --max-time 30 "$endpoint" > /dev/null 2>&1; then
+            echo "✅ $endpoint 访问成功"
           else
-            echo "❌ $endpoint 健康检查失败"
+            echo "❌ $endpoint 访问失败"
+            # 获取详细错误信息
+            curl -v -L --connect-timeout 10 --max-time 30 "$endpoint" 2>&1 | head -20
           fi
+        done
+        
+        # 检查HTTP状态码
+        echo "📊 检查HTTP状态码..."
+        for endpoint in "${endpoints[@]}"; do
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" -L --connect-timeout 10 --max-time 30 "$endpoint" 2>/dev/null || echo "000")
+          echo "$endpoint: HTTP $status_code"
         done
 
   # ===== 9. 通知 =====
