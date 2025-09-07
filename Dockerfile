@@ -1,6 +1,6 @@
 # QAToolBox Docker配置
-# 使用Python 3.13官方镜像作为基础镜像
-FROM python:3.13-slim
+# 使用Python 3.11官方镜像作为基础镜像
+FROM python:3.11-slim
 
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -25,27 +25,12 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libpng-dev \
     libfreetype6-dev \
-    liblcms2-dev \
-    libopenjp2-7-dev \
-    libtiff5-dev \
-    libwebp-dev \
     zlib1g-dev \
     # 音频处理依赖
     libsndfile1 \
-    ffmpeg \
-    # OCR依赖
-    tesseract-ocr \
-    tesseract-ocr-chi-sim \
-    # 浏览器自动化依赖
-    chromium \
-    chromium-driver \
     # 清理缓存
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# 设置Chrome环境变量
-ENV CHROME_BIN=/usr/bin/chromium \
-    CHROME_PATH=/usr/bin/chromium
 
 # 复制requirements文件
 COPY requirements.txt /app/
