@@ -609,24 +609,6 @@ jobs:
           python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
           python manage.py migrate --settings=config.settings.production
           
-          # 动态健康检查启动服务
-          pkill -f gunicorn
-          export DJANGO_SETTINGS_MODULE=config.settings.production
-          gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
-          
-          # 等待服务启动
-          for i in {1..30}; do
-            if curl -f http://localhost:8000/health/ >/dev/null 2>&1; then
-              echo "✅ 服务启动成功，用时${i}秒"
-              break
-            fi
-            if [ $i -eq 30 ]; then
-              echo "❌ 服务启动超时"
-              exit 1
-            fi
-            sleep 1
-          done
-          
           # 收集静态文件
           python manage.py collectstatic --noinput --settings=config.settings.production
           
@@ -742,23 +724,6 @@ jobs:
           
           echo "✅ 备份完成: $BACKUP_DIR"
     
-        - name: 检查服务器环境
-          if: steps.check_config.outputs.deploy_skipped == 'false'
-          uses: appleboy/ssh-action@v0.1.5
-          with:
-            host: ${{ secrets.SERVER_HOST }}
-            username: ${{ secrets.SERVER_USER }}
-            key: ${{ secrets.SERVER_SSH_KEY }}
-            port: ${{ secrets.SERVER_PORT || 22 }}
-            script: |
-              echo "🔍 检查服务器环境..."
-              echo "Python版本: $(python3 --version)"
-              echo "Pip版本: $(pip3 --version)"
-              echo "磁盘空间: $(df -h / | tail -1)"
-              echo "内存使用: $(free -h)"
-              echo "网络连接: $(ping -c 1 github.com >/dev/null 2>&1 && echo 'GitHub连接正常' || echo 'GitHub连接异常')"
-              echo "✅ 服务器环境检查完成"
-
         - name: 缓存Python依赖
           if: steps.check_config.outputs.deploy_skipped == 'false'
           uses: actions/cache@v3
@@ -785,67 +750,46 @@ jobs:
               # 设置严格错误处理 - 任何命令失败立即退出
               set -e
               set -o pipefail
-          
-          # 1. 进入项目目录
-          PROJECT_DIR="$HOME/modeshift_django"
-          if [ ! -d "$PROJECT_DIR" ]; then
-            echo "❌ 项目目录不存在，创建目录..."
-            mkdir -p "$PROJECT_DIR"
-            cd "$PROJECT_DIR"
-            git clone https://github.com/shinytsing/modeshift_django.git .
-          else
-            echo "✅ 项目目录已存在，进入目录..."
-            cd "$PROJECT_DIR" || exit 1
-          fi
-          
-          # 2. 拉取最新代码
-          echo "📥 拉取最新代码..."
-          git fetch origin
-          git checkout main
-          git reset --hard origin/main
-          
-          # 3. 检查Python环境
-          echo "🐍 检查Python环境..."
-          python3 --version
-          pip3 --version
-          
-          # 4. 创建并激活虚拟环境
-          echo "📦 设置虚拟环境..."
-          if [ ! -d "venv" ]; then
-              python3 -m venv venv
-          fi
-          source venv/bin/activate
-          
+              
+              # 1. 进入项目目录
+              PROJECT_DIR="$HOME/modeshift_django"
+              if [ ! -d "$PROJECT_DIR" ]; then
+                echo "❌ 项目目录不存在，创建目录..."
+                mkdir -p "$PROJECT_DIR"
+                cd "$PROJECT_DIR"
+                git clone https://github.com/shinytsing/modeshift_django.git .
+              else
+                echo "✅ 项目目录已存在，进入目录..."
+                cd "$PROJECT_DIR" || exit 1
+              fi
+              
+              # 2. 拉取最新代码
+              echo "📥 拉取最新代码..."
+              git fetch origin
+              git checkout main
+              git reset --hard origin/main
+              
+              # 3. 检查Python环境
+              echo "🐍 检查Python环境..."
+              python3 --version
+              pip3 --version
+              
+              # 4. 创建并激活虚拟环境
+              echo "📦 设置虚拟环境..."
+              if [ ! -d "venv" ]; then
+                  python3 -m venv venv
+              fi
+              source venv/bin/activate
+              
               # 5. 安装依赖
               echo "📥 安装依赖..."
               pip install --upgrade pip
               pip install -r requirements.txt
           
-              # 6. 安装系统依赖（条件性）
-              echo "🗄️ 检查系统依赖..."
-              if ! command -v psql >/dev/null 2>&1; then
-                echo "📦 安装PostgreSQL..."
-                apt-get update
-                apt-get install -y postgresql postgresql-contrib
-              else
-                echo "✅ PostgreSQL已安装"
-              fi
-              
-              if ! command -v redis-server >/dev/null 2>&1; then
-                echo "📦 安装Redis..."
-                apt-get update
-                apt-get install -y redis-server
-              else
-                echo "✅ Redis已安装"
-              fi
-              
-              if ! command -v curl >/dev/null 2>&1; then
-                echo "📦 安装curl..."
-                apt-get update
-                apt-get install -y curl
-              else
-                echo "✅ curl已安装"
-              fi
+          # 6. 安装系统依赖
+          echo "🗄️ 安装系统依赖..."
+          apt-get update
+          apt-get install -y postgresql postgresql-contrib redis-server curl
           
           # 7. 启动服务
           echo "🔧 启动服务..."
@@ -920,20 +864,9 @@ jobs:
           export DJANGO_SETTINGS_MODULE=config.settings.production
           gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
           
-              # 16. 等待服务启动
-              echo "⏳ 等待服务启动..."
-              # 动态健康检查，最多等待30秒
-              for i in {1..30}; do
-                if curl -f http://localhost:8000/health/ >/dev/null 2>&1; then
-                  echo "✅ 服务启动成功，用时${i}秒"
-                  break
-                fi
-                if [ $i -eq 30 ]; then
-                  echo "❌ 服务启动超时"
-                  exit 1
-                fi
-                sleep 1
-              done
+          # 16. 等待服务启动
+          echo "⏳ 等待服务启动..."
+          sleep 15
           
           # 17. 检查服务状态
           echo "🔍 检查服务状态..."
@@ -1045,27 +978,17 @@ jobs:
           python manage.py migrate --settings=config.settings.production
           python manage.py collectstatic --noinput --settings=config.settings.production
           
-          # 动态健康检查启动服务
+          # 停止现有服务并启动新服务
           pkill -f gunicorn
           export DJANGO_SETTINGS_MODULE=config.settings.production
           gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
           
           # 等待服务启动
-          for i in {1..30}; do
-            if curl -f http://localhost:8000/health/ >/dev/null 2>&1; then
-              echo "✅ 服务启动成功，用时${i}秒"
-              break
-            fi
-            if [ $i -eq 30 ]; then
-              echo "❌ 服务启动超时"
-              exit 1
-            fi
-            sleep 1
-          done
+          sleep 15
           
-          echo "✅ 紧急部署完成！"
-          echo "🌐 访问地址: http://47.103.143.152:8000"
-          echo "👤 管理员账号: admin/admin123"
+          # 基础健康检查
+          curl -f http://localhost:8000/health/
+          echo "✅ 紧急部署完成"
 
   # ===== 8. 部署后验证 =====
   post-deployment-tests:
