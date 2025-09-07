@@ -10,6 +10,10 @@ echo "🔧 开始修复GitHub Actions数据库迁移问题..."
 # 1. 检查并安装缺失的依赖
 echo "📦 检查依赖包..."
 pip install PyMuPDF || echo "PyMuPDF安装失败，继续执行"
+pip install beautifulsoup4 || echo "beautifulsoup4安装失败，继续执行"
+pip install lxml || echo "lxml安装失败，继续执行"
+pip install aiohttp || echo "aiohttp安装失败，继续执行"
+pip install websockets || echo "websockets安装失败，继续执行"
 
 # 2. 创建测试数据库（如果不存在）
 echo "🗄️ 检查测试数据库..."
