@@ -672,9 +672,7 @@ def web_proxy_api(request):
 
             # 先尝试直接访问（如果代理失败）
             try:
-                response = session.get(
-                    target_url, proxies=proxies, timeout=30, verify=True, allow_redirects=True  # 启用SSL验证
-                )
+                response = session.get(target_url, proxies=proxies, timeout=30, verify=True, allow_redirects=True)  # 启用SSL验证
                 logger.info(f"✅ 代理访问成功: {response.status_code} - {target_url}")
             except Exception as proxy_error:
                 logger.warning(f"⚠️ 代理访问失败: {proxy_error}, 尝试直接访问")
@@ -858,14 +856,10 @@ def web_proxy_api(request):
                             logger.info("✅ 使用新User-Agent重试成功")
                         else:
                             logger.warning(f"❌ 重试后仍然失败: {retry_response.status_code}")
-                            return JsonResponse(
-                                {"success": False, "error": f"目标网站响应错误: {response.status_code}，请检查网址是否正确"}
-                            )
+                            return JsonResponse({"success": False, "error": f"目标网站响应错误: {response.status_code}，请检查网址是否正确"})
                     except Exception as retry_error:
                         logger.error(f"💥 重试请求失败: {retry_error}")
-                        return JsonResponse(
-                            {"success": False, "error": f"目标网站响应错误: {response.status_code}，请检查网址是否正确"}
-                        )
+                        return JsonResponse({"success": False, "error": f"目标网站响应错误: {response.status_code}，请检查网址是否正确"})
                 else:
                     return JsonResponse({"success": False, "error": f"目标网站响应错误: {response.status_code}，请稍后重试"})
 

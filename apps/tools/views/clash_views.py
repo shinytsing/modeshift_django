@@ -346,9 +346,7 @@ def _get_package_manager_commands(system):
 def _get_gui_download_links(system):
     """获取图形界面下载链接"""
     if system == "darwin":  # macOS
-        return [
-            {"name": "ClashX", "url": "https://github.com/yichengchen/clashX/releases", "description": "macOS专用图形界面版本"}
-        ]
+        return [{"name": "ClashX", "url": "https://github.com/yichengchen/clashX/releases", "description": "macOS专用图形界面版本"}]
     elif system == "windows":
         return [
             {

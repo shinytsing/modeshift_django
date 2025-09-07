@@ -163,9 +163,7 @@ class Command(BaseCommand):
             for food_name in not_found_foods:
                 self.stdout.write(f"   - {food_name}")
 
-        self.stdout.write(
-            self.style.SUCCESS(f"\n📊 更新完成! 成功更新: {updated_count}个食物, 未找到: {not_found_count}个食物")
-        )
+        self.stdout.write(self.style.SUCCESS(f"\n📊 更新完成! 成功更新: {updated_count}个食物, 未找到: {not_found_count}个食物"))
 
         # 统计营养信息覆盖率
         coverage_rate = (updated_count / all_foods.count()) * 100

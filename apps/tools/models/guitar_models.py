@@ -43,9 +43,7 @@ class GuitarPracticeSession(models.Model):
 
     # 评价
     self_rating = models.IntegerField(blank=True, null=True, choices=[(i, i) for i in range(1, 6)], verbose_name="自我评价")
-    difficulty_rating = models.IntegerField(
-        blank=True, null=True, choices=[(i, i) for i in range(1, 6)], verbose_name="难度评价"
-    )
+    difficulty_rating = models.IntegerField(blank=True, null=True, choices=[(i, i) for i in range(1, 6)], verbose_name="难度评价")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="练习时间")
 

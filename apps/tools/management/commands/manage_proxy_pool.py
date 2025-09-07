@@ -53,9 +53,7 @@ class Command(BaseCommand):
                 response_time = proxy.response_time or 0
                 success_count = proxy.success_count or 0
                 fail_count = proxy.fail_count or 0
-                self.stdout.write(
-                    f"{i}. {proxy.proxy} " f"(响应: {response_time:.2f}s, 成功: {success_count}, 失败: {fail_count})"
-                )
+                self.stdout.write(f"{i}. {proxy.proxy} " f"(响应: {response_time:.2f}s, 成功: {success_count}, 失败: {fail_count})")
 
     def refresh_proxies(self):
         """刷新代理池"""

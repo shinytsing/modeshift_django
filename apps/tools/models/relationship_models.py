@@ -255,9 +255,7 @@ class ImportantMoment(models.Model):
 
     # 基础信息
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
-    person = models.ForeignKey(
-        PersonProfile, on_delete=models.CASCADE, related_name="important_moments", verbose_name="相关人物"
-    )
+    person = models.ForeignKey(PersonProfile, on_delete=models.CASCADE, related_name="important_moments", verbose_name="相关人物")
     related_interaction = models.OneToOneField(
         Interaction, on_delete=models.CASCADE, blank=True, null=True, verbose_name="关联互动记录"
     )
@@ -276,9 +274,7 @@ class ImportantMoment(models.Model):
     documents = models.JSONField(default=list, verbose_name="文档")
 
     # 参与人员
-    other_participants = models.ManyToManyField(
-        PersonProfile, blank=True, related_name="shared_moments", verbose_name="其他参与者"
-    )
+    other_participants = models.ManyToManyField(PersonProfile, blank=True, related_name="shared_moments", verbose_name="其他参与者")
 
     # 情感记录
     emotional_impact = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=3, verbose_name="情感影响程度")

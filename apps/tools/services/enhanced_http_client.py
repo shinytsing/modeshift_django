@@ -76,7 +76,6 @@ class EnhancedHTTPClient:
 
         # 检查是否需要轮换代理
         if self.current_proxy is None or self.request_count % self.proxy_rotation_interval == 0:
-
             new_proxy = proxy_pool.get_proxy_for_requests()
             if new_proxy:
                 self.current_proxy = new_proxy

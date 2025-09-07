@@ -55,9 +55,7 @@ class Suggestion(models.Model):
 
     title = models.CharField(max_length=200, verbose_name="建议标题")
     content = models.TextField(verbose_name="建议内容")
-    suggestion_type = models.CharField(
-        max_length=20, choices=SUGGESTION_TYPE_CHOICES, default="feature", verbose_name="建议类型"
-    )
+    suggestion_type = models.CharField(max_length=20, choices=SUGGESTION_TYPE_CHOICES, default="feature", verbose_name="建议类型")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", verbose_name="处理状态")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="提交用户")
     user_name = models.CharField(max_length=100, blank=True, verbose_name="用户名称")

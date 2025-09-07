@@ -278,9 +278,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "status": data.get("status"),
                     "message_id": data.get("message_id"),
                     "video_room_id": data.get("video_room_id"),
-                    "username": (
-                        self.scope["user"].username if not isinstance(self.scope["user"], AnonymousUser) else "匿名用户"
-                    ),
+                    "username": (self.scope["user"].username if not isinstance(self.scope["user"], AnonymousUser) else "匿名用户"),
                     "sender_id": self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None,
                 },
             )

@@ -222,9 +222,7 @@ def travel_guide_api(request):
         except Exception as e:
             error_message = str(e)
             if "无法获取有效的旅游数据" in error_message or "API" in error_message:
-                return JsonResponse(
-                    {"error": "服务暂时不可用，请稍后重试。错误详情：" + error_message}, status=503
-                )  # 503 Service Unavailable
+                return JsonResponse({"error": "服务暂时不可用，请稍后重试。错误详情：" + error_message}, status=503)  # 503 Service Unavailable
             else:
                 return JsonResponse({"error": "生成攻略失败：" + error_message}, status=500)
 

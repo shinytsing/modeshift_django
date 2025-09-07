@@ -166,9 +166,7 @@ if __name__ == "__main__":
     print("   python manage.py manage_versions list")
     print()
     print("2. 添加新版本:")
-    print(
-        "   python manage.py manage_versions add --ver 1.1.0 --title '功能增强' --features '新功能1,新功能2' --description '新增多个功能'"
-    )
+    print("   python manage.py manage_versions add --ver 1.1.0 --title '功能增强' --features '新功能1,新功能2' --description '新增多个功能'")
     print()
     print("3. 更新版本:")
     print("   python manage.py manage_versions update --ver 1.0.0 --title '更新标题'")

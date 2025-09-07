@@ -434,9 +434,7 @@ class EnhancedTravelService:
             weather_text = ""
             if "current" in weather_info:
                 current = weather_info["current"]
-                weather_text = (
-                    f"当前天气: {current['weather']}, 温度: {current['temperature']}°C, 湿度: {current['humidity']}%"
-                )
+                weather_text = f"当前天气: {current['weather']}, 温度: {current['temperature']}°C, 湿度: {current['humidity']}%"
 
             interests_text = "、".join(interests) if interests else "通用"
 
@@ -637,9 +635,7 @@ class EnhancedTravelService:
             tips.append(f"{destination}有{attraction_count}个推荐景点，建议合理安排时间")
 
         # 通用贴士
-        tips.extend(
-            [f"建议提前了解{destination}的交通情况", "准备一些常用药品和应急用品", "注意保管好随身物品", "尊重当地文化和习俗"]
-        )
+        tips.extend([f"建议提前了解{destination}的交通情况", "准备一些常用药品和应急用品", "注意保管好随身物品", "尊重当地文化和习俗"])
 
         return tips[:8]  # 限制贴士数量
 

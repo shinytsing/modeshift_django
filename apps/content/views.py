@@ -917,9 +917,7 @@ def create_ai_links_from_list(request):
 
                 created_count += 1
 
-        return JsonResponse(
-            {"success": True, "message": f"成功创建 {created_count} 个AI友情链接"}, content_type="application/json"
-        )
+        return JsonResponse({"success": True, "message": f"成功创建 {created_count} 个AI友情链接"}, content_type="application/json")
 
     except Exception as e:
         return JsonResponse({"success": False, "message": f"创建失败: {str(e)}"})

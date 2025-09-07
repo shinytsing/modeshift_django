@@ -152,9 +152,7 @@ def process_time_capsule_unlock():
         for capsule in unlockable_capsules:
             try:
                 # 发送解锁通知
-                send_notification_email.delay(
-                    capsule.user.id, "时光胶囊解锁通知", f"您的时光胶囊 '{capsule.title or '未命名'}' 已经解锁！"
-                )
+                send_notification_email.delay(capsule.user.id, "时光胶囊解锁通知", f"您的时光胶囊 '{capsule.title or '未命名'}' 已经解锁！")
                 count += 1
 
             except Exception as e:

@@ -67,9 +67,7 @@ class EnhancedTrainingPlan(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="计划描述")
     plan_type = models.CharField(max_length=20, choices=PLAN_TYPE_CHOICES, verbose_name="计划类型")
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, verbose_name="难度等级")
-    category = models.ForeignKey(
-        TrainingPlanCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="计划分类"
-    )
+    category = models.ForeignKey(TrainingPlanCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="计划分类")
 
     # 计划设置
     duration_weeks = models.IntegerField(default=8, verbose_name="计划周期(周)")

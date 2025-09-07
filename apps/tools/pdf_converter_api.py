@@ -230,9 +230,7 @@ class PDFConverter:
                     else:
                         alpha_ratio = 0
 
-                    logger.info(
-                        f"内容质量检查: 长度={content_length}, 包含可疑内容={contains_suspicious}, 字母比例={alpha_ratio:.2f}"
-                    )
+                    logger.info(f"内容质量检查: 长度={content_length}, 包含可疑内容={contains_suspicious}, 字母比例={alpha_ratio:.2f}")
 
                     # 如果内容太少、包含可疑内容或字母比例太低，切换到OCR
                     if content_length < 50 or contains_suspicious or alpha_ratio < 0.3:
@@ -1358,9 +1356,7 @@ def pdf_converter_api(request):
                 data = json.loads(request.body)
                 conversion_type = data.get("type", "")
                 text_content = data.get("text_content", "")
-                logger.info(
-                    f"JSON数据: type={conversion_type}, text_content_length={len(text_content) if text_content else 0}"
-                )
+                logger.info(f"JSON数据: type={conversion_type}, text_content_length={len(text_content) if text_content else 0}")
             except json.JSONDecodeError:
                 return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400)
         else:

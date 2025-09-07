@@ -590,10 +590,7 @@ class ProxyPool:
         # 保存更新后的代理池
         self._save_proxies()
 
-        logger.info(
-            f"✅ 代理池检查完成: 成功 {success_count}, 失败 {failed_count}, "
-            f"移除 {removed_count}, 当前可用: {len(self.proxies)}个"
-        )
+        logger.info(f"✅ 代理池检查完成: 成功 {success_count}, 失败 {failed_count}, " f"移除 {removed_count}, 当前可用: {len(self.proxies)}个")
 
     def mark_proxy_failed(self, proxy: str):
         """标记代理失败"""

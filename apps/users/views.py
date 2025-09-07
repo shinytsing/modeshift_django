@@ -412,9 +412,7 @@ def admin_change_membership_api(request, user_id):
             details=f"会员类型从 {old_type} 变更为 {membership_type}，有效期：{days}天，备注：{note}",
         )
 
-        return JsonResponse(
-            {"success": True, "message": f"用户会员已更新为 {membership_type}"}, content_type="application/json"
-        )
+        return JsonResponse({"success": True, "message": f"用户会员已更新为 {membership_type}"}, content_type="application/json")
 
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)
@@ -504,9 +502,7 @@ def admin_batch_operation_api(request):
         note = data.get("note", "")
 
         if not user_ids:
-            return JsonResponse(
-                {"success": False, "message": "请选择要操作的用户"}, status=400, content_type="application/json"
-            )
+            return JsonResponse({"success": False, "message": "请选择要操作的用户"}, status=400, content_type="application/json")
 
         success_count = 0
         failed_count = 0
@@ -773,9 +769,7 @@ def admin_force_logout_api(request, user_id):
             details=f"强制登出用户 {user.username}，原因：{reason}",
         )
 
-        return JsonResponse(
-            {"success": True, "message": f"用户 {user.username} 已被强制登出"}, content_type="application/json"
-        )
+        return JsonResponse({"success": True, "message": f"用户 {user.username} 已被强制登出"}, content_type="application/json")
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "无效的JSON数据"}, status=400, content_type="application/json")
@@ -860,9 +854,7 @@ def upload_avatar(request):
     try:
         # 检查是否有文件上传
         if "avatar" not in request.FILES:
-            return JsonResponse(
-                {"success": False, "message": "请选择要上传的头像文件"}, status=400, content_type="application/json"
-            )
+            return JsonResponse({"success": False, "message": "请选择要上传的头像文件"}, status=400, content_type="application/json")
 
         avatar_file = request.FILES["avatar"]
 
@@ -877,9 +869,7 @@ def upload_avatar(request):
 
         # 验证文件大小（限制为5MB）
         if avatar_file.size > 5 * 1024 * 1024:
-            return JsonResponse(
-                {"success": False, "message": "头像文件大小不能超过5MB"}, status=400, content_type="application/json"
-            )
+            return JsonResponse({"success": False, "message": "头像文件大小不能超过5MB"}, status=400, content_type="application/json")
 
         # 获取或创建用户资料
         try:
@@ -1171,9 +1161,7 @@ def extend_session_api(request):
             except Exception as e:
                 print(f"记录session延长活动失败: {e}")
 
-            return JsonResponse(
-                {"success": True, "message": "Session已延长至30天", "expires_in": 60 * 60 * 24 * 30}  # 过期时间（秒）
-            )
+            return JsonResponse({"success": True, "message": "Session已延长至30天", "expires_in": 60 * 60 * 24 * 30})  # 过期时间（秒）
         else:
             return JsonResponse({"success": False, "message": "用户未登录或session不可用"}, status=401)
 

@@ -133,9 +133,7 @@ class GenerateTestCasesAPI(APIView):
             # 批量生成参数验证
             if is_batch:
                 if total_batches < 1 or total_batches > self.MAX_BATCH_COUNT:
-                    return Response(
-                        {"error": f"批量生成最大支持{self.MAX_BATCH_COUNT}个批次"}, status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": f"批量生成最大支持{self.MAX_BATCH_COUNT}个批次"}, status=status.HTTP_400_BAD_REQUEST)
                 if batch_id < 0 or batch_id >= total_batches:
                     return Response(
                         {"error": f"批次ID {batch_id} 超出有效范围 (0-{total_batches - 1})"},
@@ -268,9 +266,7 @@ class GenerateTestCasesAPI(APIView):
             # 计算处理时间并记录
             processing_time = (datetime.now() - start_time).total_seconds()
             logger.info(
-                f"用户 {request.user.username} 测试用例生成完成，"
-                f"耗时: {processing_time:.2f}秒，"
-                f"批次: {batch_id + 1}/{total_batches}"
+                f"用户 {request.user.username} 测试用例生成完成，" f"耗时: {processing_time:.2f}秒，" f"批次: {batch_id + 1}/{total_batches}"
             )
 
             return Response(response_data)

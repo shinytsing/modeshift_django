@@ -140,9 +140,7 @@ class SocialMediaNotification(models.Model):
     ]
 
     subscription = models.ForeignKey(SocialMediaSubscription, on_delete=models.CASCADE, verbose_name="订阅", db_index=True)
-    notification_type = models.CharField(
-        max_length=20, choices=NOTIFICATION_TYPE_CHOICES, verbose_name="通知类型", db_index=True
-    )
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE_CHOICES, verbose_name="通知类型", db_index=True)
     title = models.CharField(max_length=200, verbose_name="标题")
     content = models.TextField(verbose_name="内容")
     data = models.JSONField(default=dict, verbose_name="详细数据")

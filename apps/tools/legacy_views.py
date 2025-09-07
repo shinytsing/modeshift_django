@@ -400,9 +400,7 @@ def heart_link_chat(request, room_id):
 
         logger = logging.getLogger(__name__)
         logger.error(f"Heart link chat error: {e}")
-        return JsonResponse(
-            {"success": False, "error": "访问心动链接聊天室时发生错误", "redirect": "/tools/heart_link/"}, status=500
-        )
+        return JsonResponse({"success": False, "error": "访问心动链接聊天室时发生错误", "redirect": "/tools/heart_link/"}, status=500)
 
 
 @login_required
@@ -894,9 +892,7 @@ def add_social_subscription_api(request):
         check_frequency = data.get("check_frequency", 15)
 
         if not platform or not target_user_id:
-            return JsonResponse(
-                {"success": False, "error": "平台和用户ID不能为空"}, status=400, content_type="application/json"
-            )
+            return JsonResponse({"success": False, "error": "平台和用户ID不能为空"}, status=400, content_type="application/json")
 
         # 检查是否已存在相同订阅
         from apps.tools.models import SocialMediaSubscription
@@ -1252,9 +1248,7 @@ def save_life_diary(request, data):
 
                 diary_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             except ValueError:
-                return JsonResponse(
-                    {"success": False, "error": "日期格式无效，请使用YYYY-MM-DD格式"}, content_type="application/json"
-                )
+                return JsonResponse({"success": False, "error": "日期格式无效，请使用YYYY-MM-DD格式"}, content_type="application/json")
         else:
             diary_date = timezone.now().date()
 
@@ -1430,9 +1424,7 @@ def save_life_goal(request, data):
             try:
                 target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
                 if start_date_obj and target_date_obj < start_date_obj:
-                    return JsonResponse(
-                        {"success": False, "error": "目标日期不能早于开始日期"}, content_type="application/json"
-                    )
+                    return JsonResponse({"success": False, "error": "目标日期不能早于开始日期"}, content_type="application/json")
             except ValueError:
                 return JsonResponse({"success": False, "error": "目标日期格式无效"}, content_type="application/json")
 
@@ -1444,9 +1436,7 @@ def save_life_goal(request, data):
             if isinstance(milestone, dict) and milestone.get("text") and milestone.get("date"):
                 try:
                     datetime.strptime(milestone["date"], "%Y-%m-%d").date()
-                    validated_milestones.append(
-                        {"text": milestone["text"].strip()[:100], "date": milestone["date"]}  # 限制长度
-                    )
+                    validated_milestones.append({"text": milestone["text"].strip()[:100], "date": milestone["date"]})  # 限制长度
                 except ValueError:
                     continue  # 跳过无效的里程碑
 
@@ -1973,7 +1963,9 @@ def get_mood_analysis(request, data):
             mood_stats["stability"] = (
                 "stable"
                 if mood_changes <= len(mood_timeline) * 0.3
-                else "volatile" if mood_changes >= len(mood_timeline) * 0.7 else "moderate"
+                else "volatile"
+                if mood_changes >= len(mood_timeline) * 0.7
+                else "moderate"
             )
         else:
             mood_stats["stability"] = "insufficient_data"
@@ -2544,9 +2536,7 @@ def check_heart_link_status_api(request):
                     "success": True,
                     "status": "matched",
                     "room_id": heart_link_request.chat_room.room_id,
-                    "matched_user": (
-                        heart_link_request.matched_with.username if heart_link_request.matched_with else "未知用户"
-                    ),
+                    "matched_user": (heart_link_request.matched_with.username if heart_link_request.matched_with else "未知用户"),
                 },
                 content_type="application/json",
                 headers=response_headers,
@@ -4739,9 +4729,7 @@ def delete_message_api(request, room_id, message_id):
         # 删除消息
         message.delete()
 
-        return JsonResponse(
-            {"success": True, "message": "消息已删除"}, content_type="application/json", headers=response_headers
-        )
+        return JsonResponse({"success": True, "message": "消息已删除"}, content_type="application/json", headers=response_headers)
 
     except ChatRoom.DoesNotExist:
         return JsonResponse(
@@ -5328,9 +5316,7 @@ def travel_guide_api(request):
         except Exception as e:
             error_message = str(e)
             if "无法获取有效的旅游数据" in error_message or "API" in error_message:
-                return JsonResponse(
-                    {"error": "服务暂时不可用，请稍后重试。错误详情：" + error_message}, status=503
-                )  # 503 Service Unavailable
+                return JsonResponse({"error": "服务暂时不可用，请稍后重试。错误详情：" + error_message}, status=503)  # 503 Service Unavailable
             else:
                 return JsonResponse({"error": "生成攻略失败：" + error_message}, status=500)
 
@@ -8058,9 +8044,7 @@ def cancel_number_match_api(request):
         # 清除用户的匹配状态
         UserOnlineStatus.objects.filter(user=request.user).update(match_number=None)
 
-        return JsonResponse(
-            {"success": True, "message": "已取消匹配"}, content_type="application/json", headers=response_headers
-        )
+        return JsonResponse({"success": True, "message": "已取消匹配"}, content_type="application/json", headers=response_headers)
 
     except Exception as e:
         return JsonResponse(
@@ -9500,9 +9484,7 @@ def user_generated_travel_guide_api(request):
                 file_ext = os.path.splitext(attachment.name)[1].lower()
 
                 if file_ext not in allowed_types:
-                    return JsonResponse(
-                        {"success": False, "error": "不支持的文件类型，请上传PDF、Word、TXT或Markdown文件"}, status=400
-                    )
+                    return JsonResponse({"success": False, "error": "不支持的文件类型，请上传PDF、Word、TXT或Markdown文件"}, status=400)
 
                 # 验证文件大小（10MB）
                 if attachment.size > 10 * 1024 * 1024:
@@ -9675,9 +9657,7 @@ def user_generated_travel_guide_upload_attachment_api(request, guide_id):
         allowed_extensions = ["pdf", "doc", "docx", "txt", "md", "jpg", "jpeg", "png"]
         file_extension = uploaded_file.name.lower().split(".")[-1]
         if file_extension not in allowed_extensions:
-            return JsonResponse(
-                {"success": False, "error": f'不支持的文件格式，请上传 {", ".join(allowed_extensions)} 格式的文件'}
-            )
+            return JsonResponse({"success": False, "error": f'不支持的文件格式，请上传 {", ".join(allowed_extensions)} 格式的文件'})
 
         # 保存附件
         guide.attachment = uploaded_file

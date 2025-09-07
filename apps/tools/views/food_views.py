@@ -190,9 +190,7 @@ def api_save_food_photo_bindings(request):
 
         logger.info(f"保存食物照片绑定: 用户 {request.user.id}, 保存 {len(saved_bindings)} 条记录")
 
-        return JsonResponse(
-            {"success": True, "message": f"成功保存 {len(saved_bindings)} 条绑定记录", "bindings": saved_bindings}
-        )
+        return JsonResponse({"success": True, "message": f"成功保存 {len(saved_bindings)} 条绑定记录", "bindings": saved_bindings})
 
     except Exception as e:
         logger.error(f"保存食物照片绑定失败: {str(e)}")
@@ -287,9 +285,7 @@ def api_remove_food_photo_binding(request):
             bindings.delete()
             logger.info(f"删除食物照片绑定: 用户 {request.user.id}, 照片 {photo_name}, 删除 {deleted_count} 条记录")
 
-            return JsonResponse(
-                {"success": True, "message": f"成功删除 {deleted_count} 条绑定记录", "deleted_count": deleted_count}
-            )
+            return JsonResponse({"success": True, "message": f"成功删除 {deleted_count} 条绑定记录", "deleted_count": deleted_count})
         else:
             return JsonResponse({"success": False, "error": "未找到要删除的绑定"}, status=404)
 

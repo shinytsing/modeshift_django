@@ -29,9 +29,7 @@ def zip_tool_view(request):
     """
     ZIP工具主页面
     """
-    return render(
-        request, "tools/zip_tool.html", {"title": "ZIP文件处理工具", "description": "支持多文件打包和单文件压缩打包"}
-    )
+    return render(request, "tools/zip_tool.html", {"title": "ZIP文件处理工具", "description": "支持多文件打包和单文件压缩打包"})
 
 
 @csrf_exempt

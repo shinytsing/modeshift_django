@@ -886,9 +886,7 @@ def heart_link_chat(request, room_id):
         return JsonResponse({"success": False, "error": "心动链接聊天室不存在", "redirect": "/tools/heart_link/"}, status=404)
     except Exception as e:
         logger.error(f"Heart link chat error: {e}")
-        return JsonResponse(
-            {"success": False, "error": "访问心动链接聊天室时发生错误", "redirect": "/tools/heart_link/"}, status=500
-        )
+        return JsonResponse({"success": False, "error": "访问心动链接聊天室时发生错误", "redirect": "/tools/heart_link/"}, status=500)
 
 
 def heart_link_test_view(request):

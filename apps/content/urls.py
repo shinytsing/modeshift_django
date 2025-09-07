@@ -1,7 +1,5 @@
 from django.urls import path
 
-app_name = "content"
-
 from .views import (
     admin_announcements,
     admin_batch_change_status_api,
@@ -36,6 +34,8 @@ from .views_admin_features import (
     update_feature_status_api,
     update_user_feature_access_api,
 )
+
+app_name = "content"
 
 urlpatterns = [
     path("", article_list, name="article_list"),  # 文章列表

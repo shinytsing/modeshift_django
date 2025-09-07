@@ -192,9 +192,7 @@ def create_job_search_request_api(request):
 
         logger.info(f"创建求职请求: {request_id} - {data.get('job_title')} in {data.get('location')}")
 
-        return JsonResponse(
-            {"success": True, "request_id": request_id, "message": "求职请求创建成功", "job_request": job_request}
-        )
+        return JsonResponse({"success": True, "request_id": request_id, "message": "求职请求创建成功", "job_request": job_request})
 
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400)
@@ -443,9 +441,7 @@ def create_job_search_request_api(request):
 
         logger.info(f"创建求职请求: {request_id} - {data.get('job_title')} in {data.get('location')}")
 
-        return JsonResponse(
-            {"success": True, "request_id": request_id, "message": "求职请求创建成功", "job_request": job_request}
-        )
+        return JsonResponse({"success": True, "request_id": request_id, "message": "求职请求创建成功", "job_request": job_request})
 
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400)

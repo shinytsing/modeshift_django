@@ -45,9 +45,7 @@ class GenerateRedBookAPI(APIView):
             # 2. 验证所有图片文件类型和大小
             for image_file in image_files:
                 if not self._validate_image(image_file):
-                    return Response(
-                        {"error": f"图片 {image_file.name} 格式不支持或文件过大"}, status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": f"图片 {image_file.name} 格式不支持或文件过大"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 3. 保存所有图片到临时文件
             temp_image_paths = []

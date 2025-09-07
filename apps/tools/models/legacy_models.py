@@ -51,9 +51,7 @@ class LifeGoal(models.Model):
     title = models.CharField(max_length=200, verbose_name="目标标题")
     description = models.TextField(blank=True, null=True, verbose_name="目标描述")
     category = models.CharField(max_length=20, choices=GOAL_CATEGORY_CHOICES, verbose_name="目标类别", db_index=True)
-    goal_type = models.CharField(
-        max_length=20, choices=GOAL_TYPE_CHOICES, default="daily", verbose_name="目标类型", db_index=True
-    )
+    goal_type = models.CharField(max_length=20, choices=GOAL_TYPE_CHOICES, default="daily", verbose_name="目标类型", db_index=True)
     status = models.CharField(max_length=20, choices=GOAL_STATUS_CHOICES, default="active", verbose_name="状态", db_index=True)
     start_date = models.DateField(null=True, blank=True, verbose_name="开始日期")
     target_date = models.DateField(null=True, blank=True, verbose_name="目标日期", db_index=True)
@@ -483,9 +481,7 @@ class UserAchievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户", db_index=True)
     title = models.CharField(max_length=200, verbose_name="成就标题")
     description = models.TextField(blank=True, null=True, verbose_name="成就描述")
-    achievement_type = models.CharField(
-        max_length=20, choices=ACHIEVEMENT_TYPE_CHOICES, verbose_name="成就类型", db_index=True
-    )
+    achievement_type = models.CharField(max_length=20, choices=ACHIEVEMENT_TYPE_CHOICES, verbose_name="成就类型", db_index=True)
     level = models.CharField(max_length=20, choices=ACHIEVEMENT_LEVEL_CHOICES, default="bronze", verbose_name="成就等级")
     icon = models.CharField(max_length=50, default="fas fa-trophy", verbose_name="成就图标")
     is_custom = models.BooleanField(default=False, verbose_name="是否自定义")
@@ -1713,9 +1709,7 @@ class CheckInDetail(models.Model):
 
     # 通用字段
     duration = models.IntegerField(help_text="持续时间（分钟）", null=True, blank=True)
-    intensity = models.CharField(
-        max_length=20, choices=[("low", "低"), ("medium", "中"), ("high", "高")], null=True, blank=True
-    )
+    intensity = models.CharField(max_length=20, choices=[("low", "低"), ("medium", "中"), ("high", "高")], null=True, blank=True)
     notes = models.TextField(blank=True)
 
     # 健身专用字段
@@ -2054,9 +2048,7 @@ class LegacyInteraction(models.Model):
 
     # 基础信息
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
-    person = models.ForeignKey(
-        LegacyPersonProfile, on_delete=models.CASCADE, related_name="interactions", verbose_name="相关人物"
-    )
+    person = models.ForeignKey(LegacyPersonProfile, on_delete=models.CASCADE, related_name="interactions", verbose_name="相关人物")
 
     # 互动详情
     interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPE_CHOICES, verbose_name="互动类型")
@@ -2278,9 +2270,7 @@ class LegacyRelationshipReminder(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
-    person = models.ForeignKey(
-        LegacyPersonProfile, on_delete=models.CASCADE, related_name="reminders", verbose_name="相关人物"
-    )
+    person = models.ForeignKey(LegacyPersonProfile, on_delete=models.CASCADE, related_name="reminders", verbose_name="相关人物")
 
     reminder_type = models.CharField(max_length=20, choices=REMINDER_TYPE_CHOICES, verbose_name="提醒类型")
     title = models.CharField(max_length=200, verbose_name="提醒标题")
@@ -2440,9 +2430,7 @@ class UserFeaturePermission(models.Model):
     feature = models.ForeignKey(Feature, on_delete=models.CASCADE, verbose_name="功能")
     is_visible = models.BooleanField(default=True, verbose_name="是否可见")
     is_allowed = models.BooleanField(default=True, verbose_name="是否允许使用")
-    custom_weight = models.IntegerField(
-        null=True, blank=True, verbose_name="自定义推荐权重", help_text="为特定用户设置的推荐权重，为空则使用功能默认权重"
-    )
+    custom_weight = models.IntegerField(null=True, blank=True, verbose_name="自定义推荐权重", help_text="为特定用户设置的推荐权重，为空则使用功能默认权重")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -2592,18 +2580,14 @@ class FitnessCommunityPost(models.Model):
     content = models.TextField(verbose_name="内容")
 
     # 关联的打卡记录
-    related_checkin = models.ForeignKey(
-        CheckInCalendar, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="关联打卡"
-    )
+    related_checkin = models.ForeignKey(CheckInCalendar, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="关联打卡")
 
     # 训练计划相关
     training_plan_data = models.JSONField(default=dict, blank=True, verbose_name="训练计划数据")
 
     # 视频相关
     video_url = models.URLField(blank=True, null=True, verbose_name="视频链接")
-    video_thumbnail = models.ImageField(
-        upload_to="fitness_videos/thumbnails/", blank=True, null=True, verbose_name="视频缩略图"
-    )
+    video_thumbnail = models.ImageField(upload_to="fitness_videos/thumbnails/", blank=True, null=True, verbose_name="视频缩略图")
     video_duration = models.IntegerField(blank=True, null=True, verbose_name="视频时长(秒)")
 
     # 标签和分类
@@ -2733,9 +2717,7 @@ class FitnessUserProfile(models.Model):
     bmr = models.FloatField(null=True, blank=True, verbose_name="基础代谢率")
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default="maintain", verbose_name="健身目标")
     intensity = models.CharField(max_length=20, choices=INTENSITY_CHOICES, default="balanced", verbose_name="目标强度")
-    activity_level = models.CharField(
-        max_length=20, choices=ACTIVITY_LEVEL_CHOICES, default="moderate", verbose_name="日常活动量"
-    )
+    activity_level = models.CharField(max_length=20, choices=ACTIVITY_LEVEL_CHOICES, default="moderate", verbose_name="日常活动量")
     dietary_preferences = models.JSONField(default=list, verbose_name="饮食偏好")
     allergies = models.JSONField(default=list, verbose_name="过敏食物")
     training_days_per_week = models.IntegerField(default=3, verbose_name="每周训练天数")

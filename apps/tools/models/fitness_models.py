@@ -549,9 +549,7 @@ class EnhancedFitnessUserProfile(models.Model):
     bmr = models.FloatField(null=True, blank=True, verbose_name="基础代谢率")
     goal = models.CharField(max_length=20, choices=GOAL_CHOICES, default="maintain", verbose_name="健身目标")
     intensity = models.CharField(max_length=20, choices=INTENSITY_CHOICES, default="balanced", verbose_name="目标强度")
-    activity_level = models.CharField(
-        max_length=20, choices=ACTIVITY_LEVEL_CHOICES, default="moderate", verbose_name="日常活动量"
-    )
+    activity_level = models.CharField(max_length=20, choices=ACTIVITY_LEVEL_CHOICES, default="moderate", verbose_name="日常活动量")
     dietary_preferences = models.JSONField(default=list, verbose_name="饮食偏好")
     allergies = models.JSONField(default=list, verbose_name="过敏食物")
     training_days_per_week = models.IntegerField(default=3, verbose_name="每周训练天数")

@@ -101,9 +101,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"食物数据初始化完成！"
-                f"创建了 {created_count} 个新食物，"
-                f"更新了 {updated_count} 个现有食物。"
-                f"总共 {len(all_foods)} 个食物。"
+                f"食物数据初始化完成！" f"创建了 {created_count} 个新食物，" f"更新了 {updated_count} 个现有食物。" f"总共 {len(all_foods)} 个食物。"
             )
         )

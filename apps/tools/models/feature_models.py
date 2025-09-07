@@ -114,9 +114,7 @@ class UserFeaturePermission(models.Model):
     feature = models.ForeignKey(Feature, on_delete=models.CASCADE, verbose_name="功能")
     is_visible = models.BooleanField(default=True, verbose_name="是否可见")
     is_allowed = models.BooleanField(default=True, verbose_name="是否允许使用")
-    custom_weight = models.IntegerField(
-        null=True, blank=True, verbose_name="自定义推荐权重", help_text="为特定用户设置的推荐权重，为空则使用功能默认权重"
-    )
+    custom_weight = models.IntegerField(null=True, blank=True, verbose_name="自定义推荐权重", help_text="为特定用户设置的推荐权重，为空则使用功能默认权重")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")

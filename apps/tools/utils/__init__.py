@@ -182,7 +182,6 @@ API_RATE_LIMIT=10/minute
             while (
                 self._is_content_obviously_incomplete(content) or self._needs_more_test_cases(content)
             ) and continuation_count < max_continuations:
-
                 continuation_count += 1
                 print(f"正在进行第{continuation_count}次接续生成...")
 

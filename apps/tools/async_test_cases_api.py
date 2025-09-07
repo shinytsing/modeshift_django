@@ -48,9 +48,7 @@ class AsyncGenerateTestCasesAPI(APIView):
 
         except Exception as e:
             logger.error(f"创建异步任务失败: {e}")
-            return Response(
-                {"success": False, "error": f"创建任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"success": False, "error": f"创建任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TaskStatusAPI(APIView):
@@ -91,9 +89,7 @@ class TaskStatusAPI(APIView):
 
         except Exception as e:
             logger.error(f"获取任务状态失败: {e}")
-            return Response(
-                {"success": False, "error": f"获取任务状态失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"success": False, "error": f"获取任务状态失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TaskListAPI(APIView):
@@ -129,9 +125,7 @@ class TaskListAPI(APIView):
 
         except Exception as e:
             logger.error(f"获取任务列表失败: {e}")
-            return Response(
-                {"success": False, "error": f"获取任务列表失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"success": False, "error": f"获取任务列表失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class DeleteTaskAPI(APIView):
@@ -164,6 +158,4 @@ class DeleteTaskAPI(APIView):
 
         except Exception as e:
             logger.error(f"删除任务失败: {e}")
-            return Response(
-                {"success": False, "error": f"删除任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"success": False, "error": f"删除任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

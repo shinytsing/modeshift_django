@@ -202,7 +202,6 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
         from django.contrib.auth.models import AnonymousUser
 
         if isinstance(request.user, AnonymousUser) and hasattr(request, "session") and request.session:
-
             try:
                 session_key = request.session.session_key
                 if session_key:
@@ -246,7 +245,6 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
             and hasattr(request, "session")
             and request.session
         ):
-
             try:
                 session_key = request.session.session_key
                 if session_key:

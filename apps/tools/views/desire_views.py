@@ -205,9 +205,7 @@ def complete_desire_todo_api(request):
         service = DesireDashboardService()
         result = service.complete_desire_todo(request.user, todo_id)
 
-        return JsonResponse(
-            {"success": True, "message": "待办完成！", "fulfilled_desires": result.get("fulfilled_desires", [])}
-        )
+        return JsonResponse({"success": True, "message": "待办完成！", "fulfilled_desires": result.get("fulfilled_desires", [])})
     except Exception as e:
         return JsonResponse({"success": False, "message": f"完成失败: {str(e)}"})
 

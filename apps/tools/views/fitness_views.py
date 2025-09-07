@@ -1326,9 +1326,7 @@ def save_training_plan_editor_api(request):
         week_schedule = data.get("week_schedule", [])
         plan_id = data.get("plan_id")  # 如果有ID，则更新现有计划
 
-        logger.info(
-            f"处理后的数据 - plan_name: {plan_name}, plan_mode: {plan_mode}, cycle_weeks: {cycle_weeks}, plan_id: {plan_id}"
-        )
+        logger.info(f"处理后的数据 - plan_name: {plan_name}, plan_mode: {plan_mode}, cycle_weeks: {cycle_weeks}, plan_id: {plan_id}")
 
         if not plan_name:
             return JsonResponse({"success": False, "error": "计划名称不能为空"}, status=400)
