@@ -237,6 +237,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-django pytest-cov pytest-xdist pytest-html
+        # 安装可能缺失的依赖
+        pip install PyMuPDF || echo "PyMuPDF安装失败，继续执行"
         # coverage已在requirements.txt中安装
     
     - name: 等待服务启动
@@ -258,10 +260,29 @@ jobs:
         ping -c 3 localhost || echo "无法ping localhost"
         netstat -tlnp | grep 5432 || echo "5432端口未监听"
         
-        # 尝试连接 - 使用localhost
-        pg_isready -h localhost -p 5432 -U postgres || echo "PostgreSQL未就绪"
+        # 尝试连接 - 使用localhost，增加重试机制
+        echo "尝试连接PostgreSQL..."
+        for i in {1..5}; do
+          if pg_isready -h localhost -p 5432 -U postgres; then
+            echo "PostgreSQL已就绪"
+            break
+          else
+            echo "尝试 $i/5: PostgreSQL未就绪，等待10秒..."
+            sleep 10
+          fi
+        done
+        
         echo "检查Redis状态..."
-        redis-cli -h localhost -p 6379 ping || echo "Redis未就绪"
+        for i in {1..3}; do
+          if redis-cli -h localhost -p 6379 ping; then
+            echo "Redis已就绪"
+            break
+          else
+            echo "尝试 $i/3: Redis未就绪，等待5秒..."
+            sleep 5
+          fi
+        done
+        
         echo "服务启动完成"
     
     - name: 检查数据库连接
@@ -318,7 +339,9 @@ jobs:
     - name: 运行数据库迁移
       run: |
         echo "运行数据库迁移..."
-        python manage.py migrate --settings=config.settings.testing --verbosity=2
+        # 使用修复脚本确保迁移成功
+        chmod +x fix-github-actions-migration.sh
+        ./fix-github-actions-migration.sh
         echo "数据库迁移完成"
       env:
         CI: true

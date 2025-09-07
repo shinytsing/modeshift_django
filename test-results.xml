@@ -1,13 +1,166 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="26" skipped="0" tests="146" time="6.504" timestamp="2025-09-07T13:29:11.843349" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.026" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.065" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.055" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.003" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.003" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.001" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_secret_key" time="0.001" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_media_url" time="0.003" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_static_url" time="0.001" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_cache_config" time="0.004" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_session_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_loggers_config" time="0.003" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_middleware_config" time="0.003" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_security_middleware" time="0.001" /><testcase classname="tests.unit.test_basic.TestURLConfiguration" name="test_root_urls" time="0.004" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_config" time="0.003" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_engines" time="0.002" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_language_code" time="0.003" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_time_zone" time="0.001" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_use_i18n" time="0.002" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_file_upload_config" time="0.003" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_media_root" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_python_basics" time="0.004" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_apps" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_string_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_datetime_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_error_handling" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_performance_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_memory_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_app_imports" time="0.003" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_configuration" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_django_imports" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_settings_loaded" time="0.001" /><testcase classname="tests.unit.test_minimal.TestBasicFunctionality" name="test_string_operations" time="0.002"><failure message="AssertionError: 11 != 9">tests/unit/test_minimal.py:38: in test_string_operations
-    self.assertEqual(len(test_string), 9)
-E   AssertionError: 11 != 9</failure></testcase><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_allowed_hosts" time="0.003" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_debug_setting" time="0.001" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_installed_apps" time="0.001" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_middleware_config" time="0.014" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_rest_framework_config" time="0.010" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_secret_key_exists" time="0.007" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_static_files_config" time="0.009" /><testcase classname="tests.unit.test_minimal.TestConfiguration" name="test_templates_config" time="0.006" /><testcase classname="tests.unit.test_minimal.TestViews" name="test_content_view" time="0.394"><failure message="django.db.utils.OperationalError: no such table: apps.content_article">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="72" time="7.227" timestamp="2025-09-07T13:37:43.283707" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.041" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.002" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.002" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.051" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.055" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.010" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.009" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.014" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_secret_key" time="0.002" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_media_url" time="0.009" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_static_url" time="0.002" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_cache_config" time="0.009" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_session_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_loggers_config" time="0.010" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_logging_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_middleware_config" time="0.008" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_security_middleware" time="0.002" /><testcase classname="tests.unit.test_basic.TestURLConfiguration" name="test_root_urls" time="0.007" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_config" time="0.007" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_engines" time="0.002" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_language_code" time="0.007" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_time_zone" time="0.028" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_use_i18n" time="0.002" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_file_upload_config" time="0.009" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_media_root" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_python_basics" time="0.008" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_settings" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_apps" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_string_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_dict_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_json_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_datetime_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_error_handling" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_performance_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_memory_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_app_imports" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_configuration" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_rest_framework_config" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_database_config" time="0.001" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_life_goal_creation" time="0.093" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_tool_usage_log_creation" time="0.092" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_vanity_wealth_creation" time="0.089" /><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_article_creation" time="0.095"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.content_article&quot; does not exist&#10;LINE 1: INSERT INTO &quot;apps.content_article&quot; (&quot;title&quot;, &quot;content&quot;, &quot;aut...&#10;                    ^">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
     return self.cursor.execute(sql, params)
-venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
-    return super().execute(query, params)
-E   sqlite3.OperationalError: no such table: apps.content_article
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^
 
 The above exception was the direct cause of the following exception:
-tests/unit/test_minimal.py:158: in test_content_view
+tests/unit/test_comprehensive.py:85: in test_article_creation
+    article = Article.objects.create(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:663: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_comment_creation" time="0.084"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.content_article&quot; does not exist&#10;LINE 1: INSERT INTO &quot;apps.content_article&quot; (&quot;title&quot;, &quot;content&quot;, &quot;aut...&#10;                    ^">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:102: in test_comment_creation
+    article = Article.objects.create(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:663: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_profile_creation" time="0.098" /><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_role_creation" time="0.086"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.users_userrole&quot; does not exist&#10;LINE 1: INSERT INTO &quot;apps.users_userrole&quot; (&quot;user_id&quot;, &quot;role&quot;, &quot;creat...&#10;                    ^">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.users_userrole" does not exist
+E   LINE 1: INSERT INTO "apps.users_userrole" ("user_id", "role", "creat...
+E                       ^
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:131: in test_user_role_creation
+    role = UserRole.objects.create(user=self.user, role="admin")
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:663: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.users_userrole" does not exist
+E   LINE 1: INSERT INTO "apps.users_userrole" ("user_id", "role", "creat...
+E                       ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_status_creation" time="0.086"><failure message="TypeError: UserStatus() got unexpected keyword arguments: 'last_login'">tests/unit/test_comprehensive.py:143: in test_user_status_creation
+    status = UserStatus.objects.create(user=self.user, status="active", last_login=None)
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: UserStatus() got unexpected keyword arguments: 'last_login'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_link_creation" time="0.095"><failure message="TypeError: ShareLink() got unexpected keyword arguments: 'user'">tests/unit/test_comprehensive.py:185: in test_share_link_creation
+    link = ShareLink.objects.create(
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: ShareLink() got unexpected keyword arguments: 'user'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_record_creation" time="0.086"><failure message="TypeError: ShareRecord() got unexpected keyword arguments: 'content_type', 'content_id', 'share_count'">tests/unit/test_comprehensive.py:173: in test_share_record_creation
+    record = ShareRecord.objects.create(user=self.user, content_type="article", content_id=1, share_count=1)
+venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: ShareRecord() got unexpected keyword arguments: 'content_type', 'content_id', 'share_count'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_api_endpoints" time="0.411" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_content_view" time="0.091"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.content_article&quot; does not exist&#10;LINE 1: SELECT COUNT(*) AS &quot;__count&quot; FROM &quot;apps.content_article&quot;&#10;                                          ^">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.content_article" does not exist
+E   LINE 1: SELECT COUNT(*) AS "__count" FROM "apps.content_article"
+E                                             ^
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:225: in test_content_view
     response = self.client.get("/content/")
 venv/lib/python3.13/site-packages/django/test/client.py:1124: in get
     response = super().get(
@@ -57,367 +210,14 @@ venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
     raise dj_exc_value.with_traceback(traceback) from exc_value
 venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
     return self.cursor.execute(sql, params)
-venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
-    return super().execute(query, params)
-E   django.db.utils.OperationalError: no such table: apps.content_article</failure></testcase><testcase classname="tests.unit.test_minimal.TestViews" name="test_health_check_view" time="0.002" /><testcase classname="tests.unit.test_minimal.TestViews" name="test_home_view" time="0.072" /><testcase classname="tests.unit.test_minimal.TestViews" name="test_share_view" time="0.002"><failure message="AssertionError: 404 != 200">tests/unit/test_minimal.py:164: in test_share_view
+venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.content_article" does not exist
+E   LINE 1: SELECT COUNT(*) AS "__count" FROM "apps.content_article"
+E                                             ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_health_check_view" time="0.086" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_home_view" time="0.159" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_login_view" time="0.089" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_register_view" time="0.087" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_share_view" time="0.085"><failure message="AssertionError: 404 != 200">tests/unit/test_comprehensive.py:231: in test_share_view
     self.assertEqual(response.status_code, 200)
-E   AssertionError: 404 != 200</failure></testcase><testcase classname="tests.unit.test_minimal.TestViews" name="test_tools_view" time="0.002"><failure message="AssertionError: 302 != 200">tests/unit/test_minimal.py:154: in test_tools_view
+E   AssertionError: 404 != 200</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_tools_view" time="0.086"><failure message="AssertionError: 302 != 200">tests/unit/test_comprehensive.py:221: in test_tools_view
     self.assertEqual(response.status_code, 200)
-E   AssertionError: 302 != 200</failure></testcase><testcase classname="tests.unit.test_minimal.TestViews" name="test_users_view" time="0.002"><failure message="AssertionError: 404 != 200">tests/unit/test_minimal.py:169: in test_users_view
-    self.assertEqual(response.status_code, 200)
-E   AssertionError: 404 != 200</failure></testcase><testcase classname="tests.unit.test_minimal.TestURLPatterns" name="test_api_urls" time="0.005" /><testcase classname="tests.unit.test_minimal.TestURLPatterns" name="test_main_urls" time="0.007"><failure message="django.db.utils.OperationalError: no such table: apps.content_article">venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
-    return self.cursor.execute(sql, params)
-venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
-    return super().execute(query, params)
-E   sqlite3.OperationalError: no such table: apps.content_article
-
-The above exception was the direct cause of the following exception:
-tests/unit/test_minimal.py:188: in test_main_urls
-    response = self.client.get(url)
-venv/lib/python3.13/site-packages/django/test/client.py:1124: in get
-    response = super().get(
-venv/lib/python3.13/site-packages/django/test/client.py:475: in get
-    return self.generic(
-venv/lib/python3.13/site-packages/django/test/client.py:671: in generic
-    return self.request(**r)
-venv/lib/python3.13/site-packages/django/test/client.py:1087: in request
-    self.check_exception(response)
-venv/lib/python3.13/site-packages/django/test/client.py:802: in check_exception
-    raise exc_value
-venv/lib/python3.13/site-packages/django/core/handlers/exception.py:55: in inner
-    response = get_response(request)
-venv/lib/python3.13/site-packages/django/core/handlers/base.py:197: in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-apps/content/views.py:43: in article_list
-    page_obj = paginator.get_page(page_number)
-venv/lib/python3.13/site-packages/django/core/paginator.py:85: in get_page
-    return self.page(number)
-venv/lib/python3.13/site-packages/django/core/paginator.py:89: in page
-    number = self.validate_number(number)
-venv/lib/python3.13/site-packages/django/core/paginator.py:70: in validate_number
-    if number &gt; self.num_pages:
-venv/lib/python3.13/site-packages/django/utils/functional.py:47: in __get__
-    res = instance.__dict__[self.name] = self.func(instance)
-venv/lib/python3.13/site-packages/django/core/paginator.py:116: in num_pages
-    if self.count == 0 and not self.allow_empty_first_page:
-venv/lib/python3.13/site-packages/django/utils/functional.py:47: in __get__
-    res = instance.__dict__[self.name] = self.func(instance)
-venv/lib/python3.13/site-packages/django/core/paginator.py:110: in count
-    return c()
-venv/lib/python3.13/site-packages/django/db/models/query.py:604: in count
-    return self.query.get_count(using=self.db)
-venv/lib/python3.13/site-packages/django/db/models/sql/query.py:644: in get_count
-    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
-venv/lib/python3.13/site-packages/django/db/models/sql/query.py:626: in get_aggregation
-    result = compiler.execute_sql(SINGLE)
-venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1623: in execute_sql
-    cursor.execute(sql, params)
-venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
-    return self._execute_with_wrappers(
-venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
-    return executor(sql, params, many, context)
-venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
-    with self.db.wrap_database_errors:
-venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
-    raise dj_exc_value.with_traceback(traceback) from exc_value
-venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
-    return self.cursor.execute(sql, params)
-venv/lib/python3.13/site-packages/django/db/backends/sqlite3/base.py:360: in execute
-    return super().execute(query, params)
-E   django.db.utils.OperationalError: no such table: apps.content_article</failure></testcase><testcase classname="tests.unit.test_minimal.TestTemplateRendering" name="test_base_template" time="0.007" /><testcase classname="tests.unit.test_minimal.TestTemplateRendering" name="test_tool_templates" time="0.002"><failure message="AssertionError: 302 != 200">tests/unit/test_minimal.py:222: in test_tool_templates
-    self.assertEqual(response.status_code, 200)
-E   AssertionError: 302 != 200</failure></testcase><testcase classname="tests.unit.test_minimal.TestTemplateRendering" name="test_user_templates" time="0.002"><failure message="AssertionError: 404 != 200">tests/unit/test_minimal.py:227: in test_user_templates
-    self.assertEqual(response.status_code, 200)
-E   AssertionError: 404 != 200</failure></testcase><testcase classname="tests.unit.test_minimal.TestSessionHandling" name="test_csrf_token_present" time="0.006" /><testcase classname="tests.unit.test_minimal.TestSessionHandling" name="test_session_creation" time="0.004" /><testcase classname="tests.unit.test_minimal.TestErrorHandling" name="test_404_handling" time="0.004" /><testcase classname="tests.unit.test_minimal.TestErrorHandling" name="test_500_handling" time="0.003" /><testcase classname="tests.unit.test_minimal.TestDataValidation" name="test_email_validation" time="0.003" /><testcase classname="tests.unit.test_minimal.TestDataValidation" name="test_password_validation" time="0.002"><failure message="AssertionError: False is not true">tests/unit/test_minimal.py:284: in test_password_validation
-    self.assertTrue(len(password) &lt; 8)
-E   AssertionError: False is not true</failure></testcase><testcase classname="tests.unit.test_minimal.TestPerformance" name="test_page_load_time" time="0.006" /><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_bulk_operations" time="0.014"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_database_connection" time="0.005"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_database_queries" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_database_transactions" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_user_authentication" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_user_creation" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_user_deletion" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestBasicFunctionality" name="test_user_update" time="0.005"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:22: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestAPIBasic" name="test_api_health_check" time="0.006"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:137: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestAPIBasic" name="test_api_root" time="0.004"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:137: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestAPIBasic" name="test_static_files" time="0.006"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:137: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestModelBasics" name="test_user_model_fields" time="0.006"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:161: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestModelBasics" name="test_user_permissions" time="0.005"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:161: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_minimal_ci.TestModelBasics" name="test_user_string_representation" time="0.005"><failure message="django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')">tests/unit/test_minimal_ci.py:161: in setUp
-    call_command("migrate", verbosity=0, interactive=False)
-venv/lib/python3.13/site-packages/django/core/management/__init__.py:194: in call_command
-    return command.execute(*args, **defaults)
-venv/lib/python3.13/site-packages/django/core/management/base.py:460: in execute
-    output = self.handle(*args, **options)
-venv/lib/python3.13/site-packages/django/core/management/base.py:107: in wrapper
-    res = handle_func(*args, **kwargs)
-venv/lib/python3.13/site-packages/django/core/management/commands/migrate.py:114: in handle
-    executor = MigrationExecutor(connection, self.migration_progress_callback)
-venv/lib/python3.13/site-packages/django/db/migrations/executor.py:18: in __init__
-    self.loader = MigrationLoader(self.connection)
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:58: in __init__
-    self.build_graph()
-venv/lib/python3.13/site-packages/django/db/migrations/loader.py:276: in build_graph
-    self.graph.validate_consistency()
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:198: in validate_consistency
-    [n.raise_error() for n in self.node_map.values() if isinstance(n, DummyNode)]
-venv/lib/python3.13/site-packages/django/db/migrations/graph.py:60: in raise_error
-    raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
-E   django.db.migrations.exceptions.NodeNotFoundError: Migration share.0001_initial dependencies reference nonexistent parent node ('auth', '0012_alter_user_first_name_max_length')</failure></testcase><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_python_imports" time="0.003" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_string_operations" time="0.001"><failure message="AssertionError: assert 11 == 9&#10; +  where 11 = len('QAToolBox测试')">tests/unit/test_no_db.py:38: in test_string_operations
-    assert len(test_string) == 9
-E   AssertionError: assert 11 == 9
-E    +  where 11 = len('QAToolBox测试')</failure></testcase><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_math_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_datetime_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_regex_operations" time="0.002" /><testcase classname="tests.unit.test_no_db.TestBasicFunctionality" name="test_path_operations" time="0.001" /><testcase classname="tests.unit.test_no_db.TestDjangoImports" name="test_django_core_imports" time="0.001" /><testcase classname="tests.unit.test_no_db.TestDjangoImports" name="test_django_models_import" time="0.001" /><testcase classname="tests.unit.test_no_db.TestDjangoImports" name="test_django_views_import" time="0.001" /><testcase classname="tests.unit.test_no_db.TestProjectStructure" name="test_required_files_exist" time="0.001" /><testcase classname="tests.unit.test_no_db.TestProjectStructure" name="test_required_directories_exist" time="0.001" /><testcase classname="tests.unit.test_no_db.TestProjectStructure" name="test_python_files_syntax" time="0.001" /><testcase classname="tests.unit.test_no_db.TestConfiguration" name="test_environment_variables" time="0.001" /><testcase classname="tests.unit.test_no_db.TestConfiguration" name="test_python_path" time="0.001" /><testcase classname="tests.unit.test_no_db.TestConfiguration" name="test_import_paths" time="0.001" /><testcase classname="tests.unit.test_no_db.TestMockFunctionality" name="test_mock_database_connection" time="0.002" /><testcase classname="tests.unit.test_no_db.TestMockFunctionality" name="test_mock_http_requests" time="0.001" /><testcase classname="tests.unit.test_no_db.TestMockFunctionality" name="test_mock_file_operations" time="0.002" /><testcase classname="tests.unit.test_no_db.TestPerformance" name="test_import_performance" time="0.001" /><testcase classname="tests.unit.test_no_db.TestPerformance" name="test_memory_usage" time="0.001" /><testcase classname="tests.unit.test_no_db.TestPerformance" name="test_cpu_operations" time="0.003" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_python_imports" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_string_operations" time="0.001"><failure message="AssertionError: assert 11 == 9&#10; +  where 11 = len('QAToolBox测试')">tests/unit/test_simple.py:38: in test_string_operations
-    assert len(test_string) == 9
-E   AssertionError: assert 11 == 9
-E    +  where 11 = len('QAToolBox测试')</failure></testcase><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_list_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_dict_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_math_operations" time="0.002" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_boolean_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_django_settings" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_django_apps" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_database_config" time="0.002"><failure message="AssertionError: assert 'test_db.sqlite3' == ':memory:'&#10;  - :memory:&#10;  + test_db.sqlite3">tests/unit/test_simple.py:103: in test_database_config
-    assert db_config["NAME"] == ":memory:"
-E   AssertionError: assert 'test_db.sqlite3' == ':memory:'
-E     - :memory:
-E     + test_db.sqlite3</failure></testcase><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_middleware_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_static_files_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_templates_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_rest_framework_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_performance_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_memory_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_error_handling" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_file_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_simple.TestBasicFunctionality" name="test_datetime_operations" time="0.010" /></testsuite></testsuites>
+E   AssertionError: 302 != 200</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestForms" name="test_user_login_form" time="0.010" /><testcase classname="tests.unit.test_comprehensive.TestForms" name="test_user_registration_form" time="0.024" /><testcase classname="tests.unit.test_comprehensive.TestUtils" name="test_dict_utils" time="0.010" /><testcase classname="tests.unit.test_comprehensive.TestUtils" name="test_list_utils" time="0.002" /><testcase classname="tests.unit.test_comprehensive.TestUtils" name="test_math_utils" time="0.002" /><testcase classname="tests.unit.test_comprehensive.TestUtils" name="test_string_utils" time="0.002"><failure message="AssertionError: 13 != 9">tests/unit/test_comprehensive.py:294: in test_string_utils
+    self.assertEqual(len(test_string), 9)
+E   AssertionError: 13 != 9</failure></testcase></testsuite></testsuites>
