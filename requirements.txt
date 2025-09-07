@@ -101,6 +101,6 @@ qrcode==7.4.2
 selenium==4.20.0
 webdriver-manager==4.0.1
 psutil==5.9.8
-pillow-heif==0.13.0
+pillow-heif==1.1.0
 tenacity==8.2.3
 ratelimit==2.2.1
