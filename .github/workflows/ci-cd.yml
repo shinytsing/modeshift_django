@@ -820,29 +820,63 @@ jobs:
           fi
           source venv/bin/activate
           
-          # 5. 安装依赖
+          # 5. 安装依赖（使用缓存）
           echo "📥 安装依赖..."
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install django-environ gunicorn
           
-          # 6. 安装系统依赖
-          echo "🗄️ 安装系统依赖..."
-          apt-get update
-          apt-get install -y postgresql postgresql-contrib redis-server curl
+          # 检查依赖是否已安装，避免重复安装
+          if [ ! -f "venv/.deps_installed" ]; then
+            echo "首次安装依赖..."
+            pip install -r requirements.txt
+            pip install django-environ gunicorn
+            touch venv/.deps_installed
+          else
+            echo "依赖已缓存，跳过安装..."
+            # 只安装可能更新的包
+            pip install --upgrade django-environ gunicorn
+          fi
           
-          # 7. 启动服务
-          echo "🔧 启动服务..."
-          systemctl start postgresql
-          systemctl enable postgresql
-          systemctl start redis-server
-          systemctl enable redis-server
+          # 6. 安装系统依赖（检查是否已安装）
+          echo "🗄️ 检查系统依赖..."
+          if ! command -v psql &> /dev/null; then
+            echo "安装PostgreSQL..."
+            apt-get update
+            apt-get install -y postgresql postgresql-contrib
+          else
+            echo "PostgreSQL已安装"
+          fi
           
-          # 8. 配置数据库
+          if ! command -v redis-server &> /dev/null; then
+            echo "安装Redis..."
+            apt-get install -y redis-server
+          else
+            echo "Redis已安装"
+          fi
+          
+          if ! command -v curl &> /dev/null; then
+            echo "安装curl..."
+            apt-get install -y curl
+          else
+            echo "curl已安装"
+          fi
+          
+          # 7. 并行启动服务
+          echo "🔧 并行启动服务..."
+          systemctl start postgresql &
+          systemctl start redis-server &
+          wait
+          echo "服务启动完成"
+          
+          # 8. 配置数据库（检查是否已配置）
           echo "🔧 配置数据库..."
-          sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';"
-          sudo -u postgres psql -c "CREATE DATABASE qatoolbox_production OWNER qatoolbox;"
-          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE qatoolbox_production TO qatoolbox;"
+          if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw qatoolbox_production; then
+            echo "创建数据库和用户..."
+            sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';" || echo "用户可能已存在"
+            sudo -u postgres psql -c "CREATE DATABASE qatoolbox_production OWNER qatoolbox;" || echo "数据库可能已存在"
+            sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE qatoolbox_production TO qatoolbox;" || echo "权限可能已设置"
+          else
+            echo "数据库已存在，跳过创建"
+          fi
           
           # 9. 创建环境配置文件
           echo "🔧 创建环境配置文件..."
@@ -870,18 +904,29 @@ jobs:
           echo "🧪 测试Django配置..."
           python manage.py check --settings=config.settings.production
           
-          # 11. 运行数据库迁移
+          # 11. 运行数据库迁移（检查是否需要迁移）
           echo "📊 运行数据库迁移..."
-          # 处理已存在的表，标记相关迁移为已应用
-          python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
-          python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
-          python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
-          # 运行其他迁移
-          python manage.py migrate --settings=config.settings.production
+          # 检查是否有未应用的迁移
+          if python manage.py showmigrations --settings=config.settings.production | grep -q "\[ \]"; then
+            echo "发现未应用的迁移，开始迁移..."
+            # 处理已存在的表，标记相关迁移为已应用
+            python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
+            python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
+            python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
+            # 运行其他迁移
+            python manage.py migrate --settings=config.settings.production
+          else
+            echo "所有迁移已应用，跳过迁移"
+          fi
           
-          # 12. 收集静态文件
+          # 12. 收集静态文件（检查是否需要收集）
           echo "📁 收集静态文件..."
-          python manage.py collectstatic --noinput --settings=config.settings.production
+          if [ ! -d "staticfiles" ] || [ "requirements.txt" -nt "staticfiles" ]; then
+            echo "收集静态文件..."
+            python manage.py collectstatic --noinput --settings=config.settings.production
+          else
+            echo "静态文件已是最新，跳过收集"
+          fi
           
           # 13. 创建超级用户
           echo "👤 创建超级用户..."
@@ -895,18 +940,26 @@ jobs:
               print('超级用户已存在')
           EOF
           
-          # 14. 停止现有服务
-          echo "🛑 停止现有服务..."
-          pkill -f gunicorn
+          # 14. 重启Django服务（优化版本）
+          echo "🛑 重启Django服务..."
+          
+          # 检查服务是否在运行
+          if pgrep -f gunicorn > /dev/null; then
+            echo "停止现有服务..."
+            pkill -f gunicorn
+            sleep 3
+          else
+            echo "服务未运行，直接启动"
+          fi
           
           # 15. 启动Django服务
           echo "🚀 启动Django服务..."
           export DJANGO_SETTINGS_MODULE=config.settings.production
           gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
           
-          # 16. 等待服务启动
-          echo "⏳ 等待服务启动..."
-          sleep 15
+          # 16. 快速健康检查
+          echo "⏳ 快速健康检查..."
+          sleep 5
           
           # 17. 检查服务状态
           echo "🔍 检查服务状态..."
