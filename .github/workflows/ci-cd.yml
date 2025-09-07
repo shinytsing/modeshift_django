@@ -645,7 +645,6 @@ jobs:
       (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') &&
       (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
       needs.build.result == 'success'
-    continue-on-error: true
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
