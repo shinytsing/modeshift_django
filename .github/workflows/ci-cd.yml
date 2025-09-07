@@ -332,7 +332,27 @@ jobs:
     - name: 运行数据库迁移
       run: |
         echo "运行数据库迁移..."
+        
+        # 检查Django设置
+        echo "检查Django设置..."
+        python -c "
+        import os
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.testing')
+        import django
+        django.setup()
+        from django.conf import settings
+        print(f'数据库配置: {settings.DATABASES[\"default\"]}')
+        print(f'INSTALLED_APPS: {settings.INSTALLED_APPS}')
+        "
+        
+        # 检查迁移状态
+        echo "检查迁移状态..."
+        python manage.py showmigrations --settings=config.settings.testing
+        
+        # 运行迁移
+        echo "执行数据库迁移..."
         python manage.py migrate --settings=config.settings.testing --verbosity=2
+        
         echo "数据库迁移完成"
       env:
         CI: true
@@ -349,7 +369,25 @@ jobs:
       continue-on-error: true
       run: |
         echo "开始运行单元测试..."
-        # 使用pytest运行测试并生成覆盖率报告
+        
+        # 检查Django设置
+        echo "检查Django设置..."
+        python -c "
+        import os
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.testing')
+        import django
+        django.setup()
+        from django.conf import settings
+        print(f'数据库配置: {settings.DATABASES[\"default\"]}')
+        print(f'INSTALLED_APPS: {settings.INSTALLED_APPS}')
+        "
+        
+        # 检查迁移状态
+        echo "检查迁移状态..."
+        python manage.py showmigrations --settings=config.settings.testing
+        
+        # 运行测试
+        echo "运行单元测试..."
         pytest tests/ \
           --cov=apps \
           --cov-report=xml \
