@@ -724,7 +724,7 @@ jobs:
           
           echo "✅ 备份完成: $BACKUP_DIR"
     
-        - name: 缓存Python依赖
+          - name: 缓存Python依赖
           if: steps.check_config.outputs.deploy_skipped == 'false'
           uses: actions/cache@v3
           with:
@@ -733,7 +733,7 @@ jobs:
             restore-keys: |
               ${{ runner.os }}-pip-
 
-        - name: 执行零停机部署
+          - name: 执行零停机部署
           if: steps.check_config.outputs.deploy_skipped == 'false'
           uses: appleboy/ssh-action@v0.1.5
           with:
