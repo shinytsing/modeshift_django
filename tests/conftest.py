@@ -17,7 +17,7 @@ import pytest
 from faker import Faker
 
 # 设置Django配置
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test_minimal")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.testing")
 django.setup()
 
 User = get_user_model()

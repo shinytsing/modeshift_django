@@ -32,38 +32,23 @@ INSTALLED_APPS = [
     "apps.share",
 ]
 
-# 使用PostgreSQL测试数据库（与生产环境一致）
-# 优先使用PostgreSQL，确保与生产环境一致
-if os.environ.get("CI") or os.environ.get("POSTGRES_HOST") or os.environ.get("POSTGRES_USER"):
-    # CI/CD环境或本地测试环境使用PostgreSQL
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB", "test_modeshift_django"),
-            "USER": os.environ.get("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "OPTIONS": {
-                "connect_timeout": 10,
-            },
-        }
-    }
-else:
-    # 回退到PostgreSQL（确保与生产环境一致）
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
+# 统一使用PostgreSQL测试数据库（与生产环境一致）
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "test_modeshift_django"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
+        "TEST": {
             "NAME": "test_modeshift_django",
-            "USER": "postgres",
-            "PASSWORD": "postgres",
-            "HOST": "localhost",
-            "PORT": "5432",
-            "OPTIONS": {
-                "connect_timeout": 10,
-            },
-        }
+        },
     }
+}
 
 # 测试环境缓存配置
 CACHES = {
