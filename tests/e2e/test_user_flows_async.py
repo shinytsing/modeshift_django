@@ -9,7 +9,6 @@ import pytest
 from playwright.async_api import Page, expect
 
 
-@pytest.mark.django_db
 @pytest.mark.asyncio
 class TestUserRegistrationFlowAsync:
     """用户注册流程测试 - 异步版本"""
@@ -54,7 +53,6 @@ class TestUserRegistrationFlowAsync:
         await expect(page.locator("text=密码不匹配")).to_be_visible()
 
 
-@pytest.mark.django_db
 @pytest.mark.asyncio
 class TestUserLoginFlowAsync:
     """用户登录流程测试 - 异步版本"""
@@ -107,7 +105,6 @@ class TestUserLoginFlowAsync:
         await expect(page.locator("text=登录")).to_be_visible()
 
 
-@pytest.mark.django_db
 @pytest.mark.asyncio
 class TestToolUsageFlowAsync:
     """工具使用流程测试 - 异步版本"""
@@ -140,7 +137,6 @@ class TestToolUsageFlowAsync:
         await expect(page.locator("input[type='file']")).to_be_visible()
 
 
-@pytest.mark.django_db
 @pytest.mark.asyncio
 class TestMobileResponsivenessAsync:
     """移动端响应式测试 - 异步版本"""

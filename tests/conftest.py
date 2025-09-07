@@ -168,6 +168,9 @@ class UserFactory:
         from django.contrib.auth import get_user_model
 
         User = get_user_model()
+        # 确保提供必需的username参数
+        if 'username' not in kwargs:
+            kwargs['username'] = f"user_{kwargs.get('email', 'test@example.com').split('@')[0]}"
         return User.objects.create_user(**kwargs)
 
     @staticmethod

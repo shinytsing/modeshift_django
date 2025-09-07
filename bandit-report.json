@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2025-09-06T23:12:31Z",
+  "generated_at": "2025-09-07T04:01:55Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 0,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 53814,
+      "loc": 68007,
       "nosec": 0,
       "skipped_tests": 5
     },
@@ -483,6 +483,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "apps/tools/async_task_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 314,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "apps/tools/async_test_cases_api.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -571,6 +584,45 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 338,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/guitar_training_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1073,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/ip_defense.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 272,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/legacy_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 8061,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2537,6 +2589,97 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "apps/tools/services/social_media/__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 5,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/base_crawler.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 57,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/douyin_crawler.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/monitoring_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/notification_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 64,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/scheduler.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 89,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/social_media/xiaohongshu_crawler.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 84,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "apps/tools/services/social_media_crawler.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -2560,6 +2703,45 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 313,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/tarot_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 255,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/travel_data_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1151,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/services/triple_awakening.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 353,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2628,6 +2810,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "apps/tools/utils/music_api.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 212,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "apps/tools/utils/version_tracker.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -2690,6 +2885,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 394,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/views/basic_tools_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 329,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2823,6 +3031,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "apps/tools/views/food_randomizer_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 328,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "apps/tools/views/food_views.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -2849,6 +3070,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "apps/tools/views/health_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 314,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "apps/tools/views/map_base_views.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -2859,6 +3093,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 173,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/views/meetsomeone_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 504,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2950,6 +3197,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 372,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/tools/views/tarot_views.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 623,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -3314,6 +3574,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "apps/users/services/progressive_captcha_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 103,
       "nosec": 0,
       "skipped_tests": 0
     },

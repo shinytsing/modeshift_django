@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="10" failures="0" skipped="0" tests="10" time="5.051" timestamp="2025-09-07T07:12:37.462637" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_success[chromium]" time="0.464"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="10" failures="0" skipped="0" tests="10" time="7.864" timestamp="2025-09-07T12:02:45.656206" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_success[chromium]" time="0.501"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -16,9 +14,7 @@
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_validation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_validation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -34,9 +30,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_success[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_success[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -52,9 +46,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_failure[chromium]" time="0.039"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_failure[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -70,9 +62,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_logout[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_logout[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -88,9 +78,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_chat_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_chat_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -106,9 +94,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_fitness_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_fitness_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -124,9 +110,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_pdf_converter_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_pdf_converter_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -142,9 +126,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_navigation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_navigation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
@@ -160,9 +142,7 @@ E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from a
     real_ensure_connection(self, *args, **kwargs)
 ../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
     raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_forms[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/plugin.py:527: in _django_db_marker
-    request.getfixturevalue("_django_db_helper")
-../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
+E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_forms[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
     test_case._pre_setup()
 ../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
     cls._fixture_setup()
