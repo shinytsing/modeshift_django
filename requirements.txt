@@ -3,7 +3,7 @@
 # 包含开发、生产、测试所需的完整依赖，无版本冲突
 
 # ===== 核心Django框架 =====
-Django==5.2.6
+Django>=5.2.6
 djangorestframework==3.15.2
 django-cors-headers==4.3.1
 django-crispy-forms==2.0
@@ -37,7 +37,7 @@ PyJWT==2.10.1
 marshmallow==3.20.1
 
 # ===== 文件处理 =====
-Pillow==10.4.0
+Pillow>=11.1.0
 openpyxl==3.1.2
 xlsxwriter==3.1.9
 defusedxml==0.7.1
@@ -86,6 +86,9 @@ pytest-cov==4.1.0
 pytest-xdist==3.5.0
 pytest-html==4.1.1
 coverage==7.4.0
+
+# 思维导图工具
+xmind==1.2.0
 
 # ===== 部署工具 =====
 gunicorn==23.0.0

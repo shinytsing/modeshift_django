@@ -1,161 +1,165 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="10" failures="0" skipped="0" tests="10" time="7.864" timestamp="2025-09-07T12:02:45.656206" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_success[chromium]" time="0.501"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserRegistrationFlowAsync" name="test_user_registration_validation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_success[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_login_failure[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestUserLoginFlowAsync" name="test_user_logout[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_chat_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_fitness_tool_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestToolUsageFlowAsync" name="test_pdf_converter_usage[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_navigation[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase><testcase classname="tests.e2e.test_user_flows_async.TestMobileResponsivenessAsync" name="test_mobile_forms[chromium]" time="0.001"><error message="failed on setup with &quot;django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.&quot;">../QAToolBox/venv/lib/python3.13/site-packages/pytest_django/fixtures.py:251: in _django_db_helper
-    test_case._pre_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1155: in _pre_setup
-    cls._fixture_setup()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1469: in _fixture_setup
-    cls.atomics = cls._enter_atomics()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:1387: in _enter_atomics
-    atomic.__enter__()
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/transaction.py:198: in __enter__
-    if not connection.get_autocommit():
-../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/base/base.py:454: in get_autocommit
-    self.ensure_connection()
-../QAToolBox/venv/lib/python3.13/site-packages/django/test/testcases.py:311: in patched_ensure_connection
-    real_ensure_connection(self, *args, **kwargs)
-../QAToolBox/venv/lib/python3.13/site-packages/django/utils/asyncio.py:24: in inner
-    raise SynchronousOnlyOperation(message)
-E   django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="65" time="8.111" timestamp="2025-09-07T12:35:35.901768" hostname="gaojiedeMacBook-Pro.local"><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_apps_import" time="0.060" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_django_settings" time="0.002" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_models_import" time="0.001" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_utils_import" time="0.017" /><testcase classname="tests.unit.test_basic.TestBasicFunctionality" name="test_views_import" time="0.170" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_cors_config" time="0.010" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_database_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestAPIConfiguration" name="test_rest_framework_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_allowed_hosts" time="0.010" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_debug_mode" time="0.002" /><testcase classname="tests.unit.test_basic.TestSecurityConfiguration" name="test_secret_key" time="0.002" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_media_url" time="0.009" /><testcase classname="tests.unit.test_basic.TestStaticFiles" name="test_static_url" time="0.002" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_cache_config" time="0.009" /><testcase classname="tests.unit.test_basic.TestCacheConfiguration" name="test_session_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_loggers_config" time="0.010" /><testcase classname="tests.unit.test_basic.TestLoggingConfiguration" name="test_logging_config" time="0.002" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_middleware_config" time="0.009" /><testcase classname="tests.unit.test_basic.TestMiddlewareConfiguration" name="test_security_middleware" time="0.002" /><testcase classname="tests.unit.test_basic.TestURLConfiguration" name="test_root_urls" time="0.008" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_config" time="0.008" /><testcase classname="tests.unit.test_basic.TestTemplateConfiguration" name="test_template_engines" time="0.002" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_language_code" time="0.006" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_time_zone" time="0.002" /><testcase classname="tests.unit.test_basic.TestInternationalization" name="test_use_i18n" time="0.002" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_file_upload_config" time="0.007" /><testcase classname="tests.unit.test_basic.TestFileUpload" name="test_media_root" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_python_basics" time="0.007" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_settings" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_apps" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_string_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_list_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_dict_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_math_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_boolean_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_file_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_json_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_datetime_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_error_handling" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_performance_operations" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_memory_operations" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_app_imports" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_django_configuration" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_security_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_rest_framework_config" time="0.002" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_cors_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_logging_config" time="0.001" /><testcase classname="tests.unit.test_basic_coverage.TestBasicCoverage" name="test_database_config" time="0.002" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_life_goal_creation" time="0.096" /><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_tool_usage_log_creation" time="0.083"><failure message="TypeError: ToolUsageLog() got unexpected keyword arguments: 'tool_name', 'usage_count'">tests/unit/test_comprehensive.py:31: in test_tool_usage_log_creation
+    log = ToolUsageLog.objects.create(user=self.user, tool_name="test_tool", usage_count=1)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: ToolUsageLog() got unexpected keyword arguments: 'tool_name', 'usage_count'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestToolsModels" name="test_vanity_wealth_creation" time="0.083"><failure message="TypeError: VanityWealth() got unexpected keyword arguments: 'item_name', 'value'">tests/unit/test_comprehensive.py:55: in test_vanity_wealth_creation
+    wealth = VanityWealth.objects.create(user=self.user, item_name="测试物品", value=1000)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: VanityWealth() got unexpected keyword arguments: 'item_name', 'value'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_article_creation" time="0.092"><failure message="TypeError: Article() got unexpected keyword arguments: 'status'">tests/unit/test_comprehensive.py:75: in test_article_creation
+    article = Article.objects.create(title="测试文章", content="这是测试内容", author=self.user, status="published")
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: Article() got unexpected keyword arguments: 'status'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestContentModels" name="test_comment_creation" time="0.083"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.content_article&quot; does not exist&#10;LINE 1: INSERT INTO &quot;apps.content_article&quot; (&quot;title&quot;, &quot;content&quot;, &quot;aut...&#10;                    ^">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:87: in test_comment_creation
+    article = Article.objects.create(title="测试文章", content="测试内容", author=self.user)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:663: in create
+    obj.save(force_insert=True, using=self.db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:902: in save
+    self.save_base(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1008: in save_base
+    updated = self._save_table(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1169: in _save_table
+    results = self._do_insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:1210: in _do_insert
+    return manager._insert(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:1868: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1882: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.content_article" does not exist
+E   LINE 1: INSERT INTO "apps.content_article" ("title", "content", "aut...
+E                       ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_profile_creation" time="0.095" /><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_role_creation" time="0.084"><failure message="TypeError: UserRole() got unexpected keyword arguments: 'role_name', 'is_active'">tests/unit/test_comprehensive.py:108: in test_user_role_creation
+    role = UserRole.objects.create(user=self.user, role_name="test_role", is_active=True)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: UserRole() got unexpected keyword arguments: 'role_name', 'is_active'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestUserModels" name="test_user_status_creation" time="0.084"><failure message="TypeError: UserStatus() got unexpected keyword arguments: 'last_login'">tests/unit/test_comprehensive.py:120: in test_user_status_creation
+    status = UserStatus.objects.create(user=self.user, status="active", last_login=None)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: UserStatus() got unexpected keyword arguments: 'last_login'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_link_creation" time="0.090"><failure message="TypeError: ShareLink() got unexpected keyword arguments: 'user'">tests/unit/test_comprehensive.py:162: in test_share_link_creation
+    link = ShareLink.objects.create(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: ShareLink() got unexpected keyword arguments: 'user'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestShareModels" name="test_share_record_creation" time="0.084"><failure message="TypeError: ShareRecord() got unexpected keyword arguments: 'content_type', 'content_id', 'share_count'">tests/unit/test_comprehensive.py:150: in test_share_record_creation
+    record = ShareRecord.objects.create(user=self.user, content_type="article", content_id=1, share_count=1)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:661: in create
+    obj = self.model(**kwargs)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/base.py:569: in __init__
+    raise TypeError(
+E   TypeError: ShareRecord() got unexpected keyword arguments: 'content_type', 'content_id', 'share_count'</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_api_endpoints" time="0.397" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_content_view" time="0.088"><failure message="django.db.utils.ProgrammingError: relation &quot;apps.content_article&quot; does not exist&#10;LINE 1: SELECT COUNT(*) AS &quot;__count&quot; FROM &quot;apps.content_article&quot;&#10;                                          ^">../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   psycopg.errors.UndefinedTable: relation "apps.content_article" does not exist
+E   LINE 1: SELECT COUNT(*) AS "__count" FROM "apps.content_article"
+E                                             ^
+
+The above exception was the direct cause of the following exception:
+tests/unit/test_comprehensive.py:202: in test_content_view
+    response = self.client.get("/content/")
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/client.py:1124: in get
+    response = super().get(
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/client.py:475: in get
+    return self.generic(
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/client.py:671: in generic
+    return self.request(**r)
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/client.py:1087: in request
+    self.check_exception(response)
+../QAToolBox/venv/lib/python3.13/site-packages/django/test/client.py:802: in check_exception
+    raise exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/handlers/exception.py:55: in inner
+    response = get_response(request)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/handlers/base.py:197: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+apps/content/views.py:43: in article_list
+    page_obj = paginator.get_page(page_number)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/paginator.py:85: in get_page
+    return self.page(number)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/paginator.py:89: in page
+    number = self.validate_number(number)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/paginator.py:70: in validate_number
+    if number &gt; self.num_pages:
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/functional.py:47: in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/paginator.py:116: in num_pages
+    if self.count == 0 and not self.allow_empty_first_page:
+../QAToolBox/venv/lib/python3.13/site-packages/django/utils/functional.py:47: in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+../QAToolBox/venv/lib/python3.13/site-packages/django/core/paginator.py:110: in count
+    return c()
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/query.py:604: in count
+    return self.query.get_count(using=self.db)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/query.py:644: in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/query.py:626: in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py:1623: in execute_sql
+    cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../QAToolBox/venv/lib/python3.13/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+../QAToolBox/venv/lib/python3.13/site-packages/psycopg/cursor.py:97: in execute
+    raise ex.with_traceback(None)
+E   django.db.utils.ProgrammingError: relation "apps.content_article" does not exist
+E   LINE 1: SELECT COUNT(*) AS "__count" FROM "apps.content_article"
+E                                             ^</failure></testcase><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_health_check_view" time="0.082" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_home_view" time="0.154" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_login_view" time="0.086" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_register_view" time="0.084" /><testcase classname="tests.unit.test_comprehensive.TestViews" name="test_share_view" time="0.082"><failure message="AssertionError: 404 != 200">tests/unit/test_comprehensive.py:208: in test_share_view
+    self.assertEqual(response.status_code, 200)
+E   AssertionError: 404 != 200</failure></testcase></testsuite></testsuites>
