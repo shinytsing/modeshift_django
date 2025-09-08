@@ -107,8 +107,17 @@ jobs:
         
         echo "🔄 重启服务..."
         ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
-          sudo systemctl restart gunicorn &&
-          sudo systemctl restart nginx
+          cd $DEPLOY_PATH &&
+          source venv/bin/activate &&
+          echo '停止现有gunicorn进程...' &&
+          pkill -f gunicorn || true &&
+          echo '启动新的gunicorn进程...' &&
+          nohup gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon &&
+          echo '重启nginx...' &&
+          sudo systemctl restart nginx &&
+          echo '检查服务状态...' &&
+          ps aux | grep gunicorn | grep -v grep &&
+          sudo systemctl status nginx --no-pager -l
         "
         
         echo "✅ 部署完成"
