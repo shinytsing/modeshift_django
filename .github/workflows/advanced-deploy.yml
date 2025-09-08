@@ -1,0 +1,187 @@
+name: 🚀 先进一键部署 + 智能检测
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  deploy:
+    name: 🚀 智能部署
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    
+    steps:
+    - name: ⬇️ 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 🚀 一键智能部署
+      env:
+        HOST: ${{ secrets.SERVER_HOST }}
+        USERNAME: ${{ secrets.SERVER_USER }}
+        SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+      run: |
+        echo "🚀 开始先进一键部署..."
+        
+        # 检查环境变量
+        if [ -z "$HOST" ] || [ -z "$USERNAME" ] || [ -z "$SSH_KEY" ] || [ -z "$DEPLOY_PATH" ]; then
+          echo "❌ 缺少必要的GitHub Secrets配置"
+          exit 1
+        fi
+        
+        # 设置SSH
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        chmod 700 ~/.ssh
+        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+        
+        # 测试SSH连接
+        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
+          echo "❌ SSH连接失败"
+          exit 1
+        }
+        
+        echo "✅ SSH连接正常"
+        
+        # 一键部署脚本
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          
+          echo '📥 拉取最新代码...' &&
+          git config --global http.sslVerify false &&
+          git config --global http.postBuffer 524288000 &&
+          git pull origin main &&
+          
+          echo '🐍 智能虚拟环境管理...' &&
+          if [ ! -d 'venv' ] || [ requirements.txt -nt venv/pyvenv.cfg ]; then
+            echo '创建/更新虚拟环境...' &&
+            rm -rf venv &&
+            python3 -m venv venv &&
+            venv/bin/python -m pip install --upgrade pip --quiet &&
+            venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
+          else
+            echo '虚拟环境无需更新'
+          fi &&
+          
+          echo '📁 Django操作...' &&
+          venv/bin/python manage.py collectstatic --noinput --clear &&
+          venv/bin/python manage.py migrate --noinput &&
+          
+          echo '🔄 智能服务重启...' &&
+          pkill -TERM -f gunicorn || true &&
+          sleep 2 &&
+          nohup venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 wsgi:application --daemon &&
+          sudo nginx -s reload &&
+          
+          echo '✅ 部署完成'
+        "
+        
+        echo "🎉 一键部署成功！"
+
+  health-check:
+    name: 🔍 智能健康检测
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 3
+    
+    steps:
+    - name: 🔍 全面健康检测
+      env:
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+      run: |
+        echo "🔍 开始智能健康检测..."
+        
+        WEB_URL="$WEB_URL"
+        API_URL="$API_URL"
+        
+        if [ -z "$WEB_URL" ] || [ -z "$API_URL" ]; then
+          echo "❌ 缺少URL配置"
+          exit 1
+        fi
+        
+        echo "✅ 检测目标: $WEB_URL"
+        
+        # 等待服务启动
+        echo "⏳ 等待服务启动..."
+        sleep 15
+        
+        # 健康检测函数
+        check_endpoint() {
+          local url=$1
+          local name=$2
+          local timeout=${3:-10}
+          
+          echo "🔍 检测 $name..."
+          if curl -f -s --max-time $timeout "$url" > /dev/null; then
+            echo "✅ $name 正常"
+            return 0
+          else
+            echo "❌ $name 异常"
+            return 1
+          fi
+        }
+        
+        # 核心检测
+        echo "📊 开始核心功能检测..."
+        
+        # 网页检测
+        check_endpoint "$WEB_URL/" "首页" 10
+        check_endpoint "$WEB_URL/admin/" "管理后台" 10
+        check_endpoint "$WEB_URL/static/" "静态文件" 10
+        
+        # API检测
+        check_endpoint "$API_URL/api/" "API根路径" 10
+        check_endpoint "$API_URL/health/" "健康检查" 10
+        check_endpoint "$API_URL/api/users/" "用户API" 10
+        check_endpoint "$API_URL/api/tools/" "工具API" 10
+        
+        # 性能检测
+        echo "⚡ 性能检测..."
+        response_time=$(curl -o /dev/null -s -w '%{time_total}' --max-time 10 "$WEB_URL/")
+        echo "📈 响应时间: ${response_time}秒"
+        
+        if (( $(echo "$response_time < 3.0" | bc -l) )); then
+          echo "✅ 性能优秀"
+        elif (( $(echo "$response_time < 5.0" | bc -l) )); then
+          echo "⚠️ 性能一般"
+        else
+          echo "❌ 性能较差"
+        fi
+        
+        # SSL检测
+        echo "🔒 SSL检测..."
+        if [[ "$WEB_URL" == https://* ]]; then
+          ssl_info=$(echo | openssl s_client -servername $(echo $WEB_URL | sed 's|https://||' | cut -d'/' -f1) -connect $(echo $WEB_URL | sed 's|https://||' | cut -d'/' -f1):443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
+          if [ $? -eq 0 ]; then
+            echo "✅ SSL证书正常"
+          else
+            echo "⚠️ SSL证书检测失败"
+          fi
+        fi
+        
+        echo "🎉 智能健康检测完成！"
+        echo "🌐 网站地址: $WEB_URL"
+        echo "🔌 API地址: $API_URL"
+
+  notification:
+    name: 📢 部署通知
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: always()
+    
+    steps:
+    - name: 📢 发送部署结果
+      run: |
+        if [ "${{ needs.deploy.result }}" == "success" ] && [ "${{ needs.health-check.result }}" == "success" ]; then
+          echo "🎉 部署成功！"
+          echo "✅ 所有检测通过"
+          echo "🌐 网站: ${{ secrets.WEB_URL }}"
+        else
+          echo "❌ 部署失败"
+          echo "🔍 请检查日志"
+        fi

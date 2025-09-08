@@ -8,6 +8,7 @@ jobs:
   deploy:
     name: 🚀 部署到服务器
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: ⬇️ 检出代码
@@ -102,7 +103,7 @@ jobs:
         "
         
         echo "🐍 优化虚拟环境管理..."
-        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=60 -o TCPKeepAlive=yes $USERNAME@$HOST "
+        timeout 300 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=15 -o ServerAliveCountMax=5 -o ConnectTimeout=30 -o TCPKeepAlive=yes $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           echo '检查虚拟环境状态...' &&
           if [ -d 'venv' ] && [ -f 'venv/pyvenv.cfg' ]; then
