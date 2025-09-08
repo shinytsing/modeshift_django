@@ -201,7 +201,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "src/static",
-    BASE_DIR / "static",  # 添加项目根目录下的static文件夹
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
