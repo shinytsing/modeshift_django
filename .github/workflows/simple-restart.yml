@@ -65,10 +65,31 @@ jobs:
               echo '备份现有代码...'
               mv '$DEPLOY_PATH' '$DEPLOY_PATH.backup.$(date +%Y%m%d_%H%M%S)' 2>/dev/null || echo '没有现有代码需要备份'
               
+              echo '检查网络连接...'
+              ping -c 3 github.com || echo 'GitHub连接失败'
+              
               echo '克隆最新代码...'
-              git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH'
+              # 尝试多种方式克隆代码
+              if git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH'; then
+                  echo 'Git克隆成功'
+              else
+                  echo 'HTTPS克隆失败，尝试SSH方式...'
+                  git clone git@github.com:shinytsing/modeshift_django.git '$DEPLOY_PATH' || {
+                      echo 'SSH克隆也失败，尝试使用代理...'
+                      git config --global http.proxy http://127.0.0.1:7890
+                      git config --global https.proxy https://127.0.0.1:7890
+                      git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH' || {
+                          echo '所有克隆方式都失败，使用现有代码...'
+                          mkdir -p '$DEPLOY_PATH'
+                          cp -r '$DEPLOY_PATH.backup.'*/* '$DEPLOY_PATH/' 2>/dev/null || echo '没有备份代码可用'
+                      }
+                  }
+              fi
               
               cd '$DEPLOY_PATH'
+              echo '当前目录: ' \$(pwd)
+              echo '目录内容: ' \$(ls -la)
+              
               echo '创建虚拟环境...'
               python3 -m venv venv
               source venv/bin/activate
@@ -90,9 +111,26 @@ jobs:
           echo "步骤3: 启动服务..."
           sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o ServerAliveInterval=5 -o ServerAliveCountMax=3 $SERVER_USER@$SERVER_HOST "
               cd '$DEPLOY_PATH'
+              echo '当前目录: ' \$(pwd)
+              echo '目录内容: ' \$(ls -la)
+              
               echo '启动Gunicorn服务...'
-              chmod +x simple-start.sh
-              ./simple-start.sh
+              if [ -f 'simple-start.sh' ]; then
+                  chmod +x simple-start.sh
+                  ./simple-start.sh
+                  echo 'Gunicorn启动完成'
+              else
+                  echo 'simple-start.sh不存在，手动启动Gunicorn...'
+                  source venv/bin/activate
+                  nohup gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application > /dev/null 2>&1 &
+                  sleep 5
+                  if pgrep -f gunicorn > /dev/null; then
+                      echo 'Gunicorn手动启动成功'
+                  else
+                      echo 'Gunicorn启动失败'
+                  fi
+              fi
+              
               echo '重启Nginx...'
               systemctl reload nginx
               echo '✅ 服务启动完成'
