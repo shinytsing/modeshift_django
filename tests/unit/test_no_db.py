@@ -249,7 +249,7 @@ class TestConfiguration:
         # 测试Django设置模块
         django_settings = os.environ.get("DJANGO_SETTINGS_MODULE")
         assert django_settings is not None
-        assert "testing" in django_settings
+        assert "test" in django_settings
 
     def test_python_path(self):
         """测试Python路径"""

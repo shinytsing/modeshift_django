@@ -10,6 +10,7 @@ from playwright.async_api import Page, expect
 
 
 @pytest.mark.asyncio
+@pytest.mark.e2e
 class TestUserRegistrationFlowAsync:
     """用户注册流程测试 - 异步版本"""
 
@@ -54,6 +55,7 @@ class TestUserRegistrationFlowAsync:
 
 
 @pytest.mark.asyncio
+@pytest.mark.e2e
 class TestUserLoginFlowAsync:
     """用户登录流程测试 - 异步版本"""
 
@@ -106,6 +108,7 @@ class TestUserLoginFlowAsync:
 
 
 @pytest.mark.asyncio
+@pytest.mark.e2e
 class TestToolUsageFlowAsync:
     """工具使用流程测试 - 异步版本"""
 
@@ -138,6 +141,7 @@ class TestToolUsageFlowAsync:
 
 
 @pytest.mark.asyncio
+@pytest.mark.e2e
 class TestMobileResponsivenessAsync:
     """移动端响应式测试 - 异步版本"""
 

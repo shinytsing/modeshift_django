@@ -10,6 +10,7 @@ from playwright.sync_api import Page, expect
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestUserRegistrationFlow:
     """用户注册流程测试"""
 
@@ -65,6 +66,7 @@ class TestUserRegistrationFlow:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestUserLoginFlow:
     """用户登录流程测试"""
 
@@ -113,6 +115,7 @@ class TestUserLoginFlow:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestToolUsageFlow:
     """工具使用流程测试"""
 
@@ -160,6 +163,7 @@ class TestToolUsageFlow:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestMobileResponsiveness:
     """移动端响应式测试"""
 
@@ -196,6 +200,7 @@ class TestMobileResponsiveness:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestAccessibility:
     """可访问性测试"""
 
@@ -226,6 +231,7 @@ class TestAccessibility:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestPerformance:
     """性能测试"""
 
@@ -259,6 +265,7 @@ class TestPerformance:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.e2e
 class TestSecurity:
     """安全测试"""
 
