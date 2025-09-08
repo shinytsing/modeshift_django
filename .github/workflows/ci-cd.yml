@@ -79,13 +79,24 @@ jobs:
         echo "📥 拉取最新代码..."
         ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
+          echo '配置Git网络设置...' &&
           git config --global http.sslVerify false &&
           git config --global http.postBuffer 1048576000 &&
           git config --global http.lowSpeedLimit 1000 &&
           git config --global http.lowSpeedTime 300 &&
+          git config --global http.version HTTP/1.1 &&
+          git config --global core.compression 0 &&
+          git config --global http.keepAlive false &&
+          echo '清理工作目录...' &&
           git clean -fd &&
           git reset --hard HEAD &&
-          git pull origin main
+          echo '拉取最新代码...' &&
+          git pull origin main || {
+            echo 'Git pull失败，尝试重新配置...' &&
+            git config --global http.sslVerify false &&
+            git config --global http.postBuffer 2097152000 &&
+            git pull origin main
+          }
         "
         
         echo "🐍 创建虚拟环境..."
