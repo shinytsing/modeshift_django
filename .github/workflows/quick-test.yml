@@ -116,7 +116,7 @@ jobs:
         echo "- 如需部署，请确保所有检查通过" >> quick-test-report.md
     
     - name: 📤 上传快速报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: quick-test-report
         path: quick-test-report.md
