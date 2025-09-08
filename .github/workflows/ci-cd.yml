@@ -56,29 +56,48 @@ jobs:
         
         echo "✅ 部署完成"
 
-  api-check:
-    name: ✅ API健康检查
+  online-test:
+    name: ✅ 线上测试
     runs-on: ubuntu-latest
     needs: deploy
     
     steps:
-    - name: 🔍 API健康检查
+    - name: 🌐 网页检查
       run: |
-        echo "🔍 检查API健康状态..."
+        echo "🌐 检查网页访问..."
         
         # 等待服务启动
         sleep 30
         
-        # 检查主要API端点
+        # 检查网页
+        WEB_URL="${{ secrets.WEB_URL }}"
+        
+        echo "检查首页..."
+        curl -f "$WEB_URL/" && echo "✅ 首页访问正常" || echo "❌ 首页访问失败"
+        
+        echo "检查静态文件..."
+        curl -f "$WEB_URL/static/" && echo "✅ 静态文件正常" || echo "❌ 静态文件失败"
+        
+        echo "检查管理后台..."
+        curl -f "$WEB_URL/admin/" && echo "✅ 管理后台正常" || echo "❌ 管理后台失败"
+    
+    - name: 🔌 API测试
+      run: |
+        echo "🔌 检查API接口..."
+        
+        # 检查API端点
         API_URL="${{ secrets.API_URL }}"
         
-        echo "检查根路径..."
-        curl -f "$API_URL/" || echo "⚠️ 根路径检查失败"
+        echo "检查API根路径..."
+        curl -f "$API_URL/api/" && echo "✅ API根路径正常" || echo "❌ API根路径失败"
         
         echo "检查健康检查端点..."
-        curl -f "$API_URL/health/" || echo "⚠️ 健康检查端点失败"
+        curl -f "$API_URL/health/" && echo "✅ 健康检查正常" || echo "❌ 健康检查失败"
         
-        echo "检查API文档..."
-        curl -f "$API_URL/api/" || echo "⚠️ API文档检查失败"
+        echo "检查用户API..."
+        curl -f "$API_URL/api/users/" && echo "✅ 用户API正常" || echo "❌ 用户API失败"
         
-        echo "✅ API健康检查完成"
+        echo "检查工具API..."
+        curl -f "$API_URL/api/tools/" && echo "✅ 工具API正常" || echo "❌ 工具API失败"
+        
+        echo "✅ 线上测试完成"
