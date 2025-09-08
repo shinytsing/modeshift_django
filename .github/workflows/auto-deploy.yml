@@ -1,13 +1,12 @@
-name: 🚀 先进一键部署 + 智能检测
+name: 🚀 自动部署 + 线上测试
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # 支持手动触发
 
 jobs:
-  deploy:
-    name: 🚀 智能部署
+  deploy-and-test:
+    name: 🚀 自动部署 + 线上测试
     runs-on: ubuntu-latest
     timeout-minutes: 8
     
@@ -15,7 +14,7 @@ jobs:
     - name: ⬇️ 检出代码
       uses: actions/checkout@v4
     
-    - name: 🚀 一键智能部署
+    - name: 🚀 一键部署 + 线上测试
       env:
         HOST: ${{ secrets.SERVER_HOST }}
         USERNAME: ${{ secrets.SERVER_USER }}
@@ -24,13 +23,22 @@ jobs:
         WEB_URL: ${{ secrets.WEB_URL }}
         API_URL: ${{ secrets.API_URL }}
       run: |
-        echo "🚀 开始先进一键部署..."
+        echo "🚀 开始自动部署 + 线上测试..."
         
         # 检查环境变量
         if [ -z "$HOST" ] || [ -z "$USERNAME" ] || [ -z "$SSH_KEY" ] || [ -z "$DEPLOY_PATH" ]; then
           echo "❌ 缺少必要的GitHub Secrets配置"
+          echo "请确保设置了以下Secrets:"
+          echo "- SERVER_HOST: 47.103.143.152"
+          echo "- SERVER_USER: root"
+          echo "- SERVER_SSH_KEY: SSH私钥"
+          echo "- DEPLOY_PATH: /root/modeshift_django"
+          echo "- WEB_URL: https://shenyinqing.xin"
+          echo "- API_URL: https://shenyinqing.xin"
           exit 1
         fi
+        
+        echo "✅ 环境变量检查通过"
         
         # 设置SSH
         mkdir -p ~/.ssh
@@ -39,7 +47,7 @@ jobs:
         chmod 700 ~/.ssh
         ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
-        # 测试SSH连接
+        echo "🔗 测试SSH连接..."
         ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
           echo "❌ SSH连接失败"
           exit 1
@@ -47,7 +55,8 @@ jobs:
         
         echo "✅ SSH连接正常"
         
-        # 一键部署脚本
+        # 一键部署
+        echo "📦 开始一键部署..."
         ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           
@@ -80,108 +89,83 @@ jobs:
           echo '✅ 部署完成'
         "
         
-        echo "🎉 一键部署成功！"
-
-  health-check:
-    name: 🔍 智能健康检测
-    runs-on: ubuntu-latest
-    needs: deploy
-    timeout-minutes: 3
-    
-    steps:
-    - name: 🔍 全面健康检测
-      env:
-        WEB_URL: ${{ secrets.WEB_URL }}
-        API_URL: ${{ secrets.API_URL }}
-      run: |
-        echo "🔍 开始智能健康检测..."
+        echo "🎉 部署成功！"
+        
+        # 线上测试
+        echo "🔍 开始线上测试..."
         
         WEB_URL="$WEB_URL"
         API_URL="$API_URL"
         
         if [ -z "$WEB_URL" ] || [ -z "$API_URL" ]; then
           echo "❌ 缺少URL配置"
+          echo "请在GitHub Secrets中设置WEB_URL和API_URL"
           exit 1
         fi
         
-        echo "✅ 检测目标: $WEB_URL"
+        echo "✅ 测试目标: $WEB_URL"
         
         # 等待服务启动
         echo "⏳ 等待服务启动..."
         sleep 15
         
-        # 健康检测函数
-        check_endpoint() {
+        # 测试函数
+        test_endpoint() {
           local url=$1
           local name=$2
           local timeout=${3:-10}
           
-          echo "🔍 检测 $name..."
+          echo "🔍 测试 $name..."
           if curl -f -s --max-time $timeout "$url" > /dev/null; then
             echo "✅ $name 正常"
             return 0
           else
-            echo "❌ $name 异常"
+            echo "❌ $name 失败"
             return 1
           fi
         }
         
-        # 核心检测
-        echo "📊 开始核心功能检测..."
+        # 核心功能测试
+        echo "📊 开始核心功能测试..."
         
-        # 网页检测
-        check_endpoint "$WEB_URL/" "首页" 10
-        check_endpoint "$WEB_URL/admin/" "管理后台" 10
-        check_endpoint "$WEB_URL/static/" "静态文件" 10
+        # 网页测试
+        test_endpoint "$WEB_URL/" "首页" 10
+        test_endpoint "$WEB_URL/admin/" "管理后台" 10
+        test_endpoint "$WEB_URL/static/" "静态文件" 10
         
-        # API检测
-        check_endpoint "$API_URL/api/" "API根路径" 10
-        check_endpoint "$API_URL/health/" "健康检查" 10
-        check_endpoint "$API_URL/api/users/" "用户API" 10
-        check_endpoint "$API_URL/api/tools/" "工具API" 10
+        # API测试
+        test_endpoint "$API_URL/api/" "API根路径" 10
+        test_endpoint "$API_URL/health/" "健康检查" 10
+        test_endpoint "$API_URL/api/users/" "用户API" 10
+        test_endpoint "$API_URL/api/tools/" "工具API" 10
         
-        # 性能检测
-        echo "⚡ 性能检测..."
+        # 性能测试
+        echo "⚡ 性能测试..."
         response_time=$(curl -o /dev/null -s -w '%{time_total}' --max-time 10 "$WEB_URL/")
         echo "📈 响应时间: ${response_time}秒"
         
-        if (( $(echo "$response_time < 3.0" | bc -l) )); then
-          echo "✅ 性能优秀"
-        elif (( $(echo "$response_time < 5.0" | bc -l) )); then
-          echo "⚠️ 性能一般"
+        # 状态码测试
+        status_code=$(curl -o /dev/null -s -w '%{http_code}' --max-time 10 "$WEB_URL/")
+        echo "📊 HTTP状态码: $status_code"
+        
+        if [ "$status_code" = "200" ]; then
+          echo "✅ 状态码正常"
         else
-          echo "❌ 性能较差"
+          echo "⚠️ 状态码异常: $status_code"
         fi
         
-        # SSL检测
-        echo "🔒 SSL检测..."
+        # SSL测试
         if [[ "$WEB_URL" == https://* ]]; then
-          ssl_info=$(echo | openssl s_client -servername $(echo $WEB_URL | sed 's|https://||' | cut -d'/' -f1) -connect $(echo $WEB_URL | sed 's|https://||' | cut -d'/' -f1):443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
-          if [ $? -eq 0 ]; then
+          echo "🔒 SSL证书测试..."
+          domain_name=$(echo $WEB_URL | sed 's|https://||' | cut -d'/' -f1)
+          if echo | openssl s_client -servername $domain_name -connect $domain_name:443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null; then
             echo "✅ SSL证书正常"
           else
             echo "⚠️ SSL证书检测失败"
           fi
         fi
         
-        echo "🎉 智能健康检测完成！"
+        echo "🎉 线上测试完成！"
         echo "🌐 网站地址: $WEB_URL"
         echo "🔌 API地址: $API_URL"
-
-  notification:
-    name: 📢 部署通知
-    runs-on: ubuntu-latest
-    needs: [deploy, health-check]
-    if: always()
-    
-    steps:
-    - name: 📢 发送部署结果
-      run: |
-        if [ "${{ needs.deploy.result }}" == "success" ] && [ "${{ needs.health-check.result }}" == "success" ]; then
-          echo "🎉 部署成功！"
-          echo "✅ 所有检测通过"
-          echo "🌐 网站: ${{ secrets.WEB_URL }}"
-        else
-          echo "❌ 部署失败"
-          echo "🔍 请检查日志"
-        fi
+        echo "✅ 自动部署 + 线上测试全部成功！"
