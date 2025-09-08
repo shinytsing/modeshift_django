@@ -49,21 +49,8 @@ jobs:
           echo "步骤1: 停止现有服务..."
           sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
               echo '停止现有服务...'
-              # 查找并停止gunicorn进程
-              PID=\$(pgrep -f gunicorn || echo '')
-              if [ -n \"\$PID\" ]; then
-                  echo \"找到Gunicorn进程: \$PID\"
-                  kill -TERM \$PID || true
-                  sleep 3
-                  # 检查是否还在运行
-                  if pgrep -f gunicorn > /dev/null; then
-                      echo \"强制停止Gunicorn进程\"
-                      pkill -9 -f gunicorn || true
-                  fi
-              else
-                  echo \"没有找到运行中的Gunicorn进程\"
-              fi
-              echo '服务停止完成'
+              # 最简单的停止方式，避免所有可能的退出码问题
+              pkill -f gunicorn 2>/dev/null; sleep 3; pkill -9 -f gunicorn 2>/dev/null; echo '服务停止完成'
           "
           
           # 步骤2: 部署代码和环境
