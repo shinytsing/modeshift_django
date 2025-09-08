@@ -94,9 +94,9 @@ graph TD
 
 | Secret名称 | 说明 | 示例 |
 |-----------|------|------|
-| `HOST` | 服务器IP地址 | `123.456.789.0` |
-| `USERNAME` | SSH用户名 | `root` |
-| `SSH_KEY` | SSH私钥 | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+| `SERVER_HOST` | 服务器IP地址 | `123.456.789.0` |
+| `SERVER_USER` | SSH用户名 | `root` |
+| `SERVER_SSH_KEY` | SSH私钥 | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
 | `WEB_URL` | 网站地址 | `https://shenyiqing.xin` |
 | `API_URL` | API地址 | `https://shenyiqing.xin` |
 
