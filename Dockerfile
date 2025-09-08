@@ -32,14 +32,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制requirements文件
+# 先复制requirements文件（利用Docker层缓存）
 COPY requirements.txt /app/
 
-# 安装Python依赖
+# 安装Python依赖（这部分会缓存，除非requirements.txt变化）
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# 复制项目文件
+# 最后复制项目文件（这部分变化最频繁）
 COPY . /app/
 
 # 创建必要的目录
