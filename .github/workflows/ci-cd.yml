@@ -41,12 +41,28 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+        chmod 700 ~/.ssh
+        
+        echo "🔍 检查SSH密钥格式..."
+        if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+          echo "❌ SSH私钥格式错误"
+          echo "请检查SERVER_SSH_KEY的内容是否正确"
+          exit 1
+        fi
+        echo "✅ SSH密钥格式正确"
         
         echo "🔑 添加SSH主机密钥..."
         ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
         echo "🔗 测试SSH连接..."
-        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $USERNAME@$HOST "echo 'SSH连接成功'"
+        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o PasswordAuthentication=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
+          echo "❌ SSH连接失败，检查SSH密钥配置"
+          echo "请确保："
+          echo "1. SSH私钥格式正确"
+          echo "2. 公钥已添加到服务器的 ~/.ssh/authorized_keys"
+          echo "3. 服务器SSH服务正常运行"
+          exit 1
+        }
         
         echo "📦 开始部署..."
         ssh -o StrictHostKeyChecking=no $USERNAME@$HOST "
