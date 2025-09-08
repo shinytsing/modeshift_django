@@ -142,9 +142,25 @@ jobs:
             venv/bin/python -m pip install --upgrade pip --quiet &&
             venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
           else
-            echo '虚拟环境存在，检查Django模块...' &&
+            echo '虚拟环境存在，检查关键模块...' &&
+            MISSING_MODULES="" &&
+            # 检查Django
             if ! venv/bin/python -c 'import django; print(django.get_version())' > /dev/null 2>&1; then
-              echo 'Django模块损坏，重新安装依赖...' &&
+              MISSING_MODULES="django"
+            fi &&
+            # 检查captcha模块
+            if ! venv/bin/python -c 'import captcha' > /dev/null 2>&1; then
+              MISSING_MODULES="$MISSING_MODULES captcha"
+            fi &&
+            # 检查其他关键模块
+            if ! venv/bin/python -c 'import rest_framework' > /dev/null 2>&1; then
+              MISSING_MODULES="$MISSING_MODULES rest_framework"
+            fi &&
+            if ! venv/bin/python -c 'import corsheaders' > /dev/null 2>&1; then
+              MISSING_MODULES="$MISSING_MODULES corsheaders"
+            fi &&
+            if [ -n "$MISSING_MODULES" ]; then
+              echo "发现缺失模块: $MISSING_MODULES，重新安装依赖..." &&
               venv/bin/python -m pip install --upgrade pip --quiet &&
               venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
             else
@@ -158,8 +174,10 @@ jobs:
               fi
             fi
           fi &&
-          echo '验证Django安装...' &&
+          echo '验证关键模块安装...' &&
           venv/bin/python -c 'import django; print(\"Django版本:\", django.get_version())' &&
+          venv/bin/python -c 'import captcha; print(\"captcha模块:\", captcha.__version__)' &&
+          venv/bin/python -c 'import rest_framework; print(\"DRF版本:\", rest_framework.VERSION)' &&
           echo '✅ 虚拟环境检查完成'
         " || {
           echo "❌ 步骤3失败"
