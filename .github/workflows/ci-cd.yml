@@ -99,55 +99,67 @@ jobs:
           }
         "
         
-        echo "🐍 创建虚拟环境..."
+        echo "🐍 优化虚拟环境管理..."
         ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=60 -o TCPKeepAlive=yes $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
-          echo '停止可能运行的Python进程...' &&
-          pkill -f python || true &&
-          pkill -f gunicorn || true &&
-          echo '强制删除旧虚拟环境...' &&
-          rm -rf venv || true &&
-          echo '创建新虚拟环境...' &&
-          python3 -m venv venv &&
-          echo '激活虚拟环境...' &&
-          source venv/bin/activate &&
-          echo '安装依赖包...' &&
-          pip install --upgrade pip &&
-          pip install -r requirements.txt --no-cache-dir
+          echo '检查虚拟环境状态...' &&
+          if [ -d 'venv' ] && [ -f 'venv/pyvenv.cfg' ]; then
+            echo '虚拟环境已存在，检查依赖...' &&
+            source venv/bin/activate &&
+            echo '检查requirements.txt是否有变化...' &&
+            if [ requirements.txt -nt venv/pyvenv.cfg ]; then
+              echo '依赖有变化，更新虚拟环境...' &&
+              pip install --upgrade pip --quiet &&
+              pip install -r requirements.txt --no-cache-dir --quiet
+            else
+              echo '依赖无变化，跳过安装'
+            fi
+          else
+            echo '创建新虚拟环境...' &&
+            python3 -m venv venv &&
+            source venv/bin/activate &&
+            pip install --upgrade pip --quiet &&
+            pip install -r requirements.txt --no-cache-dir --quiet
+          fi
         " || {
-          echo "❌ 虚拟环境创建失败，尝试重新连接..."
+          echo "❌ 虚拟环境管理失败，强制重建..."
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=60 -o TCPKeepAlive=yes $USERNAME@$HOST "
             cd $DEPLOY_PATH &&
-            echo '重新创建虚拟环境...' &&
+            pkill -f python || true &&
+            pkill -f gunicorn || true &&
             rm -rf venv &&
             python3 -m venv venv &&
             source venv/bin/activate &&
-            pip install --upgrade pip &&
-            pip install -r requirements.txt --no-cache-dir
+            pip install --upgrade pip --quiet &&
+            pip install -r requirements.txt --no-cache-dir --quiet
           "
         }
         
-        echo "📁 收集静态文件和数据库迁移..."
+        echo "📁 优化Django操作..."
         ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=60 -o TCPKeepAlive=yes $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           source venv/bin/activate &&
-          python manage.py collectstatic --noinput &&
-          python manage.py migrate
+          echo '检查静态文件变化...' &&
+          python manage.py collectstatic --noinput --clear &&
+          echo '检查数据库迁移...' &&
+          python manage.py migrate --noinput
         "
         
-        echo "🔄 重启服务..."
+        echo "🔄 快速重启服务..."
         ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=60 -o TCPKeepAlive=yes $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           source venv/bin/activate &&
-          echo '停止现有gunicorn进程...' &&
-          pkill -f gunicorn || true &&
-          echo '启动新的gunicorn进程...' &&
-          nohup gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon &&
-          echo '重启nginx...' &&
-          sudo systemctl restart nginx &&
-          echo '检查服务状态...' &&
-          ps aux | grep gunicorn | grep -v grep &&
-          sudo systemctl status nginx --no-pager -l
+          echo '优雅停止gunicorn...' &&
+          pkill -TERM -f gunicorn || true &&
+          sleep 2 &&
+          echo '启动gunicorn服务...' &&
+          nohup gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 --max-requests-jitter 100 wsgi:application --daemon &&
+          echo '重载nginx配置...' &&
+          sudo nginx -s reload &&
+          echo '验证服务状态...' &&
+          sleep 3 &&
+          ps aux | grep gunicorn | grep -v grep | head -1 &&
+          curl -f -s http://localhost:8000/health/ > /dev/null && echo '✅ 服务健康检查通过' || echo '⚠️ 服务启动中...'
         "
         
         echo "✅ 部署完成"
@@ -174,9 +186,9 @@ jobs:
         
         echo "✅ 使用网站URL: $WEB_URL"
         
-        # 等待服务启动
-        echo "⏳ 等待服务启动..."
-        sleep 30
+            # 等待服务启动
+            echo "⏳ 等待服务启动..."
+            sleep 10
         
         echo "🔍 开始网页检查..."
         
