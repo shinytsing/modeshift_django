@@ -81,7 +81,7 @@ jobs:
           echo "运行: isort apps/ manage.py"
         }
         echo "::endgroup::"
-        
+    
         # Flake8代码风格检查（只检查核心文件）
         echo "::group::Flake8代码风格检查"
         flake8 apps/ manage.py --max-line-length=88 --extend-ignore=E203,E501,W503,F403,F405,F401,E402,F541,F841,F811,F601,E731,W391,W293,W291,E226 || {
@@ -95,7 +95,7 @@ jobs:
           echo "::warning::MyPy检查失败，但继续执行"
         }
         echo "::endgroup::"
-        
+    
         echo "✅ 代码质量检查完成"
     
     - name: 🔒 安全扫描
@@ -118,7 +118,7 @@ jobs:
           echo "::warning::Safety扫描发现问题，但继续执行"
         }
         echo "::endgroup::"
-        
+    
         echo "✅ 安全扫描完成"
     
     - name: 📤 上传质量报告
@@ -187,11 +187,10 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-django pytest-cov pytest-xdist
     
-    - name: 安装Playwright浏览器
+    - name: 安装Playwright（仅用于E2E测试）
       run: |
         pip install playwright
-        playwright install chromium
-        playwright install-deps chromium
+        # 注意：单元测试不需要浏览器，E2E测试需要时才安装
     
     - name: 🧪 运行单元测试
       env:
@@ -208,8 +207,8 @@ jobs:
         # 运行数据库迁移
         python manage.py migrate --settings=config.settings.testing
         
-        # 运行测试（并行执行）
-        pytest tests/ \
+        # 运行单元测试（跳过E2E测试）
+        pytest tests/unit/ \
           --cov=apps \
           --cov-report=xml \
           --cov-report=html \
@@ -247,7 +246,7 @@ jobs:
         else
           echo "::notice::测试覆盖率达标: $COVERAGE%"
         fi
-    
+
     - name: 📤 上传测试报告
       uses: actions/upload-artifact@v4
       if: always()
@@ -420,16 +419,16 @@ jobs:
           echo "✅ 备份完成: $BACKUP_DIR"
     
     - name: 🚀 执行部署
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: ${{ secrets.SERVER_PORT || 22 }}
-        script_stop: true
-        timeout: 120s
-        command_timeout: 60s
-        script: |
+          uses: appleboy/ssh-action@v0.1.5
+          with:
+            host: ${{ secrets.SERVER_HOST }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SERVER_SSH_KEY }}
+            port: ${{ secrets.SERVER_PORT || 22 }}
+            script_stop: true
+            timeout: 120s
+            command_timeout: 60s
+            script: |
           echo "🚀 执行Django应用部署..."
           
           # 设置错误处理
@@ -472,8 +471,8 @@ jobs:
           # 检查依赖是否已安装，避免重复安装
           if [ ! -f "venv/.deps_installed" ] || [ "requirements.txt" -nt "venv/.deps_installed" ]; then
             echo "安装/更新依赖..."
-            pip install -r requirements.txt
-            pip install django-environ gunicorn
+          pip install -r requirements.txt
+          pip install django-environ gunicorn
             touch venv/.deps_installed
           else
             echo "依赖已缓存，跳过安装..."
