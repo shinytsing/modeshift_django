@@ -730,8 +730,10 @@ jobs:
           deploy_skipped=true
         else
           echo "✅ SERVER_SSH_KEY 已配置"
-          echo "   长度: $(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c) 字符"
-          echo "   格式: $(echo '${{ secrets.SERVER_SSH_KEY }}' | head -c 20)..."
+          ssh_key_length=$(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c)
+          ssh_key_preview=$(echo '${{ secrets.SERVER_SSH_KEY }}' | head -c 20)
+          echo "   长度: $ssh_key_length 字符"
+          echo "   格式: $ssh_key_preview..."
         fi
         
         # 检查 SERVER_PORT (可选)
@@ -1131,7 +1133,8 @@ jobs:
           deploy_skipped=true
         else
           echo "✅ SERVER_SSH_KEY 已配置"
-          echo "   长度: $(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c) 字符"
+          ssh_key_length=$(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c)
+          echo "   长度: $ssh_key_length 字符"
         fi
         
         echo "=========================================="
