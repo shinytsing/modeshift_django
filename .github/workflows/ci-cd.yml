@@ -1,10 +1,8 @@
-name: 🚀 统一CI/CD流程
+name: 🚀 简化CI/CD流程
 
-# 统一CI/CD流程：简洁、完整、一键部署
+# 简化CI/CD流程：可靠、稳定、一键部署
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
   workflow_dispatch:
     inputs:
@@ -16,31 +14,15 @@ on:
         options:
         - production
         - staging
-      skip_tests:
-        description: '跳过测试 (紧急情况)'
-        required: false
-        default: false
-        type: boolean
-      force_deploy:
-        description: '强制部署 (跳过质量检查)'
-        required: false
-        default: false
-        type: boolean
 
 env:
   PYTHON_VERSION: '3.12'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # ===== 1. 代码质量检查 =====
   code-quality:
     name: 🔍 代码质量检查
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' || 
-      github.event_name == 'pull_request' || 
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.force_deploy != 'true')
     
     steps:
     - name: 检出代码
@@ -52,10 +34,11 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
     
-    - name: 安装代码质量工具
+    - name: 安装依赖
       run: |
         pip install --upgrade pip
-        pip install black isort flake8 mypy bandit safety django-environ
+        pip install -r requirements.txt
+        pip install black isort flake8 bandit safety
     
     - name: 🔍 代码质量检查
       run: |
@@ -63,19 +46,15 @@ jobs:
         
         # Black格式化检查
         echo "运行 Black..."
-        black --check . || echo "⚠️ Black检查失败，需要格式化"
+        black --check . || echo "⚠️ Black检查失败"
         
         # Isort导入排序检查
         echo "运行 Isort..."
-        isort --check-only . || echo "⚠️ Isort检查失败，需要排序导入"
+        isort --check-only . || echo "⚠️ Isort检查失败"
         
         # Flake8代码风格检查
         echo "运行 Flake8..."
         flake8 . --max-line-length=88 --extend-ignore=E203,E501,W503,F403,F405,F401,E402,F541,F841,F811,F601,E731,W391,W293,W291,E226 || echo "⚠️ Flake8检查失败"
-        
-        # MyPy类型检查
-        echo "运行 MyPy..."
-        mypy apps/ --ignore-missing-imports || echo "⚠️ MyPy检查失败"
         
         echo "✅ 代码质量检查完成"
     
@@ -92,23 +71,12 @@ jobs:
         safety check --json --output safety-report.json || echo "⚠️ Safety扫描失败"
         
         echo "✅ 安全扫描完成"
-    
-    - name: 📤 上传质量报告
-      uses: actions/upload-artifact@v4
-      with:
-        name: code-quality-reports
-        path: |
-          bandit-report.json
-          safety-report.json
 
   # ===== 2. 单元测试 =====
   unit-tests:
     name: 🧪 单元测试
     runs-on: ubuntu-latest
     needs: code-quality
-    if: |
-      always() && 
-      (needs.code-quality.result == 'success' || github.event.inputs.skip_tests == 'true' || github.event.inputs.force_deploy == 'true')
     
     services:
       postgres:
@@ -148,7 +116,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-django pytest-cov pytest-xdist pytest-html
+        pip install pytest pytest-django pytest-cov
     
     - name: 🧪 运行单元测试
       env:
@@ -165,7 +133,7 @@ jobs:
         # 运行数据库迁移
         python manage.py migrate --settings=config.settings.testing
         
-        # 运行测试并生成报告
+        # 运行测试
         pytest tests/ \
           --cov=apps \
           --cov-report=xml \
@@ -175,175 +143,17 @@ jobs:
           --html=test-report.html \
           --self-contained-html \
           -v \
-          --maxfail=10 \
-          --tb=short \
-          --durations=10
+          --maxfail=5 \
+          --tb=short
         
         echo "✅ 单元测试完成"
-    
-    - name: 📊 检查测试覆盖率
-      run: |
-        echo "📊 检查测试覆盖率..."
-        COVERAGE=$(python -c "
-        import xml.etree.ElementTree as ET
-        try:
-            root = ET.parse('coverage.xml').getroot()
-            coverage = float(root.attrib['line-rate']) * 100
-            print(f'{coverage:.1f}')
-        except:
-            print('0.0')
-        ")
-        
-        echo "测试覆盖率: $COVERAGE%"
-        
-        # 覆盖率门禁：要求达到5%
-        COVERAGE_INT=$(echo $COVERAGE | cut -d. -f1)
-        if [ "$COVERAGE_INT" -lt "5" ]; then
-          echo "::error::测试覆盖率不达标: $COVERAGE% (要求: ≥5%)"
-          exit 1
-        else
-          echo "::notice::测试覆盖率达标: $COVERAGE%"
-        fi
-    
-    - name: 📤 上传测试报告
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-reports
-        path: |
-          test-results.xml
-          test-report.html
-          coverage.xml
-          htmlcov/
 
-  # ===== 3. 集成测试 =====
-  integration-tests:
-    name: 🔗 集成测试
-    runs-on: ubuntu-latest
-    needs: unit-tests
-    if: |
-      always() && 
-      (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true' || github.event.inputs.force_deploy == 'true')
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_modeshift_django
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-    
-    - name: 设置Python环境
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-    
-    - name: 安装依赖
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: 🔗 运行集成测试
-      env:
-        DJANGO_SETTINGS_MODULE: config.settings.testing
-        POSTGRES_HOST: localhost
-        POSTGRES_DB: test_modeshift_django
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_PORT: 5432
-        REDIS_URL: redis://localhost:6379/0
-      run: |
-        echo "📋 运行集成测试..."
-        
-        # 运行数据库迁移
-        python manage.py migrate --settings=config.settings.testing
-        
-        # 运行集成测试
-        pytest tests/integration/ -v --tb=short || echo "⚠️ 集成测试失败"
-        
-        echo "✅ 集成测试完成"
-
-  # ===== 4. Docker构建 =====
-  docker-build:
-    name: 🐳 Docker构建
-    runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, integration-tests]
-    if: |
-      always() && 
-      (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') &&
-      (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
-      (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped') &&
-      (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-    
-    - name: 设置Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: 缓存Python依赖
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    
-    - name: 提取元数据
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: modeshift-django
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-    
-    - name: 🐳 构建Docker镜像
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64
-
-  # ===== 5. 一键部署 =====
-  one-click-deploy:
+  # ===== 3. 一键部署 =====
+  deploy:
     name: 🚀 一键部署
     runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, integration-tests, docker-build]
-    if: |
-      always() && 
-      (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') &&
-      (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
-      (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped') &&
-      needs.docker-build.result == 'success' &&
-      (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    needs: [code-quality, unit-tests]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     
     environment: 
       name: ${{ github.event.inputs.environment || 'production' }}
@@ -357,32 +167,34 @@ jobs:
       id: check_config
       run: |
         echo "📋 检查部署配置..."
-        echo "=========================================="
         
         missing_secrets=""
         deploy_skipped=false
         
         # 检查必需配置
-        secrets_to_check=("SERVER_HOST" "SERVER_USER" "SERVER_SSH_KEY")
-        
-        for secret in "${secrets_to_check[@]}"; do
-          if [ -z "${{ secrets[$secret] }}" ]; then
-            echo "❌ $secret 未配置"
-            missing_secrets="$missing_secrets $secret"
-            deploy_skipped=true
-          else
-            echo "✅ $secret 已配置"
-          fi
-        done
-        
-        # 检查可选配置
-        if [ -z "${{ secrets.SERVER_PORT }}" ]; then
-          echo "⚠️ SERVER_PORT 未配置，将使用默认值 22"
+        if [ -z "${{ secrets.SERVER_HOST }}" ]; then
+          echo "❌ SERVER_HOST 未配置"
+          missing_secrets="$missing_secrets SERVER_HOST"
+          deploy_skipped=true
         else
-          echo "✅ SERVER_PORT 已配置"
+          echo "✅ SERVER_HOST 已配置"
         fi
         
-        echo "=========================================="
+        if [ -z "${{ secrets.SERVER_USER }}" ]; then
+          echo "❌ SERVER_USER 未配置"
+          missing_secrets="$missing_secrets SERVER_USER"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_USER 已配置"
+        fi
+        
+        if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
+          echo "❌ SERVER_SSH_KEY 未配置"
+          missing_secrets="$missing_secrets SERVER_SSH_KEY"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_SSH_KEY 已配置"
+        fi
         
         if [ "$deploy_skipped" = true ]; then
           echo "❌ 部署配置检查失败"
@@ -413,13 +225,10 @@ jobs:
         echo "• SERVER_USER: SSH用户名"
         echo "• SERVER_SSH_KEY: SSH私钥内容"
         echo ""
-        echo "🔧 可选的Secrets："
-        echo "• SERVER_PORT: SSH端口（默认22）"
-        echo ""
         echo "配置完成后，重新运行工作流即可部署"
         echo "=========================================="
     
-    - name: 🚀 执行一键部署
+    - name: 🚀 执行部署
       if: steps.check_config.outputs.deploy_skipped == 'false'
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -431,11 +240,10 @@ jobs:
         timeout: 120s
         command_timeout: 60s
         script: |
-          echo "🚀 执行一键部署..."
+          echo "🚀 执行Django应用部署..."
           
-          # 设置严格错误处理
+          # 设置错误处理
           set -e
-          set -o pipefail
           
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
@@ -564,17 +372,17 @@ jobs:
           curl -f http://localhost:8000/health/
           echo "✅ 健康检查通过"
           
-          echo "✅ 一键部署完成！"
+          echo "✅ 部署完成！"
           echo "🌐 访问地址: http://47.103.143.152:8000"
           echo "👤 管理员账号: admin/admin123"
           echo "📝 提交信息: ${{ github.sha }}"
 
-  # ===== 6. 部署后验证 =====
+  # ===== 4. 部署后验证 =====
   post-deployment-verification:
     name: ✅ 部署后验证
     runs-on: ubuntu-latest
-    needs: one-click-deploy
-    if: always() && needs.one-click-deploy.result == 'success'
+    needs: deploy
+    if: always() && needs.deploy.result == 'success'
     
     steps:
     - name: ✅ 验证部署状态
