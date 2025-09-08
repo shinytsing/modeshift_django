@@ -94,7 +94,7 @@ jobs:
         echo "✅ 安全扫描完成"
     
     - name: 📤 上传质量报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: code-quality-reports
         path: |
@@ -206,7 +206,7 @@ jobs:
         fi
     
     - name: 📤 上传测试报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-reports
         path: |
@@ -303,7 +303,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
     
     - name: 缓存Python依赖
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
