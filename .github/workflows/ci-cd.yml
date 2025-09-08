@@ -80,6 +80,9 @@ jobs:
           echo '📥 拉取最新代码...' &&
           git config --global http.sslVerify false &&
           git config --global http.postBuffer 1048576000 &&
+          echo '🧹 清理冲突文件...' &&
+          git clean -fd &&
+          git reset --hard HEAD &&
           git pull origin main &&
           echo '🐍 激活虚拟环境...' &&
           source venv/bin/activate &&
