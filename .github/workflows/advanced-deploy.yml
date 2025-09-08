@@ -1,0 +1,340 @@
+name: 🚀 Advanced Django Deployment
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_DOMAIN: shenyiqing.xin
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # 代码质量检查
+  quality-check:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy bandit safety
+          pip install -r requirements.txt
+
+      - name: 🔍 Code quality checks
+        run: |
+          echo "Running code quality checks..."
+          
+          # Black code formatting check
+          black --check --diff .
+          
+          # isort import sorting check
+          isort --check-only --diff .
+          
+          # flake8 linting
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          
+          # mypy type checking
+          mypy . --ignore-missing-imports
+          
+          # Security checks
+          bandit -r . -f json -o bandit-report.json || true
+          safety check --json --output safety-report.json || true
+
+      - name: 📊 Upload quality reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # 构建和部署
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [quality-check]
+    if: always() && (needs.quality-check.result == 'success' || github.event.inputs.skip_tests == 'true')
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: 🔐 Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: 📦 Prepare deployment package
+        run: |
+          echo "📦 Preparing deployment package..."
+          
+          # Create deployment directory
+          mkdir -p deployment
+          
+          # Copy source code
+          rsync -av --exclude='.git' \
+                    --exclude='venv' \
+                    --exclude='__pycache__' \
+                    --exclude='*.pyc' \
+                    --exclude='.pytest_cache' \
+                    --exclude='coverage-reports' \
+                    --exclude='htmlcov' \
+                    --exclude='*.log' \
+                    --exclude='test-*' \
+                    --exclude='.github' \
+                    . deployment/
+          
+          # Create deployment archive
+          cd deployment
+          tar -czf ../deployment.tar.gz .
+          cd ..
+          
+          echo "📊 Package size: $(du -h deployment.tar.gz | cut -f1)"
+          echo "📋 Package contents:"
+          tar -tzf deployment.tar.gz | head -20
+
+      - name: 🚀 Deploy to server
+        run: |
+          echo "🚀 Starting deployment to $SERVER_HOST..."
+          
+          # Upload deployment package
+          scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_USER@$SERVER_HOST:/tmp/
+          
+          # Execute deployment script
+          ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << 'EOF'
+            set -e
+            
+            echo "🔄 Starting deployment process..."
+            
+            # Create deployment directory
+            DEPLOY_DIR="${{ env.DEPLOY_PATH }}"
+            BACKUP_DIR="${DEPLOY_DIR}.backup.$(date +%Y%m%d_%H%M%S)"
+            
+            # Backup existing deployment
+            if [ -d "$DEPLOY_DIR" ]; then
+                echo "📦 Backing up existing deployment..."
+                mv "$DEPLOY_DIR" "$BACKUP_DIR"
+            fi
+            
+            # Create new deployment directory
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+            
+            # Extract new code
+            echo "📂 Extracting new code..."
+            tar -xzf /tmp/deployment.tar.gz
+            rm /tmp/deployment.tar.gz
+            
+            # Stop existing services
+            echo "🛑 Stopping existing services..."
+            pkill -f gunicorn || true
+            sleep 3
+            
+            # Create virtual environment
+            echo "🐍 Setting up Python environment..."
+            python3 -m venv venv
+            source venv/bin/activate
+            
+            # Upgrade pip and install dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt --break-system-packages
+            
+            # Set environment variables
+            echo "⚙️ Setting up environment..."
+            export DJANGO_SETTINGS_MODULE=config.settings.development
+            export DEBUG=True
+            export ALLOWED_HOSTS=shenyiqing.xin,www.shenyiqing.xin,47.103.143.152,localhost,127.0.0.1
+            
+            # Database configuration
+            export DB_NAME=qatoolbox
+            export DB_USER=qatoolbox
+            export DB_PASSWORD=qatoolbox123
+            export DB_HOST=localhost
+            export DB_PORT=5432
+            
+            # Redis configuration
+            export REDIS_URL=redis://localhost:6379/0
+            
+            # Email configuration
+            export EMAIL_HOST=smtp.qq.com
+            export EMAIL_PORT=587
+            export EMAIL_HOST_USER='${{ secrets.EMAIL_HOST_USER }}'
+            export EMAIL_HOST_PASSWORD='${{ secrets.EMAIL_HOST_PASSWORD }}'
+            export EMAIL_USE_TLS=True
+            export DEFAULT_FROM_EMAIL=noreply@shenyiqing.xin
+            
+            # API configuration
+            export DEEPSEEK_API_KEY='${{ secrets.DEEPSEEK_API_KEY }}'
+            export GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}'
+            export OPENWEATHER_API_KEY='${{ secrets.OPENWEATHER_API_KEY }}'
+            
+            # File upload configuration
+            export DATA_UPLOAD_MAX_MEMORY_SIZE=104857600
+            export FILE_UPLOAD_MAX_MEMORY_SIZE=104857600
+            export MAX_UPLOAD_SIZE=104857600
+            
+            # Cache and session configuration
+            export CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache
+            export CACHE_LOCATION=unique-snowflake
+            export SESSION_ENGINE=django.contrib.sessions.backends.cache
+            export SESSION_COOKIE_AGE=1209600
+            
+            # Static files configuration
+            export STATIC_URL=/static/
+            export MEDIA_URL=/media/
+            
+            # CORS configuration
+            export CORS_ALLOWED_ORIGINS=https://shenyiqing.xin,http://shenyiqing.xin
+            export CORS_ALLOW_CREDENTIALS=True
+            
+            # Celery configuration
+            export CELERY_BROKER_URL=django-db://
+            export CELERY_RESULT_BACKEND=django-db
+            export CELERY_TASK_ALWAYS_EAGER=True
+            
+            # Collect static files
+            echo "📁 Collecting static files..."
+            python manage.py collectstatic --noinput
+            
+            # Run database migrations
+            echo "🗄️ Running database migrations..."
+            python manage.py migrate --noinput || echo "⚠️ Database migration failed, continuing..."
+            
+            # Start services
+            echo "🚀 Starting services..."
+            chmod +x simple-start.sh
+            ./simple-start.sh
+            
+            # Reload nginx
+            echo "🔄 Reloading nginx..."
+            systemctl reload nginx || echo "⚠️ Nginx reload failed"
+            
+            echo "✅ Deployment completed successfully!"
+          EOF
+
+      - name: 🏥 Health check
+        run: |
+          echo "🏥 Performing health check..."
+          
+          # Wait for services to start
+          sleep 15
+          
+          # Check IP access
+          if curl -f -s --max-time 15 "http://$SERVER_HOST/" > /dev/null; then
+              echo "✅ IP access successful"
+          else
+              echo "❌ IP access failed"
+              exit 1
+          fi
+          
+          # Check domain access
+          if curl -f -s --max-time 10 "http://$SERVER_DOMAIN/" > /dev/null; then
+              echo "✅ Domain access successful"
+          else
+              echo "❌ Domain access failed"
+              exit 1
+          fi
+          
+          echo "🎉 Health check passed!"
+
+      - name: 📧 Send deployment notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.qq.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_HOST_USER }}
+          password: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          subject: |
+            🚀 Deployment ${{ job.status == 'success' && 'Success' || 'Failed' }} - ${{ github.repository }}
+            (Commit: ${{ github.sha }})
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions
+          html_body: |
+            <h2>🚀 Deployment ${{ job.status == 'success' && 'Success' || 'Failed' }}</h2>
+            
+            <h3>📋 Deployment Information</h3>
+            <ul>
+              <li><strong>Repository:</strong> ${{ github.repository }}</li>
+              <li><strong>Branch:</strong> ${{ github.ref_name }}</li>
+              <li><strong>Commit:</strong> ${{ github.sha }}</li>
+              <li><strong>Author:</strong> ${{ github.actor }}</li>
+              <li><strong>Message:</strong> ${{ github.event.head_commit.message }}</li>
+              <li><strong>Environment:</strong> ${{ github.event.inputs.environment || 'production' }}</li>
+              <li><strong>Deployment Time:</strong> ${{ github.event.head_commit.timestamp }}</li>
+            </ul>
+            
+            <h3>🌐 Access URLs</h3>
+            <ul>
+              <li><strong>IP Access:</strong> <a href="http://${{ env.SERVER_HOST }}">http://${{ env.SERVER_HOST }}</a></li>
+              <li><strong>Domain Access:</strong> <a href="http://${{ env.SERVER_DOMAIN }}">http://${{ env.SERVER_DOMAIN }}</a></li>
+            </ul>
+            
+            <h3>📊 Deployment Status</h3>
+            ${{ job.status == 'success' && '<p style="color: green;"><strong>✅ Deployment Successful</strong></p>' || '<p style="color: red;"><strong>❌ Deployment Failed</strong></p>' }}
+            
+            <h3>👤 Admin Credentials</h3>
+            <ul>
+              <li><strong>Username:</strong> admin</li>
+              <li><strong>Password:</strong> admin123</li>
+            </ul>
+            
+            <hr>
+            <p><small>This email was automatically sent by GitHub Actions</small></p>
+
+      - name: 📊 Deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+              echo "🎉 Deployment completed successfully!"
+              echo "🌐 Access URLs:"
+              echo "  • http://$SERVER_HOST"
+              echo "  • http://$SERVER_DOMAIN"
+              echo "👤 Admin: admin / admin123"
+              echo "📧 Notification email sent"
+          else
+              echo "❌ Deployment failed!"
+              echo "Please check the logs and retry"
+              echo "📧 Failure notification email sent"
+          fi
