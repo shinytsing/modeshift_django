@@ -1,629 +1,84 @@
-name: 🚀 改进CI/CD流程
+name: 🚀 极简CI/CD流程
 
-# 改进CI/CD流程：优化性能、增强可靠性、支持回滚
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: '部署环境'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-        - production
-        - staging
-      skip_tests:
-        description: '跳过测试 (紧急情况)'
-        required: false
-        default: false
-        type: boolean
-      force_deploy:
-        description: '强制部署 (跳过质量检查)'
-        required: false
-        default: false
-        type: boolean
 
 env:
-  PYTHON_VERSION: '3.12'
-  CACHE_VERSION: 'v1'
+  PYTHON_VERSION: '3.11'
 
 jobs:
-  # ===== 1. 并行代码质量检查 =====
-  code-quality:
-    name: 🔍 代码质量检查
-    runs-on: ubuntu-latest
-    if: github.event.inputs.force_deploy != 'true'
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-    
-    - name: 设置Python环境
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: 'requirements.txt'
-    
-    - name: 缓存依赖
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ env.CACHE_VERSION }}
-        restore-keys: |
-          ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-
-          ${{ runner.os }}-pip-
-    
-    - name: 安装代码质量工具
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install black isort flake8 bandit safety mypy
-    
-    - name: 🔍 代码质量检查
-      run: |
-        echo "📋 代码质量检查..."
-        
-        # Black格式化检查（只检查核心文件）
-        echo "::group::Black格式化检查"
-        black --check apps/ manage.py || {
-          echo "::warning::Black检查失败，需要格式化代码"
-          echo "运行: black apps/ manage.py"
-        }
-        echo "::endgroup::"
-        
-        # Isort导入排序检查（只检查核心文件）
-        echo "::group::Isort导入排序检查"
-        isort --check-only apps/ manage.py || {
-          echo "::warning::Isort检查失败，需要排序导入"
-          echo "运行: isort apps/ manage.py"
-        }
-        echo "::endgroup::"
-    
-        # Flake8代码风格检查（只检查核心文件）
-        echo "::group::Flake8代码风格检查"
-        flake8 apps/ manage.py --max-line-length=88 --extend-ignore=E203,E501,W503,F403,F405,F401,E402,F541,F841,F811,F601,E731,W391,W293,W291,E226 || {
-          echo "::warning::Flake8检查失败，需要修复代码风格"
-        }
-        echo "::endgroup::"
-        
-        # MyPy类型检查
-        echo "::group::MyPy类型检查"
-        mypy apps/ --ignore-missing-imports || {
-          echo "::warning::MyPy检查失败，但继续执行"
-        }
-        echo "::endgroup::"
-    
-        echo "✅ 代码质量检查完成"
-    
-    - name: 🔒 安全扫描
-      run: |
-        echo "📋 安全扫描..."
-        
-        # 安装Bandit依赖
-        pip install pbr
-        
-        # Bandit安全扫描
-        echo "::group::Bandit安全扫描"
-        bandit -r apps/ -f json -o bandit-report.json || {
-          echo "::warning::Bandit扫描发现问题，但继续执行"
-        }
-        echo "::endgroup::"
-        
-        # Safety依赖漏洞扫描
-        echo "::group::Safety依赖漏洞扫描"
-        safety check --output json > safety-report.json || {
-          echo "::warning::Safety扫描发现问题，但继续执行"
-        }
-        echo "::endgroup::"
-    
-        echo "✅ 安全扫描完成"
-    
-    - name: 📤 上传质量报告
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: code-quality-reports-${{ github.run_number }}
-        path: |
-          bandit-report.json
-          safety-report.json
-        retention-days: 30
-
-  # ===== 2. 并行单元测试 =====
-  unit-tests:
-    name: 🧪 单元测试
-    runs-on: ubuntu-latest
-    if: github.event.inputs.skip_tests != 'true'
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_modeshift_django
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-    
-    - name: 设置Python环境
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: 'requirements.txt'
-    
-    - name: 缓存依赖
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ env.CACHE_VERSION }}
-        restore-keys: |
-          ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-
-          ${{ runner.os }}-pip-
-    
-    - name: 安装测试依赖
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-django pytest-cov pytest-xdist
-    
-    - name: 安装Playwright浏览器（仅用于E2E测试）
-      run: |
-        pip install playwright
-        playwright install chromium
-        # 注意：单元测试不需要浏览器，E2E测试需要时才安装
-    
-    - name: 🧪 运行单元测试
-      env:
-        DJANGO_SETTINGS_MODULE: config.settings.testing
-        POSTGRES_HOST: localhost
-        POSTGRES_DB: test_modeshift_django
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_PORT: 5432
-        REDIS_URL: redis://localhost:6379/0
-      run: |
-        echo "📋 运行单元测试..."
-        
-        # 运行单元测试（只运行不需要数据库的测试）
-        pytest tests/unit/test_basic.py tests/unit/test_basic_coverage.py tests/unit/test_no_db.py \
-          --cov=apps \
-          --cov-report=xml \
-          --cov-report=html \
-          --cov-report=term \
-          --junit-xml=test-results.xml \
-          --html=test-report.html \
-          --self-contained-html \
-          -v \
-          --maxfail=5 \
-          --tb=short \
-          --numprocesses=auto \
-          --ignore=tests/e2e/ \
-          --ignore=tests/integration/
-        
-        echo "✅ 单元测试完成"
-    
-    - name: 📊 检查测试覆盖率
-      run: |
-        echo "📊 检查测试覆盖率..."
-        COVERAGE=$(python -c "
-        import xml.etree.ElementTree as ET
-        try:
-            root = ET.parse('coverage.xml').getroot()
-            coverage = float(root.attrib['line-rate']) * 100
-            print(f'{coverage:.1f}')
-        except:
-            print('0.0')
-        ")
-        
-        echo "测试覆盖率: $COVERAGE%"
-        
-        # 覆盖率门禁：要求达到5%
-        COVERAGE_INT=$(echo $COVERAGE | cut -d. -f1)
-        if [ "$COVERAGE_INT" -lt "5" ]; then
-          echo "::error::测试覆盖率不达标: $COVERAGE% (要求: ≥5%)"
-          exit 1
-        else
-          echo "::notice::测试覆盖率达标: $COVERAGE%"
-        fi
-
-    - name: 📤 上传测试报告
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-reports-${{ github.run_number }}
-        path: |
-          test-results.xml
-          test-report.html
-          coverage.xml
-          htmlcov/
-        retention-days: 30
-
-  # ===== 3. 构建Docker镜像 =====
-  build:
-    name: 🐳 构建Docker镜像
-    runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests]
-    if: always() && (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') && (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true')
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-    
-    - name: 设置Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: 提取元数据
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: modeshift-django
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-    
-    - name: 🐳 构建Docker镜像
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64
-
-  # ===== 4. 部署前准备 =====
-  pre-deploy:
-    name: 📋 部署前准备
-    runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, build]
-    if: always() && (needs.code-quality.result == 'success' || github.event.inputs.force_deploy == 'true') && (needs.unit-tests.result == 'success' || github.event.inputs.skip_tests == 'true') && needs.build.result == 'success'
-    
-    outputs:
-      deploy-ready: ${{ steps.check.outputs.ready }}
-      missing-secrets: ${{ steps.check.outputs.missing }}
-    
-    steps:
-    - name: 🔍 检查部署配置
-      id: check
-      run: |
-        echo "📋 检查部署配置..."
-        
-        missing_secrets=""
-        deploy_ready=true
-        
-        # 检查必需配置
-        secrets_to_check=("SERVER_HOST" "SERVER_USER" "SERVER_SSH_KEY")
-        
-        for secret in "${secrets_to_check[@]}"; do
-          if [ -z "${{ secrets[$secret] }}" ]; then
-            echo "❌ $secret 未配置"
-            missing_secrets="$missing_secrets $secret"
-            deploy_ready=false
-          else
-            echo "✅ $secret 已配置"
-          fi
-        done
-        
-        # 检查可选配置
-        if [ -z "${{ secrets.SERVER_PORT }}" ]; then
-          echo "⚠️ SERVER_PORT 未配置，将使用默认值 22"
-        else
-          echo "✅ SERVER_PORT 已配置"
-        fi
-        
-        if [ "$deploy_ready" = true ]; then
-          echo "✅ 部署配置检查通过"
-          echo "ready=true" >> $GITHUB_OUTPUT
-          echo "missing=" >> $GITHUB_OUTPUT
-        else
-          echo "❌ 部署配置检查失败"
-          echo "ready=false" >> $GITHUB_OUTPUT
-          echo "missing=$missing_secrets" >> $GITHUB_OUTPUT
-        fi
-    
-    - name: 📋 部署配置提示
-      if: steps.check.outputs.ready == 'false'
-      run: |
-        echo "=========================================="
-        echo "❌ 部署跳过 - 缺少必要配置"
-        echo "=========================================="
-        echo "缺少的配置: ${{ steps.check.outputs.missing }}"
-        echo ""
-        echo "📋 配置指南:"
-        echo "1. 进入仓库 Settings → Secrets and variables → Actions"
-        echo "2. 点击 'New repository secret'"
-        echo "3. 添加缺少的secrets："
-        echo ""
-        echo "🔧 必需的Secrets："
-        echo "• SERVER_HOST: 服务器IP地址或域名"
-        echo "• SERVER_USER: SSH用户名"
-        echo "• SERVER_SSH_KEY: SSH私钥内容"
-        echo ""
-        echo "配置完成后，重新运行工作流即可部署"
-        echo "=========================================="
-
-  # ===== 5. 一键部署 =====
   deploy:
     name: 🚀 一键部署
     runs-on: ubuntu-latest
-    needs: pre-deploy
-    if: needs.pre-deploy.outputs.deploy-ready == 'true'
-    
-    environment: 
-      name: ${{ github.event.inputs.environment || 'production' }}
-      url: ${{ github.event.inputs.environment == 'staging' && 'http://staging.47.103.143.152' || 'http://47.103.143.152' }}
     
     steps:
-    - name: 检出代码
+    - name: 📥 检出代码
       uses: actions/checkout@v4
-    
-    - name: 📦 创建部署备份
-      uses: appleboy/ssh-action@v0.1.5
+      
+    - name: 🐍 设置Python环境
+      uses: actions/setup-python@v4
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: ${{ secrets.SERVER_PORT || 22 }}
-        script_stop: true
-        timeout: 60s
-        command_timeout: 30s
-        script: |
-          echo "📦 创建部署前备份..."
-          PROJECT_DIR="$HOME/modeshift_django"
-          if [ ! -d "$PROJECT_DIR" ]; then
-            echo "❌ 项目目录不存在，跳过备份"
-            exit 0
-          fi
-          cd "$PROJECT_DIR" || exit 1
-          
-          BACKUP_DIR="./backups/auto-deploy-$(date +%Y%m%d-%H%M%S)"
-          mkdir -p $BACKUP_DIR
-          
-          # 备份数据库
-          if command -v pg_dump >/dev/null 2>&1; then
-            pg_dump -h localhost -U qatoolbox qatoolbox_production > $BACKUP_DIR/database.sql 2>/dev/null || echo "数据库备份失败"
-          fi
-          
-          # 备份媒体文件
-          if [ -d "media" ]; then
-            tar -czf $BACKUP_DIR/media.tar.gz media/ || echo "媒体文件备份失败"
-          fi
-          
-          # 记录当前版本
-          git rev-parse HEAD > $BACKUP_DIR/previous_commit.txt 2>/dev/null || echo "无法获取当前版本"
-          echo "${{ github.sha }}" > $BACKUP_DIR/new_commit.txt
-          
-          echo "✅ 备份完成: $BACKUP_DIR"
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
     
-    - name: 🚀 执行部署
-          uses: appleboy/ssh-action@v0.1.5
-          with:
-            host: ${{ secrets.SERVER_HOST }}
-            username: ${{ secrets.SERVER_USER }}
-            key: ${{ secrets.SERVER_SSH_KEY }}
-            port: ${{ secrets.SERVER_PORT || 22 }}
-            script_stop: true
-            timeout: 120s
-            command_timeout: 60s
-            script: |
-          echo "🚀 执行Django应用部署..."
-          
-          # 设置错误处理
-          set -e
-          
-          # 1. 进入项目目录
-          PROJECT_DIR="$HOME/modeshift_django"
-          if [ ! -d "$PROJECT_DIR" ]; then
-            echo "❌ 项目目录不存在，创建目录..."
-            mkdir -p "$PROJECT_DIR"
-            cd "$PROJECT_DIR"
-            git clone https://github.com/shinytsing/modeshift_django.git .
-          else
-            echo "✅ 项目目录已存在，进入目录..."
-            cd "$PROJECT_DIR" || exit 1
-          fi
-          
-          # 2. 拉取最新代码
-          echo "📥 拉取最新代码..."
-          git fetch origin
-          git checkout main
-          git reset --hard origin/main
-          
-          # 3. 检查Python环境
-          echo "🐍 检查Python环境..."
-          python3 --version
-          pip3 --version
-          
-          # 4. 创建并激活虚拟环境
-          echo "📦 设置虚拟环境..."
-          if [ ! -d "venv" ]; then
-              python3 -m venv venv
-          fi
-          source venv/bin/activate
-          
-          # 5. 安装依赖（使用缓存）
-          echo "📥 安装依赖..."
-          pip install --upgrade pip
-          
-          # 检查依赖是否已安装，避免重复安装
-          if [ ! -f "venv/.deps_installed" ] || [ "requirements.txt" -nt "venv/.deps_installed" ]; then
-            echo "安装/更新依赖..."
-          pip install -r requirements.txt
-          pip install django-environ gunicorn
-            touch venv/.deps_installed
-          else
-            echo "依赖已缓存，跳过安装..."
-          fi
-          
-          # 6. 安装系统依赖（检查是否已安装）
-          echo "🗄️ 检查系统依赖..."
-          if ! command -v psql >/dev/null 2>&1; then
-            echo "安装PostgreSQL..."
-            sudo apt-get update
-            sudo apt-get install -y postgresql postgresql-contrib
-          else
-            echo "PostgreSQL已安装"
-          fi
-          
-          if ! command -v redis-server >/dev/null 2>&1; then
-            echo "安装Redis..."
-            sudo apt-get install -y redis-server
-          else
-            echo "Redis已安装"
-          fi
-          
-          if ! command -v curl >/dev/null 2>&1; then
-            echo "安装curl..."
-            sudo apt-get install -y curl
-          else
-            echo "curl已安装"
-          fi
-          
-          # 7. 启动服务
-          echo "🔧 启动服务..."
-          sudo systemctl start postgresql || echo "PostgreSQL启动失败，可能已运行"
-          sudo systemctl enable postgresql || echo "PostgreSQL启用失败"
-          sudo systemctl start redis-server || echo "Redis启动失败，可能已运行"
-          sudo systemctl enable redis-server || echo "Redis启用失败"
-          
-          # 8. 配置数据库
-          echo "🔧 配置数据库..."
-          sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';" || echo "用户可能已存在"
-          sudo -u postgres psql -c "CREATE DATABASE qatoolbox_production OWNER qatoolbox;" || echo "数据库可能已存在"
-          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE qatoolbox_production TO qatoolbox;" || echo "权限可能已设置"
-          
-          # 9. 创建环境配置文件
-          echo "🔧 创建环境配置文件..."
-          cat > .env << 'EOF'
-          DEBUG=False
-          DJANGO_SECRET_KEY=django-production-secret-key-change-me-123456789
-          DJANGO_SETTINGS_MODULE=config.settings.production
-          DB_NAME=qatoolbox_production
-          DB_USER=qatoolbox
-          DB_PASSWORD=qatoolbox123
-          DB_HOST=localhost
-          DB_PORT=5432
-          REDIS_URL=redis://localhost:6379/0
-          DEEPSEEK_API_KEY=sk-c4a84c8bbff341cbb3006ecaf84030fe
-          ALLOWED_HOSTS=47.103.143.152,shenyiqing.xin,www.shenyiqing.xin,localhost,127.0.0.1,0.0.0.0
-          SECURE_SSL_REDIRECT=False
-          EMAIL_HOST=smtp.gmail.com
-          EMAIL_PORT=587
-          EMAIL_HOST_USER=your-email@gmail.com
-          EMAIL_HOST_PASSWORD=your-email-password
-          DEFAULT_FROM_EMAIL=noreply@shenyiqing.xin
-          EOF
-          
-          # 10. 测试Django配置
-          echo "🧪 测试Django配置..."
-          python manage.py check --settings=config.settings.production
-          
-          # 11. 运行数据库迁移
-          echo "📊 运行数据库迁移..."
-          python manage.py migrate users 0011 --fake --settings=config.settings.production || echo "迁移0011已处理"
-          python manage.py migrate users 0012 --fake --settings=config.settings.production || echo "迁移0012已处理"
-          python manage.py migrate users 0013 --fake --settings=config.settings.production || echo "迁移0013已处理"
-          python manage.py migrate --settings=config.settings.production
-          
-          # 12. 收集静态文件
-          echo "📁 收集静态文件..."
-          python manage.py collectstatic --noinput --settings=config.settings.production
-          
-          # 13. 创建超级用户
-          echo "👤 创建超级用户..."
-          python manage.py shell --settings=config.settings.production << 'EOF'
-          from django.contrib.auth import get_user_model
-          User = get_user_model()
-          if not User.objects.filter(username='admin').exists():
-              User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
-              print('超级用户创建成功: admin/admin123')
-          else:
-              print('超级用户已存在')
-          EOF
-          
-          # 14. 重启Django服务
-          echo "🛑 重启Django服务..."
-          pkill -f gunicorn || echo "没有运行中的服务"
-          sleep 3
-          
-          # 15. 启动Django服务
-          echo "🚀 启动Django服务..."
-          export DJANGO_SETTINGS_MODULE=config.settings.production
-          gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
-          
-          # 16. 等待服务启动
-          echo "⏳ 等待服务启动..."
-          sleep 10
-          
-          # 17. 检查服务状态
-          echo "🔍 检查服务状态..."
-          ps aux | grep gunicorn | grep -v grep
-          netstat -tlnp | grep 8000
-          
-          # 18. 测试服务
-          echo "🧪 测试服务..."
-          curl -f http://localhost:8000/health/
-          echo "✅ 健康检查通过"
-          
-          echo "✅ 部署完成！"
-          echo "🌐 访问地址: http://47.103.143.152:8000"
-          echo "👤 管理员账号: admin/admin123"
-          echo "📝 提交信息: ${{ github.sha }}"
+    - name: 📦 安装依赖
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 🚀 部署到服务器
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        echo "🚀 开始部署..."
+        
+        # 设置SSH
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+        
+        # 部署脚本
+        ssh -o StrictHostKeyChecking=no $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          git pull origin main &&
+          source venv/bin/activate &&
+          pip install -r requirements.txt &&
+          python manage.py collectstatic --noinput &&
+          python manage.py migrate &&
+          sudo systemctl restart gunicorn &&
+          sudo systemctl restart nginx
+        "
+        
+        echo "✅ 部署完成"
 
-  # ===== 6. 部署后验证 =====
-  post-deployment-verification:
-    name: ✅ 部署后验证
+  api-check:
+    name: ✅ API健康检查
     runs-on: ubuntu-latest
     needs: deploy
-    if: always() && needs.deploy.result == 'success'
     
     steps:
-    - name: ✅ 验证部署状态
+    - name: 🔍 API健康检查
       run: |
-        echo "📋 验证部署状态..."
+        echo "🔍 检查API健康状态..."
         
-        # 检查服务是否可访问
-        echo "检查服务可访问性..."
-        curl -f http://47.103.143.152:8000/health/ || echo "⚠️ 服务不可访问"
+        # 等待服务启动
+        sleep 30
         
-        echo "✅ 部署验证完成"
-    
-    - name: 📊 生成部署报告
-      run: |
-        echo "## 🎯 部署报告" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**部署状态**: ✅ 成功" >> $GITHUB_STEP_SUMMARY
-        echo "**环境**: ${{ github.event.inputs.environment || 'production' }}" >> $GITHUB_STEP_SUMMARY
-        echo "**提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-        echo "**时间**: $(date)" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🌐 访问地址" >> $GITHUB_STEP_SUMMARY
-        echo "- **生产环境**: http://47.103.143.152:8000" >> $GITHUB_STEP_SUMMARY
-        echo "- **健康检查**: http://47.103.143.152:8000/health/" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 👤 管理员账号" >> $GITHUB_STEP_SUMMARY
-        echo "- **用户名**: admin" >> $GITHUB_STEP_SUMMARY
-        echo "- **密码**: admin123" >> $GITHUB_STEP_SUMMARY
+        # 检查主要API端点
+        API_URL="${{ secrets.API_URL }}"
+        
+        echo "检查根路径..."
+        curl -f "$API_URL/" || echo "⚠️ 根路径检查失败"
+        
+        echo "检查健康检查端点..."
+        curl -f "$API_URL/health/" || echo "⚠️ 健康检查端点失败"
+        
+        echo "检查API文档..."
+        curl -f "$API_URL/api/" || echo "⚠️ API文档检查失败"
+        
+        echo "✅ API健康检查完成"
