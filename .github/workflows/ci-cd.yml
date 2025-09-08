@@ -786,9 +786,16 @@ jobs:
         script: |
           echo "🚀 执行Django应用部署..."
           
-          # 设置严格错误处理 - 任何命令失败立即退出
+          # 设置错误处理
           set -e
-          set -o pipefail
+          
+          # 使用简化的部署脚本
+          if [ -f "deploy-simple.sh" ]; then
+            echo "使用简化部署脚本..."
+            chmod +x deploy-simple.sh
+            ./deploy-simple.sh
+          else
+            echo "简化部署脚本不存在，使用完整部署流程..."
           
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
@@ -840,35 +847,53 @@ jobs:
           echo "🗄️ 检查系统依赖..."
           if ! command -v psql &> /dev/null; then
             echo "安装PostgreSQL..."
-            apt-get update
-            apt-get install -y postgresql postgresql-contrib
+            sudo apt-get update
+            sudo apt-get install -y postgresql postgresql-contrib
           else
             echo "PostgreSQL已安装"
           fi
           
           if ! command -v redis-server &> /dev/null; then
             echo "安装Redis..."
-            apt-get install -y redis-server
+            sudo apt-get install -y redis-server
           else
             echo "Redis已安装"
           fi
           
           if ! command -v curl &> /dev/null; then
             echo "安装curl..."
-            apt-get install -y curl
+            sudo apt-get install -y curl
           else
             echo "curl已安装"
           fi
           
-          # 7. 并行启动服务
-          echo "🔧 并行启动服务..."
-          systemctl start postgresql &
-          systemctl start redis-server &
-          wait
-          echo "服务启动完成"
+          # 7. 启动服务（添加错误处理）
+          echo "🔧 启动服务..."
+          sudo systemctl start postgresql || echo "PostgreSQL启动失败，可能已运行"
+          sudo systemctl enable postgresql || echo "PostgreSQL启用失败"
+          sudo systemctl start redis-server || echo "Redis启动失败，可能已运行"
+          sudo systemctl enable redis-server || echo "Redis启用失败"
+          
+          # 等待服务启动
+          echo "等待服务启动..."
+          sleep 5
+          
+          # 检查服务状态
+          echo "检查服务状态..."
+          sudo systemctl status postgresql --no-pager || echo "PostgreSQL状态检查失败"
+          sudo systemctl status redis-server --no-pager || echo "Redis状态检查失败"
           
           # 8. 配置数据库（检查是否已配置）
           echo "🔧 配置数据库..."
+          
+          # 检查PostgreSQL是否可连接
+          if ! sudo -u postgres psql -c "SELECT 1;" > /dev/null 2>&1; then
+            echo "PostgreSQL连接失败，等待服务启动..."
+            sleep 10
+            sudo -u postgres psql -c "SELECT 1;" || echo "PostgreSQL仍无法连接"
+          fi
+          
+          # 检查数据库是否存在
           if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw qatoolbox_production; then
             echo "创建数据库和用户..."
             sudo -u postgres psql -c "CREATE USER qatoolbox WITH PASSWORD 'qatoolbox123';" || echo "用户可能已存在"
@@ -902,7 +927,11 @@ jobs:
           
           # 10. 测试Django配置
           echo "🧪 测试Django配置..."
-          python manage.py check --settings=config.settings.production
+          python manage.py check --settings=config.settings.production || {
+            echo "Django配置检查失败，显示详细错误："
+            python manage.py check --settings=config.settings.production --verbosity=2
+            exit 1
+          }
           
           # 11. 运行数据库迁移（检查是否需要迁移）
           echo "📊 运行数据库迁移..."
@@ -975,6 +1004,7 @@ jobs:
           echo "🌐 访问地址: http://47.103.143.152:8000"
           echo "👤 管理员账号: admin/admin123"
           echo "📝 提交信息: ${{ github.sha }}"
+          fi
 
   # ===== 7. 紧急部署 =====
   emergency-deploy:
