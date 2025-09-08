@@ -55,22 +55,35 @@ jobs:
         
         # 一键部署脚本
         ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
-          set -e
           echo '🚀 开始智能部署...'
           
           # 进入项目目录
-          cd $DEPLOY_PATH || { echo '❌ 项目目录不存在'; exit 1; }
+          echo '📁 进入项目目录...'
+          cd $DEPLOY_PATH || { echo '❌ 项目目录不存在: $DEPLOY_PATH'; exit 1; }
+          echo '✅ 项目目录: \$(pwd)'
           
           # 1. 停止服务
           echo '🛑 停止现有服务...'
-          pkill -f gunicorn || echo '没有运行中的gunicorn进程'
-          sleep 2
+          if pgrep -f gunicorn > /dev/null; then
+            echo '发现gunicorn进程，正在停止...'
+            pkill -f gunicorn
+            sleep 3
+            if pgrep -f gunicorn > /dev/null; then
+              echo '强制停止gunicorn进程...'
+              pkill -9 -f gunicorn
+              sleep 2
+            fi
+            echo '✅ gunicorn进程已停止'
+          else
+            echo '✅ 没有运行中的gunicorn进程'
+          fi
           
           # 2. 清理和更新
           echo '🧹 清理环境...'
-          rm -rf /tmp/* || true
-          find . -name '__pycache__' -type d -exec rm -rf {} + || true
-          find . -name '*.pyc' -type f -delete || true
+          rm -rf /tmp/* || echo '临时文件清理失败'
+          find . -name '__pycache__' -type d -exec rm -rf {} + || echo 'Python缓存清理失败'
+          find . -name '*.pyc' -type f -delete || echo 'Python字节码清理失败'
+          echo '✅ 环境清理完成'
           
           # 3. 更新代码（如果网络可用）
           echo '📥 更新代码...'
@@ -84,22 +97,32 @@ jobs:
           echo '🐍 管理虚拟环境...'
           if [ ! -d 'venv' ]; then
             echo '创建虚拟环境...'
-            python3 -m venv venv
+            python3 -m venv venv || { echo '❌ 虚拟环境创建失败'; exit 1; }
+          else
+            echo '虚拟环境已存在'
           fi
           
           # 激活虚拟环境并安装依赖
-          source venv/bin/activate
-          pip install --upgrade pip --quiet
-          pip install -r requirements.txt --no-cache-dir --quiet
+          echo '激活虚拟环境...'
+          source venv/bin/activate || { echo '❌ 虚拟环境激活失败'; exit 1; }
+          echo '升级pip...'
+          pip install --upgrade pip --quiet || { echo '❌ pip升级失败'; exit 1; }
+          echo '安装依赖...'
+          pip install -r requirements.txt --no-cache-dir --quiet || { echo '❌ 依赖安装失败'; exit 1; }
+          echo '✅ 虚拟环境管理完成'
           
           # 5. Django操作
           echo '📁 Django操作...'
-          python manage.py migrate --noinput
-          python manage.py collectstatic --noinput
+          echo '执行数据库迁移...'
+          python manage.py migrate --noinput || { echo '❌ 数据库迁移失败'; exit 1; }
+          echo '收集静态文件...'
+          python manage.py collectstatic --noinput || { echo '❌ 静态文件收集失败'; exit 1; }
+          echo '✅ Django操作完成'
           
           # 6. 启动服务
           echo '🚀 启动服务...'
-          mkdir -p logs
+          mkdir -p logs || echo '日志目录创建失败'
+          echo '启动gunicorn服务...'
           nohup venv/bin/gunicorn \
             --bind 0.0.0.0:8000 \
             --workers 3 \
@@ -108,7 +131,7 @@ jobs:
             --access-logfile logs/gunicorn_access.log \
             --error-logfile logs/gunicorn_error.log \
             wsgi:application \
-            --daemon
+            --daemon || { echo '❌ gunicorn启动失败'; exit 1; }
           
           # 7. 等待服务启动
           echo '⏳ 等待服务启动...'
@@ -125,6 +148,7 @@ jobs:
               sleep 3
               if [ $i -eq 5 ]; then
                 echo '❌ 服务启动失败'
+                echo '查看错误日志:'
                 tail -20 logs/gunicorn_error.log || echo '日志文件不存在'
                 exit 1
               fi
