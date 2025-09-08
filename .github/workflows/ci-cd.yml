@@ -55,10 +55,20 @@ jobs:
         ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
         echo "🔗 测试SSH连接..."
-        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o PasswordAuthentication=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
-          echo "❌ SSH连接失败，检查SSH密钥配置"
-          echo "请确保："
-          echo "1. SSH私钥格式正确"
+        echo "调试信息："
+        echo "- HOST: $HOST"
+        echo "- USERNAME: $USERNAME"
+        echo "- SSH密钥长度: ${#SSH_KEY} 字符"
+        echo "- SSH密钥开头: ${SSH_KEY:0:50}..."
+        
+        # 详细SSH连接测试
+        ssh -v -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o PasswordAuthentication=no $USERNAME@$HOST "echo 'SSH连接成功'" 2>&1 | head -20 || {
+          echo "❌ SSH连接失败"
+          echo "详细错误信息："
+          ssh -v -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o PasswordAuthentication=no $USERNAME@$HOST "echo 'SSH连接成功'" 2>&1 | tail -10
+          echo ""
+          echo "请检查："
+          echo "1. GitHub Secrets中的SERVER_SSH_KEY是否正确"
           echo "2. 公钥已添加到服务器的 ~/.ssh/authorized_keys"
           echo "3. 服务器SSH服务正常运行"
           exit 1
