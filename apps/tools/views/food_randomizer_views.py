@@ -85,9 +85,8 @@ def food_randomizer_pure_random_api(request):
 
         # 将选中的食物转换为字典格式 - 适配FoodItem模型
         def food_to_dict(food):
-            # 获取绑定的图片
-            binding = FoodPhotoBinding.objects.filter(food_item=food).first()
-            image_url = f"/static/img/food/{binding.photo_name}" if binding else "/static/img/food/default-food.svg"
+            # 直接使用食物名称构建图片路径
+            image_url = f"/static/img/food/{food.name}.jpg"
 
             return {
                 "id": food.id,
