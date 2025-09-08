@@ -54,23 +54,42 @@ jobs:
         ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
         # 一键部署脚本
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           echo '🚀 开始智能部署...'
+          echo '当前用户: \$(whoami)'
+          echo '当前时间: \$(date)'
           
           # 进入项目目录
           echo '📁 进入项目目录...'
-          cd $DEPLOY_PATH || { echo '❌ 项目目录不存在: $DEPLOY_PATH'; exit 1; }
-          echo '✅ 项目目录: \$(pwd)'
+          if [ -d '$DEPLOY_PATH' ]; then
+            cd '$DEPLOY_PATH' || { echo '❌ 无法进入项目目录'; exit 1; }
+            echo '✅ 项目目录: \$(pwd)'
+            echo '目录内容: \$(ls -la | head -10)'
+          else
+            echo '❌ 项目目录不存在: $DEPLOY_PATH'
+            echo '可用目录:'
+            ls -la /root/ | head -10
+            exit 1
+          fi
           
           # 1. 停止服务
           echo '🛑 停止现有服务...'
           if pgrep -f gunicorn > /dev/null; then
             echo '发现gunicorn进程，正在停止...'
-            pkill -f gunicorn
+            # 使用更安全的方式停止进程
+            GUNICORN_PIDS=\$(pgrep -f gunicorn)
+            for pid in \$GUNICORN_PIDS; do
+              echo \"停止进程 \$pid\"
+              kill \$pid 2>/dev/null || echo \"进程 \$pid 已停止\"
+            done
             sleep 3
             if pgrep -f gunicorn > /dev/null; then
               echo '强制停止gunicorn进程...'
-              pkill -9 -f gunicorn
+              GUNICORN_PIDS=\$(pgrep -f gunicorn)
+              for pid in \$GUNICORN_PIDS; do
+                echo \"强制停止进程 \$pid\"
+                kill -9 \$pid 2>/dev/null || echo \"进程 \$pid 已停止\"
+              done
               sleep 2
             fi
             echo '✅ gunicorn进程已停止'
