@@ -44,6 +44,7 @@ xlsxwriter==3.1.9
 defusedxml==0.7.1
 
 # ===== PDF处理 =====
+PyMuPDF==1.26.4
 pypdf==3.17.4
 pdfplumber==0.10.3
 reportlab==4.0.7
