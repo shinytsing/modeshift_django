@@ -27,11 +27,25 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: ${{ github.event.inputs.environment || 'production' }}
-      url: ${{ github.event.inputs.environment == 'production' && 'http://47.103.143.152' || 'http://staging.47.103.143.152' }}
     timeout-minutes: 10
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
+    
+    - name: 检查SSH连接
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: ${{ secrets.SERVER_PORT || 22 }}
+        script: |
+          echo "✅ SSH连接成功！"
+          echo "服务器信息:"
+          echo "主机名: $(hostname)"
+          echo "用户: $(whoami)"
+          echo "当前目录: $(pwd)"
+          echo "系统信息: $(uname -a)"
     
     - name: 执行一键部署
       uses: appleboy/ssh-action@v0.1.5
@@ -41,14 +55,25 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT || 22 }}
         script_stop: true
-        timeout: 60s
-        command_timeout: 30s
+        timeout: 300s
+        command_timeout: 60s
         script: |
           echo "🚀 开始一键部署..."
           
-          # 设置严格错误处理
+          # 设置错误处理
           set -e
           set -o pipefail
+          
+          # 启用调试模式
+          set -x
+          
+          # 0. 环境检查
+          echo "🔍 环境检查..."
+          echo "当前用户: $(whoami)"
+          echo "当前目录: $(pwd)"
+          echo "系统信息: $(uname -a)"
+          echo "Python版本: $(python3 --version)"
+          echo "Git版本: $(git --version)"
           
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
@@ -83,7 +108,13 @@ jobs:
           
           # 5. 启动服务
           echo "🔧 启动服务..."
-          systemctl start postgresql redis-server || true
+          # 尝试启动PostgreSQL
+          if command -v systemctl &> /dev/null; then
+            systemctl start postgresql || echo "PostgreSQL启动失败，继续执行"
+            systemctl start redis-server || echo "Redis启动失败，继续执行"
+          else
+            echo "systemctl不可用，跳过服务启动"
+          fi
           
           # 6. 配置数据库
           echo "🗄️ 配置数据库..."
