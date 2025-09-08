@@ -519,16 +519,9 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         # 优化缓存策略：使用GitHub Actions缓存
-        cache-from: |
-          type=gha
-          type=registry,ref=modeshift-django:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=modeshift-django:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         platforms: linux/amd64
-        # 添加构建参数以优化缓存
-        build-args: |
-          BUILDKIT_INLINE_CACHE=1
 
   # ===== 5. 持续交付 (手动触发) =====
   cd-delivery:
