@@ -693,36 +693,102 @@ jobs:
     
     - name: 检查部署配置
       run: |
-        echo "🔍 检查部署配置..."
+        echo "🔍 开始检查部署配置..."
+        echo "=========================================="
+        
+        # 初始化检查结果
+        missing_secrets=""
+        deploy_skipped=false
+        
+        # 检查 SERVER_HOST
+        echo "📋 检查 SERVER_HOST..."
         if [ -z "${{ secrets.SERVER_HOST }}" ]; then
-          echo "❌ SERVER_HOST 未配置，跳过部署"
-          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
-          exit 0
+          echo "❌ SERVER_HOST 未配置"
+          missing_secrets="$missing_secrets SERVER_HOST"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_HOST 已配置"
+          echo "   值: ${{ secrets.SERVER_HOST }}"
         fi
+        
+        # 检查 SERVER_USER
+        echo "📋 检查 SERVER_USER..."
         if [ -z "${{ secrets.SERVER_USER }}" ]; then
-          echo "❌ SERVER_USER 未配置，跳过部署"
-          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
-          exit 0
+          echo "❌ SERVER_USER 未配置"
+          missing_secrets="$missing_secrets SERVER_USER"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_USER 已配置"
+          echo "   值: ${{ secrets.SERVER_USER }}"
         fi
+        
+        # 检查 SERVER_SSH_KEY
+        echo "📋 检查 SERVER_SSH_KEY..."
         if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
-          echo "❌ SERVER_SSH_KEY 未配置，跳过部署"
-          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
-          exit 0
+          echo "❌ SERVER_SSH_KEY 未配置"
+          missing_secrets="$missing_secrets SERVER_SSH_KEY"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_SSH_KEY 已配置"
+          echo "   长度: $(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c) 字符"
+          echo "   格式: $(echo '${{ secrets.SERVER_SSH_KEY }}' | head -c 20)..."
         fi
-        echo "✅ 部署配置检查通过"
-        echo "deploy_skipped=false" >> $GITHUB_OUTPUT
+        
+        # 检查 SERVER_PORT (可选)
+        echo "📋 检查 SERVER_PORT (可选)..."
+        if [ -z "${{ secrets.SERVER_PORT }}" ]; then
+          echo "⚠️ SERVER_PORT 未配置，将使用默认值 22"
+        else
+          echo "✅ SERVER_PORT 已配置"
+          echo "   值: ${{ secrets.SERVER_PORT }}"
+        fi
+        
+        echo "=========================================="
+        
+        # 输出检查结果
+        if [ "$deploy_skipped" = true ]; then
+          echo "❌ 部署配置检查失败"
+          echo "缺少的secrets: $missing_secrets"
+          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
+          echo "missing_secrets=$missing_secrets" >> $GITHUB_OUTPUT
+        else
+          echo "✅ 部署配置检查通过"
+          echo "deploy_skipped=false" >> $GITHUB_OUTPUT
+          echo "missing_secrets=" >> $GITHUB_OUTPUT
+        fi
       id: check_config
     
     - name: 跳过部署提示
       if: steps.check_config.outputs.deploy_skipped == 'true'
       run: |
         echo "⚠️ 部署步骤已跳过"
-        echo "原因：缺少必要的服务器配置密钥"
-        echo "请在Repository Secrets中配置以下密钥："
-        echo "- SERVER_HOST: 服务器地址"
-        echo "- SERVER_USER: 服务器用户名"
-        echo "- SERVER_SSH_KEY: SSH私钥"
-        echo "- SERVER_PORT: SSH端口（可选，默认22）"
+        echo "=========================================="
+        echo "❌ 原因：缺少必要的服务器配置密钥"
+        echo "缺少的secrets: ${{ steps.check_config.outputs.missing_secrets }}"
+        echo ""
+        echo "📋 配置步骤："
+        echo "1. 进入仓库 Settings → Secrets and variables → Actions"
+        echo "2. 点击 'New repository secret'"
+        echo "3. 添加以下必需的secrets："
+        echo ""
+        echo "🔧 必需的Secrets："
+        echo "• SERVER_HOST: 服务器IP地址或域名"
+        echo "  示例: 47.103.143.152 或 your-server.com"
+        echo ""
+        echo "• SERVER_USER: SSH用户名"
+        echo "  示例: root, ubuntu, admin"
+        echo ""
+        echo "• SERVER_SSH_KEY: SSH私钥内容"
+        echo "  格式: -----BEGIN OPENSSH PRIVATE KEY-----"
+        echo "        [密钥内容]"
+        echo "        -----END OPENSSH PRIVATE KEY-----"
+        echo ""
+        echo "🔧 可选的Secrets："
+        echo "• SERVER_PORT: SSH端口（默认22）"
+        echo "  示例: 22, 2222, 2200"
+        echo ""
+        echo "📝 配置完成后，重新运行此工作流即可进行部署"
+        echo "=========================================="
     
     - name: 创建部署备份
       if: steps.check_config.outputs.deploy_skipped == 'false'
@@ -1026,7 +1092,82 @@ jobs:
         echo "跳过所有质量检查和测试"
         echo "直接部署到生产环境"
     
+    - name: 检查紧急部署配置
+      run: |
+        echo "🔍 检查紧急部署配置..."
+        echo "=========================================="
+        
+        # 初始化检查结果
+        missing_secrets=""
+        deploy_skipped=false
+        
+        # 检查 SERVER_HOST
+        echo "📋 检查 SERVER_HOST..."
+        if [ -z "${{ secrets.SERVER_HOST }}" ]; then
+          echo "❌ SERVER_HOST 未配置"
+          missing_secrets="$missing_secrets SERVER_HOST"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_HOST 已配置"
+          echo "   值: ${{ secrets.SERVER_HOST }}"
+        fi
+        
+        # 检查 SERVER_USER
+        echo "📋 检查 SERVER_USER..."
+        if [ -z "${{ secrets.SERVER_USER }}" ]; then
+          echo "❌ SERVER_USER 未配置"
+          missing_secrets="$missing_secrets SERVER_USER"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_USER 已配置"
+          echo "   值: ${{ secrets.SERVER_USER }}"
+        fi
+        
+        # 检查 SERVER_SSH_KEY
+        echo "📋 检查 SERVER_SSH_KEY..."
+        if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
+          echo "❌ SERVER_SSH_KEY 未配置"
+          missing_secrets="$missing_secrets SERVER_SSH_KEY"
+          deploy_skipped=true
+        else
+          echo "✅ SERVER_SSH_KEY 已配置"
+          echo "   长度: $(echo '${{ secrets.SERVER_SSH_KEY }}' | wc -c) 字符"
+        fi
+        
+        echo "=========================================="
+        
+        # 输出检查结果
+        if [ "$deploy_skipped" = true ]; then
+          echo "❌ 紧急部署配置检查失败"
+          echo "缺少的secrets: $missing_secrets"
+          echo "deploy_skipped=true" >> $GITHUB_OUTPUT
+          echo "missing_secrets=$missing_secrets" >> $GITHUB_OUTPUT
+        else
+          echo "✅ 紧急部署配置检查通过"
+          echo "deploy_skipped=false" >> $GITHUB_OUTPUT
+          echo "missing_secrets=" >> $GITHUB_OUTPUT
+        fi
+      id: emergency_check_config
+    
+    - name: 紧急部署跳过提示
+      if: steps.emergency_check_config.outputs.deploy_skipped == 'true'
+      run: |
+        echo "⚠️ 紧急部署已跳过"
+        echo "=========================================="
+        echo "❌ 原因：缺少必要的服务器配置密钥"
+        echo "缺少的secrets: ${{ steps.emergency_check_config.outputs.missing_secrets }}"
+        echo ""
+        echo "📋 紧急部署也需要配置以下secrets："
+        echo "• SERVER_HOST: 服务器IP地址"
+        echo "• SERVER_USER: SSH用户名"
+        echo "• SERVER_SSH_KEY: SSH私钥"
+        echo "• SERVER_PORT: SSH端口（可选）"
+        echo ""
+        echo "🔧 配置完成后重新运行紧急部署"
+        echo "=========================================="
+    
     - name: 执行紧急部署
+      if: steps.emergency_check_config.outputs.deploy_skipped == 'false'
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.SERVER_HOST }}
