@@ -120,15 +120,32 @@ jobs:
         ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           echo '智能虚拟环境管理...' &&
-          if [ ! -d 'venv' ] || [ requirements.txt -nt venv/pyvenv.cfg ]; then
-            echo '创建/更新虚拟环境...' &&
-            rm -rf venv &&
+          echo '检查虚拟环境状态...' &&
+          if [ ! -d 'venv' ]; then
+            echo '虚拟环境不存在，创建新环境...' &&
             python3 -m venv venv &&
             venv/bin/python -m pip install --upgrade pip --quiet &&
             venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
           else
-            echo '虚拟环境无需更新'
-          fi
+            echo '虚拟环境存在，检查Django模块...' &&
+            if ! venv/bin/python -c 'import django; print(django.get_version())' > /dev/null 2>&1; then
+              echo 'Django模块损坏，重新安装依赖...' &&
+              venv/bin/python -m pip install --upgrade pip --quiet &&
+              venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
+            else
+              echo 'Django模块正常，检查requirements.txt更新...' &&
+              if [ requirements.txt -nt venv/pyvenv.cfg ]; then
+                echo 'requirements.txt已更新，重新安装依赖...' &&
+                venv/bin/python -m pip install --upgrade pip --quiet &&
+                venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
+              else
+                echo '虚拟环境无需更新'
+              fi
+            fi
+          fi &&
+          echo '验证Django安装...' &&
+          venv/bin/python -c 'import django; print(\"Django版本:\", django.get_version())' &&
+          echo '✅ 虚拟环境检查完成'
         " || {
           echo "❌ 步骤3失败"
           exit 1
@@ -139,7 +156,11 @@ jobs:
         ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           echo 'Django操作...' &&
+          echo '验证Django环境...' &&
+          venv/bin/python -c 'import django; print(\"Django版本:\", django.get_version())' &&
+          echo '收集静态文件...' &&
           venv/bin/python manage.py collectstatic --noinput --clear &&
+          echo '执行数据库迁移...' &&
           venv/bin/python manage.py migrate --noinput &&
           echo '创建超级用户...' &&
           venv/bin/python manage.py shell -c \"
@@ -150,7 +171,8 @@ jobs:
                 print('超级用户创建成功: admin/admin123')
             else:
                 print('超级用户已存在')
-          \" || echo '⚠️ 超级用户创建失败'
+          \" || echo '⚠️ 超级用户创建失败' &&
+          echo '✅ Django操作完成'
         " || {
           echo "❌ 步骤4失败"
           exit 1
