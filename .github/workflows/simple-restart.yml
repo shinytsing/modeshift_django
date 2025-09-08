@@ -54,10 +54,8 @@ jobs:
               echo '检查Gunicorn进程...'
               ps aux | grep gunicorn | grep -v grep || echo '没有找到Gunicorn进程'
               echo '尝试停止Gunicorn...'
-              pkill -f gunicorn 2>/dev/null || echo 'pkill命令执行完成'
-              sleep 3
-              echo '检查进程是否还在运行...'
-              ps aux | grep gunicorn | grep -v grep || echo 'Gunicorn进程已停止'
+              # 最简单的停止方式，避免所有可能的退出码问题
+              killall gunicorn 2>/dev/null; sleep 3; killall -9 gunicorn 2>/dev/null; echo 'Gunicorn停止完成'
               echo '服务停止完成'
           "
           
