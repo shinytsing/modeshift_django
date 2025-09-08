@@ -129,16 +129,7 @@ jobs:
               
               echo '执行数据库迁移...'
               # 尝试数据库迁移，如果失败则跳过
-              python manage.py migrate --noinput || {
-                  echo '数据库迁移失败，尝试使用SQLite...'
-                  # 检查是否有SQLite数据库文件
-                  if [ -f 'db.sqlite3' ]; then
-                      echo '使用现有SQLite数据库'
-                  else
-                      echo '创建新的SQLite数据库'
-                      python manage.py migrate --run-syncdb --noinput || echo 'SQLite迁移也失败，跳过数据库迁移'
-                  fi
-              }
+              python manage.py migrate --noinput || echo '数据库迁移失败，跳过数据库迁移'
               
               echo '✅ 代码部署和环境配置完成'
           "
