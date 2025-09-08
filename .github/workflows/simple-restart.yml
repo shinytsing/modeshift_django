@@ -44,55 +44,76 @@ jobs:
           
           # 部署和重启服务
           echo "开始部署..."
-          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
-              set -e
-              
-              # 停止现有服务
+          
+          # 步骤1: 停止现有服务
+          echo "步骤1: 停止现有服务..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
               echo '停止现有服务...'
               pkill -TERM -f gunicorn || true
-              sleep 5
-              
-              # 备份现有代码
+              sleep 3
+              echo '服务停止完成'
+          "
+          
+          # 步骤2: 备份现有代码
+          echo "步骤2: 备份现有代码..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
               echo '备份现有代码...'
               if [ -d '$DEPLOY_PATH' ]; then
                   mv '$DEPLOY_PATH' '$DEPLOY_PATH.backup.$(date +%Y%m%d_%H%M%S)' || true
               fi
-              
-              # 克隆最新代码
+              echo '备份完成'
+          "
+          
+          # 步骤3: 克隆最新代码
+          echo "步骤3: 克隆最新代码..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=60 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
               echo '克隆最新代码...'
               git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH'
-              
-              # 进入项目目录
+              echo '代码克隆完成'
+          "
+          
+          # 步骤4: 设置环境
+          echo "步骤4: 设置环境..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
               cd '$DEPLOY_PATH'
-              
-              # 创建虚拟环境
               echo '创建虚拟环境...'
               python3 -m venv venv
               source venv/bin/activate
-              
-              # 升级pip
               pip install --upgrade pip
-              
-              # 安装依赖
+              echo '环境设置完成'
+          "
+          
+          # 步骤5: 安装依赖
+          echo "步骤5: 安装依赖..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=120 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
+              cd '$DEPLOY_PATH'
+              source venv/bin/activate
               echo '安装依赖...'
               pip install -r requirements.txt
-              
-              # 收集静态文件
+              echo '依赖安装完成'
+          "
+          
+          # 步骤6: Django配置
+          echo "步骤6: Django配置..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=60 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
+              cd '$DEPLOY_PATH'
+              source venv/bin/activate
               echo '收集静态文件...'
               python manage.py collectstatic --noinput
-              
-              # 数据库迁移
               echo '执行数据库迁移...'
               python manage.py migrate --noinput
-              
-              # 启动新服务
+              echo 'Django配置完成'
+          "
+          
+          # 步骤7: 启动服务
+          echo "步骤7: 启动服务..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=30 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
+              cd '$DEPLOY_PATH'
               echo '启动Gunicorn服务...'
               chmod +x simple-start.sh
               ./simple-start.sh
-              
-              # 重启Nginx
+              echo '重启Nginx...'
               systemctl reload nginx
-              
               echo '✅ 部署和重启完成'
           "
 
