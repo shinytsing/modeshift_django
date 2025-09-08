@@ -77,7 +77,7 @@ jobs:
         echo "📦 开始部署..."
         
         echo "📥 拉取最新代码..."
-        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           git config --global http.sslVerify false &&
           git config --global http.postBuffer 1048576000 &&
@@ -89,16 +89,21 @@ jobs:
         "
         
         echo "🐍 创建虚拟环境..."
-        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
+          echo '删除旧虚拟环境...' &&
           rm -rf venv &&
+          echo '创建新虚拟环境...' &&
           python3 -m venv venv &&
+          echo '激活虚拟环境...' &&
           source venv/bin/activate &&
-          pip install -r requirements.txt
+          echo '安装依赖包...' &&
+          pip install --upgrade pip &&
+          pip install -r requirements.txt --no-cache-dir
         "
         
         echo "📁 收集静态文件和数据库迁移..."
-        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           source venv/bin/activate &&
           python manage.py collectstatic --noinput &&
@@ -106,7 +111,7 @@ jobs:
         "
         
         echo "🔄 重启服务..."
-        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
           source venv/bin/activate &&
           echo '停止现有gunicorn进程...' &&
