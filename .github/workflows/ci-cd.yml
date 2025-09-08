@@ -85,11 +85,11 @@ jobs:
           git reset --hard HEAD &&
           git pull origin main &&
           echo '🐍 创建/激活虚拟环境...' &&
-          if [ ! -d "venv" ]; then
-            echo '创建虚拟环境...' &&
-            python3 -m venv venv &&
-            echo '虚拟环境创建完成'
-          fi &&
+          echo '删除旧的虚拟环境...' &&
+          rm -rf venv &&
+          echo '创建新的虚拟环境...' &&
+          python3 -m venv venv &&
+          echo '虚拟环境创建完成' &&
           echo '激活虚拟环境...' &&
           source venv/bin/activate &&
           echo '虚拟环境激活成功' &&
