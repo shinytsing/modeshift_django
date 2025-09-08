@@ -1,4 +1,4 @@
-name: 🚀 一键部署
+name: 🚀 一键部署 + 线上测试
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: 🚀 部署到阿里云
+    name: 🚀 一键部署
     runs-on: ubuntu-latest
     
     steps:
@@ -30,6 +30,8 @@ jobs:
           echo "- SERVER_USER: root"
           echo "- SERVER_SSH_KEY: SSH私钥"
           echo "- DEPLOY_PATH: /root/modeshift_django"
+          echo "- WEB_URL: https://shenyinqing.xin"
+          echo "- API_URL: https://shenyinqing.xin"
           exit 1
         fi
         
@@ -66,4 +68,104 @@ jobs:
         "
         
         echo "🎉 部署成功完成！"
+
+  online-test:
+    name: ✅ 线上测试
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+    - name: 🌐 网页检查
+      run: |
+        echo "🌐 检查网页访问..."
+        
+        # 检查必要的环境变量
+        WEB_URL="${{ secrets.WEB_URL }}"
+        if [ -z "$WEB_URL" ]; then
+          echo "❌ 缺少WEB_URL配置"
+          echo "请在GitHub Secrets中设置WEB_URL（如：https://shenyinqing.xin）"
+          exit 1
+        fi
+        
+        echo "✅ 使用网站URL: $WEB_URL"
+        
+        # 等待服务启动
+        echo "⏳ 等待服务启动..."
+        sleep 30
+        
+        echo "🔍 开始网页检查..."
+        
+        # 检查首页
+        echo "检查首页..."
+        if curl -f -s --max-time 10 "$WEB_URL/" > /dev/null; then
+          echo "✅ 首页访问正常"
+        else
+          echo "❌ 首页访问失败"
+        fi
+        
+        # 检查静态文件
+        echo "检查静态文件..."
+        if curl -f -s --max-time 10 "$WEB_URL/static/" > /dev/null; then
+          echo "✅ 静态文件正常"
+        else
+          echo "❌ 静态文件失败"
+        fi
+        
+        # 检查管理后台
+        echo "检查管理后台..."
+        if curl -f -s --max-time 10 "$WEB_URL/admin/" > /dev/null; then
+          echo "✅ 管理后台正常"
+        else
+          echo "❌ 管理后台失败"
+        fi
+    
+    - name: 🔌 API测试
+      run: |
+        echo "🔌 检查API接口..."
+        
+        # 检查必要的环境变量
+        API_URL="${{ secrets.API_URL }}"
+        if [ -z "$API_URL" ]; then
+          echo "❌ 缺少API_URL配置"
+          echo "请在GitHub Secrets中设置API_URL（如：https://shenyinqing.xin）"
+          exit 1
+        fi
+        
+        echo "✅ 使用API URL: $API_URL"
+        
+        echo "🔍 开始API检查..."
+        
+        # 检查API根路径
+        echo "检查API根路径..."
+        if curl -f -s --max-time 10 "$API_URL/api/" > /dev/null; then
+          echo "✅ API根路径正常"
+        else
+          echo "❌ API根路径失败"
+        fi
+        
+        # 检查健康检查端点
+        echo "检查健康检查端点..."
+        if curl -f -s --max-time 10 "$API_URL/health/" > /dev/null; then
+          echo "✅ 健康检查正常"
+        else
+          echo "❌ 健康检查失败"
+        fi
+        
+        # 检查用户API
+        echo "检查用户API..."
+        if curl -f -s --max-time 10 "$API_URL/api/users/" > /dev/null; then
+          echo "✅ 用户API正常"
+        else
+          echo "❌ 用户API失败"
+        fi
+        
+        # 检查工具API
+        echo "检查工具API..."
+        if curl -f -s --max-time 10 "$API_URL/api/tools/" > /dev/null; then
+          echo "✅ 工具API正常"
+        else
+          echo "❌ 工具API失败"
+        fi
+        
+        echo "✅ 线上测试完成"
         echo "🌐 网站地址: https://shenyinqing.xin"
