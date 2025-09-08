@@ -1,0 +1,176 @@
+name: 🚀 Git Clone 自动部署
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_DOMAIN: shenyiqing.xin
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🔐 设置SSH密钥
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: 🔄 部署和重启服务
+        run: |
+          # 配置SSH
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+          
+          # 部署和重启服务
+          ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
+              # 停止现有服务
+              echo '停止现有服务...'
+              pkill -TERM -f gunicorn || true
+              sleep 3
+              
+              # 备份现有代码
+              echo '备份现有代码...'
+              if [ -d '$DEPLOY_PATH' ]; then
+                  mv '$DEPLOY_PATH' '$DEPLOY_PATH.backup.$(date +%Y%m%d_%H%M%S)' || true
+              fi
+              
+              # 克隆最新代码
+              echo '克隆最新代码...'
+              git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH'
+              
+              # 进入项目目录
+              cd '$DEPLOY_PATH'
+              
+              # 创建虚拟环境
+              echo '创建虚拟环境...'
+              python3 -m venv venv
+              source venv/bin/activate
+              
+              # 安装依赖
+              echo '安装依赖...'
+              pip install -r requirements.txt
+              
+              # 收集静态文件
+              echo '收集静态文件...'
+              python manage.py collectstatic --noinput
+              
+              # 数据库迁移
+              echo '执行数据库迁移...'
+              python manage.py migrate --noinput
+              
+              # 启动新服务
+              echo '启动Gunicorn服务...'
+              chmod +x simple-start.sh
+              ./simple-start.sh
+              
+              # 重启Nginx
+              systemctl reload nginx
+              
+              echo '✅ 部署和重启完成'
+          "
+
+      - name: 🏥 健康检查
+        run: |
+          echo '🏥 执行健康检查...'
+          sleep 15
+          
+          # 健康检查 - 最多等待15分钟
+          local max_attempts=180  # 15分钟 = 180次 * 5秒
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+              echo \"健康检查尝试 $attempt/$max_attempts (最多15分钟)...\"
+              
+              if curl -f -s --max-time 15 \"http://$SERVER_HOST/\" > /dev/null; then
+                  echo '✅ 网站访问正常'
+                  break
+              else
+                  echo '⚠️ 访问失败，等待重试...'
+                  sleep 5
+                  attempt=$((attempt + 1))
+              fi
+          done
+          
+          if [ $attempt -gt $max_attempts ]; then
+              echo '❌ 健康检查失败'
+              exit 1
+          fi
+          
+          # 检查域名访问
+          if curl -f -s --max-time 10 \"http://$SERVER_DOMAIN/\" > /dev/null; then
+              echo '✅ 域名访问正常'
+          else
+              echo '❌ 域名访问失败'
+              exit 1
+          fi
+
+      - name: 📧 发送部署通知邮件
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_HOST_USER }}
+          password: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          subject: |
+            🔄 服务重启通知 - ${{ github.repository }}
+            (提交: ${{ github.sha }})
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions
+          body: |
+            <h2>🔄 服务重启通知</h2>
+            
+            <h3>📋 部署信息</h3>
+            <ul>
+              <li><strong>仓库:</strong> ${{ github.repository }}</li>
+              <li><strong>分支:</strong> ${{ github.ref_name }}</li>
+              <li><strong>提交:</strong> ${{ github.sha }}</li>
+              <li><strong>提交者:</strong> ${{ github.actor }}</li>
+              <li><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</li>
+              <li><strong>部署时间:</strong> ${{ github.event.head_commit.timestamp }}</li>
+            </ul>
+            
+            <h3>🌐 访问地址</h3>
+            <ul>
+              <li><strong>IP访问:</strong> <a href=\"http://$SERVER_HOST\">http://$SERVER_HOST</a></li>
+              <li><strong>域名访问:</strong> <a href=\"http://$SERVER_DOMAIN\">http://$SERVER_DOMAIN</a></li>
+            </ul>
+            
+            <h3>📊 部署状态</h3>
+            ${{ job.status == 'success' && '<p style=\"color: green;\">✅ <strong>重启成功</strong></p>' || '<p style=\"color: red;\">❌ <strong>重启失败</strong></p>' }}
+            
+            <h3>👤 管理员账号</h3>
+            <ul>
+              <li><strong>用户名:</strong> admin</li>
+              <li><strong>密码:</strong> admin123</li>
+            </ul>
+            
+            <hr>
+            <p><small>此邮件由GitHub Actions自动发送</small></p>
+          html: true
+
+      - name: 📊 部署状态总结
+        if: always()
+        run: |
+          if [ \"${{ job.status }}\" == \"success\" ]; then
+              echo \"🎉 服务重启成功！\"
+              echo \"🌐 访问地址:\"
+              echo \"  • http://$SERVER_HOST\"
+              echo \"  • http://$SERVER_DOMAIN\"
+              echo \"👤 管理员账号: admin / admin123\"
+              echo \"📧 通知邮件已发送\"
+          else
+              echo \"❌ 服务重启失败！\"
+              echo \"请检查日志并重试\"
+              echo \"📧 失败通知邮件已发送\"
+          fi

@@ -1,195 +1,253 @@
-# ModeShift Django CI/CD 完整指南
+# 🚀 CI/CD 完整配置指南
 
-## 🎯 概述
+## 概述
 
-本项目已配置完整的CI/CD流程，确保代码质量和自动部署的完整性。所有配置已统一，本地开发和GitHub Actions使用完全相同的环境配置。
+本指南提供了完整的CI/CD配置，实现GitHub自动部署到生产环境 `shenyiqing.xin` (47.103.143.152)。
 
-## 📋 配置统一性
+## 📁 文件结构
 
-### ✅ 已统一的配置
-- **Python版本**: 3.11 (本地和CI/CD一致)
-- **依赖版本**: requirements.txt 固定版本号
-- **测试配置**: config.settings.testing (统一配置)
-- **代码质量工具**: Black, isort, flake8, mypy, bandit, safety
-- **测试框架**: pytest + Django测试
-- **数据库**: PostgreSQL (开发、测试、生产一致)
+```
+.github/
+└── workflows/
+    ├── auto-deploy.yml      # 完整CI/CD流程
+    └── quick-deploy.yml     # 快速部署流程
 
-### 🗑️ 已删除的冲突文件
-- `config/settings/test_minimal.py` - 删除，使用统一配置
-- `tests/conftest_simple.py` - 删除，使用统一配置
-- `install-deps-simple.sh` - 删除，使用统一依赖安装
-- `requirements-ci.txt` - 删除，使用统一requirements.txt
-- `config/settings/test_ci.py` - 删除，使用统一配置
-
-## 🚀 CI/CD 流程
-
-### 自动触发
-1. **Push到main分支** → 完整CI/CD流程 + 自动部署到生产环境
-2. **Push到develop分支** → CI流程 + 构建镜像
-3. **Push到feature/*分支** → CI流程（代码质量检查 + 测试）
-4. **Pull Request** → CI流程（代码质量检查 + 测试）
-
-### 手动触发
-通过GitHub Actions的"Actions"标签页手动触发：
-- **CI流程**: 仅代码质量检查和测试
-- **持续交付**: 手动选择环境部署
-- **持续部署**: 自动部署到生产环境
-- **紧急部署**: 跳过所有检查的紧急部署
-
-## 🔧 质量门禁
-
-### 代码质量检查
-- **Black格式化**: 代码格式必须符合标准
-- **isort导入排序**: 导入语句正确排序
-- **Flake8静态分析**: 代码质量检查
-- **MyPy类型检查**: 类型注解检查
-- **Bandit安全扫描**: 安全漏洞检测（允许≤5个高风险问题）
-- **Safety依赖扫描**: 依赖漏洞检查
-
-### 测试要求
-- **单元测试**: pytest + Django测试框架
-- **集成测试**: API集成测试
-- **覆盖率要求**: ≥3%（已降低以适应项目现状）
-- **数据库**: PostgreSQL测试数据库
-
-## 🐳 Docker部署
-
-### 容器化配置
-- **Dockerfile**: 生产环境镜像构建
-- **docker-compose.yml**: 多服务编排
-- **服务包括**: Django应用、PostgreSQL、Redis、Nginx
-
-### 部署环境
-- **生产环境**: 47.103.143.152
-- **域名**: shenyiqing.xin
-- **健康检查**: /health/ 端点
-
-## 📊 监控和通知
-
-### 部署状态
-- **成功通知**: 邮件通知到 1009383129@qq.com
-- **失败通知**: GitHub Actions日志 + 邮件
-- **部署验证**: 自动健康检查
-
-### 日志和报告
-- **测试报告**: pytest-html生成
-- **覆盖率报告**: coverage.xml + HTML报告
-- **安全报告**: bandit-report.json
-- **质量评分**: 0-100分评分系统
-
-## 🛠️ 本地开发
-
-### 环境设置
-```bash
-# 1. 激活虚拟环境
-source venv/bin/activate  # Linux/Mac
-# 或
-venv\Scripts\activate     # Windows
-
-# 2. 安装依赖
-pip install -r requirements.txt
-
-# 3. 运行数据库迁移
-python manage.py migrate --settings=config.settings.development
-
-# 4. 启动开发服务器
-python manage.py runserver --settings=config.settings.development
+# 配置文档
+├── GITHUB_SECRETS_SETUP.md     # GitHub Secrets配置指南
+├── CI_CD_COMPLETE_GUIDE.md     # 本文件
+└── test-cicd-local.sh          # 本地测试脚本
 ```
 
-### 代码质量检查
+## 🔧 配置步骤
+
+### 步骤1: 生成SSH密钥
+
+在服务器上生成SSH密钥：
+
 ```bash
-# 格式化代码
-black .
-isort .
+# 连接到服务器
+ssh root@47.103.143.152
 
-# 代码检查
-flake8 .
-mypy apps/
+# 生成SSH密钥
+ssh-keygen -t rsa -b 4096 -C "github-actions@shenyiqing.xin"
 
-# 安全扫描
-bandit -r apps/
-safety check
+# 设置权限
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_rsa
+chmod 644 ~/.ssh/id_rsa.pub
+
+# 将公钥添加到authorized_keys
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+# 复制私钥内容（用于GitHub Secrets）
+cat ~/.ssh/id_rsa
 ```
 
-### 运行测试
+### 步骤2: 配置GitHub Secrets
+
+访问GitHub仓库 → Settings → Secrets and variables → Actions，添加以下Secrets：
+
+| Secret名称 | 描述 | 必需 |
+|-----------|------|------|
+| `SERVER_SSH_KEY` | SSH私钥 | ✅ |
+| `DJANGO_SECRET_KEY` | Django密钥 | ✅ |
+| `DB_PASSWORD` | 数据库密码 | ✅ |
+| `REDIS_PASSWORD` | Redis密码 | ✅ |
+| `DEEPSEEK_API_KEY` | DeepSeek API密钥 | ✅ |
+| `PIXABAY_API_KEY` | Pixabay API密钥 | ✅ |
+| `AMAP_API_KEY` | 高德地图API密钥 | ✅ |
+| `GOOGLE_API_KEY` | Google API密钥 | ⚠️ |
+| `GOOGLE_CSE_ID` | Google自定义搜索ID | ⚠️ |
+| `OPENWEATHER_API_KEY` | OpenWeather API密钥 | ⚠️ |
+| `EMAIL_HOST_USER` | 邮件用户名 | ⚠️ |
+| `EMAIL_HOST_PASSWORD` | 邮件密码 | ⚠️ |
+
+### 步骤3: 测试配置
+
+运行本地测试脚本：
+
 ```bash
-# 运行所有测试
-pytest
-
-# 运行特定测试
-pytest tests/unit/
-pytest tests/integration/
-
-# 生成覆盖率报告
-pytest --cov=apps --cov-report=html
+./test-cicd-local.sh
 ```
 
-## 🔍 验证CI/CD配置
+## 🚀 部署流程
 
-使用内置验证脚本检查配置：
-```bash
-python3 scripts/verify_cicd.py
-```
+### 自动部署流程
 
-验证内容包括：
-- Python版本检查
-- 依赖包检查
-- Django配置检查
-- GitHub Actions工作流检查
-- Docker配置检查
-- 基础测试
+1. **代码推送** → 推送到 `main` 分支
+2. **代码质量检查** → 语法、测试、安全扫描
+3. **构建检查** → 静态文件、数据库迁移
+4. **部署到服务器** → SSH连接、代码更新、服务重启
+5. **健康检查** → 网站可访问性验证
+6. **状态通知** → 部署结果通知
 
-## 📝 最佳实践
+### 快速部署流程
 
-### 开发流程
-1. **创建功能分支**: `git checkout -b feature/your-feature`
-2. **开发功能**: 编写代码和测试
-3. **代码质量检查**: 运行black, isort, flake8等
-4. **提交代码**: `git commit -m "feat: your feature"`
-5. **推送分支**: `git push origin feature/your-feature`
-6. **创建PR**: 在GitHub上创建Pull Request
-7. **代码审查**: 等待CI通过和代码审查
-8. **合并到main**: 合并后自动部署
+1. **代码推送** → 推送到 `main` 分支
+2. **快速部署** → 直接更新代码并重启服务
+3. **健康检查** → 基本可访问性验证
 
-### 部署流程
-1. **自动部署**: Push到main分支自动触发
-2. **手动部署**: 通过GitHub Actions手动触发
-3. **紧急部署**: 紧急情况下跳过检查部署
-4. **回滚**: 通过Git历史回滚到稳定版本
+## 📊 工作流特性
 
-## 🚨 故障排除
+### 完整CI/CD流程 (`auto-deploy.yml`)
+
+- ✅ **代码质量检查**: flake8, black, isort, mypy, bandit, safety
+- ✅ **自动化测试**: Django单元测试
+- ✅ **安全扫描**: 依赖漏洞检查
+- ✅ **构建验证**: 静态文件收集、数据库迁移
+- ✅ **自动部署**: SSH连接、服务重启
+- ✅ **健康检查**: 多端点访问验证
+- ✅ **回滚功能**: 手动回滚到指定版本
+- ✅ **数据库备份**: 定时备份
+- ✅ **系统监控**: 资源使用、服务状态
+- ✅ **告警通知**: 失败时自动通知
+
+### 快速部署流程 (`quick-deploy.yml`)
+
+- ⚡ **快速部署**: 跳过质量检查，直接部署
+- ⚡ **轻量级**: 最小化检查，快速响应
+- ⚡ **手动触发**: 支持手动触发部署
+
+## 🔍 监控和维护
+
+### 自动监控
+
+- **系统状态**: CPU、内存、磁盘使用率
+- **服务状态**: Nginx、Gunicorn运行状态
+- **网络状态**: 端口监听、连接状态
+- **应用状态**: 网站可访问性、响应时间
+
+### 定期任务
+
+- **每日**: 健康检查、性能监控
+- **每周**: 数据库备份、依赖更新
+- **每月**: 安全扫描、日志清理
+
+## 🛠️ 故障排除
 
 ### 常见问题
-1. **依赖安装失败**: 检查Python版本和虚拟环境
-2. **测试失败**: 检查数据库连接和测试配置
-3. **部署失败**: 检查服务器连接和权限
-4. **质量检查失败**: 修复代码格式和安全问题
+
+1. **SSH连接失败**
+   ```bash
+   # 检查SSH服务
+   systemctl status ssh
+   
+   # 检查密钥权限
+   ls -la ~/.ssh/
+   ```
+
+2. **部署失败**
+   ```bash
+   # 查看GitHub Actions日志
+   # 检查服务器日志
+   tail -f /root/modeshift_django/logs/django.log
+   ```
+
+3. **服务启动失败**
+   ```bash
+   # 检查服务状态
+   systemctl status nginx
+   ps aux | grep gunicorn
+   ```
 
 ### 调试命令
+
 ```bash
-# 检查Django配置
-python manage.py check --settings=config.settings.testing
-
-# 检查数据库连接
-python manage.py dbshell --settings=config.settings.testing
-
-# 查看日志
-tail -f logs/django.log
+# 测试SSH连接
+ssh -i ~/.ssh/id_rsa root@47.103.143.152 "echo 'SSH连接成功'"
 
 # 检查服务状态
-docker-compose ps
+ssh root@47.103.143.152 "systemctl status nginx gunicorn"
+
+# 查看部署日志
+ssh root@47.103.143.152 "cd /root/modeshift_django && tail -20 logs/django.log"
+
+# 手动重启服务
+ssh root@47.103.143.152 "cd /root/modeshift_django && pkill -TERM -f gunicorn && sleep 2 && nohup venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon"
 ```
+
+## 🔐 安全最佳实践
+
+### 1. SSH密钥安全
+- 使用4096位RSA密钥
+- 定期轮换SSH密钥
+- 限制SSH密钥的访问权限
+
+### 2. 环境变量安全
+- 使用强密码
+- 定期更新API密钥
+- 不要在代码中硬编码敏感信息
+
+### 3. 访问控制
+- 限制GitHub Actions的权限
+- 使用最小权限原则
+- 定期审查访问权限
+
+## 📈 性能优化
+
+### 部署优化
+- 使用缓存减少构建时间
+- 并行执行独立任务
+- 优化依赖安装流程
+
+### 服务优化
+- 调整Gunicorn工作进程数
+- 优化Nginx配置
+- 启用Gzip压缩
+
+## 🔄 回滚和恢复
+
+### 自动回滚
+- 部署失败时自动回滚
+- 健康检查失败时回滚
+- 保留多个版本快照
+
+### 手动回滚
+```bash
+# 通过GitHub Actions手动回滚
+# 或直接在服务器上执行
+ssh root@47.103.143.152 "
+    cd /root/modeshift_django
+    git log --oneline -10
+    git reset --hard <commit-id>
+    pkill -TERM -f gunicorn
+    sleep 2
+    nohup venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application --daemon
+"
+```
+
+## 📋 检查清单
+
+### 部署前检查
+- [ ] SSH密钥已配置
+- [ ] GitHub Secrets已设置
+- [ ] 服务器环境正常
+- [ ] 代码质量检查通过
+- [ ] 测试用例通过
+
+### 部署后检查
+- [ ] 网站可正常访问
+- [ ] 所有功能正常
+- [ ] 性能指标正常
+- [ ] 日志无错误
+- [ ] 监控告警正常
+
+## 🎯 下一步计划
+
+1. **HTTPS配置**: 配置SSL证书
+2. **CDN集成**: 集成CDN加速
+3. **容器化**: 迁移到Docker部署
+4. **微服务**: 拆分为微服务架构
+5. **监控增强**: 集成APM监控
 
 ## 📞 支持
 
 如有问题，请：
 1. 查看GitHub Actions日志
-2. 运行验证脚本: `python3 scripts/verify_cicd.py`
-3. 检查项目文档
-4. 联系开发团队
+2. 检查服务器日志
+3. 运行本地测试脚本
+4. 提交Issue到GitHub仓库
 
 ---
 
-**最后更新**: 2024年12月29日  
-**版本**: 1.0.0  
-**状态**: ✅ 生产就绪
+**注意**: 请妥善保管所有敏感信息，定期更新密钥和密码。
