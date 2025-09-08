@@ -75,37 +75,43 @@ jobs:
         }
         
         echo "📦 开始部署..."
-        ssh -o StrictHostKeyChecking=no $USERNAME@$HOST "
+        
+        echo "📥 拉取最新代码..."
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
-          echo '📥 拉取最新代码...' &&
           git config --global http.sslVerify false &&
           git config --global http.postBuffer 1048576000 &&
           git config --global http.lowSpeedLimit 1000 &&
           git config --global http.lowSpeedTime 300 &&
-          echo '🧹 清理冲突文件...' &&
           git clean -fd &&
           git reset --hard HEAD &&
-          git pull origin main &&
-          echo '🐍 创建/激活虚拟环境...' &&
-          echo '删除旧的虚拟环境...' &&
-          rm -rf venv &&
-          echo '创建新的虚拟环境...' &&
-          python3 -m venv venv &&
-          echo '虚拟环境创建完成' &&
-          echo '激活虚拟环境...' &&
-          source venv/bin/activate &&
-          echo '虚拟环境激活成功' &&
-          echo '📦 安装依赖...' &&
-          pip install -r requirements.txt &&
-          echo '📁 收集静态文件...' &&
-          python manage.py collectstatic --noinput &&
-          echo '🗄️ 运行数据库迁移...' &&
-          python manage.py migrate &&
-          echo '🔄 重启服务...' &&
-          sudo systemctl restart gunicorn &&
-          sudo systemctl restart nginx &&
-          echo '✅ 部署完成'
+          git pull origin main
         "
+        
+        echo "🐍 创建虚拟环境..."
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          rm -rf venv &&
+          python3 -m venv venv &&
+          source venv/bin/activate &&
+          pip install -r requirements.txt
+        "
+        
+        echo "📁 收集静态文件和数据库迁移..."
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          source venv/bin/activate &&
+          python manage.py collectstatic --noinput &&
+          python manage.py migrate
+        "
+        
+        echo "🔄 重启服务..."
+        ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          sudo systemctl restart gunicorn &&
+          sudo systemctl restart nginx
+        "
+        
+        echo "✅ 部署完成"
         
         echo "🎉 部署成功完成！"
 
