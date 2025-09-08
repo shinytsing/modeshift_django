@@ -117,7 +117,7 @@ jobs:
             fi
           else
             echo '创建新虚拟环境...' &&
-            python3 -m venv venv &&
+            python3 -m venv venv --upgrade-deps &&
             echo '使用虚拟环境中的pip...' &&
             venv/bin/pip install --upgrade pip --quiet &&
             venv/bin/pip install -r requirements.txt --no-cache-dir --quiet
@@ -129,7 +129,7 @@ jobs:
             pkill -f python || true &&
             pkill -f gunicorn || true &&
             rm -rf venv &&
-            python3 -m venv venv &&
+            python3 -m venv venv --upgrade-deps &&
             echo '使用虚拟环境中的pip...' &&
             venv/bin/pip install --upgrade pip --quiet &&
             venv/bin/pip install -r requirements.txt --no-cache-dir --quiet
