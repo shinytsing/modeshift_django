@@ -107,10 +107,67 @@ jobs:
                   export \$(cat env.production | grep -v '^#' | xargs)
               fi
               
-              # 设置数据库环境变量
-              export DJANGO_SETTINGS_MODULE=config.settings.production
-              export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
-              export DATABASE_URL=postgresql://postgres:\$DB_PASSWORD@localhost:5432/modeshift_django
+              # 设置环境变量
+              export DJANGO_SETTINGS_MODULE=config.settings.development
+              export DEBUG=True
+              export ALLOWED_HOSTS=shenyiqing.xin,www.shenyiqing.xin,47.103.143.152,localhost,127.0.0.1
+              
+              # 数据库配置
+              export DB_NAME=qatoolbox
+              export DB_USER=qatoolbox
+              export DB_PASSWORD=qatoolbox123
+              export DB_HOST=localhost
+              export DB_PORT=5432
+              
+              # Redis配置
+              export REDIS_URL=redis://localhost:6379/0
+              
+              # 邮件配置
+              export EMAIL_HOST=smtp.qq.com
+              export EMAIL_PORT=587
+              export EMAIL_HOST_USER='${{ secrets.EMAIL_HOST_USER }}'
+              export EMAIL_HOST_PASSWORD='${{ secrets.EMAIL_HOST_PASSWORD }}'
+              export EMAIL_USE_TLS=True
+              export DEFAULT_FROM_EMAIL=noreply@shenyiqing.xin
+              
+              # AI和API配置
+              export DEEPSEEK_API_KEY='${{ secrets.DEEPSEEK_API_KEY }}'
+              export GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}'
+              export OPENWEATHER_API_KEY='${{ secrets.OPENWEATHER_API_KEY }}'
+              
+              # 文件上传配置
+              export DATA_UPLOAD_MAX_MEMORY_SIZE=104857600
+              export FILE_UPLOAD_MAX_MEMORY_SIZE=104857600
+              export MAX_UPLOAD_SIZE=104857600
+              
+              # 日志配置
+              export LOG_LEVEL=INFO
+              export LOG_FILE=logs/django.log
+              
+              # 缓存配置
+              export CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache
+              export CACHE_LOCATION=unique-snowflake
+              
+              # 会话配置
+              export SESSION_ENGINE=django.contrib.sessions.backends.cache
+              export SESSION_COOKIE_AGE=1209600
+              
+              # 静态文件配置
+              export STATIC_URL=/static/
+              export MEDIA_URL=/media/
+              
+              # CORS配置
+              export CORS_ALLOWED_ORIGINS=https://shenyiqing.xin,http://shenyiqing.xin
+              export CORS_ALLOW_CREDENTIALS=True
+              
+              # API限制配置
+              export API_RATE_LIMIT_ANON=100
+              export API_RATE_LIMIT_USER=1000
+              
+              # Celery配置
+              export CELERY_BROKER_URL=django-db://
+              export CELERY_RESULT_BACKEND=django-db
+              export CELERY_TASK_ALWAYS_EAGER=True
               
               echo '执行数据库迁移...'
               python manage.py migrate --noinput
