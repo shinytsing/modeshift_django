@@ -29,9 +29,9 @@ jobs:
     
     - name: 🚀 部署到服务器
       env:
-        HOST: ${{ secrets.HOST }}
-        USERNAME: ${{ secrets.USERNAME }}
-        SSH_KEY: ${{ secrets.SSH_KEY }}
+        HOST: ${{ secrets.SERVER_HOST }}
+        USERNAME: ${{ secrets.SERVER_USER }}
+        SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
         DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
       run: |
         echo "🚀 开始部署..."
@@ -40,9 +40,9 @@ jobs:
         if [ -z "$HOST" ] || [ -z "$USERNAME" ] || [ -z "$SSH_KEY" ] || [ -z "$DEPLOY_PATH" ]; then
           echo "❌ 缺少必要的GitHub Secrets配置"
           echo "请确保设置了以下Secrets:"
-          echo "- HOST: 服务器IP地址"
-          echo "- USERNAME: SSH用户名"
-          echo "- SSH_KEY: SSH私钥"
+          echo "- SERVER_HOST: 服务器IP地址"
+          echo "- SERVER_USER: SSH用户名"
+          echo "- SERVER_SSH_KEY: SSH私钥"
           echo "- DEPLOY_PATH: 部署路径"
           exit 1
         fi
