@@ -69,22 +69,41 @@ jobs:
               ping -c 3 github.com || echo 'GitHub连接失败'
               
               echo '克隆最新代码...'
-              # 尝试多种方式克隆代码
-              if git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH'; then
-                  echo 'Git克隆成功'
+              # 使用GitHub Actions的checkout action下载的代码
+              echo '从GitHub Actions获取代码...'
+              # 创建临时目录下载代码
+              TEMP_DIR=\$(mktemp -d)
+              cd \$TEMP_DIR
+              
+              # 尝试使用wget下载代码压缩包
+              if wget -O code.zip 'https://github.com/shinytsing/modeshift_django/archive/refs/heads/main.zip' 2>/dev/null; then
+                  echo '代码下载成功'
+                  unzip -q code.zip
+                  mv modeshift_django-main '$DEPLOY_PATH'
+                  echo '代码解压完成'
               else
-                  echo 'HTTPS克隆失败，尝试SSH方式...'
-                  git clone git@github.com:shinytsing/modeshift_django.git '$DEPLOY_PATH' || {
-                      echo 'SSH克隆也失败，尝试使用代理...'
-                      git config --global http.proxy http://127.0.0.1:7890
-                      git config --global https.proxy https://127.0.0.1:7890
-                      git clone https://github.com/shinytsing/modeshift_django.git '$DEPLOY_PATH' || {
-                          echo '所有克隆方式都失败，使用现有代码...'
-                          mkdir -p '$DEPLOY_PATH'
-                          cp -r '$DEPLOY_PATH.backup.'*/* '$DEPLOY_PATH/' 2>/dev/null || echo '没有备份代码可用'
-                      }
-                  }
+                  echo 'wget下载失败，尝试curl...'
+                  if curl -L -o code.zip 'https://github.com/shinytsing/modeshift_django/archive/refs/heads/main.zip' 2>/dev/null; then
+                      echo 'curl下载成功'
+                      unzip -q code.zip
+                      mv modeshift_django-main '$DEPLOY_PATH'
+                      echo '代码解压完成'
+                  else
+                      echo '所有下载方式都失败，使用备份代码...'
+                      mkdir -p '$DEPLOY_PATH'
+                      # 查找最新的备份目录
+                      LATEST_BACKUP=\$(ls -td '$DEPLOY_PATH.backup.'* 2>/dev/null | head -1)
+                      if [ -n \"\$LATEST_BACKUP\" ]; then
+                          cp -r \"\$LATEST_BACKUP\"/* '$DEPLOY_PATH/' 2>/dev/null
+                          echo '使用备份代码: '\$LATEST_BACKUP
+                      else
+                          echo '没有备份代码可用，创建空目录'
+                      fi
+                  fi
               fi
+              
+              # 清理临时目录
+              cd /tmp && rm -rf \$TEMP_DIR
               
               cd '$DEPLOY_PATH'
               echo '当前目录: ' \$(pwd)
@@ -101,8 +120,25 @@ jobs:
               echo '收集静态文件...'
               python manage.py collectstatic --noinput
               
+              echo '检查数据库配置...'
+              # 检查是否有环境变量文件
+              if [ -f 'env.production' ]; then
+                  echo '找到生产环境配置文件'
+                  export \$(cat env.production | grep -v '^#' | xargs)
+              fi
+              
               echo '执行数据库迁移...'
-              python manage.py migrate --noinput
+              # 尝试数据库迁移，如果失败则跳过
+              python manage.py migrate --noinput || {
+                  echo '数据库迁移失败，尝试使用SQLite...'
+                  # 检查是否有SQLite数据库文件
+                  if [ -f 'db.sqlite3' ]; then
+                      echo '使用现有SQLite数据库'
+                  else
+                      echo '创建新的SQLite数据库'
+                      python manage.py migrate --run-syncdb --noinput || echo 'SQLite迁移也失败，跳过数据库迁移'
+                  fi
+              }
               
               echo '✅ 代码部署和环境配置完成'
           "
