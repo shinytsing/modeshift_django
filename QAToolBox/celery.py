@@ -1,7 +1,6 @@
-from celery import Celery
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from celery import Celery
 """
 Celery 配置
 """

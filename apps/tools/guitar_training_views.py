@@ -1262,16 +1262,6 @@ def time_capsule_diary_view(request):
     return render(request, "tools/time_capsule_diary.html", context)
 
 
-@login_required
-# 时间胶囊API已移动到 time_capsule_views.py
-
-
-# 时间胶囊API已移动到 time_capsule_views.py
-
-
-# 时间胶囊API已移动到 time_capsule_views.py
-
-
 # 时间胶囊API已移动到 time_capsule_views.py
 
 

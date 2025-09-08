@@ -10,6 +10,7 @@ import subprocess
 import json
 from pathlib import Path
 
+
 def run_command(cmd, check=True):
     """运行命令并返回结果"""
     try:
@@ -23,6 +24,7 @@ def run_command(cmd, check=True):
         print(f"❌ 执行命令时出错: {e}")
         return None
 
+
 def check_python_version():
     """检查Python版本"""
     print("🐍 检查Python版本...")
@@ -33,6 +35,7 @@ def check_python_version():
     else:
         print(f"❌ Python版本过低: {version.major}.{version.minor}.{version.micro} (需要 >= 3.11)")
         return False
+
 
 def check_dependencies():
     """检查依赖包"""
@@ -69,6 +72,7 @@ def check_dependencies():
     print("✅ 依赖包检查通过")
     return True
 
+
 def check_django_config():
     """检查Django配置"""
     print("⚙️ 检查Django配置...")
@@ -101,6 +105,7 @@ def check_django_config():
     
     print("✅ Django配置检查通过")
     return True
+
 
 def check_github_workflow():
     """检查GitHub Actions工作流"""
@@ -136,6 +141,7 @@ def check_github_workflow():
     print("✅ GitHub Actions工作流检查通过")
     return True
 
+
 def check_docker_config():
     """检查Docker配置"""
     print("🐳 检查Docker配置...")
@@ -153,6 +159,7 @@ def check_docker_config():
     
     print("✅ Docker配置检查通过")
     return True
+
 
 def run_basic_tests():
     """运行基础测试"""
@@ -182,6 +189,7 @@ def run_basic_tests():
     
     print("✅ 基础测试通过")
     return True
+
 
 def main():
     """主函数"""
@@ -214,6 +222,7 @@ def main():
     else:
         print("❌ 部分检查失败，请修复后重试")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

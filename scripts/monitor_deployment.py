@@ -9,6 +9,7 @@ import time
 import json
 from datetime import datetime
 
+
 def get_github_actions_status(repo_owner, repo_name, token=None):
     """获取GitHub Actions运行状态"""
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs"
@@ -24,6 +25,7 @@ def get_github_actions_status(repo_owner, repo_name, token=None):
     except requests.RequestException as e:
         print(f"❌ 获取GitHub Actions状态失败: {e}")
         return None
+
 
 def check_server_health(server_url):
     """检查服务器健康状态"""
@@ -44,6 +46,7 @@ def check_server_health(server_url):
     
     return False, None
 
+
 def format_status(status):
     """格式化状态显示"""
     status_icons = {
@@ -56,6 +59,7 @@ def format_status(status):
         "failure": "❌"
     }
     return status_icons.get(status, "❓")
+
 
 def monitor_deployment():
     """监控部署过程"""
@@ -97,7 +101,7 @@ def monitor_deployment():
                     job_status = job["status"]
                     job_conclusion = job.get("conclusion", "unknown")
                     print(f"  - {job['name']}: {format_status(job_status)} {job_status} ({format_status(job_conclusion)} {job_conclusion})")
-            except:
+            except Exception as e:
                 print("  ⚠️ 无法获取作业详情")
     else:
         print("❌ 无法获取GitHub Actions状态")
@@ -138,6 +142,7 @@ def monitor_deployment():
     print(f"📊 GitHub Actions: https://github.com/{repo_owner}/{repo_name}/actions")
     print(f"🌐 生产环境: {server_url}")
     print(f"🏥 健康检查: {server_url}/health/")
+
 
 def main():
     """主函数"""

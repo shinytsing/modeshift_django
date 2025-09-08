@@ -7,6 +7,7 @@
 import subprocess
 import sys
 
+
 def test_package_installation(package_spec):
     """测试单个包的安装"""
     try:
@@ -23,6 +24,7 @@ def test_package_installation(package_spec):
     except Exception as e:
         print(f"❌ {package_spec} - 测试失败: {e}")
         return False
+
 
 def main():
     """主函数"""
@@ -63,6 +65,7 @@ def main():
     else:
         print("❌ 部分依赖包不兼容，需要调整版本")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
