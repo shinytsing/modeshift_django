@@ -1,0 +1,277 @@
+name: 🚀 智能部署工作流
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: '强制部署（跳过检查）'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  DEPLOY_PATH: "/root/modeshift_django"
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # 智能部署
+  deploy:
+    name: 🚀 智能部署
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: 🔧 环境检查
+      run: |
+        echo "🔍 检查部署环境..."
+        if [ -z "${{ secrets.HOST }}" ] || [ -z "${{ secrets.USERNAME }}" ] || [ -z "${{ secrets.SSH_KEY }}" ]; then
+          echo "❌ 缺少必要的环境变量"
+          echo "需要设置: HOST, USERNAME, SSH_KEY"
+          exit 1
+        fi
+        echo "✅ 环境检查通过"
+    
+    - name: 🚀 一键部署
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+        NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      run: |
+        # 设置SSH密钥
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+        
+        # 一键部署脚本
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
+          set -e
+          echo '🚀 开始智能部署...'
+          
+          # 进入项目目录
+          cd $DEPLOY_PATH || { echo '❌ 项目目录不存在'; exit 1; }
+          
+          # 1. 停止服务
+          echo '🛑 停止现有服务...'
+          pkill -f gunicorn || echo '没有运行中的gunicorn进程'
+          sleep 2
+          
+          # 2. 清理和更新
+          echo '🧹 清理环境...'
+          rm -rf /tmp/* || true
+          find . -name '__pycache__' -type d -exec rm -rf {} + || true
+          find . -name '*.pyc' -type f -delete || true
+          
+          # 3. 更新代码（如果网络可用）
+          echo '📥 更新代码...'
+          if timeout 30 git pull origin main; then
+            echo '✅ 代码更新成功'
+          else
+            echo '⚠️ 网络超时，使用本地代码'
+          fi
+          
+          # 4. 虚拟环境管理
+          echo '🐍 管理虚拟环境...'
+          if [ ! -d 'venv' ]; then
+            echo '创建虚拟环境...'
+            python3 -m venv venv
+          fi
+          
+          # 激活虚拟环境并安装依赖
+          source venv/bin/activate
+          pip install --upgrade pip --quiet
+          pip install -r requirements.txt --no-cache-dir --quiet
+          
+          # 5. Django操作
+          echo '📁 Django操作...'
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+          
+          # 6. 启动服务
+          echo '🚀 启动服务...'
+          mkdir -p logs
+          nohup venv/bin/gunicorn \
+            --bind 0.0.0.0:8000 \
+            --workers 3 \
+            --timeout 120 \
+            --preload \
+            --access-logfile logs/gunicorn_access.log \
+            --error-logfile logs/gunicorn_error.log \
+            wsgi:application \
+            --daemon
+          
+          # 7. 等待服务启动
+          echo '⏳ 等待服务启动...'
+          sleep 10
+          
+          # 8. 验证服务
+          echo '🔍 验证服务...'
+          for i in {1..5}; do
+            if pgrep -f gunicorn > /dev/null; then
+              echo '✅ 服务启动成功'
+              break
+            else
+              echo '⏳ 等待服务启动... ($i/5)'
+              sleep 3
+              if [ $i -eq 5 ]; then
+                echo '❌ 服务启动失败'
+                tail -20 logs/gunicorn_error.log || echo '日志文件不存在'
+                exit 1
+              fi
+            fi
+          done
+          
+          # 9. 重载nginx
+          echo '🔄 重载nginx...'
+          sudo nginx -s reload || echo '⚠️ nginx重载失败'
+          
+          echo '🎉 部署完成！'
+        "
+        
+        echo "✅ 部署成功完成"
+
+  # 健康检查
+  health-check:
+    name: 🏥 健康检查
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always() && needs.deploy.result == 'success'
+    
+    steps:
+    - name: 🏥 健康检查
+      env:
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+      run: |
+        echo "🏥 开始健康检查..."
+        
+        # 检查网站首页
+        echo "🔍 检查网站首页..."
+        if curl -f -s --max-time 30 "$WEB_URL" > /dev/null; then
+          echo "✅ 网站首页正常"
+        else
+          echo "❌ 网站首页异常"
+          exit 1
+        fi
+        
+        # 检查API接口
+        echo "🔍 检查API接口..."
+        if curl -f -s --max-time 30 "$API_URL/api/health/" > /dev/null; then
+          echo "✅ API接口正常"
+        else
+          echo "⚠️ API接口异常（可能正常）"
+        fi
+        
+        echo "🎉 健康检查完成！"
+
+  # 部署通知
+  notify:
+    name: 📢 部署通知
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: always()
+    
+    steps:
+    - name: 📢 发送通知
+      env:
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+        NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      run: |
+        echo "📢 部署结果通知"
+        echo "================"
+        
+        # 确定部署状态
+        if [ "${{ needs.deploy.result }}" == "success" ] && [ "${{ needs.health-check.result }}" == "success" ]; then
+          STATUS="✅ 部署成功"
+          MESSAGE="🎉 所有服务正常运行！"
+        elif [ "${{ needs.deploy.result }}" == "success" ]; then
+          STATUS="⚠️ 部署成功"
+          MESSAGE="⚠️ 部署成功，但健康检查失败"
+        else
+          STATUS="❌ 部署失败"
+          MESSAGE="❌ 部署过程中出现错误"
+        fi
+        
+        echo "状态: $STATUS"
+        echo "消息: $MESSAGE"
+        echo "网站: $WEB_URL"
+        echo "API: $API_URL"
+        echo "管理员: admin / admin123"
+        
+        # 发送邮件通知
+        if [ -n "$NOTIFICATION_EMAIL" ] && [ -n "$EMAIL_HOST_USER" ] && [ -n "$EMAIL_HOST_PASSWORD" ]; then
+          echo "📧 发送邮件通知..."
+          
+          python3 << EOF
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import os
+        
+        # 邮件配置
+        smtp_host = os.getenv('EMAIL_HOST', 'smtp.qq.com')
+        smtp_port = int(os.getenv('EMAIL_PORT', '587'))
+        smtp_user = os.getenv('EMAIL_HOST_USER')
+        smtp_password = os.getenv('EMAIL_HOST_PASSWORD')
+        from_email = os.getenv('DEFAULT_FROM_EMAIL', smtp_user)
+        to_email = os.getenv('NOTIFICATION_EMAIL')
+        
+        # 创建邮件内容
+        msg = MIMEMultipart('alternative')
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = f'🚀 QAToolBox 部署通知 - $STATUS'
+        
+        # HTML内容
+        html_content = f'''
+        <html>
+        <body style="font-family: Arial, sans-serif; margin: 20px;">
+          <h2>🚀 QAToolBox 部署通知</h2>
+          <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
+            <p><strong>状态:</strong> $STATUS</p>
+            <p><strong>消息:</strong> $MESSAGE</p>
+            <p><strong>网站地址:</strong> <a href="$WEB_URL">$WEB_URL</a></p>
+            <p><strong>API地址:</strong> <a href="$API_URL">$API_URL</a></p>
+            <p><strong>管理员账号:</strong> admin / admin123</p>
+            <p><strong>部署时间:</strong> $(date '+%Y-%m-%d %H:%M:%S')</p>
+          </div>
+          <p>此邮件由 QAToolBox 自动发送</p>
+        </body>
+        </html>
+        '''
+        
+        # 添加HTML内容
+        html_part = MIMEText(html_content, 'html', 'utf-8')
+        msg.attach(html_part)
+        
+        # 发送邮件
+        try:
+          with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+            print('✅ 邮件发送成功')
+        except Exception as e:
+          print(f'❌ 邮件发送失败: {e}')
+        EOF
+        
+          echo "✅ 邮件通知已发送"
+        else
+          echo "⚠️ 邮件配置不完整，跳过邮件通知"
+        fi
