@@ -107,21 +107,20 @@ jobs:
           echo '检查虚拟环境状态...' &&
           if [ -d 'venv' ] && [ -f 'venv/pyvenv.cfg' ]; then
             echo '虚拟环境已存在，检查依赖...' &&
-            source venv/bin/activate &&
             echo '检查requirements.txt是否有变化...' &&
             if [ requirements.txt -nt venv/pyvenv.cfg ]; then
               echo '依赖有变化，更新虚拟环境...' &&
-              pip install --upgrade pip --quiet &&
-              pip install -r requirements.txt --no-cache-dir --quiet
+              venv/bin/pip install --upgrade pip --quiet &&
+              venv/bin/pip install -r requirements.txt --no-cache-dir --quiet
             else
               echo '依赖无变化，跳过安装'
             fi
           else
             echo '创建新虚拟环境...' &&
             python3 -m venv venv &&
-            source venv/bin/activate &&
-            pip install --upgrade pip --quiet &&
-            pip install -r requirements.txt --no-cache-dir --quiet
+            echo '使用虚拟环境中的pip...' &&
+            venv/bin/pip install --upgrade pip --quiet &&
+            venv/bin/pip install -r requirements.txt --no-cache-dir --quiet
           fi
         " || {
           echo "❌ 虚拟环境管理失败，强制重建..."
@@ -131,9 +130,9 @@ jobs:
             pkill -f gunicorn || true &&
             rm -rf venv &&
             python3 -m venv venv &&
-            source venv/bin/activate &&
-            pip install --upgrade pip --quiet &&
-            pip install -r requirements.txt --no-cache-dir --quiet
+            echo '使用虚拟环境中的pip...' &&
+            venv/bin/pip install --upgrade pip --quiet &&
+            venv/bin/pip install -r requirements.txt --no-cache-dir --quiet
           "
         }
         
