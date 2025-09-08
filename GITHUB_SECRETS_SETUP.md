@@ -13,12 +13,12 @@
 | `SERVER_SSH_KEY` | SSH私钥内容 | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
 | `SERVER_PORT` | SSH端口 | `22` |
 
-### 2. 邮件通知配置
+### 2. QQ邮箱通知配置
 
 | Secret名称 | 描述 | 示例值 |
 |-----------|------|--------|
-| `EMAIL_USERNAME` | 发送邮件的邮箱 | `your-email@gmail.com` |
-| `EMAIL_PASSWORD` | 邮箱密码或应用密码 | `your-app-password` |
+| `QQ_EMAIL_USERNAME` | QQ邮箱地址 | `1009383129@qq.com` |
+| `QQ_EMAIL_PASSWORD` | QQ邮箱授权码 | `your-qq-auth-code` |
 
 ## 🛠️ 配置步骤
 
@@ -53,7 +53,17 @@ chmod 600 ~/.ssh/authorized_keys
 sudo systemctl restart ssh
 ```
 
-### 步骤3: 在GitHub中配置Secrets
+### 步骤3: 获取QQ邮箱授权码
+
+1. 登录QQ邮箱网页版
+2. 点击 `设置` → `账户`
+3. 找到 `POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务`
+4. 开启 `IMAP/SMTP服务`
+5. 点击 `生成授权码`
+6. 按照提示发送短信验证
+7. 获取16位授权码（如：abcdefghijklmnop）
+
+### 步骤4: 在GitHub中配置Secrets
 
 1. 进入GitHub仓库页面
 2. 点击 `Settings` 标签
@@ -77,13 +87,13 @@ sudo systemctl restart ssh
 - **Name**: `SERVER_PORT`
 - **Secret**: `22`
 
-#### EMAIL_USERNAME
-- **Name**: `EMAIL_USERNAME`
-- **Secret**: `your-email@gmail.com`
+#### QQ_EMAIL_USERNAME
+- **Name**: `QQ_EMAIL_USERNAME`
+- **Secret**: `1009383129@qq.com`
 
-#### EMAIL_PASSWORD
-- **Name**: `EMAIL_PASSWORD`
-- **Secret**: `your-app-password`
+#### QQ_EMAIL_PASSWORD
+- **Name**: `QQ_EMAIL_PASSWORD`
+- **Secret**: `你的QQ邮箱授权码`
 
 ## 🔧 高级配置
 
