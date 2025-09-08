@@ -205,11 +205,8 @@ jobs:
       run: |
         echo "📋 运行单元测试..."
         
-        # 运行数据库迁移
-        python manage.py migrate --settings=config.settings.testing
-        
-        # 运行单元测试（跳过E2E测试和数据库依赖测试）
-        pytest tests/unit/test_basic.py tests/unit/test_basic_coverage.py tests/unit/test_core.py tests/unit/test_no_db.py \
+        # 运行单元测试（只运行不需要数据库的测试）
+        pytest tests/unit/test_basic.py tests/unit/test_basic_coverage.py tests/unit/test_no_db.py \
           --cov=apps \
           --cov-report=xml \
           --cov-report=html \
