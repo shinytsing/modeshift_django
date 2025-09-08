@@ -81,7 +81,8 @@ jobs:
           cd $DEPLOY_PATH &&
           echo '配置Git网络设置...' &&
           git config --global http.sslVerify false &&
-          git config --global http.postBuffer 1048576000 &&
+          git config --global http.postBuffer 524288000 &&
+          git config --global http.maxRequestBuffer 100M &&
           git config --global http.lowSpeedLimit 1000 &&
           git config --global http.lowSpeedTime 300 &&
           git config --global http.version HTTP/1.1 &&
@@ -94,7 +95,8 @@ jobs:
           git pull origin main || {
             echo 'Git pull失败，尝试重新配置...' &&
             git config --global http.sslVerify false &&
-            git config --global http.postBuffer 2097152000 &&
+            git config --global http.postBuffer 524288000 &&
+            git config --global http.maxRequestBuffer 100M &&
             git pull origin main
           }
         "
