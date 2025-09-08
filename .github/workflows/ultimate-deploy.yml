@@ -50,23 +50,34 @@ jobs:
         ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
         echo "🔗 测试SSH连接..."
-        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
-          echo "❌ SSH连接失败"
-          exit 1
-        }
+        # 多次重试SSH连接
+        for i in {1..3}; do
+          echo "SSH连接尝试 $i/3..."
+          if ssh -o ConnectTimeout=15 -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 $USERNAME@$HOST "echo 'SSH连接成功'"; then
+            echo "✅ SSH连接成功"
+            break
+          else
+            echo "⚠️ SSH连接失败，重试中..."
+            if [ $i -eq 3 ]; then
+              echo "❌ SSH连接失败，退出"
+              exit 1
+            fi
+            sleep 5
+          fi
+        done
         
-        echo "✅ SSH连接正常"
+        # 智能部署 - 分步骤执行避免SSH超时
+        echo "🚀 开始智能部署..."
         
-        # 智能部署
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 $USERNAME@$HOST "
+        # 步骤1: 检查网络和更新代码
+        echo "📥 步骤1: 检查网络和更新代码..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
-          
           echo '🔍 检查网络连接...' &&
           if ! ping -c 1 8.8.8.8 > /dev/null 2>&1; then
             echo '❌ 基本网络连接失败'
             exit 1
           fi &&
-          
           echo '📥 智能代码更新...' &&
           if curl -I --connect-timeout 10 https://github.com > /dev/null 2>&1; then
             echo '✅ GitHub连接正常，拉取最新代码' &&
@@ -77,15 +88,38 @@ jobs:
             git pull origin main || echo '⚠️ Git拉取失败，使用本地代码'
           else
             echo '⚠️ GitHub连接失败，使用本地代码'
-          fi &&
-          
-          echo '🛑 停止现有服务...' &&
-          pkill -TERM -f gunicorn || true &&
-          sleep 3 &&
-          pkill -9 -f gunicorn || true &&
-          sleep 2 &&
-          
-          echo '🐍 智能虚拟环境管理...' &&
+          fi
+        " || {
+          echo "❌ 步骤1失败"
+          exit 1
+        }
+        
+        # 步骤2: 停止现有服务
+        echo "🛑 步骤2: 停止现有服务..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          echo '检查现有gunicorn进程...' &&
+          if pgrep -f gunicorn > /dev/null; then
+            echo '发现gunicorn进程，正在停止...' &&
+            pkill -TERM -f gunicorn &&
+            sleep 5 &&
+            if pgrep -f gunicorn > /dev/null; then
+              echo '强制停止gunicorn进程...' &&
+              pkill -9 -f gunicorn &&
+              sleep 2
+            fi
+          else
+            echo '未发现gunicorn进程'
+          fi
+        " || {
+          echo "⚠️ 步骤2警告: 停止服务失败，继续执行"
+        }
+        
+        # 步骤3: 更新虚拟环境
+        echo "🐍 步骤3: 更新虚拟环境..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          echo '智能虚拟环境管理...' &&
           if [ ! -d 'venv' ] || [ requirements.txt -nt venv/pyvenv.cfg ]; then
             echo '创建/更新虚拟环境...' &&
             rm -rf venv &&
@@ -94,13 +128,20 @@ jobs:
             venv/bin/python -m pip install -r requirements.txt --no-cache-dir --quiet
           else
             echo '虚拟环境无需更新'
-          fi &&
-          
-          echo '📁 Django操作...' &&
+          fi
+        " || {
+          echo "❌ 步骤3失败"
+          exit 1
+        }
+        
+        # 步骤4: Django操作
+        echo "📁 步骤4: Django操作..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          echo 'Django操作...' &&
           venv/bin/python manage.py collectstatic --noinput --clear &&
           venv/bin/python manage.py migrate --noinput &&
-          
-          echo '👤 创建超级用户...' &&
+          echo '创建超级用户...' &&
           venv/bin/python manage.py shell -c \"
             from django.contrib.auth import get_user_model
             User = get_user_model()
@@ -109,10 +150,19 @@ jobs:
                 print('超级用户创建成功: admin/admin123')
             else:
                 print('超级用户已存在')
-          \" || echo '⚠️ 超级用户创建失败' &&
-          
-          echo '🚀 启动服务...' &&
+          \" || echo '⚠️ 超级用户创建失败'
+        " || {
+          echo "❌ 步骤4失败"
+          exit 1
+        }
+        
+        # 步骤5: 启动服务
+        echo "🚀 步骤5: 启动服务..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          echo '启动服务...' &&
           mkdir -p logs &&
+          echo '启动gunicorn服务...' &&
           nohup venv/bin/gunicorn \
             --bind 0.0.0.0:8000 \
             --workers 3 \
@@ -124,21 +174,40 @@ jobs:
             --error-logfile logs/gunicorn_error.log \
             wsgi:application \
             --daemon &&
-          
           echo '⏳ 等待服务启动...' &&
-          sleep 10 &&
-          
-          echo '🔍 验证服务状态...' &&
-          if ! pgrep -f gunicorn > /dev/null; then
-            echo '❌ gunicorn启动失败'
-            exit 1
-          fi &&
-          
+          sleep 15
+        " || {
+          echo "❌ 步骤5失败"
+          exit 1
+        }
+        
+        # 步骤6: 验证服务状态
+        echo "🔍 步骤6: 验证服务状态..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
+          cd $DEPLOY_PATH &&
+          echo '验证服务状态...' &&
+          for i in {1..5}; do
+            if pgrep -f gunicorn > /dev/null; then
+              echo '✅ gunicorn启动成功'
+              break
+            else
+              echo '⏳ 等待gunicorn启动... (尝试 $i/5)'
+              sleep 3
+              if [ $i -eq 5 ]; then
+                echo '❌ gunicorn启动失败'
+                echo '查看错误日志:'
+                tail -20 logs/gunicorn_error.log || echo '日志文件不存在'
+                exit 1
+              fi
+            fi
+          done &&
           echo '🔄 重载nginx...' &&
           sudo nginx -s reload || echo '⚠️ nginx重载失败' &&
-          
           echo '✅ 部署完成'
-        "
+        " || {
+          echo "❌ 步骤6失败"
+          exit 1
+        }
         
         echo "🎉 部署成功！"
 
