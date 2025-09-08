@@ -25,6 +25,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
+      - name: 📦 准备代码传输
+        run: |
+          echo "准备代码传输..."
+          # 创建代码压缩包
+          tar -czf code.tar.gz --exclude='.git' --exclude='venv' --exclude='__pycache__' --exclude='*.pyc' .
+          echo "代码压缩完成，大小: $(du -h code.tar.gz | cut -f1)"
+
       - name: 🔄 部署和重启服务
         run: |
           # 安装sshpass
@@ -59,6 +66,10 @@ jobs:
               echo '服务停止完成'
           "
           
+          # 步骤1.5: 传输代码
+          echo "步骤1.5: 传输代码..."
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' scp -o StrictHostKeyChecking=no code.tar.gz $SERVER_USER@$SERVER_HOST:/tmp/
+          
           # 步骤2: 部署代码和环境
           echo "步骤2: 部署代码和环境..."
           sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o ConnectTimeout=180 -o StrictHostKeyChecking=no -o ServerAliveInterval=5 -o ServerAliveCountMax=3 $SERVER_USER@$SERVER_HOST "
@@ -68,44 +79,13 @@ jobs:
               echo '检查网络连接...'
               ping -c 3 github.com || echo 'GitHub连接失败'
               
-              echo '克隆最新代码...'
-              # 使用GitHub Actions的checkout action下载的代码
-              echo '从GitHub Actions获取代码...'
-              # 创建临时目录下载代码
-              TEMP_DIR=\$(mktemp -d)
-              cd \$TEMP_DIR
-              
-              # 尝试使用wget下载代码压缩包
-              if wget -O code.zip 'https://github.com/shinytsing/modeshift_django/archive/refs/heads/main.zip' 2>/dev/null; then
-                  echo '代码下载成功'
-                  unzip -q code.zip
-                  mv modeshift_django-main '$DEPLOY_PATH'
-                  echo '代码解压完成'
-              else
-                  echo 'wget下载失败，尝试curl...'
-                  if curl -L -o code.zip 'https://github.com/shinytsing/modeshift_django/archive/refs/heads/main.zip' 2>/dev/null; then
-                      echo 'curl下载成功'
-                      unzip -q code.zip
-                      mv modeshift_django-main '$DEPLOY_PATH'
-                      echo '代码解压完成'
-                  else
-                      echo '所有下载方式都失败，使用备份代码...'
-                      mkdir -p '$DEPLOY_PATH'
-                      # 查找最新的备份目录
-                      LATEST_BACKUP=\$(ls -td '$DEPLOY_PATH.backup.'* 2>/dev/null | head -1)
-                      if [ -n \"\$LATEST_BACKUP\" ]; then
-                          cp -r \"\$LATEST_BACKUP\"/* '$DEPLOY_PATH/' 2>/dev/null
-                          echo '使用备份代码: '\$LATEST_BACKUP
-                      else
-                          echo '没有备份代码可用，创建空目录'
-                      fi
-                  fi
-              fi
-              
-              # 清理临时目录
-              cd /tmp && rm -rf \$TEMP_DIR
-              
+              echo '解压代码...'
+              mkdir -p '$DEPLOY_PATH'
               cd '$DEPLOY_PATH'
+              tar -xzf /tmp/code.tar.gz
+              rm /tmp/code.tar.gz
+              echo '代码解压完成'
+              
               echo '当前目录: ' \$(pwd)
               echo '目录内容: ' \$(ls -la)
               
@@ -115,7 +95,7 @@ jobs:
               pip install --upgrade pip
               
               echo '安装依赖...'
-              pip install -r requirements.txt
+              pip install -r requirements.txt --break-system-packages
               
               echo '收集静态文件...'
               python manage.py collectstatic --noinput
@@ -129,7 +109,8 @@ jobs:
               
               # 设置数据库环境变量
               export DJANGO_SETTINGS_MODULE=config.settings.production
-              export DATABASE_URL=postgresql://postgres:password@localhost:5432/modeshift_django
+              export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
+              export DATABASE_URL=postgresql://postgres:\$DB_PASSWORD@localhost:5432/modeshift_django
               
               echo '执行数据库迁移...'
               python manage.py migrate --noinput
