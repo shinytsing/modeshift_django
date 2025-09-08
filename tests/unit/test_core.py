@@ -146,7 +146,7 @@ class TestBasicFunctionality(TestCase):
     def test_string_operations(self):
         """测试字符串操作"""
         test_string = "QAToolBox测试"
-        self.assertEqual(len(test_string), 9)
+        self.assertEqual(len(test_string), 11)  # QAToolBox(9) + 测试(2) = 11
         self.assertIn("QAToolBox", test_string)
 
     def test_list_operations(self):

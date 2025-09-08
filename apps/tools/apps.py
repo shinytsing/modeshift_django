@@ -48,6 +48,12 @@ class ToolsConfig(AppConfig):
 
     def _start_scheduled_tasks(self):
         """启动定时任务"""
+        # 在测试环境中禁用后台任务
+        import os
+
+        if os.environ.get("DJANGO_SETTINGS_MODULE") == "config.settings.testing":
+            return
+
         try:
             import threading
             import time

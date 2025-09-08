@@ -35,7 +35,7 @@ class TestBasicFunctionality:
     def test_string_operations(self):
         """测试字符串操作"""
         test_string = "QAToolBox测试"
-        assert len(test_string) == 9
+        assert len(test_string) == 11  # QAToolBox(9) + 测试(2) = 11
         assert "QAToolBox" in test_string
         assert test_string.startswith("QAToolBox")
         assert test_string.endswith("测试")
@@ -249,7 +249,7 @@ class TestConfiguration:
         # 测试Django设置模块
         django_settings = os.environ.get("DJANGO_SETTINGS_MODULE")
         assert django_settings is not None
-        assert "test_minimal" in django_settings
+        assert "testing" in django_settings
 
     def test_python_path(self):
         """测试Python路径"""
