@@ -146,18 +146,34 @@ jobs:
             MISSING_MODULES="" &&
             # 检查Django
             if ! venv/bin/python -c 'import django; print(django.get_version())' > /dev/null 2>&1; then
-              MISSING_MODULES="django"
+              if [ -z "$MISSING_MODULES" ]; then
+                MISSING_MODULES="django"
+              else
+                MISSING_MODULES="$MISSING_MODULES django"
+              fi
             fi &&
             # 检查captcha模块
             if ! venv/bin/python -c 'import captcha' > /dev/null 2>&1; then
-              MISSING_MODULES="$MISSING_MODULES captcha"
+              if [ -z "$MISSING_MODULES" ]; then
+                MISSING_MODULES="captcha"
+              else
+                MISSING_MODULES="$MISSING_MODULES captcha"
+              fi
             fi &&
             # 检查其他关键模块
             if ! venv/bin/python -c 'import rest_framework' > /dev/null 2>&1; then
-              MISSING_MODULES="$MISSING_MODULES rest_framework"
+              if [ -z "$MISSING_MODULES" ]; then
+                MISSING_MODULES="rest_framework"
+              else
+                MISSING_MODULES="$MISSING_MODULES rest_framework"
+              fi
             fi &&
             if ! venv/bin/python -c 'import corsheaders' > /dev/null 2>&1; then
-              MISSING_MODULES="$MISSING_MODULES corsheaders"
+              if [ -z "$MISSING_MODULES" ]; then
+                MISSING_MODULES="corsheaders"
+              else
+                MISSING_MODULES="$MISSING_MODULES corsheaders"
+              fi
             fi &&
             if [ -n "$MISSING_MODULES" ]; then
               echo "发现缺失模块: $MISSING_MODULES，重新安装依赖..." &&
