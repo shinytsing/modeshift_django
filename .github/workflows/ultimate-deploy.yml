@@ -115,10 +115,25 @@ jobs:
           echo "⚠️ 步骤2警告: 停止服务失败，继续执行"
         }
         
-        # 步骤3: 更新虚拟环境
-        echo "🐍 步骤3: 更新虚拟环境..."
+        # 步骤3: 清理磁盘空间和更新虚拟环境
+        echo "🧹 步骤3: 清理磁盘空间和更新虚拟环境..."
         ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
+          echo '📊 检查磁盘空间...' &&
+          df -h &&
+          echo '🧹 清理磁盘空间...' &&
+          echo '清理临时文件...' &&
+          rm -rf /tmp/* || echo '临时文件清理失败' &&
+          rm -rf /root/.cache/* || echo '用户缓存清理失败' &&
+          apt-get clean || echo 'APT缓存清理失败' &&
+          echo '清理项目文件...' &&
+          find . -name '__pycache__' -type d -exec rm -rf {} + || echo 'Python缓存清理失败' &&
+          find . -name '*.pyc' -type f -delete || echo 'Python字节码清理失败' &&
+          rm -rf logs/* || echo '项目日志清理失败' &&
+          echo '清理Docker...' &&
+          docker system prune -af || echo 'Docker清理失败' &&
+          echo '📊 清理后磁盘空间:' &&
+          df -h &&
           echo '智能虚拟环境管理...' &&
           echo '检查虚拟环境状态...' &&
           if [ ! -d 'venv' ]; then
