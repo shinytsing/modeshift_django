@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: 📥 检出代码
       uses: actions/checkout@v4
-      
+    
     - name: 🐍 设置Python环境
       uses: actions/setup-python@v4
       with:
@@ -36,25 +36,56 @@ jobs:
       run: |
         echo "🚀 开始部署..."
         
+        # 检查必要的环境变量
+        if [ -z "$HOST" ] || [ -z "$USERNAME" ] || [ -z "$SSH_KEY" ] || [ -z "$DEPLOY_PATH" ]; then
+          echo "❌ 缺少必要的GitHub Secrets配置"
+          echo "请确保设置了以下Secrets:"
+          echo "- HOST: 服务器IP地址"
+          echo "- USERNAME: SSH用户名"
+          echo "- SSH_KEY: SSH私钥"
+          echo "- DEPLOY_PATH: 部署路径"
+          exit 1
+        fi
+        
+        echo "✅ 环境变量检查通过"
+        
         # 设置SSH
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
         
-        # 部署脚本
+        echo "🔑 添加SSH主机密钥..."
+        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts || {
+          echo "❌ SSH密钥扫描失败"
+          exit 1
+        }
+        
+        echo "🔗 测试SSH连接..."
+        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $USERNAME@$HOST "echo 'SSH连接成功'" || {
+          echo "❌ SSH连接失败"
+          exit 1
+        }
+        
+        echo "📦 开始部署..."
         ssh -o StrictHostKeyChecking=no $USERNAME@$HOST "
           cd $DEPLOY_PATH &&
+          echo '📥 拉取最新代码...' &&
           git pull origin main &&
+          echo '🐍 激活虚拟环境...' &&
           source venv/bin/activate &&
+          echo '📦 安装依赖...' &&
           pip install -r requirements.txt &&
+          echo '📁 收集静态文件...' &&
           python manage.py collectstatic --noinput &&
+          echo '🗄️ 运行数据库迁移...' &&
           python manage.py migrate &&
+          echo '🔄 重启服务...' &&
           sudo systemctl restart gunicorn &&
-          sudo systemctl restart nginx
+          sudo systemctl restart nginx &&
+          echo '✅ 部署完成'
         "
         
-        echo "✅ 部署完成"
+        echo "🎉 部署成功完成！"
 
   online-test:
     name: ✅ 线上测试
@@ -66,38 +97,92 @@ jobs:
       run: |
         echo "🌐 检查网页访问..."
         
+        # 检查必要的环境变量
+        WEB_URL="${{ secrets.WEB_URL }}"
+        if [ -z "$WEB_URL" ]; then
+          echo "❌ 缺少WEB_URL配置"
+          echo "请在GitHub Secrets中设置WEB_URL（如：https://yourdomain.com）"
+          exit 1
+        fi
+        
+        echo "✅ 使用网站URL: $WEB_URL"
+        
         # 等待服务启动
+        echo "⏳ 等待服务启动..."
         sleep 30
         
-        # 检查网页
-        WEB_URL="${{ secrets.WEB_URL }}"
+        echo "🔍 开始网页检查..."
         
+        # 检查首页
         echo "检查首页..."
-        curl -f "$WEB_URL/" && echo "✅ 首页访问正常" || echo "❌ 首页访问失败"
+        if curl -f -s --max-time 10 "$WEB_URL/" > /dev/null; then
+          echo "✅ 首页访问正常"
+        else
+          echo "❌ 首页访问失败"
+        fi
         
+        # 检查静态文件
         echo "检查静态文件..."
-        curl -f "$WEB_URL/static/" && echo "✅ 静态文件正常" || echo "❌ 静态文件失败"
+        if curl -f -s --max-time 10 "$WEB_URL/static/" > /dev/null; then
+          echo "✅ 静态文件正常"
+        else
+          echo "❌ 静态文件失败"
+        fi
         
+        # 检查管理后台
         echo "检查管理后台..."
-        curl -f "$WEB_URL/admin/" && echo "✅ 管理后台正常" || echo "❌ 管理后台失败"
+        if curl -f -s --max-time 10 "$WEB_URL/admin/" > /dev/null; then
+          echo "✅ 管理后台正常"
+        else
+          echo "❌ 管理后台失败"
+        fi
     
     - name: 🔌 API测试
       run: |
         echo "🔌 检查API接口..."
         
-        # 检查API端点
+        # 检查必要的环境变量
         API_URL="${{ secrets.API_URL }}"
+        if [ -z "$API_URL" ]; then
+          echo "❌ 缺少API_URL配置"
+          echo "请在GitHub Secrets中设置API_URL（如：https://yourdomain.com）"
+          exit 1
+        fi
         
+        echo "✅ 使用API URL: $API_URL"
+        
+        echo "🔍 开始API检查..."
+        
+        # 检查API根路径
         echo "检查API根路径..."
-        curl -f "$API_URL/api/" && echo "✅ API根路径正常" || echo "❌ API根路径失败"
+        if curl -f -s --max-time 10 "$API_URL/api/" > /dev/null; then
+          echo "✅ API根路径正常"
+        else
+          echo "❌ API根路径失败"
+        fi
         
+        # 检查健康检查端点
         echo "检查健康检查端点..."
-        curl -f "$API_URL/health/" && echo "✅ 健康检查正常" || echo "❌ 健康检查失败"
+        if curl -f -s --max-time 10 "$API_URL/health/" > /dev/null; then
+          echo "✅ 健康检查正常"
+        else
+          echo "❌ 健康检查失败"
+        fi
         
+        # 检查用户API
         echo "检查用户API..."
-        curl -f "$API_URL/api/users/" && echo "✅ 用户API正常" || echo "❌ 用户API失败"
+        if curl -f -s --max-time 10 "$API_URL/api/users/" > /dev/null; then
+          echo "✅ 用户API正常"
+        else
+          echo "❌ 用户API失败"
+        fi
         
+        # 检查工具API
         echo "检查工具API..."
-        curl -f "$API_URL/api/tools/" && echo "✅ 工具API正常" || echo "❌ 工具API失败"
+        if curl -f -s --max-time 10 "$API_URL/api/tools/" > /dev/null; then
+          echo "✅ 工具API正常"
+        else
+          echo "❌ 工具API失败"
+        fi
         
         echo "✅ 线上测试完成"
