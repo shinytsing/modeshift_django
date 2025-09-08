@@ -873,13 +873,8 @@ jobs:
           # 设置错误处理
           set -e
           
-          # 使用简化的部署脚本
-          if [ -f "deploy-simple.sh" ]; then
-            echo "使用简化部署脚本..."
-            chmod +x deploy-simple.sh
-            ./deploy-simple.sh
-          else
-            echo "简化部署脚本不存在，使用完整部署流程..."
+          # 直接使用完整部署流程（deploy-simple.sh已删除）
+          echo "使用完整部署流程..."
           
           # 1. 进入项目目录
           PROJECT_DIR="$HOME/modeshift_django"
@@ -1088,7 +1083,6 @@ jobs:
           echo "🌐 访问地址: http://47.103.143.152:8000"
           echo "👤 管理员账号: admin/admin123"
           echo "📝 提交信息: ${{ github.sha }}"
-          fi
 
   # ===== 7. 紧急部署 =====
   emergency-deploy:
