@@ -111,6 +111,17 @@ xmind==1.2.0
 whitenoise==6.6.0
 python-decouple==3.8
 
+# ===== 移动端优化 =====
+# 静态文件压缩和优化
+django-compressor==4.4
+django-storages==1.14.2
+# 数据库连接池
+django-db-connection-pool==1.2.0
+# 缓存优化
+django-cacheops==6.1
+# 性能监控
+django-silk==5.0.4
+
 # ===== 其他工具 =====
 python-dotenv==1.0.0
 click==8.1.7

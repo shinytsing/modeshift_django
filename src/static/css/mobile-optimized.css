@@ -1,0 +1,613 @@
+/* 移动端优化CSS - 性能优先 */
+
+/* 基础优化 */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 视口优化 */
+@viewport {
+    width: device-width;
+    zoom: 1.0;
+}
+
+/* 移动端基础样式 */
+@media screen and (max-width: 768px) {
+    /* 基础重置 */
+    html {
+        font-size: 14px;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
+        background-color: #f8f9fa;
+    }
+    
+    /* 容器优化 */
+    .container,
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+    }
+    
+    /* 导航栏移动端优化 */
+    .navbar {
+        padding: 0.5rem 1rem;
+        min-height: 56px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #00ffe7 !important;
+        text-shadow: 0 0 10px rgba(0, 255, 231, 0.5);
+    }
+    
+    .navbar-toggler {
+        border: none;
+        padding: 0.25rem 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        color: #00ffe7;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+        background: rgba(0, 255, 231, 0.1);
+        color: #00ffe7 !important;
+        transform: translateX(5px);
+    }
+    
+    /* 卡片移动端优化 */
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    /* 按钮移动端优化 */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        margin: 0.25rem;
+        min-height: 44px; /* 触摸友好 */
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        color: white;
+    }
+    
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        min-height: 48px;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        min-height: 36px;
+    }
+    
+    /* 表单移动端优化 */
+    .form-control {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        min-height: 44px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    /* 表格移动端优化 */
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+        vertical-align: middle;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+    }
+    
+    /* 模态框移动端优化 */
+    .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: #f8f9fa;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    /* 工具提示移动端优化 */
+    .tooltip {
+        font-size: 0.8rem;
+    }
+    
+    .tooltip-inner {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        max-width: 200px;
+    }
+    
+    /* 下拉菜单移动端优化 */
+    .dropdown-menu {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 0.5rem 0;
+        min-width: 200px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        color: #495057;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* 分页移动端优化 */
+    .pagination {
+        justify-content: center;
+        margin: 1rem 0;
+    }
+    
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.125rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        color: #667eea;
+        min-width: 44px;
+        text-align: center;
+    }
+    
+    .page-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+    }
+    
+    /* 警告框移动端优化 */
+    .alert {
+        border: none;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+    }
+    
+    /* 进度条移动端优化 */
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    
+    /* 徽章移动端优化 */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .badge-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .badge-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    
+    /* 列表组移动端优化 */
+    .list-group-item {
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transform: translateX(5px);
+    }
+    
+    .list-group-item.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+    }
+    
+    /* 媒体对象移动端优化 */
+    .media {
+        display: flex;
+        align-items: flex-start;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    
+    .media-body {
+        flex: 1;
+        margin-left: 1rem;
+    }
+    
+    .media-object {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    /* 工具提示和弹出框 */
+    .popover {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+    }
+    
+    .popover-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        font-weight: 600;
+    }
+    
+    /* 滚动条优化 */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+    
+    /* 选择文本样式 */
+    ::selection {
+        background: rgba(102, 126, 234, 0.3);
+        color: #333;
+    }
+    
+    ::-moz-selection {
+        background: rgba(102, 126, 234, 0.3);
+        color: #333;
+    }
+}
+
+/* 超小屏幕优化 (320px以下) */
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+    
+    .container,
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .navbar {
+        padding: 0.4rem 0.8rem;
+        min-height: 52px;
+    }
+    
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        min-height: 40px;
+    }
+    
+    .card-body {
+        padding: 0.8rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.3rem;
+    }
+}
+
+/* 横屏模式优化 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .navbar {
+        min-height: 48px;
+        padding: 0.3rem 1rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+        max-height: calc(100vh - 1rem);
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+}
+
+/* 高DPI屏幕优化 */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+    .btn,
+    .form-control,
+    .card {
+        border-width: 0.5px;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover,
+    .nav-link:hover,
+    .list-group-item:hover {
+        transform: none;
+    }
+    
+    .btn:active,
+    .nav-link:active {
+        transform: scale(0.98);
+    }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e9ecef;
+    }
+    
+    .card {
+        background-color: #2d2d2d;
+        color: #e9ecef;
+    }
+    
+    .form-control {
+        background-color: #2d2d2d;
+        border-color: #495057;
+        color: #e9ecef;
+    }
+    
+    .form-control:focus {
+        background-color: #2d2d2d;
+        border-color: #667eea;
+        color: #e9ecef;
+    }
+}
+
+/* 减少动画以提升性能 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 打印样式优化 */
+@media print {
+    .navbar,
+    .btn,
+    .modal,
+    .dropdown-menu {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+}
