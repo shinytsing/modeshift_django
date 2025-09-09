@@ -1000,21 +1000,27 @@ def avatar_test_view(request):
 def generate_progressive_captcha(request):
     """生成渐进式验证码"""
     try:
+        # 确保session存在
+        if not request.session.session_key:
+            request.session.create()
+            print(f"生成验证码时创建新session: {request.session.session_key}")
+
         captcha_service = ProgressiveCaptchaService()
         session_key = request.session.session_key
 
         if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
+            return JsonResponse({"success": False, "message": "会话创建失败，请刷新页面重试"}, status=500)
 
         result = captcha_service.generate_captcha(session_key)
         print(f"生成验证码结果: {result}")
         return JsonResponse(result)
 
     except Exception as e:
+        print(f"生成验证码异常: {str(e)}")
         return JsonResponse({"success": False, "message": f"生成验证码失败: {str(e)}"}, status=500)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def verify_progressive_captcha(request):
     """验证渐进式验证码"""
@@ -1031,23 +1037,30 @@ def verify_progressive_captcha(request):
             print(f"参数检查失败: captcha_id={captcha_id}, captcha_type={captcha_type}, user_input={user_input}")
             return JsonResponse({"success": False, "message": "缺少必要的验证参数"})
 
+        # 确保session存在
+        if not request.session.session_key:
+            request.session.create()
+            print(f"创建新session: {request.session.session_key}")
+
         captcha_service = ProgressiveCaptchaService()
         session_key = request.session.session_key
 
         if not session_key:
-            return JsonResponse({"success": False, "message": "会话无效，请刷新页面"})
+            return JsonResponse({"success": False, "message": "会话创建失败，请刷新页面重试"})
 
         result = captcha_service.verify_captcha(session_key, captcha_id, captcha_type, user_input)
 
         # 如果验证成功，在session中标记
         if result.get("success"):
             request.session["progressive_captcha_verified"] = True
+            request.session.save()  # 确保session被保存
 
         return JsonResponse(result)
 
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "message": "请求数据格式错误"}, status=400)
     except Exception as e:
+        print(f"验证码验证异常: {str(e)}")
         return JsonResponse({"success": False, "message": f"验证失败: {str(e)}"}, status=500)
 
 
@@ -1199,3 +1212,136 @@ def session_status_api(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "message": f"获取session状态失败: {str(e)}"}, status=500)
+
+
+# 用户登录API
+@csrf_exempt
+@require_http_methods(["POST"])
+def user_login_api(request):
+    """用户登录API"""
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({
+                "success": True, 
+                "message": "登录成功",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
+            })
+        else:
+            return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
+            
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"登录失败: {str(e)}"}, status=500)
+
+
+# 用户注册API
+@csrf_exempt
+@require_http_methods(["POST"])
+def user_register_api(request):
+    """用户注册API"""
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email', '')
+        
+        if not username or not password:
+            return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
+        
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"success": False, "message": "用户名已存在"}, status=400)
+        
+        if len(password) < 8:
+            return JsonResponse({"success": False, "message": "密码必须大于8位"}, status=400)
+        
+        user = User.objects.create_user(username=username, password=password, email=email)
+        
+        # 创建用户相关记录
+        UserRole.objects.create(user=user, role="user")
+        UserStatus.objects.create(user=user, status="active")
+        UserMembership.objects.create(user=user, membership_type="free")
+        Profile.objects.create(user=user)
+        
+        return JsonResponse({
+            "success": True, 
+            "message": "注册成功",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"注册失败: {str(e)}"}, status=500)
+
+
+# 用户资料API
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def user_profile_api(request):
+    """用户资料API"""
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, "message": "用户未登录"}, status=401)
+        
+        if request.method == "GET":
+            # 获取用户资料
+            profile, created = Profile.objects.get_or_create(user=request.user)
+            return JsonResponse({
+                "success": True,
+                "data": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "first_name": request.user.first_name,
+                    "last_name": request.user.last_name,
+                    "date_joined": request.user.date_joined.isoformat(),
+                    "last_login": request.user.last_login.isoformat() if request.user.last_login else None,
+                    "profile": {
+                        "bio": profile.bio if hasattr(profile, 'bio') else '',
+                        "avatar": profile.avatar.url if hasattr(profile, 'avatar') and profile.avatar else None
+                    }
+                }
+            })
+        
+        elif request.method == "POST":
+            # 更新用户资料
+            data = json.loads(request.body)
+            profile, created = Profile.objects.get_or_create(user=request.user)
+            
+            if 'first_name' in data:
+                request.user.first_name = data['first_name']
+            if 'last_name' in data:
+                request.user.last_name = data['last_name']
+            if 'email' in data:
+                request.user.email = data['email']
+            
+            request.user.save()
+            
+            return JsonResponse({
+                "success": True,
+                "message": "资料更新成功",
+                "data": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "first_name": request.user.first_name,
+                    "last_name": request.user.last_name
+                }
+            })
+            
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"操作失败: {str(e)}"}, status=500)

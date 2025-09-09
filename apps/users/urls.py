@@ -36,6 +36,10 @@ urlpatterns = [
     path("api/session-status/", views.session_status_api, name="session_status_api"),
     path("api/logout/", views.user_logout_api, name="user_logout_api"),
     path("api/extend-session/", views.extend_session_api, name="extend_session_api"),
+    # 用户API端点
+    path("api/login/", views.user_login_api, name="user_login_api"),
+    path("api/register/", views.user_register_api, name="user_register_api"),
+    path("api/profile/", views.user_profile_api, name="user_profile_api"),
     # 测试页面
     path("test-logout/", views.test_logout_view, name="test_logout"),
 ]

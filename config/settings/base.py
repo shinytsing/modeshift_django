@@ -52,7 +52,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-# 允许的主机
+# 允许的主机 - 基础配置，各环境可以覆盖
 ALLOWED_HOSTS = env("ALLOWED_HOSTS") + ["testserver"]
 
 # 文件上传设置

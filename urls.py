@@ -89,3 +89,11 @@ else:
     urlpatterns += [
         path("media/<path:path>", secure_media_serve, name="secure_media"),
     ]
+
+# 生产环境静态文件服务
+if not settings.DEBUG:
+    from django.views.static import serve
+    urlpatterns += [
+        path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
+        path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]

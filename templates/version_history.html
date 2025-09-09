@@ -5,65 +5,182 @@
 
 {% block content %}
 <div class="version-history-container">
+    <!-- 极客风格背景 -->
+    <div class="geek-background">
+        <div class="matrix-rain"></div>
+        <div class="geometric-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="row">
             <div class="col-12">
+                <!-- 页面头部 -->
                 <div class="version-header">
-                    <h1 class="version-title">
-                        <i class="fas fa-history"></i> 版本迭代记录
-                    </h1>
-                    <p class="version-subtitle">记录ModeShift的每一次重要更新</p>
+                    <div class="header-content">
+                        <h1 class="version-title">
+                            <span class="title-glitch" data-text="VERSION HISTORY">VERSION HISTORY</span>
+                        </h1>
+                        <p class="version-subtitle">记录ModeShift的每一次重要更新与成长</p>
+                    </div>
                 </div>
-                
+
+                <!-- 版本时间轴 -->
                 <div class="version-timeline">
+                    <div class="timeline-line"></div>
+                    
                     <!-- 版本记录按时间倒序排列 -->
-                    <div class="version-item">
-                        <div class="version-badge">v1.0.0</div>
+                    <div class="version-item" data-version="v1.0.0">
+                        <div class="version-marker">
+                            <div class="marker-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="marker-pulse"></div>
+                        </div>
                         <div class="version-content">
-                            <h3>正式发布</h3>
-                            <p class="version-date">2025年8月10日</p>
-                            <ul class="version-features">
-                                <li>✅ 完成所有核心功能开发</li>
-                                <li>✅ 修复页面链接和导航问题</li>
-                                <li>✅ 优化用户体验和界面设计</li>
-                                <li>✅ 确保所有页面可点击功能正常</li>
-                            </ul>
+                            <div class="version-card">
+                                <div class="card-header">
+                                    <div class="version-badge major">v1.0.0</div>
+                                    <div class="version-date">2025年9月9日</div>
+                                </div>
+                                <div class="card-body">
+                                    <h3 class="version-title">正式发布版本</h3>
+                                    <p class="version-description">经过精心打磨，ModeShift正式与大家见面！这是一个功能完整、体验优秀的版本。</p>
+                                    <div class="features-grid">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>完成所有核心功能开发</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-link"></i>
+                                            <span>修复页面链接和导航问题</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-palette"></i>
+                                            <span>优化用户体验和界面设计</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-mouse-pointer"></i>
+                                            <span>确保所有页面可点击功能正常</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="version-tag stable">稳定版</span>
+                                    <span class="version-tag production">生产环境</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="version-item">
-                        <div class="version-badge">v0.9.0</div>
+
+                    <div class="version-item" data-version="v0.9.0">
+                        <div class="version-marker">
+                            <div class="marker-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                        </div>
                         <div class="version-content">
-                            <h3>功能完善阶段</h3>
-                            <p class="version-date">2025年8月</p>
-                            <ul class="version-features">
-                                <li>🎯 添加模式页面导航</li>
-                                <li>🎯 完善工具页面功能</li>
-                                <li>🎯 优化API接口</li>
-                                <li>🎯 增强用户体验</li>
-                            </ul>
+                            <div class="version-card">
+                                <div class="card-header">
+                                    <div class="version-badge beta">v0.9.0</div>
+                                    <div class="version-date">2025年8月</div>
+                                </div>
+                                <div class="card-body">
+                                    <h3 class="version-title">功能完善阶段</h3>
+                                    <p class="version-description">在正式发布前的最后冲刺，我们专注于完善用户体验和功能细节。</p>
+                                    <div class="features-grid">
+                                        <div class="feature-item">
+                                            <i class="fas fa-compass"></i>
+                                            <span>添加模式页面导航</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-wrench"></i>
+                                            <span>完善工具页面功能</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-plug"></i>
+                                            <span>优化API接口</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-heart"></i>
+                                            <span>增强用户体验</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="version-tag beta">测试版</span>
+                                    <span class="version-tag development">开发环境</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="version-item">
-                        <div class="version-badge">v0.8.0</div>
+
+                    <div class="version-item" data-version="v0.8.0">
+                        <div class="version-marker">
+                            <div class="marker-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                        </div>
                         <div class="version-content">
-                            <h3>核心功能开发</h3>
-                            <p class="version-date">2025年7月</p>
-                            <ul class="version-features">
-                                <li>🚀 实现四大模式系统</li>
-                                <li>🚀 开发工具集功能</li>
-                                <li>🚀 建立用户系统</li>
-                                <li>🚀 创建基础架构</li>
-                            </ul>
+                            <div class="version-card">
+                                <div class="card-header">
+                                    <div class="version-badge alpha">v0.8.0</div>
+                                    <div class="version-date">2025年7月</div>
+                                </div>
+                                <div class="card-body">
+                                    <h3 class="version-title">核心功能开发</h3>
+                                    <p class="version-description">从零开始构建ModeShift的核心架构，为后续发展奠定坚实基础。</p>
+                                    <div class="features-grid">
+                                        <div class="feature-item">
+                                            <i class="fas fa-layer-group"></i>
+                                            <span>实现四大模式系统</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-toolbox"></i>
+                                            <span>开发工具集功能</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-users"></i>
+                                            <span>建立用户系统</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-building"></i>
+                                            <span>创建基础架构</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="version-tag alpha">内测版</span>
+                                    <span class="version-tag foundation">基础架构</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- 页面底部 -->
                 <div class="version-footer">
-                    <a href="{% url 'home' %}" class="btn btn-primary">
-                        <i class="fas fa-home"></i> 返回主页
-                    </a>
+                    <div class="footer-content">
+                        <div class="footer-text">
+                            <h4>期待更多精彩更新</h4>
+                            <p>我们持续改进，为您带来更好的体验</p>
+                        </div>
+                        <div class="footer-actions">
+                            <a href="{% url 'home' %}" class="btn btn-primary">
+                                <i class="fas fa-home"></i>
+                                <span>返回主页</span>
+                            </a>
+                            <a href="#" class="btn btn-outline" onclick="scrollToTop()">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>回到顶部</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,126 +188,1458 @@
 </div>
 
 <style>
+/* 极客风格版本历史容器 */
 .version-history-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem 0;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
     color: #fff;
+    position: relative;
+    overflow-x: hidden;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
 
+/* 极客风格背景 */
+.geek-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 矩阵雨效果 */
+.matrix-rain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        rgba(0, 255, 231, 0.05) 50%, 
+        transparent 100%);
+    animation: matrixRain 20s linear infinite;
+}
+
+/* 几何形状 */
+.geometric-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.shape {
+    position: absolute;
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    animation: float 8s ease-in-out infinite;
+}
+
+.shape-1 {
+    width: 40px;
+    height: 40px;
+    top: 20%;
+    left: 10%;
+    border-radius: 50%;
+    animation-delay: 0s;
+}
+
+.shape-2 {
+    width: 30px;
+    height: 30px;
+    top: 60%;
+    right: 15%;
+    transform: rotate(45deg);
+    animation-delay: 2s;
+}
+
+.shape-3 {
+    width: 50px;
+    height: 50px;
+    top: 40%;
+    left: 80%;
+    border-radius: 50%;
+    animation-delay: 4s;
+}
+
+.shape-4 {
+    width: 25px;
+    height: 25px;
+    top: 80%;
+    left: 20%;
+    transform: rotate(45deg);
+    animation-delay: 1s;
+}
+
+.shape-5 {
+    width: 35px;
+    height: 35px;
+    top: 10%;
+    right: 30%;
+    border-radius: 50%;
+    animation-delay: 3s;
+}
+
+@keyframes matrixRain {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(180deg); }
+}
+
+/* 页面头部 */
 .version-header {
+    padding: 4rem 0 2rem;
     text-align: center;
-    margin-bottom: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
 }
 
 .version-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.title-glitch {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #00ffe7;
+    text-shadow: 
+        0 0 10px #00ffe7,
+        0 0 20px #00ffe7,
+        0 0 30px rgba(0, 255, 231, 0.8);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 4px;
+    position: relative;
+    display: inline-block;
+    animation: glitch 5s infinite, breathe 3s ease-in-out infinite;
+    will-change: transform;
+    filter: brightness(1) contrast(1.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.title-glitch:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1) contrast(1.3);
+    text-shadow: 
+        0 0 15px #00ffe7,
+        0 0 25px #00ffe7,
+        0 0 35px rgba(0, 255, 231, 0.9);
+}
+
+.title-glitch::before,
+.title-glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.title-glitch::before {
+    animation: glitch-1 2s infinite;
+    color: #ff00ff;
+    z-index: -1;
+    text-shadow: 
+        0 0 8px #ff00ff,
+        0 0 16px #ff00ff;
+    filter: brightness(0.8);
+}
+
+.title-glitch::after {
+    animation: glitch-2 2s infinite;
+    color: #00ffff;
+    z-index: -2;
+    text-shadow: 
+        0 0 8px #00ffff,
+        0 0 16px #00ffff;
+    filter: brightness(0.8);
 }
 
 .version-subtitle {
     font-size: 1.2rem;
-    opacity: 0.9;
-}
-
-.version-timeline {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.version-item {
-    display: flex;
-    align-items: flex-start;
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: rgba(255,255,255,0.1);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    transition: transform 0.3s ease;
+    font-weight: 300;
+    letter-spacing: 1px;
 }
 
-.version-item:hover {
-    transform: translateY(-5px);
+@keyframes glitch {
+    0%, 90%, 100% { 
+        transform: translate(0); 
+        text-shadow: 
+          0 0 10px #00ffe7,
+          0 0 20px #00ffe7,
+          0 0 30px rgba(0, 255, 231, 0.8);
+    }
+    5% { 
+        transform: translate(-2px, 2px); 
+        text-shadow: 
+          0 0 12px #00ffe7,
+          0 0 22px #00ffe7,
+          0 0 32px rgba(0, 255, 231, 0.9);
+    }
+    10% { 
+        transform: translate(2px, -2px); 
+        text-shadow: 
+          0 0 8px #00ffe7,
+          0 0 18px #00ffe7,
+          0 0 28px rgba(0, 255, 231, 0.7);
+    }
+}
+
+@keyframes glitch-1 {
+    0%, 90%, 100% { 
+        transform: translate(0); 
+        text-shadow: 
+          0 0 8px #ff00ff,
+          0 0 16px #ff00ff;
+    }
+    5% { 
+        transform: translate(2px, -2px); 
+        text-shadow: 
+          0 0 10px #ff00ff,
+          0 0 18px #ff00ff;
+    }
+    10% { 
+        transform: translate(-2px, 2px); 
+        text-shadow: 
+          0 0 6px #ff00ff,
+          0 0 14px #ff00ff;
+    }
+}
+
+@keyframes glitch-2 {
+    0%, 90%, 100% { 
+        transform: translate(0); 
+        text-shadow: 
+          0 0 8px #00ffff,
+          0 0 16px #00ffff;
+    }
+    5% { 
+        transform: translate(-2px, 2px); 
+        text-shadow: 
+          0 0 10px #00ffff,
+          0 0 18px #00ffff;
+    }
+    10% { 
+        transform: translate(2px, -2px); 
+        text-shadow: 
+          0 0 6px #00ffff,
+          0 0 14px #00ffff;
+    }
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+/* 版本时间轴 */
+.version-timeline {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
+    z-index: 2;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #00ffe7 0%, #00bfff 50%, #ff00ff 100%);
+    transform: translateX(-50%);
+    border-radius: 2px;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.3);
+}
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #00ffe7;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px #00ffe7;
+}
+
+.timeline-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #ff00ff;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px #ff00ff;
+}
+
+/* 时间轴项目 */
+.version-item {
+    position: relative;
+    margin-bottom: 4rem;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+.version-item:nth-child(2) { animation-delay: 0.2s; }
+.version-item:nth-child(3) { animation-delay: 0.4s; }
+.version-item:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 版本标记 */
+.version-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #00ffe7 0%, #00bfff 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(0, 255, 231, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.version-item:hover .marker-icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(0, 255, 231, 0.6);
+}
+
+.marker-pulse {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 2px solid #00ffe7;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* 版本内容 */
+.version-content {
+    width: 45%;
+    position: relative;
+}
+
+.version-item:nth-child(odd) .version-content {
+    margin-right: auto;
+    margin-left: 0;
+    text-align: right;
+}
+
+.version-item:nth-child(even) .version-content {
+    margin-left: auto;
+    margin-right: 0;
+    text-align: left;
+}
+
+/* 版本卡片 */
+.version-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.version-item:hover .version-card {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border-color: rgba(0, 255, 231, 0.4);
+}
+
+.version-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.version-item:hover .version-card::before {
+    left: 100%;
+}
+
+/* 卡片头部 */
+.card-header {
+    padding: 1.5rem 2rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 255, 231, 0.2);
 }
 
 .version-badge {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    padding: 0.5rem 1.2rem;
+    border-radius: 25px;
     font-weight: 600;
     font-size: 0.9rem;
-    margin-right: 1.5rem;
-    min-width: 80px;
-    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'JetBrains Mono', monospace;
 }
 
-.version-content {
-    flex: 1;
+.version-badge.major {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
 }
 
-.version-content h3 {
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
-    font-weight: 600;
+.version-badge.beta {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.version-badge.alpha {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
 }
 
 .version-date {
-    color: rgba(255,255,255,0.7);
+    color: rgba(0, 255, 231, 0.7);
     font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* 卡片主体 */
+.card-body {
+    padding: 1.5rem 2rem;
+}
+
+.version-title {
+    font-size: 1.5rem;
+    font-weight: 700;
     margin-bottom: 1rem;
+    color: #fff;
 }
 
-.version-features {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.version-description {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
 }
 
-.version-features li {
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+/* 功能网格 */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
 }
 
-.version-footer {
-    text-align: center;
-    margin-top: 3rem;
-}
-
-.version-footer .btn {
-    padding: 0.75rem 2rem;
-    font-size: 1.1rem;
-    border-radius: 25px;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(0, 255, 231, 0.05);
+    border-radius: 10px;
     transition: all 0.3s ease;
 }
 
-.version-footer .btn:hover {
-    background: rgba(255,255,255,0.3);
+.feature-item:hover {
+    background: rgba(0, 255, 231, 0.1);
+    transform: translateX(5px);
+}
+
+.feature-item i {
+    color: #00ffe7;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.feature-item span {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+/* 卡片底部 */
+.card-footer {
+    padding: 1rem 2rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.version-tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.version-tag.stable {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.version-tag.beta {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.version-tag.alpha {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.version-tag.production {
+    background: rgba(0, 191, 255, 0.2);
+    color: #00bfff;
+    border: 1px solid rgba(0, 191, 255, 0.3);
+}
+
+.version-tag.development {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.version-tag.foundation {
+    background: rgba(158, 158, 158, 0.2);
+    color: #9E9E9E;
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+/* 页面底部 */
+.version-footer {
+    padding: 3rem 0;
+    text-align: center;
+    background: rgba(0, 255, 231, 0.02);
+    border-top: 1px solid rgba(0, 255, 231, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-text h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.footer-text p {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00ffe7 0%, #00bfff 100%);
+    color: #0a0a0a;
+    box-shadow: 0 4px 15px rgba(0, 255, 231, 0.3);
+}
+
+.btn-primary:hover {
     transform: translateY(-2px);
-    color: white;
+    box-shadow: 0 8px 25px rgba(0, 255, 231, 0.4);
+    color: #0a0a0a;
     text-decoration: none;
 }
 
+.btn-outline {
+    background: transparent;
+    color: #00ffe7;
+    border: 2px solid #00ffe7;
+}
+
+.btn-outline:hover {
+    background: rgba(0, 255, 231, 0.1);
+    color: #00ffe7;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
-    .version-item {
+    .title-glitch {
+        font-size: 2.5rem;
+        letter-spacing: 2px;
+    }
+    
+    .timeline-line {
+        left: 30px;
+    }
+    
+    .version-marker {
+        left: 30px;
+    }
+    
+    .version-content {
+        width: calc(100% - 80px);
+        margin-left: 80px !important;
+        text-align: left !important;
+    }
+    
+    .footer-content {
         flex-direction: column;
+        gap: 2rem;
         text-align: center;
     }
     
-    .version-badge {
-        margin-right: 0;
-        margin-bottom: 1rem;
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-glitch {
+        font-size: 2rem;
+        letter-spacing: 1px;
     }
     
-    .version-title {
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    .version-content {
+        width: calc(100% - 60px);
+        margin-left: 60px !important;
+    }
+    
+    .version-marker {
+        left: 30px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .marker-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+}
+
+/* 极客风格统计信息 */
+.version-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 255, 231, 0.05);
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-item:hover::before {
+    left: 100%;
+}
+
+.stat-item:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 255, 231, 0.1);
+    border-color: rgba(0, 255, 231, 0.4);
+    box-shadow: 0 5px 20px rgba(0, 255, 231, 0.2);
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: #00ffe7;
+    text-shadow: 0 0 10px #00ffe7;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #00ffe7;
+    text-shadow: 0 0 10px #00ffe7;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: rgba(0, 255, 231, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* 极客风格时间轴 */
+.geek-timeline {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
+    z-index: 2;
+}
+
+/* 终端窗口 */
+.timeline-terminal {
+    background: #0a0a0a;
+    border: 1px solid #00ffe7;
+    border-radius: 8px;
+    margin-bottom: 3rem;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.3);
+    overflow: hidden;
+}
+
+.terminal-header {
+    background: #1a1a1a;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #333;
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.terminal-buttons span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.btn-close { background: #ff5f56; }
+.btn-minimize { background: #ffbd2e; }
+.btn-maximize { background: #27ca3f; }
+
+.terminal-title {
+    color: #00ffe7;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.terminal-body {
+    padding: 1rem;
+    background: #0a0a0a;
+}
+
+.terminal-line {
+    margin-bottom: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+}
+
+.prompt {
+    color: #00ffe7;
+    font-weight: 600;
+}
+
+.command {
+    color: #ffffff;
+    margin-left: 0.5rem;
+}
+
+.output {
+    color: #00ff00;
+    margin-left: 1rem;
+}
+
+/* 版本时间轴 */
+.version-timeline {
+    position: relative;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #00ffe7 0%, #00bfff 50%, #ff00ff 100%);
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(0, 255, 231, 0.5);
+}
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: #00ffe7;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px #00ffe7;
+}
+
+.timeline-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: #ff00ff;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+/* 时间轴项目 */
+.version-item {
+    position: relative;
+    margin-bottom: 4rem;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+.version-item:nth-child(2) { animation-delay: 0.2s; }
+.version-item:nth-child(3) { animation-delay: 0.4s; }
+.version-item:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 版本标记 */
+.version-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-terminal {
+    width: 50px;
+    height: 50px;
+    background: #0a0a0a;
+    border: 2px solid #00ffe7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.version-item:hover .marker-terminal {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(0, 255, 231, 0.6);
+    border-color: #00bfff;
+}
+
+.terminal-dot {
+    width: 6px;
+    height: 6px;
+    background: #00ffe7;
+    border-radius: 50%;
+    animation: terminalBlink 2s infinite;
+}
+
+.terminal-dot:nth-child(2) { animation-delay: 0.3s; }
+.terminal-dot:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes terminalBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+.marker-pulse {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 2px solid #00ffe7;
+    border-radius: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* 版本内容 */
+.version-content {
+    width: 45%;
+    position: relative;
+}
+
+.version-item:nth-child(odd) .version-content {
+    margin-right: auto;
+    margin-left: 0;
+    text-align: right;
+}
+
+.version-item:nth-child(even) .version-content {
+    margin-left: auto;
+    margin-right: 0;
+    text-align: left;
+}
+
+/* 版本卡片 */
+.version-card {
+    background: #0a0a0a;
+    border: 1px solid #00ffe7;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.2);
+    position: relative;
+}
+
+.version-item:hover .version-card {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 40px rgba(0, 255, 231, 0.3);
+    border-color: #00bfff;
+}
+
+.version-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 231, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.version-item:hover .version-card::before {
+    left: 100%;
+}
+
+/* 卡片终端头部 */
+.card-terminal-header {
+    background: #1a1a1a;
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.version-date {
+    color: rgba(0, 255, 231, 0.7);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* 卡片终端主体 */
+.card-terminal-body {
+    padding: 1.5rem;
+    background: #0a0a0a;
+}
+
+.commit-hash {
+    color: #00bfff;
+    font-weight: 600;
+    margin: 0 0.5rem;
+}
+
+.commit-message {
+    color: #ffffff;
+    margin-left: 0.5rem;
+}
+
+/* 功能列表 */
+.feature-list {
+    margin-top: 1rem;
+}
+
+.feature-line {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 231, 0.05);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.feature-line:hover {
+    background: rgba(0, 255, 231, 0.1);
+    transform: translateX(5px);
+}
+
+.feature-icon {
+    color: #00ffe7;
+    font-weight: bold;
+    font-family: 'JetBrains Mono', monospace;
+    width: 20px;
+    text-align: center;
+}
+
+.feature-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* 卡片终端底部 */
+.card-terminal-footer {
+    background: #1a1a1a;
+    padding: 1rem;
+    border-top: 1px solid #333;
+}
+
+.status-stable {
+    color: #00ff00;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.status-beta {
+    color: #ffaa00;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.status-alpha {
+    color: #ff00ff;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.env-production {
+    color: #00bfff;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.env-development {
+    color: #ffff00;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.env-foundation {
+    color: #888888;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* 极客风格底部 */
+.geek-footer {
+    padding: 3rem 0;
+    text-align: center;
+    background: rgba(0, 255, 231, 0.02);
+    border-top: 1px solid rgba(0, 255, 231, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.footer-terminal {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    padding: 1rem;
+    background: #0a0a0a;
+    border: 1px solid #00ffe7;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.2);
+}
+
+.footer-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.geek-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+    overflow: hidden;
+}
+
+.geek-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.geek-btn:hover::before {
+    left: 100%;
+}
+
+.geek-btn.primary {
+    background: #00ffe7;
+    color: #0a0a0a;
+    border: 1px solid #00ffe7;
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.3);
+}
+
+.geek-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 25px rgba(0, 255, 231, 0.4);
+    color: #0a0a0a;
+    text-decoration: none;
+}
+
+.geek-btn.secondary {
+    background: transparent;
+    color: #00ffe7;
+    border: 1px solid #00ffe7;
+}
+
+.geek-btn.secondary:hover {
+    background: rgba(0, 255, 231, 0.1);
+    color: #00ffe7;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .title-glitch {
+        font-size: 2.5rem;
+        letter-spacing: 2px;
+    }
+    
+    .version-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .timeline-line {
+        left: 30px;
+    }
+    
+    .version-marker {
+        left: 30px;
+    }
+    
+    .version-content {
+        width: calc(100% - 80px);
+        margin-left: 80px !important;
+        text-align: left !important;
+    }
+    
+    .footer-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .geek-btn {
+        width: 200px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-glitch {
         font-size: 2rem;
+        letter-spacing: 1px;
+    }
+    
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    .version-content {
+        width: calc(100% - 60px);
+        margin-left: 60px !important;
+    }
+    
+    .version-marker {
+        left: 30px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .marker-terminal {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .terminal-dot {
+        width: 4px;
+        height: 4px;
     }
 }
 </style>
+
+<script>
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// 极客风格动画效果
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加滚动动画效果
+    const versionItems = document.querySelectorAll('.version-item');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    versionItems.forEach(item => {
+        observer.observe(item);
+    });
+
+    // 添加终端闪烁效果
+    const terminalLines = document.querySelectorAll('.terminal-line');
+    terminalLines.forEach((line, index) => {
+        setTimeout(() => {
+            line.style.opacity = '1';
+        }, index * 200);
+    });
+
+    // 添加代码行流动效果
+    const codeLines = document.querySelectorAll('.code-line');
+    codeLines.forEach((line, index) => {
+        line.style.animationDelay = `${index * 2}s`;
+    });
+
+    // 添加几何形状随机移动
+    const shapes = document.querySelectorAll('.shape');
+    shapes.forEach(shape => {
+        const randomDelay = Math.random() * 2;
+        shape.style.animationDelay = `${randomDelay}s`;
+    });
+
+    // 添加矩阵雨效果
+    const matrixRain = document.querySelector('.matrix-rain');
+    if (matrixRain) {
+        setInterval(() => {
+            matrixRain.style.animation = 'none';
+            matrixRain.offsetHeight; // 触发重排
+            matrixRain.style.animation = 'matrixRain 20s linear infinite';
+        }, 20000);
+    }
+
+    // 添加故障艺术效果到标题
+    const titleGlitch = document.querySelector('.title-glitch');
+    if (titleGlitch) {
+        titleGlitch.addEventListener('mouseenter', function() {
+            this.style.animation = 'glitch 0.5s infinite, breathe 1s ease-in-out infinite';
+        });
+        
+        titleGlitch.addEventListener('mouseleave', function() {
+            this.style.animation = 'glitch 5s infinite, breathe 3s ease-in-out infinite';
+        });
+    }
+
+    // 添加终端按钮点击效果
+    const terminalButtons = document.querySelectorAll('.terminal-buttons span');
+    terminalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            this.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+
+    // 添加版本卡片悬停音效（模拟）
+    const versionCards = document.querySelectorAll('.version-card');
+    versionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            // 可以在这里添加音效
+            console.log('Version card hovered');
+        });
+    });
+
+    // 添加键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + H 回到主页
+        if (e.ctrlKey && e.key === 'h') {
+            e.preventDefault();
+            window.location.href = '{% url "home" %}';
+        }
+        
+        // Ctrl + T 回到顶部
+        if (e.ctrlKey && e.key === 't') {
+            e.preventDefault();
+            scrollToTop();
+        }
+        
+        // ESC 键回到顶部
+        if (e.key === 'Escape') {
+            scrollToTop();
+        }
+    });
+
+    // 添加鼠标跟随效果
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        // 更新几何形状位置
+        const shapes = document.querySelectorAll('.shape');
+        shapes.forEach((shape, index) => {
+            const speed = (index + 1) * 0.01;
+            const x = (mouseX - window.innerWidth / 2) * speed;
+            const y = (mouseY - window.innerHeight / 2) * speed;
+            shape.style.transform = `translate(${x}px, ${y}px) rotate(${x * 0.1}deg)`;
+        });
+    });
+
+    // 添加页面加载完成效果
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+        document.body.style.transform = 'translateY(0)';
+    }, 100);
+});
+
+// 页面加载时的初始状态
+document.body.style.opacity = '0';
+document.body.style.transform = 'translateY(20px)';
+document.body.style.transition = 'all 0.8s ease';
+</script>
 {% endblock %}

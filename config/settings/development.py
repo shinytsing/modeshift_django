@@ -1,16 +1,16 @@
 """
-开发环境配置
+开发环境配置 - 与生产环境完全一致，都使用PostgreSQL数据库
 """
 
 from .base import *
 
-# 开发环境特定配置
+# 开发环境特定配置 - 只设置DEBUG为True
 DEBUG = True
 
-# 允许的主机 - 添加局域网访问支持
+# 允许的主机 - 开发环境支持局域网访问
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "192.168.0.118", "172.16.0.1", "0.0.0.0", "*"]
 
-# 数据库配置 - 开发环境使用PostgreSQL（与生产保持一致）
+# 数据库配置 - 开发环境使用PostgreSQL（与生产环境完全一致）
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -25,36 +25,7 @@ DATABASES = {
     }
 }
 
-# HTTPS配置
-SECURE_SSL_REDIRECT = False  # 开发环境不强制重定向
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-
-# 开发环境允许所有CORS - 支持局域网访问
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-# 禁用Cross-Origin-Opener-Policy头部，避免在HTTP环境下的警告
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://192.168.0.118:8000",
-    "http://172.16.0.1:8000",
-    "https://localhost:8443",
-    "https://127.0.0.1:8443",
-    "https://192.168.0.118:8443",
-    "https://172.16.0.1:8443",
-]
-
-# 开发环境日志级别 - 减少debug信息输出
-LOGGING["loggers"]["django"]["level"] = "WARNING"
-LOGGING["loggers"]["apps.tools"]["level"] = "INFO"
-LOGGING["loggers"]["apps.users"]["level"] = "INFO"
-LOGGING["handlers"]["console"]["level"] = "WARNING"
-
-# 开发环境使用本地内存缓存（支持验证码功能）
+# 缓存配置 - 与生产环境一致，使用本地内存缓存
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -74,11 +45,54 @@ CACHES = {
     },
 }
 
-# 开发环境邮件配置
+# 会话配置 - 与生产环境一致，使用数据库存储session
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_CACHE_ALIAS = "default"
+
+# 静态文件配置 - 与生产环境一致
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+# 邮件配置 - 开发环境使用控制台后端
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# 开发环境静态文件配置
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# CORS配置 - 与生产环境一致
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Celery配置 - 与生产环境一致
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_BROKER_URL = "django-db://"
+CELERY_RESULT_BACKEND = "django-db"
+
+# API限制配置 - 与生产环境一致
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": "100/minute", "user": "1000/minute"}
+
+# 安全配置 - 与生产环境一致
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
+
+# 文件上传限制 - 与生产环境一致
+DATA_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
+MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000
 
 # 开发环境调试工具栏
 if DEBUG:
@@ -96,10 +110,3 @@ if DEBUG:
 # 添加django-extensions支持
 if "django_extensions" not in INSTALLED_APPS:
     INSTALLED_APPS += ["django_extensions"]
-
-# 开发环境Celery配置
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
-
-# 开发环境API限制
-REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": "10000/minute", "user": "10000/minute"}

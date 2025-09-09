@@ -100,7 +100,7 @@ class ProgressiveCaptchaService:
 
         # 存储答案到缓存
         cache_key = f"captcha_answer_{captcha_id}"
-        cache.set(cache_key, str(answer), timeout=300)  # 5分钟过期
+        cache.set(cache_key, str(answer), timeout=600)  # 10分钟过期，给用户更多时间
 
         captcha_data = {
             "captcha_id": captcha_id,

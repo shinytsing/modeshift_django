@@ -784,41 +784,50 @@ function loadProgressiveCaptcha() {
   statusDiv.textContent = currentLanguage === 'en' ? 'Loading...' : '加载中...';
   
   fetch('{% url "users:generate_progressive_captcha" %}')
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        currentCaptchaData = data.data;
-        
-        // 重置验证状态
-        captchaVerified = false;
-        
-        // 更新级别信息
-        updateCaptchaLevelInfo(data.data);
-        
-        // 显示对应的验证码类型
-        showCaptchaType(data.data.type);
-        
-        // 根据类型初始化验证码
-        initializeCaptchaByType(data.data);
-        
-        // 清除状态
-        statusDiv.className = 'geek-captcha-status';
-        statusDiv.textContent = '';
-        
-        // 重置验证按钮状态
-        resetVerifyButton();
-        
-      } else {
-        statusDiv.className = 'geek-captcha-status error';
-        statusDiv.textContent = data.message || (currentLanguage === 'en' ? 'Failed to load captcha' : '加载验证码失败');
-        
-        // 如果是锁定状态，显示锁定信息
-        if (data.locked_until) {
-          const lockTime = new Date(data.locked_until);
-          statusDiv.textContent = `验证失败过多，请在 ${lockTime.toLocaleTimeString()} 后再试`;
-        }
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      currentCaptchaData = data.data;
+      
+      // 重置验证状态
+      captchaVerified = false;
+      
+      // 更新级别信息
+      updateCaptchaLevelInfo(data.data);
+      
+      // 显示对应的验证码类型
+      showCaptchaType(data.data.type);
+      
+      // 根据类型初始化验证码
+      initializeCaptchaByType(data.data);
+      
+      // 清除状态
+      statusDiv.className = 'geek-captcha-status';
+      statusDiv.textContent = '';
+      
+      // 重置验证按钮状态
+      resetVerifyButton();
+      
+    } else {
+      statusDiv.className = 'geek-captcha-status error';
+      statusDiv.textContent = data.message || (currentLanguage === 'en' ? 'Failed to load captcha' : '加载验证码失败');
+      
+      // 如果是会话无效，自动刷新页面
+      if (data.message && data.message.includes('会话无效')) {
+        statusDiv.textContent = '会话已过期，正在刷新页面...';
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        return;
       }
-    })
+      
+      // 如果是锁定状态，显示锁定信息
+      if (data.locked_until) {
+        const lockTime = new Date(data.locked_until);
+        statusDiv.textContent = `验证失败过多，请在 ${lockTime.toLocaleTimeString()} 后再试`;
+      }
+    }
+  })
     .catch(error => {
       console.error('Error loading progressive captcha:', error);
       statusDiv.className = 'geek-captcha-status error';
@@ -961,6 +970,15 @@ function autoVerifyMathCaptcha() {
       // 不禁用输入框，让用户可以继续输入
       
     } else {
+      // 如果是会话无效，自动刷新页面
+      if (data.message && data.message.includes('会话无效')) {
+        showStatus('error', '会话已过期，正在刷新页面...');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        return;
+      }
+      
       // 针对数学验证码的特殊处理
       if (data.hint) {
         showMathHint(data.hint, 'error');
@@ -1081,6 +1099,15 @@ function verifyCurrentCaptcha() {
       }
       
     } else {
+      // 如果是会话无效，自动刷新页面
+      if (data.message && data.message.includes('会话无效')) {
+        showStatus('error', '会话已过期，正在刷新页面...');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        return;
+      }
+      
       const errorMessage = data.message || '验证失败';
       
       // 针对数学验证码的特殊处理

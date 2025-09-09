@@ -248,7 +248,6 @@ class UserTheme(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "apps.users"
         verbose_name = "用户主题"
         verbose_name_plural = "用户主题"
 
