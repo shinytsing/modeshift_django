@@ -79,20 +79,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # 检查用户是否已登录
         if isinstance(self.scope["user"], AnonymousUser):
-            # 对于测试房间、shipbao房间、多人聊天室和heart_link房间，允许匿名用户连接
+            # 对于测试房间、shipbao房间、多人聊天室，允许匿名用户连接
+            # 但是heart_link房间需要登录用户
             if (
                 self.room_id.startswith("test-room-")
                 or self.room_id.startswith("shipbao-")
-                or self.room_id.startswith("heart-link-")
                 or self.room_id in ["public-room", "general", "chat", "random"]
                 or self.room_id == "0c38a502-25ad-47e7-9a37-15660a57d135"
                 or self.room_id == "e3aee9e3-99e1-428b-8e09-fb6389db5bef"
-                # 对于heart_link房间，也允许连接（这些是UUID格式的房间ID）
-                or len(self.room_id) == 36 and self.room_id.count('-') == 4
             ):
                 logger.info(f"Anonymous user connecting to room {self.room_id}")
             else:
-                logger.warning(f"Anonymous user attempted to connect to room {self.room_id}")
+                # heart_link房间和UUID格式的房间需要登录用户
+                logger.warning(f"Anonymous user attempted to connect to heart_link room {self.room_id}")
                 await self.close()
                 return
 
@@ -113,6 +112,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error during access verification: {e}")
             # 对于测试，继续连接
+
+        # 检查重复连接 - 如果用户已经在这个房间中，断开旧连接
+        if not isinstance(self.scope["user"], AnonymousUser):
+            user_id = self.scope["user"].id
+            if user_id in connection_pool and self.room_id in connection_pool[user_id]:
+                old_consumer = connection_pool[user_id][self.room_id]
+                logger.info(f"User {self.scope['user'].username} already connected to room {self.room_id}, disconnecting old connection")
+                # 断开旧连接
+                await self.channel_layer.send(old_consumer.channel_name, {"type": "disconnect_duplicate"})
 
         # 加入房间组
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -520,6 +528,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def user_left(self, event):
         """发送用户离开消息给WebSocket"""
         await self.send(text_data=json.dumps({"type": "user_left", "username": event["username"]}))
+
+    async def disconnect_duplicate(self, event):
+        """处理重复连接断开"""
+        await self.send(text_data=json.dumps({
+            "type": "duplicate_connection",
+            "message": "检测到重复连接，已断开旧连接"
+        }))
+        await self.close()
 
     @database_sync_to_async
     def verify_token_and_access(self):
