@@ -47,7 +47,7 @@ def pdf_converter(request):
 
 def pdf_converter_test(request):
     """PDF转换器测试页面（无需登录）"""
-    return render(request, "tools/pdf_converter_test.html")
+    return render(request, "tools/pdf_converter_modern.html")
 
 
 @login_required
