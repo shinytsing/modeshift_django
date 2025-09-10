@@ -4,133 +4,14 @@
 {% block tool_title_inner %}FitMatrix - 健身矩阵{% endblock %}
 {% block tool_title_display %}FitMatrix - 健身矩阵{% endblock %}
 
-{% block extra_head %}
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-{% endblock %}
-
 {% block content %}
 {% csrf_token %}
-<!-- 强制清除所有缓存 - 版本 2025.09.10.005 - 修复initCurrentPlan检查 -->
+<!-- 引入训练计划编辑器 -->
+<script src="{% static 'js/training_plan_editor.js' %}"></script>
+<!-- 强制清除所有缓存 -->
 <script>
-// 强制清除所有缓存和旧函数
-(function() {
-  const VERSION = '2025.09.10.005';
-  console.log('🧹 开始强制清除缓存... 版本:', VERSION);
-  
-  // 清除所有存储
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log('✅ 存储已清除');
-  } catch (e) {
-    console.warn('⚠️ 清除存储失败:', e);
-  }
-  
-  // 删除所有可能的旧函数（保留页面内定义的函数）
-  const oldFunctions = []; // 不删除页面内定义的函数
-  oldFunctions.forEach(funcName => {
-    if (typeof window[funcName] !== 'undefined') {
-      console.log('🗑️ 删除旧函数:', funcName);
-      delete window[funcName];
-    }
-  });
-  
-  // 强制清除缓存
-  if ('caches' in window) {
-    caches.keys().then(function(names) {
-      return Promise.all(names.map(function(name) {
-        return caches.delete(name);
-      }));
-    }).then(function() {
-      console.log('✅ 缓存已清除');
-    }).catch(function(e) {
-      console.warn('⚠️ 清除缓存失败:', e);
-    });
-  }
-  
-  // 强制刷新页面缓存
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      for(let registration of registrations) {
-        registration.unregister();
-      }
-    });
-  }
-  
-  // 添加版本号强制刷新
-  const version = Date.now();
-  console.log('🔄 当前版本:', version);
-  
-  // 检查是否还有旧函数
-  const hasOldFunctions = oldFunctions.some(funcName => typeof window[funcName] !== 'undefined');
-  if (hasOldFunctions) {
-    console.log('⚠️ 检测到旧函数残留，强制重新加载页面');
-    // 强制清除所有可能的缓存
-    if ('localStorage' in window) {
-      localStorage.clear();
-    }
-    if ('sessionStorage' in window) {
-      sessionStorage.clear();
-    }
-    setTimeout(() => {
-      // 强制重新加载，绕过缓存
-      window.location.href = window.location.href + '?v=' + Date.now();
-    }, 100);
-    return;
-  }
-  
-  console.log('✅ 缓存清除完成，版本:', VERSION);
-})();
-
-// 立即测试JavaScript执行
-console.log('🔍 测试JavaScript执行 - 如果看到这条消息说明JS正在运行');
-console.log('🔍 当前时间:', new Date().toLocaleString());
-console.log('🔍 页面URL:', window.location.href);
-
-// 测试DOM元素
-const planInfo = document.querySelector('.plan-info h4');
-const planDescription = document.querySelector('.plan-info p');
-const workoutPlan = document.getElementById('workoutPlan');
-console.log('🔍 DOM元素测试:');
-console.log('  planInfo:', planInfo);
-console.log('  planDescription:', planDescription);
-console.log('  workoutPlan:', workoutPlan);
-
-// 立即尝试加载计划
-console.log('🔍 立即尝试加载计划...');
-if (typeof initCurrentPlan === 'function') {
-  initCurrentPlan();
-} else {
-  console.error('❌ initCurrentPlan函数不存在');
-}
-
-// 全局错误处理器 - 更好的兜底机制
-window.addEventListener('error', function(event) {
-  console.error('🚨 全局JavaScript错误:', event.error);
-  console.error('🚨 错误位置:', event.filename, ':', event.lineno, ':', event.colno);
-  
-  // 如果是函数未定义错误，尝试重新初始化
-  if (event.error && event.error.message && event.error.message.includes('is not a function')) {
-    console.log('🔄 检测到函数未定义错误，尝试重新初始化...');
-    setTimeout(() => {
-      try {
-        if (typeof initCurrentPlan === 'function') {
-          initCurrentPlan();
-        }
-      } catch (e) {
-        console.warn('重新初始化失败:', e);
-      }
-    }, 1000);
-  }
-});
-
-// 未处理的Promise拒绝处理器
-window.addEventListener('unhandledrejection', function(event) {
-  console.error('🚨 未处理的Promise拒绝:', event.reason);
-  event.preventDefault(); // 阻止默认的错误处理
-});
+// 检测是否存在旧函数，如果存在则强制清除所有缓存
+// 注意：renderActivePlan 和 initCurrentPlan 是页面内定义的函数，不应该删除
 </script>
 <div class="fitness-container">
 
@@ -2303,21 +2184,16 @@ function initShortcutsHelp() {
 // 初始化当前训练计划
 async function initCurrentPlan() {
   try {
-    console.log('🚀 开始加载激活计划...');
     const response = await fetch('/tools/api/training_plans/active/');
     const data = await response.json();
     
-    console.log('📊 API响应:', data);
-    
     if (data.success && data.has_plan) {
-      console.log('✅ 找到激活计划，开始渲染...');
       renderActivePlan(data.plan);
     } else {
-      console.log('❌ 没有激活计划，显示无计划状态');
       renderNoPlan();
     }
   } catch (error) {
-    console.error('💥 加载当前计划失败:', error);
+    console.error('加载当前计划失败:', error);
     renderNoPlan();
   }
 }
@@ -4455,7 +4331,10 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('renderActivePlan函数未定义，页面可能有问题');
     return;
   }
-  // initCurrentPlan是页面需要的函数，不需要检查
+  if (typeof initCurrentPlan !== 'undefined') {
+    console.error('仍然检测到旧函数 initCurrentPlan，请清除浏览器缓存');
+    return;
+  }
 
   try {
     window.checkInCalendar = new CheckInCalendar();
