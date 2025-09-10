@@ -8,10 +8,10 @@
 {% csrf_token %}
 <!-- 引入训练计划编辑器 -->
 <script src="{% static 'js/training_plan_editor.js' %}"></script>
-<!-- 强制清除所有缓存 -->
+<!-- 页面初始化脚本 -->
 <script>
-// 检测是否存在旧函数，如果存在则强制清除所有缓存
-// 注意：renderActivePlan 和 initCurrentPlan 是页面内定义的函数，不应该删除
+// 页面初始化 - 不需要清除函数，因为它们是页面内定义的
+console.log('FitMatrix页面正在初始化...');
 </script>
 <div class="fitness-container">
 
@@ -4326,13 +4326,13 @@ document.addEventListener('keydown', function(e) {
 
 // 初始化打卡日历
 document.addEventListener('DOMContentLoaded', function() {
-  // renderActivePlan是页面内定义的函数，应该存在
+  // 检查必要的函数是否存在
   if (typeof renderActivePlan === 'undefined') {
     console.error('renderActivePlan函数未定义，页面可能有问题');
     return;
   }
-  if (typeof initCurrentPlan !== 'undefined') {
-    console.error('仍然检测到旧函数 initCurrentPlan，请清除浏览器缓存');
+  if (typeof initCurrentPlan === 'undefined') {
+    console.error('initCurrentPlan函数未定义，页面可能有问题');
     return;
   }
 
