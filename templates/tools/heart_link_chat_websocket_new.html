@@ -481,9 +481,9 @@
     <div class="chat-input-container">
         <!-- 工具栏 -->
         <div class="chat-toolbar">
-            <button class="toolbar-btn" title="表情" id="emoji-btn" style="position: relative; z-index: 1000;">
+            <!-- <button class="toolbar-btn" title="表情" id="emoji-btn" style="position: relative; z-index: 1000;">
                 <i class="fas fa-smile"></i>
-            </button>
+            </button> -->
             <button class="toolbar-btn" title="图片" onclick="document.getElementById('image-input').click()">
                 <i class="fas fa-image"></i>
             </button>
@@ -499,7 +499,7 @@
         </div>
 
         <!-- 表情选择器 -->
-        <div class="emoji-picker" id="emoji-picker" style="display: none;">
+        <!-- <div class="emoji-picker" id="emoji-picker" style="display: none;">
             <div class="emoji-grid">
                 <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
                 <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
@@ -518,7 +518,7 @@
                 <button class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
                 <button class="emoji-btn" onclick="insertEmoji('😇')">😇</button>
             </div>
-        </div>
+        </div> -->
 
         <!-- 输入区域 -->
         <div class="chat-input-wrapper">
@@ -1070,25 +1070,25 @@ function handleKeyDown(event) {
 // 处理表情按钮点击（已内联到事件监听器中）
 
 // 插入表情到输入框
-function insertEmoji(emoji) {
-    const messageInput = document.getElementById('message-input');
-    if (messageInput) {
-        const currentValue = messageInput.value;
-        const cursorPosition = messageInput.selectionStart;
-        const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
-        messageInput.value = newValue;
-        messageInput.focus();
-        // 设置光标位置到表情后面
-        messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
-        
-        // 隐藏表情选择器
-        const picker = document.getElementById('emoji-picker');
-        if (picker) {
-            picker.style.display = 'none';
-            picker.classList.remove('show');
-        }
-    }
-}
+// function insertEmoji(emoji) {
+//     const messageInput = document.getElementById('message-input');
+//     if (messageInput) {
+//         const currentValue = messageInput.value;
+//         const cursorPosition = messageInput.selectionStart;
+//         const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
+//         messageInput.value = newValue;
+//         messageInput.focus();
+//         // 设置光标位置到表情后面
+//         messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
+//         
+//         // 隐藏表情选择器
+//         const picker = document.getElementById('emoji-picker');
+//         if (picker) {
+//             picker.style.display = 'none';
+//             picker.classList.remove('show');
+//         }
+//     }
+// }
 
 // 显示系统消息
 function showSystemMessage(message) {
@@ -1450,29 +1450,29 @@ function getCookie(name) {
 }
 
 // 插入表情
-function insertEmoji(emoji) {
-    const input = document.getElementById('chat-input');
-    if (!input) {
-        console.error('聊天输入框未找到');
-        return;
-    }
-    
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const text = input.value;
-    
-    input.value = text.substring(0, start) + emoji + text.substring(end);
-    input.selectionStart = input.selectionEnd = start + emoji.length;
-    input.focus();
-    
-    // 自动调整输入框高度
-    autoResize(input);
-    
-    const picker = document.getElementById('emoji-picker');
-    if (picker) {
-        picker.style.display = 'none';
-    }
-}
+// function insertEmoji(emoji) {
+//     const input = document.getElementById('chat-input');
+//     if (!input) {
+//         console.error('聊天输入框未找到');
+//         return;
+//     }
+//     
+//     const start = input.selectionStart;
+//     const end = input.selectionEnd;
+//     const text = input.value;
+//     
+//     input.value = text.substring(0, start) + emoji + text.substring(end);
+//     input.selectionStart = input.selectionEnd = start + emoji.length;
+//     input.focus();
+//     
+//     // 自动调整输入框高度
+//     autoResize(input);
+//     
+//     const picker = document.getElementById('emoji-picker');
+//     if (picker) {
+//         picker.style.display = 'none';
+//     }
+// }
 
 // 处理图片上传
 function handleImageUpload(event) {

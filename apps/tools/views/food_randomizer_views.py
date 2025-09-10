@@ -85,8 +85,67 @@ def food_randomizer_pure_random_api(request):
 
         # 将选中的食物转换为字典格式 - 适配FoodItem模型
         def food_to_dict(food):
-            # 直接使用食物名称构建图片路径
-            image_url = f"/static/img/food/{food.name}.jpg"
+            # 优先使用FoodItem.image_url，然后检查FoodPhotoBinding，最后使用默认图片
+            import os
+            from django.conf import settings
+            from apps.tools.models.legacy_models import FoodPhotoBinding
+            
+            image_url = "/static/img/food/default-food.svg"  # 默认图片
+            
+            # 1. 首先检查FoodItem表中的image_url字段
+            if food.image_url:
+                # 检查图片文件是否存在
+                if food.image_url.startswith('/media/'):
+                    # 媒体文件路径
+                    media_path = food.image_url.replace('/media/', '')
+                    full_path = os.path.join(settings.MEDIA_ROOT, media_path)
+                    if os.path.exists(full_path):
+                        image_url = food.image_url
+                elif food.image_url.startswith('/static/'):
+                    # 静态文件路径
+                    static_path = food.image_url.replace('/static/', '')
+                    full_path = os.path.join(settings.STATIC_ROOT, static_path)
+                    if os.path.exists(full_path):
+                        image_url = food.image_url
+                else:
+                    # 外部URL，直接使用
+                    image_url = food.image_url
+            
+            # 2. 如果FoodItem.image_url不存在或文件不存在，检查FoodPhotoBinding表
+            if image_url == "/static/img/food/default-food.svg":
+                try:
+                    photo_binding = FoodPhotoBinding.objects.filter(
+                        food_item=food,
+                        is_active=True
+                    ).order_by('-accuracy_score', '-created_at').first()
+                    
+                    if photo_binding and photo_binding.photo_url:
+                        # 检查绑定的照片文件是否存在
+                        if photo_binding.photo_url.startswith('/media/'):
+                            # 媒体文件路径
+                            media_path = photo_binding.photo_url.replace('/media/', '')
+                            full_path = os.path.join(settings.MEDIA_ROOT, media_path)
+                            if os.path.exists(full_path):
+                                image_url = photo_binding.photo_url
+                        elif photo_binding.photo_url.startswith('/static/'):
+                            # 静态文件路径
+                            static_path = photo_binding.photo_url.replace('/static/', '')
+                            full_path = os.path.join(settings.STATIC_ROOT, static_path)
+                            if os.path.exists(full_path):
+                                image_url = photo_binding.photo_url
+                        else:
+                            # 外部URL，直接使用
+                            image_url = photo_binding.photo_url
+                except Exception as e:
+                    logger.warning(f"检查食物绑定照片失败: {str(e)}")
+            
+            # 3. 如果还是没有图片，检查静态文件
+            if image_url == "/static/img/food/default-food.svg":
+                image_filename = f"{food.name}.jpg"
+                image_path = os.path.join(settings.STATIC_ROOT, "img", "food", image_filename)
+                
+                if os.path.exists(image_path):
+                    image_url = f"/static/img/food/{image_filename}"
 
             return {
                 "id": food.id,

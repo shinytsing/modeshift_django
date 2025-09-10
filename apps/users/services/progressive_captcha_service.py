@@ -83,7 +83,7 @@ class ProgressiveCaptchaService:
         failure_info = self.get_user_failure_info(session_key)
         captcha_id = str(uuid.uuid4())
 
-        # 生成简单数学题
+        # 生成简单数学题，避免负数结果
         num1 = random.randint(1, 10)
         num2 = random.randint(1, 10)
         operation = random.choice(["+", "-", "*"])
@@ -92,15 +92,21 @@ class ProgressiveCaptchaService:
             answer = num1 + num2
             question = f"{num1} + {num2} = ?"
         elif operation == "-":
+            # 确保减法结果不为负数
+            if num1 < num2:
+                num1, num2 = num2, num1
             answer = num1 - num2
             question = f"{num1} - {num2} = ?"
         else:  # *
+            # 避免乘法结果过大
+            num1 = random.randint(1, 5)
+            num2 = random.randint(1, 5)
             answer = num1 * num2
             question = f"{num1} × {num2} = ?"
 
         # 存储答案到缓存
         cache_key = f"captcha_answer_{captcha_id}"
-        cache.set(cache_key, str(answer), timeout=1800)  # 30分钟过期，给用户更多时间
+        cache.set(cache_key, str(answer), timeout=3600)  # 60分钟过期，给用户更多时间
 
         captcha_data = {
             "captcha_id": captcha_id,
@@ -134,9 +140,25 @@ class ProgressiveCaptchaService:
                 cache.delete(cache_key)  # 删除已使用的验证码
                 return {"success": True, "message": "验证成功"}
             else:
-                # 验证失败
+                # 验证失败，但不删除验证码，让用户可以重试
                 self.record_failure(session_key)
-                return {"success": False, "message": f"答案错误，正确答案是 {correct_answer}，请重试"}
+                failure_info = self.get_user_failure_info(session_key)
+                remaining_attempts = self.max_failures - failure_info.get("count", 0)
+                
+                if remaining_attempts > 0:
+                    return {
+                        "success": False, 
+                        "message": f"答案错误，请重试。剩余尝试次数: {remaining_attempts}",
+                        "remaining_attempts": remaining_attempts
+                    }
+                else:
+                    # 达到最大失败次数，删除验证码强制重新获取
+                    cache.delete(cache_key)
+                    return {
+                        "success": False, 
+                        "message": "验证失败次数过多，请重新获取验证码",
+                        "need_refresh": True
+                    }
 
         except Exception as e:
             print(f"验证码验证异常: {str(e)}")

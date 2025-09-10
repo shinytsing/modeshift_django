@@ -997,6 +997,8 @@ def avatar_test_view(request):
 
 
 # 渐进式验证码相关视图
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def generate_progressive_captcha(request):
     """生成渐进式验证码"""
     try:

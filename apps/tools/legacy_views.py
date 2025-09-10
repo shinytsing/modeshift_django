@@ -1215,10 +1215,10 @@ def save_life_diary(request, data):
         title = data.get("title", "").strip()
         content = data.get("content", "").strip()
         mood = data.get("mood", "neutral")
-        mood_note = data.get("mood_note", "").strip()
+        # mood_note = data.get("mood_note", "").strip()  # 字段不存在，暂时注释
         tags = data.get("tags", [])
-        question_answers = data.get("question_answers", [])
-        music_recommendation = data.get("music_recommendation", "").strip()
+        # question_answers = data.get("question_answers", [])  # 字段不存在，暂时注释
+        # music_recommendation = data.get("music_recommendation", "").strip()  # 字段不存在，暂时注释
         date_str = data.get("date", "")  # 获取日期参数
 
         # 数据验证
@@ -1259,10 +1259,10 @@ def save_life_diary(request, data):
             title=title,
             content=content,
             mood=mood,
-            mood_note=mood_note,
+            # mood_note=mood_note,  # 字段不存在，暂时注释
             tags=tags,
-            question_answers=question_answers,
-            music_recommendation=music_recommendation,
+            # question_answers=question_answers,  # 字段不存在，暂时注释
+            # music_recommendation=music_recommendation,  # 字段不存在，暂时注释
         )
 
         # 更新统计数据
@@ -1295,10 +1295,10 @@ def get_life_diary(request, data):
                         "title": diary_entry.title,
                         "content": diary_entry.content,
                         "mood": diary_entry.mood,
-                        "mood_note": diary_entry.mood_note,
+                        # "mood_note": diary_entry.mood_note,  # 字段不存在，暂时注释
                         "tags": diary_entry.tags,
-                        "question_answers": diary_entry.question_answers,
-                        "music_recommendation": diary_entry.music_recommendation,
+                        # "question_answers": diary_entry.question_answers,  # 字段不存在，暂时注释
+                        # "music_recommendation": diary_entry.music_recommendation,  # 字段不存在，暂时注释
                         "date": diary_entry.date.strftime("%Y-%m-%d"),
                     },
                 }
@@ -1695,10 +1695,10 @@ def get_diary_list(request):
                     "title": entry.title,
                     "content": entry.content,
                     "mood": entry.mood,
-                    "mood_note": entry.mood_note,
+                    # "mood_note": entry.mood_note,  # 字段不存在，暂时注释
                     "tags": entry.tags,
-                    "question_answers": entry.question_answers,
-                    "music_recommendation": entry.music_recommendation,
+                    # "question_answers": entry.question_answers,  # 字段不存在，暂时注释
+                    # "music_recommendation": entry.music_recommendation,  # 字段不存在，暂时注释
                     "created_at": entry.created_at.isoformat(),
                     "date": entry.date.strftime("%Y-%m-%d"),
                 }
@@ -1789,7 +1789,7 @@ def search_diaries(request, data):
         # 文本搜索
         if query:
             diaries = diaries.filter(
-                models.Q(title__icontains=query) | models.Q(content__icontains=query) | models.Q(mood_note__icontains=query)
+                models.Q(title__icontains=query) | models.Q(content__icontains=query)  # | models.Q(mood_note__icontains=query)  # 字段不存在，暂时注释
             )
 
         # 心情过滤
@@ -3202,7 +3202,7 @@ def export_diary_data(request, data):
                         diary.title,
                         diary.content,
                         diary.get_mood_display(),
-                        diary.mood_note or "",
+                        # diary.mood_note or "",  # 字段不存在，暂时注释
                         ", ".join(diary.tags) if diary.tags else "",
                         diary.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                     ]

@@ -421,19 +421,27 @@
 }
 
 .emoji-btn {
-    background: none;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #ffffff;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 50%;
     transition: all 0.3s ease;
+    pointer-events: auto;
+    user-select: none;
+    z-index: 10;
 }
 
 .emoji-btn:hover {
     background: rgba(240, 147, 251, 0.2);
     transform: scale(1.1);
+}
+
+.emoji-btn:active {
+    background: rgba(240, 147, 251, 0.3);
+    transform: scale(0.95);
 }
 
 .emoji-picker {
@@ -672,9 +680,9 @@
         <div class="chat-input-wrapper">
             <div style="position: relative;">
                 <div class="chat-toolbar">
-                    <button class="toolbar-btn" title="表情" id="emoji-btn" type="button">
+                    <!-- <button class="toolbar-btn emoji-btn" title="表情" id="emoji-btn" type="button" onclick="toggleEmojiPicker()">
                         <i class="fas fa-smile"></i>
-                    </button>
+                    </button> -->
                     <button class="toolbar-btn" onclick="document.getElementById('image-upload').click()" title="发送图片">
                         <i class="fas fa-image"></i>
                     </button>
@@ -685,7 +693,7 @@
                         <i class="fas fa-paperclip"></i>
                     </button>
                 </div>
-                <div class="emoji-picker" id="emoji-picker" style="display: none;">
+                <!-- <div class="emoji-picker" id="emoji-picker" style="display: none;">
                     <div class="emoji-grid">
                         <button class="emoji-item" onclick="insertEmoji('😊')">😊</button>
                         <button class="emoji-item" onclick="insertEmoji('😄')">😄</button>
@@ -712,7 +720,7 @@
                         <button class="emoji-item" onclick="insertEmoji('🔥')">🔥</button>
                         <button class="emoji-item" onclick="insertEmoji('💯')">💯</button>
                     </div>
-                </div>
+                </div> -->
             </div>
             <textarea 
                 class="chat-input" 
@@ -770,31 +778,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 定期标记消息为已读
     setInterval(markMessagesAsRead, 5000);
     
-    // 测试表情按钮功能
-    const emojiBtn = document.getElementById('emoji-btn');
-    if (emojiBtn) {
-
-        // 移除可能存在的旧事件监听器
-        emojiBtn.removeEventListener('click', handleEmojiClick);
-        
-        // 添加新的事件监听器
-        emojiBtn.addEventListener('click', handleEmojiClick);
-        
-        // 测试按钮是否可点击
-        emojiBtn.style.pointerEvents = 'auto';
-        emojiBtn.style.cursor = 'pointer';
-
-    } else {
-        console.error('Emoji button not found!');
-    }
-    
-    // 表情按钮点击处理函数
-    function handleEmojiClick(e) {
-
-        e.preventDefault();
-        e.stopPropagation();
-        toggleEmojiPicker();
-    }
 });
 
 function connectWebSocket() {
@@ -1185,41 +1168,41 @@ function updateLocalMessageStatus() {
     });
 }
 
-function toggleEmojiPicker() {
+// function toggleEmojiPicker() {
+//     console.log('🎭 表情按钮被点击');
+//     
+//     const picker = document.getElementById('emoji-picker');
+//     if (!picker) {
+//         console.error('❌ Emoji picker not found!');
+//         return;
+//     }
+//     
+//     const currentDisplay = picker.style.display;
+//     console.log('当前显示状态:', currentDisplay);
+//     
+//     // 检查当前状态并切换
+//     if (currentDisplay === 'none' || currentDisplay === '') {
+//         picker.style.display = 'block';
+//         console.log('✅ 表情选择器已显示');
+//     } else {
+//         picker.style.display = 'none';
+//         console.log('✅ 表情选择器已隐藏');
+//     }
+// }
 
-    const picker = document.getElementById('emoji-picker');
-    if (!picker) {
-        console.error('Emoji picker not found!');
-        return;
-    }
-    
-    const currentDisplay = picker.style.display;
-
-    
-    // 检查当前状态并切换
-    if (currentDisplay === 'none' || currentDisplay === '') {
-        picker.style.display = 'block';
-
-    } else {
-        picker.style.display = 'none';
-
-    }
-
-}
-
-function insertEmoji(emoji) {
-    const input = document.getElementById('chat-input');
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const text = input.value;
-    
-    input.value = text.substring(0, start) + emoji + text.substring(end);
-    input.selectionStart = input.selectionEnd = start + emoji.length;
-    input.focus();
-    
-    // 隐藏表情选择器
-    document.getElementById('emoji-picker').style.display = 'none';
-}
+// function insertEmoji(emoji) {
+//     const input = document.getElementById('chat-input');
+//     const start = input.selectionStart;
+//     const end = input.selectionEnd;
+//     const text = input.value;
+//     
+//     input.value = text.substring(0, start) + emoji + text.substring(end);
+//     input.selectionStart = input.selectionEnd = start + emoji.length;
+//     input.focus();
+//     
+//     // 隐藏表情选择器
+//     document.getElementById('emoji-picker').style.display = 'none';
+// }
 
 function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -1517,13 +1500,13 @@ window.addEventListener('beforeunload', function() {
 });
 
 // 点击其他地方隐藏表情选择器
-document.addEventListener('click', function(event) {
-    const picker = document.getElementById('emoji-picker');
-    const emojiBtn = event.target.closest('.toolbar-btn');
-    
-    if (!emojiBtn && picker.style.display === 'block') {
-        picker.style.display = 'none';
-    }
-});
+// document.addEventListener('click', function(event) {
+//     const picker = document.getElementById('emoji-picker');
+//     const emojiBtn = event.target.closest('.toolbar-btn');
+//     
+//     if (!emojiBtn && picker.style.display === 'block') {
+//         picker.style.display = 'none';
+//     }
+// });
 </script>
 {% endblock %} 

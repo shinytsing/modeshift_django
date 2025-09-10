@@ -36,10 +36,9 @@ def create_diary_entry_safe(user, date, title, content, mood, entry_type, **kwar
                 """
                 INSERT INTO tools_lifediaryentry
                 (date, title, content, mood, entry_type, user_id, created_at, updated_at,
-                 mood_note, tags, music_recommendation, question_answers, voice_text,
-                 template_name, question_answer, daily_question, hobby_category,
+                 tags, voice_text, template_name, question_answer, daily_question, hobby_category,
                  word_count, reading_time, is_private, auto_saved)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
                 [
                     date,
@@ -50,9 +49,6 @@ def create_diary_entry_safe(user, date, title, content, mood, entry_type, **kwar
                     user.id,
                     timezone.now(),
                     timezone.now(),
-                    "",
-                    "[]",
-                    "",
                     "[]",
                     "",
                     "",
@@ -66,9 +62,12 @@ def create_diary_entry_safe(user, date, title, content, mood, entry_type, **kwar
                 ],
             )
 
-            # 获取新创建的记录
-            entry_id = cursor.lastrowid
-            entry = LifeDiaryEntry.objects.get(id=entry_id)
+            # 获取新创建的记录 - 使用Django的方式
+            entry = LifeDiaryEntry.objects.filter(
+                user=user, 
+                date=date, 
+                title=title
+            ).order_by('-created_at').first()
             return entry, True
 
     except Exception as e:

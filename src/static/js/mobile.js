@@ -314,8 +314,7 @@ class MobileOptimization {
     // 预加载关键资源
     preloadCriticalResources() {
         const criticalResources = [
-            '/static/css/mobile.css',
-            '/static/js/common.js'
+            '/static/css/mobile.css'
         ];
         
         criticalResources.forEach(resource => {

@@ -783,8 +783,15 @@ function loadProgressiveCaptcha() {
   statusDiv.className = 'geek-captcha-status info';
   statusDiv.textContent = currentLanguage === 'en' ? 'Loading...' : '加载中...';
   
-  fetch('{% url "users:generate_progressive_captcha" %}')
-  .then(response => response.json())
+  fetch('{% url "users:generate_progressive_captcha" %}?v=' + Date.now())
+  .then(response => {
+    console.log('Generate captcha response status:', response.status);
+    console.log('Generate captcha response headers:', response.headers);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
   .then(data => {
     if (data.success) {
       currentCaptchaData = data.data;

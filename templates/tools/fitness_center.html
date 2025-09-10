@@ -4,13 +4,19 @@
 {% block tool_title_inner %}FitMatrix - 健身矩阵{% endblock %}
 {% block tool_title_display %}FitMatrix - 健身矩阵{% endblock %}
 
+{% block extra_head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+
 {% block content %}
 {% csrf_token %}
-<!-- 强制清除所有缓存 - 版本 2025.09.10.004 -->
+<!-- 强制清除所有缓存 - 版本 2025.09.10.005 - 修复initCurrentPlan检查 -->
 <script>
 // 强制清除所有缓存和旧函数
 (function() {
-  const VERSION = '2025.09.10.004';
+  const VERSION = '2025.09.10.005';
   console.log('🧹 开始强制清除缓存... 版本:', VERSION);
   
   // 清除所有存储
@@ -22,8 +28,8 @@
     console.warn('⚠️ 清除存储失败:', e);
   }
   
-  // 删除所有可能的旧函数
-  const oldFunctions = ['renderActivePlan', 'initCurrentPlan', 'renderNoPlan'];
+  // 删除所有可能的旧函数（保留页面内定义的函数）
+  const oldFunctions = []; // 不删除页面内定义的函数
   oldFunctions.forEach(funcName => {
     if (typeof window[funcName] !== 'undefined') {
       console.log('🗑️ 删除旧函数:', funcName);
@@ -4405,9 +4411,7 @@ function forceClearCache() {
   return false;
 }
 
-// 覆盖任何可能存在的旧函数
-window.renderActivePlan = undefined;
-// 注意：不要将initCurrentPlan设置为undefined，因为页面初始化时需要调用它
+// 注意：不要将页面内定义的函数设置为undefined，因为页面初始化时需要调用它们
 
 // 全屏训练计划功能
 function togglePlanFullscreen() {
@@ -4446,15 +4450,12 @@ document.addEventListener('keydown', function(e) {
 
 // 初始化打卡日历
 document.addEventListener('DOMContentLoaded', function() {
-  // 再次确保没有旧函数
-  if (typeof renderActivePlan !== 'undefined') {
-    console.error('仍然检测到旧函数 renderActivePlan，请清除浏览器缓存');
+  // renderActivePlan是页面内定义的函数，应该存在
+  if (typeof renderActivePlan === 'undefined') {
+    console.error('renderActivePlan函数未定义，页面可能有问题');
     return;
   }
-  if (typeof initCurrentPlan !== 'undefined') {
-    console.error('仍然检测到旧函数 initCurrentPlan，请清除浏览器缓存');
-    return;
-  }
+  // initCurrentPlan是页面需要的函数，不需要检查
 
   try {
     window.checkInCalendar = new CheckInCalendar();
