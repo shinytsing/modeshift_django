@@ -42,13 +42,28 @@ function switchTheme(theme) {
             mode: theme  // 修改参数名从 theme 改为 mode
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        // 检查响应状态
+        if (response.status === 302 || response.status === 401) {
+            // 用户未登录，重定向到登录页面
+            console.log('用户未登录，重定向到登录页面');
+            window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
+        
+        // 检查响应是否为JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('响应不是JSON格式');
+        }
+        
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
+        if (data && data.success) {
             // 更新页面主题
             updatePageTheme(theme);
-
-        } else {
+        } else if (data) {
             console.error('主题切换失败:', data.error);
         }
     })
@@ -158,6 +173,12 @@ function hideTopUI() {
 let hideDropdownTimer = null;
 
 function showUserDropdown() {
+    // 检查DOM是否已加载
+    if (document.readyState === 'loading') {
+        console.log('DOM未完全加载，延迟执行用户下拉菜单显示');
+        setTimeout(showUserDropdown, 100);
+        return;
+    }
 
     // 清除隐藏定时器
     if (hideDropdownTimer) {
@@ -194,6 +215,10 @@ function hideUserDropdownDelayed() {
 }
 
 function hideUserDropdown() {
+    // 检查DOM是否已加载
+    if (document.readyState === 'loading') {
+        return;
+    }
 
     const dropdownContent = document.getElementById('userDropdownContent');
     const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
@@ -217,6 +242,10 @@ function hideUserDropdown() {
 
 // 保留切换函数用于调试
 function toggleUserDropdown() {
+    // 检查DOM是否已加载
+    if (document.readyState === 'loading') {
+        return;
+    }
 
     const dropdownContent = document.getElementById('userDropdownContent');
     

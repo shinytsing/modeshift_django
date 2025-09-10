@@ -7,33 +7,38 @@
 {% block content %}
 {% csrf_token %}
 <!-- 引入训练计划编辑器 -->
-<script src="{% static 'js/training_plan_editor.js' %}"></script>
-<!-- 强制清除所有缓存 -->
+<script src="{% static 'js/training_plan_editor.js' %}?v=20241229-{{ request.GET.t|default:'002' }}"></script>
+<!-- 强制缓存清除和重定向机制 -->
 <script>
-// 检测是否存在旧函数，如果存在则强制清除所有缓存
-if (typeof renderActivePlan !== 'undefined' || typeof initCurrentPlan !== 'undefined') {
+console.log('FitMatrix v20241229-4 - 强制重定向版本');
 
-  // 清除localStorage
-  localStorage.clear();
+// 检查URL参数，如果没有nocache参数，说明是首次访问
+var hasNoCache = window.location.search.indexOf('nocache') !== -1;
+
+if (!hasNoCache) {
+  console.log('首次访问，添加nocache参数');
+  var currentUrl = window.location.href;
+  var separator = currentUrl.indexOf('?') > -1 ? '&' : '?';
+  var timestamp = new Date().getTime();
+  var newUrl = currentUrl + separator + 'nocache=' + timestamp;
   
-  // 清除sessionStorage
-  sessionStorage.clear();
-  
-  // 清除所有缓存
+  // 强制清除所有缓存
   if ('caches' in window) {
     caches.keys().then(function(names) {
-      return Promise.all(names.map(function(name) {
-        return caches.delete(name);
-      }));
+      names.forEach(function(name) {
+        caches.delete(name);
+        console.log('已清除缓存:', name);
+      });
     }).then(function() {
-
-      // 强制重新加载，不使用缓存
-      window.location.reload(true);
+      console.log('重定向到:', newUrl);
+      window.location.replace(newUrl);
     });
   } else {
-    // 如果不支持caches API，直接重新加载
-    window.location.reload(true);
+    console.log('重定向到:', newUrl);
+    window.location.replace(newUrl);
   }
+} else {
+  console.log('缓存已清除，正常加载');
 }
 </script>
 <div class="fitness-container">
@@ -2204,25 +2209,21 @@ function initShortcutsHelp() {
   });
 }
 
-// 初始化当前训练计划
+// 兼容旧函数：代理到新实现
 async function initCurrentPlan() {
-  try {
-    const response = await fetch('/tools/api/training_plans/active/');
-    const data = await response.json();
-    
-    if (data.success && data.has_plan) {
-      renderActivePlan(data.plan);
-    } else {
-      renderNoPlan();
-    }
-  } catch (error) {
-    console.error('加载当前计划失败:', error);
-    renderNoPlan();
-  }
+  return loadActivePlan();
 }
 
-// 渲染激活的训练计划
 function renderActivePlan(plan) {
+  // 旧实现入口，委托到新实现
+  try { 
+    updatePlanDisplay(plan); 
+    return; // 委托成功后直接返回
+  } catch (e) { 
+    console.warn('renderActivePlan 兼容委托失败，使用备用实现', e); 
+  }
+  
+  // 备用实现（保持原有逻辑）
   const planContainer = document.getElementById('workoutPlan');
   if (!planContainer) return;
   
@@ -2534,6 +2535,15 @@ function renderActivePlan(plan) {
 
 // 渲染无计划状态
 function renderNoPlan() {
+  // 旧实现入口，委托到新实现
+  try { 
+    showNoPlanDisplay(); 
+    return; // 委托成功后直接返回
+  } catch (e) { 
+    console.warn('renderNoPlan 兼容委托失败，使用备用实现', e); 
+  }
+  
+  // 备用实现（保持原有逻辑）
   const planContainer = document.getElementById('workoutPlan');
   if (!planContainer) return;
   
@@ -3427,7 +3437,7 @@ function showNoPlanModal() {
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
   initShortcutsHelp();
-  try { initCurrentPlan(); } catch (e) { console.warn('初始化当前计划失败', e); }
+  try { loadActivePlan(); } catch (e) { console.warn('初始化当前计划失败', e); }
 });
 
 
@@ -4310,9 +4320,7 @@ function forceClearCache() {
   return false;
 }
 
-// 覆盖任何可能存在的旧函数
-window.renderActivePlan = undefined;
-// 注意：不要将initCurrentPlan设置为undefined，因为页面初始化时需要调用它
+// 兼容性说明：移除对旧函数的强制覆盖，避免影响加载流程
 
 // 全屏训练计划功能
 function togglePlanFullscreen() {
@@ -4351,16 +4359,6 @@ document.addEventListener('keydown', function(e) {
 
 // 初始化打卡日历
 document.addEventListener('DOMContentLoaded', function() {
-  // 再次确保没有旧函数
-  if (typeof renderActivePlan !== 'undefined') {
-    console.error('仍然检测到旧函数 renderActivePlan，请清除浏览器缓存');
-    return;
-  }
-  if (typeof initCurrentPlan !== 'undefined') {
-    console.error('仍然检测到旧函数 initCurrentPlan，请清除浏览器缓存');
-    return;
-  }
-
   try {
     window.checkInCalendar = new CheckInCalendar();
 

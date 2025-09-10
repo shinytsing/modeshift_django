@@ -7680,16 +7680,7 @@ def rate_food_api(request):
         return JsonResponse({"success": False, "error": f"评价保存失败: {str(e)}"})
 
 
-@csrf_exempt
-@require_http_methods(["GET"])
-@login_required
-def get_checkin_calendar_api(request):
-    """获取打卡日历数据"""
-    try:
-        # 原有的函数体内容
-        pass
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)}, status=400)
+# 第一个空的get_checkin_calendar_api实现已删除，使用下面的完整实现
 
 
 # 用户资料相关API

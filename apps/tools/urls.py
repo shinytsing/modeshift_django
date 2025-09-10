@@ -268,20 +268,7 @@ from .views.desire_views import (
 
 # 从日记相关视图导入
 from .views.diary_views import creative_writer, creative_writer_api, emo_diary, emo_diary_api
-from .views.enhanced_fitness_views import (
-    achievement_dashboard,
-    enhanced_fitness_center,
-    equip_achievement_badge_api,
-    exercise_detail,
-    exercise_library,
-    get_workout_plan_details_api,
-    plan_detail,
-    plan_library,
-    save_custom_plan_api,
-    toggle_exercise_favorite_api,
-    unequip_achievement_badge_api,
-    use_plan_template_api,
-)
+# enhanced_fitness_views 已删除
 
 # 从文件下载视图导入
 from .views.file_download_views import generic_file_download
@@ -1138,21 +1125,7 @@ urlpatterns = [
     path("api/chat/<str:room_id>/send-audio/", send_audio_api, name="send_audio_api"),
     path("api/chat/<str:room_id>/send-file/", send_file_api, name="send_file_api"),
     path("api/chat/<str:room_id>/send-image/", send_image_api, name="send_image_api"),
-    # 增强健身系统API
-    path("fitness/enhanced/", enhanced_fitness_center, name="enhanced_fitness_center"),
-    path("fitness/training-plan-editor/", training_plan_editor, name="enhanced_training_plan_editor"),
-    path("fitness/achievements/", achievement_dashboard, name="achievement_dashboard"),
-    path("fitness/exercise-library/", exercise_library, name="exercise_library"),
-    path("fitness/exercise/<int:exercise_id>/", exercise_detail, name="exercise_detail"),
-    path("fitness/plan-library/", plan_library, name="plan_library"),
-    path("fitness/plan/<int:plan_id>/", plan_detail, name="plan_detail"),
-    # 增强健身系统API接口
-    path("api/fitness/toggle-exercise-favorite/", toggle_exercise_favorite_api, name="toggle_exercise_favorite_api"),
-    path("api/fitness/equip-achievement-badge/", equip_achievement_badge_api, name="equip_achievement_badge_api"),
-    path("api/fitness/unequip-achievement-badge/", unequip_achievement_badge_api, name="unequip_achievement_badge_api"),
-    path("api/fitness/use-plan-template/", use_plan_template_api, name="use_plan_template_api"),
-    path("api/fitness/save-custom-plan/", save_custom_plan_api, name="save_custom_plan_api"),
-    path("api/fitness/workout-plan-details/<int:plan_id>/", get_workout_plan_details_api, name="get_workout_plan_details_api"),
+    # enhanced_fitness_center 相关路由已删除
     path("api/fitness/training-plan-templates/", get_training_plan_templates_api, name="get_training_plan_templates_api"),
     # 训练模式导入API
     path("api/fitness/training-modes/", get_training_modes_api, name="get_training_modes_api"),

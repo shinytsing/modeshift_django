@@ -2890,7 +2890,12 @@
                     menu: 'rgba(255, 255, 255, 0.9)',
                     hide: 'linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9))'
                 };
-                updateButtonColors(defaultThemeColors);
+                // 延迟调用，确保函数已定义
+                setTimeout(() => {
+                    if (typeof updateButtonColors === 'function') {
+                        updateButtonColors(defaultThemeColors);
+                    }
+                }, 100);
             }
         });
     </script>
@@ -7162,6 +7167,12 @@
     
     // 强制修复用户菜单
     function forceFixUserMenu() {
+        // 检查DOM是否已加载
+        if (document.readyState === 'loading') {
+            console.log('DOM未完全加载，延迟执行用户菜单修复');
+            setTimeout(forceFixUserMenu, 100);
+            return;
+        }
 
         const dropdownContent = document.getElementById('userDropdownContent');
         const userButton = document.querySelector('.top-ui-user');
