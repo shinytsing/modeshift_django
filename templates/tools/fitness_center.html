@@ -8,10 +8,33 @@
 {% csrf_token %}
 <!-- 引入训练计划编辑器 -->
 <script src="{% static 'js/training_plan_editor.js' %}"></script>
-<!-- 页面初始化脚本 -->
+<!-- 强制清除所有缓存 -->
 <script>
-// 页面初始化 - 不需要清除函数，因为它们是页面内定义的
-console.log('FitMatrix页面正在初始化...');
+// 检测是否存在旧函数，如果存在则强制清除所有缓存
+if (typeof renderActivePlan !== 'undefined' || typeof initCurrentPlan !== 'undefined') {
+
+  // 清除localStorage
+  localStorage.clear();
+  
+  // 清除sessionStorage
+  sessionStorage.clear();
+  
+  // 清除所有缓存
+  if ('caches' in window) {
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(name) {
+        return caches.delete(name);
+      }));
+    }).then(function() {
+
+      // 强制重新加载，不使用缓存
+      window.location.reload(true);
+    });
+  } else {
+    // 如果不支持caches API，直接重新加载
+    window.location.reload(true);
+  }
+}
 </script>
 <div class="fitness-container">
 
@@ -4287,7 +4310,9 @@ function forceClearCache() {
   return false;
 }
 
-// 注意：不要将页面内定义的函数设置为undefined，因为页面初始化时需要调用它们
+// 覆盖任何可能存在的旧函数
+window.renderActivePlan = undefined;
+// 注意：不要将initCurrentPlan设置为undefined，因为页面初始化时需要调用它
 
 // 全屏训练计划功能
 function togglePlanFullscreen() {
@@ -4326,13 +4351,13 @@ document.addEventListener('keydown', function(e) {
 
 // 初始化打卡日历
 document.addEventListener('DOMContentLoaded', function() {
-  // 检查必要的函数是否存在
-  if (typeof renderActivePlan === 'undefined') {
-    console.error('renderActivePlan函数未定义，页面可能有问题');
+  // 再次确保没有旧函数
+  if (typeof renderActivePlan !== 'undefined') {
+    console.error('仍然检测到旧函数 renderActivePlan，请清除浏览器缓存');
     return;
   }
-  if (typeof initCurrentPlan === 'undefined') {
-    console.error('initCurrentPlan函数未定义，页面可能有问题');
+  if (typeof initCurrentPlan !== 'undefined') {
+    console.error('仍然检测到旧函数 initCurrentPlan，请清除浏览器缓存');
     return;
   }
 
