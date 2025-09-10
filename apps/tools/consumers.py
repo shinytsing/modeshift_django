@@ -79,15 +79,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # 检查用户是否已登录
         if isinstance(self.scope["user"], AnonymousUser):
-            # 对于测试房间、shipbao房间和多人聊天室，允许匿名用户连接
+            # 对于测试房间、shipbao房间、多人聊天室和heart_link房间，允许匿名用户连接
             if (
                 self.room_id.startswith("test-room-")
                 or self.room_id.startswith("shipbao-")
+                or self.room_id.startswith("heart-link-")
                 or self.room_id in ["public-room", "general", "chat", "random"]
                 or self.room_id == "0c38a502-25ad-47e7-9a37-15660a57d135"
                 or self.room_id == "e3aee9e3-99e1-428b-8e09-fb6389db5bef"
+                # 对于heart_link房间，也允许连接（这些是UUID格式的房间ID）
+                or len(self.room_id) == 36 and self.room_id.count('-') == 4
             ):
-                logger.info(f"Anonymous user connecting to test room {self.room_id}")
+                logger.info(f"Anonymous user connecting to room {self.room_id}")
             else:
                 logger.warning(f"Anonymous user attempted to connect to room {self.room_id}")
                 await self.close()
@@ -235,6 +238,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_new_message_notification(data)
             elif message_type == "video_call_status":
                 await self.handle_video_call_status(data)
+            elif message_type == "video_offer":
+                await self.handle_video_offer(data)
+            elif message_type == "video_answer":
+                await self.handle_video_answer(data)
+            elif message_type == "ice_candidate":
+                await self.handle_ice_candidate(data)
 
         except json.JSONDecodeError:
             logger.error("Invalid JSON received")
@@ -285,6 +294,51 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error handling video call status: {e}")
 
+    async def handle_video_offer(self, data):
+        """接收端A的SDP Offer并转发给房间内的其他用户"""
+        try:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "video_offer",
+                    "offer": data.get("offer"),
+                    "room_id": data.get("room_id", self.room_id),
+                    "sender_id": self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None,
+                },
+            )
+        except Exception as e:
+            logger.error(f"Error handling video offer: {e}")
+
+    async def handle_video_answer(self, data):
+        """接收端B的SDP Answer并转发给房间内的其他用户"""
+        try:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "video_answer",
+                    "answer": data.get("answer"),
+                    "room_id": data.get("room_id", self.room_id),
+                    "sender_id": self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None,
+                },
+            )
+        except Exception as e:
+            logger.error(f"Error handling video answer: {e}")
+
+    async def handle_ice_candidate(self, data):
+        """接收端的ICE候选并转发给房间内的其他用户"""
+        try:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "ice_candidate",
+                    "candidate": data.get("candidate"),
+                    "room_id": data.get("room_id", self.room_id),
+                    "sender_id": self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None,
+                },
+            )
+        except Exception as e:
+            logger.error(f"Error handling ice candidate: {e}")
+
     async def video_call_status_notification(self, event):
         """发送视频通话状态通知"""
         try:
@@ -305,6 +359,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
         except Exception as e:
             logger.error(f"Error sending video call status notification: {e}")
+
+    async def video_offer(self, event):
+        """将SDP Offer转发给房间内除发送者外的用户"""
+        try:
+            if event.get("sender_id") != (self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None):
+                await self.send(text_data=json.dumps({"type": "video_offer", "offer": event["offer"], "room_id": event.get("room_id", self.room_id)}))
+        except Exception as e:
+            logger.error(f"Error sending video offer: {e}")
+
+    async def video_answer(self, event):
+        """将SDP Answer转发给房间内除发送者外的用户"""
+        try:
+            if event.get("sender_id") != (self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None):
+                await self.send(text_data=json.dumps({"type": "video_answer", "answer": event["answer"], "room_id": event.get("room_id", self.room_id)}))
+        except Exception as e:
+            logger.error(f"Error sending video answer: {e}")
+
+    async def ice_candidate(self, event):
+        """将ICE候选转发给房间内除发送者外的用户"""
+        try:
+            if event.get("sender_id") != (self.scope["user"].id if not isinstance(self.scope["user"], AnonymousUser) else None):
+                await self.send(text_data=json.dumps({"type": "ice_candidate", "candidate": event["candidate"], "room_id": event.get("room_id", self.room_id)}))
+        except Exception as e:
+            logger.error(f"Error sending ice candidate: {e}")
 
     async def handle_message(self, data):
         """处理聊天消息"""
@@ -447,16 +525,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def verify_token_and_access(self):
         """验证令牌和用户访问权限"""
         try:
-            # 如果是测试房间，允许所有已登录用户访问
+            # 如果是测试房间或heart_link房间，允许所有已登录用户访问
             if (
                 self.room_id.startswith("test-room-")
+                or self.room_id.startswith("heart-link-")
                 or self.room_id == "0c38a502-25ad-47e7-9a37-15660a57d135"
                 or self.room_id == "e3aee9e3-99e1-428b-8e09-fb6389db5bef"
+                # 对于heart_link房间，也允许连接（这些是UUID格式的房间ID）
+                or (len(self.room_id) == 36 and self.room_id.count('-') == 4)
             ):
                 # 检查测试房间是否存在，如果不存在则创建
+                # 对于匿名用户，user1设为None
+                user = self.scope["user"] if not isinstance(self.scope["user"], AnonymousUser) else None
                 room, created = ChatRoom.objects.get_or_create(
                     room_id=self.room_id,
-                    defaults={"name": f"测试聊天室-{self.room_id}", "user1": self.scope["user"], "status": "active"},
+                    defaults={"name": f"测试聊天室-{self.room_id}", "user1": user, "status": "active"},
                 )
                 # 测试房间创建后，user1已经设置为当前用户
                 return True

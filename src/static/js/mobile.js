@@ -26,6 +26,9 @@ class MobileOptimization {
         // 监听窗口变化
         window.addEventListener('resize', this.handleResize.bind(this));
         window.addEventListener('orientationchange', this.handleOrientationChange.bind(this));
+        
+        // 监听页面变化（用于SPA应用）
+        this.observePageChanges();
     }
     
     // 检测移动设备
@@ -327,7 +330,8 @@ class MobileOptimization {
     // 移动端导航
     setupMobileNavigation() {
         this.createMobileMenu();
-        this.setupBottomNavigation();
+        // 不再创建底部导航
+        // this.setupBottomNavigation();
     }
     
     // 创建移动端菜单
@@ -401,38 +405,14 @@ class MobileOptimization {
         }
     }
     
-    // 底部导航
-    setupBottomNavigation() {
-        const bottomNavItems = [
-            { icon: '🏠', text: '首页', href: '/' },
-            { icon: '🛠️', text: '工具', href: '/tools/' },
-            { icon: '💬', text: '聊天', href: '/tools/chat/' },
-            { icon: '👤', text: '我的', href: '/users/profile/' }
-        ];
-        
-        const bottomNav = document.createElement('nav');
-        bottomNav.className = 'bottom-nav';
-        
-        bottomNavItems.forEach(item => {
-            const navItem = document.createElement('a');
-            navItem.className = 'bottom-nav-item';
-            navItem.href = item.href;
-            navItem.innerHTML = `
-                <div class="bottom-nav-icon">${item.icon}</div>
-                <div class="bottom-nav-text">${item.text}</div>
-            `;
-            
-            // 标记当前页面
-            if (window.location.pathname === item.href) {
-                navItem.classList.add('active');
-            }
-            
-            bottomNav.appendChild(navItem);
-        });
-        
-        document.body.appendChild(bottomNav);
-        document.body.classList.add('has-bottom-nav');
+    // 底部导航已删除
+    
+    // 页面变化监听已简化（底部导航已删除）
+    observePageChanges() {
+        // 不再需要监听底部导航相关的变化
     }
+    
+    // 聊天页面检测已删除（不再需要）
     
     // 移动端表单优化
     setupMobileForms() {

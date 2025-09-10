@@ -253,7 +253,7 @@ def suggestions_api(request):
         if request.user.is_authenticated:
             try:
                 # 检查用户是否为管理员
-                if request.user.role.is_admin:
+                if hasattr(request.user, 'role') and request.user.role and request.user.role.is_admin:
                     # 管理员可以看到所有建议
                     suggestions = Suggestion.objects.all().order_by("-created_at")
                 else:

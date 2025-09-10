@@ -7792,31 +7792,56 @@ def get_chat_room_participants_api(request, room_id):
 
 
 def get_user_profile_data(user):
-    """获取用户资料数据的辅助函数"""
-    profile = Profile.objects.filter(user=user).first()
-    membership = UserMembership.objects.filter(user=user).first()
-    theme = UserTheme.objects.filter(user=user).first()
+    """获取用户资料数据的辅助函数（容错版，避免历史表名不一致导致异常）"""
+    # Profile 容错查询
+    profile = None
+    try:
+        profile = Profile.objects.filter(user=user).first()
+    except Exception:
+        profile = None
 
-    # 获取用户标签
+    # UserMembership 容错查询
+    membership = None
+    try:
+        membership = UserMembership.objects.filter(user=user).first()
+    except Exception:
+        membership = None
+
+    # UserTheme 容错查询
+    theme = None
+    try:
+        theme = UserTheme.objects.filter(user=user).first()
+    except Exception:
+        theme = None
+
+    # 获取用户标签（基于可用信息）
     tags = []
+    try:
+        if membership and getattr(membership, "membership_type", "free") != "free":
+            tags.append(f"💎 {membership.get_membership_type_display()}")
+    except Exception:
+        pass
 
-    if membership and membership.membership_type != "free":
-        tags.append(f"💎 {membership.get_membership_type_display()}")
+    try:
+        if theme:
+            mode_emojis = {"work": "💻", "life": "🌱", "training": "💪", "emo": "🎭"}
+            tags.append(f"{mode_emojis.get(getattr(theme, 'mode', ''), '🎯')} {theme.get_mode_display()}")
+    except Exception:
+        pass
 
-    if theme:
-        mode_emojis = {"work": "💻", "life": "🌱", "training": "💪", "emo": "🎭"}
-        tags.append(f"{mode_emojis.get(theme.mode, '🎯')} {theme.get_mode_display()}")
-
-    if user.is_staff:
+    if getattr(user, "is_staff", False):
         tags.append("👑 管理员")
 
-    days_since_joined = (timezone.now() - user.date_joined).days
-    if days_since_joined > 365:
-        tags.append("🎂 老用户")
-    elif days_since_joined > 30:
-        tags.append("🌟 活跃用户")
-    else:
-        tags.append("🆕 新用户")
+    try:
+        days_since_joined = (timezone.now() - user.date_joined).days
+        if days_since_joined > 365:
+            tags.append("🎂 老用户")
+        elif days_since_joined > 30:
+            tags.append("🌟 活跃用户")
+        else:
+            tags.append("🆕 新用户")
+    except Exception:
+        pass
 
     return {
         "id": user.id,
@@ -7824,10 +7849,12 @@ def get_user_profile_data(user):
         "first_name": user.first_name,
         "last_name": user.last_name,
         "display_name": f"{user.first_name} {user.last_name}".strip() or user.username,
-        "avatar_url": profile.avatar.url if profile and profile.avatar else None,
-        "bio": profile.bio if profile else "",
-        "membership_type": membership.get_membership_type_display() if membership else "免费用户",
-        "theme_mode": theme.get_mode_display() if theme else "默认模式",
+        "avatar_url": (profile.avatar.url if (profile and getattr(profile, "avatar", None)) else None),
+        "bio": getattr(profile, "bio", "") if profile else "",
+        "membership_type": (
+            membership.get_membership_type_display() if membership else "免费用户"
+        ),
+        "theme_mode": (theme.get_mode_display() if theme else "默认模式"),
         "tags": tags,
         "is_online": False,  # 将在WebSocket中更新
     }

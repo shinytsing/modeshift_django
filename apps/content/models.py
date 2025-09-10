@@ -164,6 +164,7 @@ class AILink(models.Model):
         ("design", "设计创意"),
         ("productivity", "效率办公"),
         ("learning", "学习教育"),
+        ("music", "音乐乐器"),
         ("entertainment", "娱乐休闲"),
         ("other", "其他"),
     ]

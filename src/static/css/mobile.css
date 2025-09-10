@@ -573,47 +573,7 @@
     }
 }
 
-/* 底部导航 */
-@media screen and (max-width: 768px) {
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        border-top: 1px solid #eee;
-        padding: 0.5rem 0;
-        display: flex;
-        justify-content: space-around;
-        z-index: 100;
-        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .bottom-nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        color: #666;
-        font-size: 0.75rem;
-        min-width: 44px;
-        padding: 0.5rem;
-    }
-    
-    .bottom-nav-item.active {
-        color: #007bff;
-    }
-    
-    .bottom-nav-icon {
-        font-size: 1.5rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    /* 为底部导航预留空间 */
-    body.has-bottom-nav {
-        padding-bottom: 80px;
-    }
-}
+/* 底部导航已删除 */
 
 /* 无障碍优化 */
 @media screen and (max-width: 768px) {
@@ -651,6 +611,168 @@
         clip: rect(0, 0, 0, 0);
         white-space: nowrap;
         border: 0;
+    }
+}
+
+/* 聊天页面移动端优化 */
+@media screen and (max-width: 768px) {
+    /* 聊天页面特殊样式 */
+    .chat-container,
+    .secure-chat-container,
+    .video-chat-container,
+    .multi-chat-container {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 1000 !important;
+    }
+    
+    /* 聊天头部优化 */
+    .chat-header,
+    .security-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1001 !important;
+        padding: 12px 16px !important;
+        min-height: 60px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+    
+    /* 聊天消息区域优化 */
+    .chat-messages,
+    .message-container {
+        flex: 1 !important;
+        padding: 16px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 80px !important; /* 为输入框预留空间 */
+    }
+    
+    /* 消息气泡优化 */
+    .message {
+        margin-bottom: 12px !important;
+        max-width: 85% !important;
+    }
+    
+    .message.own {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+    }
+    
+    .message.other {
+        margin-left: 0 !important;
+        margin-right: auto !important;
+    }
+    
+    .message-content {
+        padding: 12px 16px !important;
+        border-radius: 18px !important;
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+    }
+    
+    /* 输入区域优化 */
+    .chat-input,
+    .input-group {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: white !important;
+        border-top: 1px solid #eee !important;
+        padding: 12px 16px !important;
+        z-index: 1002 !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+    }
+    
+    .message-input,
+    .input-group input,
+    .input-group textarea {
+        font-size: 16px !important; /* 防止iOS缩放 */
+        border-radius: 20px !important;
+        border: 1px solid #ddd !important;
+        padding: 12px 16px !important;
+        resize: none !important;
+        outline: none !important;
+        -webkit-appearance: none !important;
+    }
+    
+    .send-btn {
+        border-radius: 50% !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: none !important;
+        background: #007bff !important;
+        color: white !important;
+        font-size: 18px !important;
+    }
+    
+    /* 连接状态优化 */
+    .connection-status {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+        background: rgba(0,0,0,0.05) !important;
+        border-radius: 12px !important;
+        margin: 8px 16px !important;
+    }
+    
+    /* 用户信息优化 */
+    .chat-user-info,
+    .other-user-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+    
+    .user-avatar,
+    .chat-user-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        font-size: 16px !important;
+    }
+    
+    /* 聊天页面底部导航相关样式已删除 */
+    
+    /* 视频聊天特殊优化 */
+    .video-container {
+        height: calc(100vh - 120px) !important;
+        max-height: calc(100vh - 120px) !important;
+    }
+    
+    .video-controls {
+        position: fixed !important;
+        bottom: 80px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 1003 !important;
+    }
+    
+    /* 多聊天室优化 */
+    .room-list {
+        max-height: calc(100vh - 200px) !important;
+        overflow-y: auto !important;
+    }
+    
+    .room-item {
+        padding: 16px !important;
+        margin-bottom: 8px !important;
+        border-radius: 12px !important;
     }
 }
 

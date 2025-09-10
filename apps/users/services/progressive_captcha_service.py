@@ -100,7 +100,7 @@ class ProgressiveCaptchaService:
 
         # 存储答案到缓存
         cache_key = f"captcha_answer_{captcha_id}"
-        cache.set(cache_key, str(answer), timeout=600)  # 10分钟过期，给用户更多时间
+        cache.set(cache_key, str(answer), timeout=1800)  # 30分钟过期，给用户更多时间
 
         captcha_data = {
             "captcha_id": captcha_id,
@@ -121,7 +121,12 @@ class ProgressiveCaptchaService:
             correct_answer = cache.get(cache_key)
 
             if not correct_answer:
-                return {"success": False, "message": "验证码已过期，请重新获取"}
+                # 添加调试信息
+                print(f"验证码过期: captcha_id={captcha_id}, cache_key={cache_key}")
+                return {"success": False, "message": "验证码已过期，请重新获取", "need_refresh": True}
+
+            # 添加调试信息
+            print(f"验证码对比: user_input='{user_input}', correct_answer='{correct_answer}'")
 
             if str(user_input).strip() == str(correct_answer).strip():
                 # 验证成功
@@ -131,7 +136,8 @@ class ProgressiveCaptchaService:
             else:
                 # 验证失败
                 self.record_failure(session_key)
-                return {"success": False, "message": "答案错误，请重试"}
+                return {"success": False, "message": f"答案错误，正确答案是 {correct_answer}，请重试"}
 
         except Exception as e:
+            print(f"验证码验证异常: {str(e)}")
             return {"success": False, "message": f"验证失败: {str(e)}"}

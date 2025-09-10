@@ -21,7 +21,7 @@
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <!-- 移动端优化CSS -->
-    <link rel="stylesheet" href="{% static 'css/mobile-optimized.css' %}?v={{ request.GET.t|default:'1' }}">
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v={{ request.GET.t|default:'1' }}">
     
     <!-- 回退CSS -->
     <noscript>
@@ -2160,7 +2160,7 @@
         }
     </style>
 </head>
-<body data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %}">
+<body data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %} {% block extra_body_class %}{% endblock %}">
     <!-- 页面加载动画 -->
     <div class="page-loader" id="pageLoader">
         <div class="loader-content">
@@ -3631,7 +3631,12 @@
     function showSuggestions() {
             // 先获取现有建议
             fetch('/content/api/suggestions/')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     let suggestionsHtml = `
                         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 23, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
@@ -3815,7 +3820,38 @@
                 })
                 .catch(error => {
                     console.error('获取建议失败:', error);
-                    showNotification('获取建议失败，请稍后重试', 'error');
+                    // 显示错误界面而不是简单的通知
+                    let errorHtml = `
+                        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 23, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="background: linear-gradient(135deg, rgba(26,31,46,0.95) 0%, rgba(220,53,69,0.1) 100%); border: 1px solid rgba(220, 53, 69, 0.2); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 30px; max-width: 600px; width: 95%; position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(220, 53, 69, 0.2); padding-bottom: 15px;">
+                                    <h3 style="color: #dc3545; margin: 0; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-shadow: 0 0 10px rgba(220, 53, 69, 0.5);">
+                                        <i class="fas fa-exclamation-triangle" style="color: #dc3545; margin-right: 10px;"></i> 加载失败
+                                    </h3>
+                                    <button onclick="closeSuggestions()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; transition: all 0.3s ease; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-times"></i> 关闭
+                                    </button>
+                                </div>
+                                <div style="text-align: center; padding: 20px;">
+                                    <div style="font-size: 48px; color: #dc3545; margin-bottom: 20px;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <h4 style="color: #ffffff; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace;">无法加载建议数据</h4>
+                                    <p style="color: #e6e6e6; margin-bottom: 20px; line-height: 1.6; font-family: 'JetBrains Mono', monospace;">
+                                        服务器返回错误: ${error.message}
+                                    </p>
+                                    <div style="display: flex; gap: 15px; justify-content: center;">
+                                        <button onclick="showSuggestions()" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.3s ease;">
+                                            <i class="fas fa-redo" style="margin-right: 8px;"></i> 重试
+                                        </button>
+                                        <button onclick="closeSuggestions()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.3s ease;">
+                                            <i class="fas fa-times" style="margin-right: 8px;"></i> 关闭
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    document.body.insertAdjacentHTML('beforeend', errorHtml);
                 });
         }
         
@@ -6125,12 +6161,31 @@
             const navbar = document.querySelector('.navbar-collapse');
             const navbarElement = document.querySelector('.navbar');
             
-            // 导航栏滚动效果
+            // 导航栏滚动效果 - 增强版错误处理
             function handleNavbarScroll() {
-                if (window.scrollY > 50) {
-                    navbarElement.classList.add('scrolled');
-                } else {
-                    navbarElement.classList.remove('scrolled');
+                try {
+                    // 安全获取navbar元素
+                    const navbarElement = document.querySelector('.navbar');
+                    if (navbarElement && navbarElement.classList) {
+                        if (window.scrollY > 50) {
+                            navbarElement.classList.add('scrolled');
+                        } else {
+                            navbarElement.classList.remove('scrolled');
+                        }
+                    } else {
+                        // 如果navbar元素不存在，移除事件监听器
+                        console.warn('navbar元素不存在，移除滚动监听器');
+                        window.removeEventListener('scroll', handleNavbarScroll);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('handleNavbarScroll 错误:', error);
+                    // 出错时移除事件监听器
+                    try {
+                        window.removeEventListener('scroll', handleNavbarScroll);
+                    } catch (removeError) {
+                        console.warn('移除事件监听器失败:', removeError);
+                    }
                 }
             }
             
@@ -6225,7 +6280,9 @@
                 // 移动端菜单按钮点击事件
                 mobileMenuBtn.addEventListener('click', function() {
                     navbar.classList.toggle('show');
-                    sidebarBackdrop.classList.toggle('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.toggle('show');
+                    }
                     document.body.style.overflow = navbar.classList.contains('show') ? 'hidden' : '';
                     
                     // 添加按钮动画
@@ -6236,10 +6293,11 @@
                 });
                 
                 // 背景点击关闭菜单
-                sidebarBackdrop.addEventListener('click', function() {
-                    navbar.classList.remove('show');
-                    sidebarBackdrop.classList.remove('show');
-                    document.body.style.overflow = '';
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.addEventListener('click', function() {
+                        navbar.classList.remove('show');
+                        sidebarBackdrop.classList.remove('show');
+                        document.body.style.overflow = '';
                     
                     // 重置按钮动画
                     const icon = mobileMenuBtn.querySelector('i');
@@ -6254,7 +6312,9 @@
                     link.addEventListener('click', function() {
                         if (window.innerWidth <= 768) {
                             navbar.classList.remove('show');
-                            sidebarBackdrop.classList.remove('show');
+                            if (sidebarBackdrop) {
+                                sidebarBackdrop.classList.remove('show');
+                            }
                             document.body.style.overflow = '';
                             
                             // 重置按钮动画
@@ -6270,7 +6330,9 @@
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 768) {
                         navbar.classList.remove('show');
-                        sidebarBackdrop.classList.remove('show');
+                        if (sidebarBackdrop) {
+                            sidebarBackdrop.classList.remove('show');
+                        }
                         document.body.style.overflow = '';
                         
                         // 重置按钮动画
@@ -6287,7 +6349,9 @@
                 // ESC键关闭移动端菜单
                 if (e.key === 'Escape' && navbar && navbar.classList.contains('show')) {
                     navbar.classList.remove('show');
-                    sidebarBackdrop.classList.remove('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
                     document.body.style.overflow = '';
                 }
                 
@@ -7647,9 +7711,28 @@
     </script>
     
     <!-- 移动端优化JavaScript -->
-    <script src="{% static 'js/mobile-optimized.js' %}?v={{ request.GET.t|default:'1' }}" defer></script>
+    <script src="{% static 'js/mobile.js' %}?v={{ request.GET.t|default:'1' }}" defer></script>
     
-    <!-- Bootstrap JS - 延迟加载 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js" defer></script>
+    <!-- Bootstrap JS - 确保jQuery先加载 -->
+    <script>
+    // 确保jQuery在Bootstrap之前加载
+    if (typeof window.jQuery === 'undefined') {
+        // 如果jQuery未加载，先加载jQuery
+        const jqueryScript = document.createElement('script');
+        jqueryScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js';
+        jqueryScript.onload = function() {
+            // jQuery加载完成后加载Bootstrap
+            const bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js';
+            document.head.appendChild(bootstrapScript);
+        };
+        document.head.appendChild(jqueryScript);
+    } else {
+        // 如果jQuery已存在，直接加载Bootstrap
+        const bootstrapScript = document.createElement('script');
+        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js';
+        document.head.appendChild(bootstrapScript);
+    }
+    </script>
 </body>
 </html>

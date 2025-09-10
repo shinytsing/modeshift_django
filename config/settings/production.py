@@ -121,6 +121,10 @@ WHITENOISE_AUTOREFRESH = True
 WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'bz2', 'tar', 'rar', '7z']
 WHITENOISE_ADD_HEADERS_FUNCTION = 'whitenoise.storage.add_headers_function'
 
+# 禁用静态文件缓存 - 解决训练计划显示问题
+WHITENOISE_MAX_AGE = 0
+WHITENOISE_IMMUTABLE_FILE_TEST = lambda path, url: False
+
 # 邮件配置 - 生产环境使用SMTP后端
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")

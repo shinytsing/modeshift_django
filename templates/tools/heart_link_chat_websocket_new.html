@@ -3,6 +3,8 @@
 
 {% block title %}聊天室 - {{ room_id }}{% endblock %}
 
+{% block extra_body_class %}chat-page{% endblock %}
+
 {% block extra_css %}
 <style>
     .chat-container {
@@ -762,7 +764,22 @@ function connectWebSocket() {
     }
     
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomId}/`;
+    // 添加认证信息到WebSocket URL
+    const sessionId = getCookie('sessionid') || getCookie('session_id') || '';
+    const csrfToken = getCookie('csrftoken') || getCookie('csrf_token') || '';
+    
+    // 构建WebSocket URL，如果认证信息存在则添加，否则不添加
+    let wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomId}/`;
+    if (sessionId || csrfToken) {
+        const params = new URLSearchParams();
+        if (sessionId) params.append('sessionid', sessionId);
+        if (csrfToken) params.append('csrftoken', csrfToken);
+        wsUrl += '?' + params.toString();
+    }
+    
+    console.log('WebSocket连接URL:', wsUrl);
+    console.log('Session ID:', sessionId);
+    console.log('CSRF Token:', csrfToken);
 
     try {
         socket = new WebSocket(wsUrl);
