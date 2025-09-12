@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ToolUsageLog
-from .utils import DeepSeekClient  # 复用已有的DeepSeek客户端
+from .services.llm_service import generate_redbook_content
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -201,8 +201,7 @@ class GenerateRedBookAPI(APIView):
             prompt = self._build_multiple_images_prompt(image_base64_list)
 
             # 调用DeepSeek
-            deepseek = DeepSeekClient()
-            response = deepseek.generate_redbook_content(prompt)
+            response = generate_redbook_content(prompt)
 
             # 清理所有临时文件
             for image_path in image_paths:
@@ -242,8 +241,7 @@ class GenerateRedBookAPI(APIView):
 """
 
             # 调用DeepSeek
-            deepseek = DeepSeekClient()
-            response = deepseek.generate_redbook_content(prompt)
+            response = generate_redbook_content(prompt)
 
             return response
 

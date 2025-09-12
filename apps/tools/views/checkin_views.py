@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 @require_http_methods(["POST"])
 @login_required
 def checkin_add_api(request):
-    """添加签到记录API - 真实实现"""
+    """添加签到记录API - 修复版本（移除CheckInDetail依赖）"""
     try:
         from django.utils.dateparse import parse_date
 
-        from apps.tools.models.legacy_models import CheckInCalendar, CheckInDetail
+        from apps.tools.models.legacy_models import CheckInCalendar
 
         # 解析请求数据
         data = json.loads(request.body)
@@ -44,16 +44,10 @@ def checkin_add_api(request):
             checkin.status = status
             checkin.save()
 
-        # 创建或更新详情记录
+        # 注意：CheckInDetail模型已被删除，详情数据暂时不保存
+        # 如果需要保存详情，可以考虑使用JSONField或其他方式
         if detail_data:
-            detail, detail_created = CheckInDetail.objects.get_or_create(checkin=checkin, defaults=detail_data)
-
-            if not detail_created:
-                # 更新详情
-                for key, value in detail_data.items():
-                    if hasattr(detail, key):
-                        setattr(detail, key, value)
-                detail.save()
+            logger.info(f"收到详情数据: {detail_data}，但CheckInDetail模型已被删除")
 
         logger.info(f"用户打卡: {request.user.username}, 类型: {checkin_type}, 日期: {checkin_date}")
 

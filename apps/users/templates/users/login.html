@@ -712,7 +712,43 @@ document.addEventListener('DOMContentLoaded', function() {
   bindEvents();
 });
 
+function clearAllStatus() {
+  // 清除状态显示
+  const statusDiv = document.getElementById('captchaStatus');
+  if (statusDiv) {
+    statusDiv.className = 'geek-captcha-status';
+    statusDiv.textContent = '';
+  }
+  
+  // 清除数学验证码提示
+  const mathHint = document.getElementById('mathHint');
+  if (mathHint) {
+    mathHint.style.display = 'none';
+    mathHint.textContent = '';
+  }
+  
+  // 清除输入框
+  const mathAnswer = document.getElementById('mathAnswer');
+  if (mathAnswer) {
+    mathAnswer.value = '';
+  }
+  
+  // 重置刷新按钮状态
+  const refreshBtn = document.getElementById('refreshCaptcha');
+  if (refreshBtn) {
+    refreshBtn.disabled = false;
+    refreshBtn.style.opacity = '1';
+    refreshBtn.style.cursor = 'pointer';
+  }
+}
+
 function initializeProgressiveCaptcha() {
+  // 重置验证状态
+  captchaVerified = false;
+  
+  // 清除所有状态显示
+  clearAllStatus();
+  
   // 重置验证按钮状态
   resetVerifyButton();
   // 加载渐进式验证码
@@ -724,6 +760,11 @@ function bindEvents() {
   const refreshCaptcha = document.getElementById('refreshCaptcha');
   if (refreshCaptcha) {
     refreshCaptcha.addEventListener('click', function() {
+      // 重置验证状态
+      captchaVerified = false;
+      // 清除所有状态显示
+      clearAllStatus();
+      // 加载新的验证码
       loadProgressiveCaptcha();
     });
   }
@@ -986,11 +1027,23 @@ function autoVerifyMathCaptcha() {
         return;
       }
       
-      // 针对数学验证码的特殊处理
+      // 显示错误信息
       if (data.hint) {
         showMathHint(data.hint, 'error');
       } else {
         showMathHint(data.message || '验证失败', 'error');
+      }
+      
+      // 如果需要刷新验证码，自动刷新
+      if (data.need_refresh) {
+        showStatus('error', data.message || '验证失败');
+        // 延迟1秒后自动刷新验证码
+        setTimeout(() => {
+          captchaVerified = false;
+          clearAllStatus();
+          loadProgressiveCaptcha();
+        }, 1000);
+        return;
       }
       
       // 清空输入框，让用户重新输入
@@ -1116,6 +1169,18 @@ function verifyCurrentCaptcha() {
       }
       
       const errorMessage = data.message || '验证失败';
+      
+      // 如果需要刷新验证码，自动刷新
+      if (data.need_refresh) {
+        showStatus('error', errorMessage);
+        // 延迟1秒后自动刷新验证码
+        setTimeout(() => {
+          captchaVerified = false;
+          clearAllStatus();
+          loadProgressiveCaptcha();
+        }, 1000);
+        return;
+      }
       
       // 针对数学验证码的特殊处理
       if (currentCaptchaData.type === 'simple_math' && data.hint) {

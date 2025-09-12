@@ -27,15 +27,15 @@ class EnhancedTravelService:
             }
         )
 
-        # 初始化DeepSeek客户端
-        self.deepseek_client = None
+        # 初始化大模型服务
+        self.llm_available = True
         try:
-            from ..utils import DeepSeekClient
-
-            self.deepseek_client = DeepSeekClient()
-            logger.info("✅ DeepSeek客户端初始化成功")
+            from .llm_service import generate_travel_guide
+            self.generate_travel_guide = generate_travel_guide
+            logger.info("✅ 大模型服务初始化成功")
         except Exception as e:
-            logger.warning(f"⚠️ DeepSeek客户端初始化失败: {e}")
+            logger.warning(f"⚠️ 大模型服务初始化失败: {e}")
+            self.llm_available = False
 
         # 免费API配置
         self.free_apis = {
@@ -419,7 +419,7 @@ class EnhancedTravelService:
         weather_info: Dict,
     ) -> Dict:
         """使用DeepSeek生成增强内容"""
-        if not self.deepseek_client:
+        if not self.llm_available:
             return {}
 
         try:
@@ -465,7 +465,7 @@ class EnhancedTravelService:
 
 请确保所有建议都基于提供的真实数据，避免虚假信息。"""
 
-            content = self.deepseek_client.generate_content(prompt)
+            content = self.generate_travel_guide(prompt)
 
             return {"enhanced_content": content, "generated_at": datetime.now().isoformat(), "source": "DeepSeek AI"}
 
@@ -643,7 +643,7 @@ class EnhancedTravelService:
         self, destination: str, travel_style: str, budget_range: str, travel_duration: str, interests: List[str]
     ) -> Dict:
         """使用DeepSeek生成备用攻略"""
-        if not self.deepseek_client:
+        if not self.llm_available:
             return self._generate_basic_fallback(destination, travel_style, budget_range, travel_duration, interests)
 
         try:
@@ -669,7 +669,7 @@ class EnhancedTravelService:
 
 请确保信息真实可靠，避免虚假信息。"""
 
-            content = self.deepseek_client.generate_content(prompt)
+            content = self.generate_travel_guide(prompt)
 
             return {
                 "destination": destination,

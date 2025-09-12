@@ -4,7 +4,7 @@
 from .base_models import ToolUsageLog
 
 # 聊天模型从chat_models导入
-from .chat_models import ChatMessage, ChatRoom, ChatRoomMember, HeartLinkRequest, MessageRead, UserOnlineStatus
+from .chat_models import ChatMessage, ChatRoom, ChatRoomMember, ChatNotification, HeartLinkRequest, MessageRead, UserOnlineStatus
 
 # 日记相关模型（已分离）
 from .diary_models import LifeDiaryEntry
@@ -25,7 +25,6 @@ from .legacy_models import (  # 生活目标相关; 成就相关; 健身相关; 
     BuddyUserProfile,
     CheckInAchievement,
     CheckInCalendar,
-    CheckInDetail,
     CheckInStreak,
     CodeWorkoutSession,
     CoPilotCollaboration,
@@ -145,6 +144,7 @@ __all__ = [
     "ChatRoom",
     "ChatMessage",
     "ChatRoomMember",
+    "ChatNotification",
     "MessageRead",
     "UserOnlineStatus",
     "HeartLinkRequest",

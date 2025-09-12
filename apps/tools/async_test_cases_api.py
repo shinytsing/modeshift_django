@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .async_task_manager import task_manager
+from .async_task_manager import get_task_manager
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +31,20 @@ class AsyncGenerateTestCasesAPI(APIView):
             if not user_prompt:
                 return Response({"success": False, "error": "提示词不能为空"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 创建异步任务
+            # 创建异步任务 - 智能选择模式
             user_id = request.user.username if request.user.is_authenticated else "anonymous"
+            
+            # 检查是否有可用的AI服务
+            from .services.llm_service import get_llm_service
+            llm_service = get_llm_service()
+            available_providers = llm_service.get_available_providers()
+            
+            # 如果没有可用的AI服务，使用Mock模式
+            use_mock_mode = len(available_providers) == 0
+            if use_mock_mode:
+                logger.warning("没有可用的AI服务，使用Mock模式")
+            
+            task_manager = get_task_manager(mock_mode=use_mock_mode)
             task_id = task_manager.create_task(
                 requirement=requirement,
                 user_prompt=user_prompt,
@@ -59,7 +71,20 @@ class TaskStatusAPI(APIView):
     def get(self, request, task_id):
         """获取任务状态"""
         try:
-            task = task_manager.get_task_status(task_id)
+            # 直接从文件系统读取任务状态
+            import json
+            import os
+            from .async_task_manager import AsyncTaskManager
+            
+            task_manager = AsyncTaskManager()
+            tasks_file = os.path.join(task_manager.storage_dir, 'tasks.json')
+            
+            if os.path.exists(tasks_file):
+                with open(tasks_file, 'r', encoding='utf-8') as f:
+                    tasks_data = json.load(f)
+                    task = tasks_data.get(task_id)
+            else:
+                task = None
 
             if not task:
                 return Response({"success": False, "error": "任务不存在"}, status=status.HTTP_404_NOT_FOUND)
@@ -100,8 +125,20 @@ class TaskListAPI(APIView):
     def get(self, request):
         """获取任务列表"""
         try:
-            with task_manager.task_lock:
-                tasks = list(task_manager.tasks.values())
+            # 直接从文件系统读取任务列表
+            import json
+            import os
+            from .async_task_manager import AsyncTaskManager
+            
+            task_manager = AsyncTaskManager()
+            tasks_file = os.path.join(task_manager.storage_dir, 'tasks.json')
+            
+            if os.path.exists(tasks_file):
+                with open(tasks_file, 'r', encoding='utf-8') as f:
+                    tasks_data = json.load(f)
+                    tasks = list(tasks_data.values())
+            else:
+                tasks = []
 
             # 按创建时间倒序排列
             tasks.sort(key=lambda x: x["created_at"], reverse=True)
@@ -148,6 +185,7 @@ class DeleteTaskAPI(APIView):
                 return Response({"success": False, "error": "任务ID不能为空"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 删除任务
+            task_manager = get_task_manager()
             success = task_manager.delete_task(task_id)
 
             if success:

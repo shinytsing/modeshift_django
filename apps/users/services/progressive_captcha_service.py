@@ -137,28 +137,21 @@ class ProgressiveCaptchaService:
             if str(user_input).strip() == str(correct_answer).strip():
                 # 验证成功
                 self.record_success(session_key)
-                cache.delete(cache_key)  # 删除已使用的验证码
+                # 不删除验证码，让用户可以继续使用
                 return {"success": True, "message": "验证成功"}
             else:
-                # 验证失败，但不删除验证码，让用户可以重试
+                # 验证失败，删除验证码强制重新获取
                 self.record_failure(session_key)
+                cache.delete(cache_key)  # 删除验证码，强制刷新
                 failure_info = self.get_user_failure_info(session_key)
                 remaining_attempts = self.max_failures - failure_info.get("count", 0)
                 
-                if remaining_attempts > 0:
-                    return {
-                        "success": False, 
-                        "message": f"答案错误，请重试。剩余尝试次数: {remaining_attempts}",
-                        "remaining_attempts": remaining_attempts
-                    }
-                else:
-                    # 达到最大失败次数，删除验证码强制重新获取
-                    cache.delete(cache_key)
-                    return {
-                        "success": False, 
-                        "message": "验证失败次数过多，请重新获取验证码",
-                        "need_refresh": True
-                    }
+                return {
+                    "success": False, 
+                    "message": f"答案错误，已自动刷新验证码。剩余尝试次数: {remaining_attempts}",
+                    "remaining_attempts": remaining_attempts,
+                    "need_refresh": True
+                }
 
         except Exception as e:
             print(f"验证码验证异常: {str(e)}")

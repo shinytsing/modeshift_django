@@ -6085,47 +6085,46 @@ def generate_travel_guide_with_deepseek(
 
 请确保所有信息真实可靠，价格信息准确，避免虚假信息。内容要详细实用，便于游客参考。"""
 
-        # 使用现有的DeepSeekClient
-        from .utils import DeepSeekClient
+        # 使用统一大模型服务
+        from .services.llm_service import generate_content
 
         try:
-            deepseek = DeepSeekClient()
-            content = deepseek.generate_content(prompt)
+            content = generate_content(prompt)
             if content and len(content) > 100:  # 确保内容足够详细
-                print(f"✅ DeepSeek API生成成功，内容长度: {len(content)}字符")
+                print(f"✅ 大模型服务生成成功，内容长度: {len(content)}字符")
                 return content
             else:
-                print("⚠️ DeepSeek API生成的内容过短")
+                print("⚠️ 大模型服务生成的内容过短")
                 return None
         except ValueError as api_key_error:
             if "API密钥未配置" in str(api_key_error):
-                print("⚠️ DeepSeek API密钥未配置，跳过AI增强功能")
+                print("⚠️ AI服务未配置，跳过AI增强功能")
                 return None
             else:
-                print(f"❌ DeepSeekClient配置错误: {api_key_error}")
+                print(f"❌ 大模型服务配置错误: {api_key_error}")
                 return None
         except requests.exceptions.HTTPError as http_error:
             if http_error.response.status_code == 401:
-                print("⚠️ DeepSeek API认证失败 (401)，请检查API密钥是否正确")
+                print("⚠️ AI服务认证失败 (401)，请检查API密钥是否正确")
                 return None
             elif http_error.response.status_code == 429:
-                print("⚠️ DeepSeek API请求频率超限 (429)，请稍后重试")
+                print("⚠️ AI服务请求频率超限 (429)，请稍后重试")
                 return None
             else:
-                print(f"❌ DeepSeek API HTTP错误: {http_error.response.status_code}")
+                print(f"❌ AI服务HTTP错误: {http_error.response.status_code}")
                 return None
         except requests.exceptions.Timeout:
-            print("⚠️ DeepSeek API请求超时，跳过AI增强功能")
+            print("⚠️ AI服务请求超时，跳过AI增强功能")
             return None
         except requests.exceptions.ConnectionError:
-            print("⚠️ DeepSeek API连接失败，跳过AI增强功能")
+            print("⚠️ AI服务连接失败，跳过AI增强功能")
             return None
         except Exception as deepseek_error:
-            print(f"❌ DeepSeekClient调用失败: {deepseek_error}")
+            print(f"❌ 大模型服务调用失败: {deepseek_error}")
             return None
 
     except Exception as e:
-        print(f"❌ DeepSeek API调用异常: {e}")
+        print(f"❌ 大模型服务调用异常: {e}")
         return None
 
 
@@ -6371,10 +6370,9 @@ def fitness_profile(request):
             UserFitnessAchievement.objects.filter(user=request.user).select_related("achievement").order_by("-earned_at")[:10]
         )
 
-        # 获取最近的训练记录
+        # 获取最近的训练记录（移除CheckInDetail依赖）
         recent_workouts = (
             CheckInCalendar.objects.filter(user=request.user, calendar_type="fitness", status="completed")
-            .select_related("detail")
             .order_by("-date")[:5]
         )
 
@@ -6391,16 +6389,15 @@ def fitness_profile(request):
             user=request.user, calendar_type="fitness", status="completed", date__year=current_year, date__month=current_month
         ).count()
 
-        # 获取训练类型分布
+        # 获取训练类型分布（移除CheckInDetail依赖）
         workout_types = CheckInCalendar.objects.filter(
             user=request.user, calendar_type="fitness", status="completed"
-        ).select_related("detail")
+        )
 
         type_distribution = {}
         for workout in workout_types:
-            if hasattr(workout, "detail") and workout.detail and workout.detail.workout_type:
-                workout_type = workout.detail.workout_type
-                type_distribution[workout_type] = type_distribution.get(workout_type, 0) + 1
+            # 注意：CheckInDetail模型已被删除，训练类型暂时无法获取
+            pass
 
         # 获取身体数据（从用户档案中获取）
         body_data = {
@@ -7029,7 +7026,35 @@ def feature_recommendations_api(request):
 
             # 检查用户是否已登录
             if not request.user.is_authenticated:
-                return JsonResponse({"success": True, "data": [], "algorithm": "smart", "count": 0})
+                # 未登录用户返回一些基础推荐功能
+                from apps.tools.models.legacy_models import Feature
+                basic_features = Feature.objects.filter(
+                    is_active=True, 
+                    is_public=True
+                ).order_by('-recommendation_weight')[:6]
+                
+                basic_recommendations = []
+                for feature in basic_features:
+                    basic_recommendations.append({
+                        "id": feature.id,
+                        "name": feature.name,
+                        "description": feature.description,
+                        "category": feature.category,
+                        "category_display": feature.get_category_display(),
+                        "icon_class": feature.icon_class,
+                        "icon_color": feature.icon_color,
+                        "url_name": feature.url_name,
+                        "recommendation_weight": feature.recommendation_weight,
+                        "popularity_score": feature.popularity_score,
+                        "recommendation_reason": "为您推荐一个实用功能",
+                    })
+                
+                return JsonResponse({
+                    "success": True, 
+                    "data": basic_recommendations, 
+                    "algorithm": "basic", 
+                    "count": len(basic_recommendations)
+                })
 
             # 获取查询参数
             algorithm = request.GET.get("algorithm", "smart")
@@ -7870,29 +7895,17 @@ def get_checkin_calendar_api(request):
         else:
             end_date = datetime(year, month + 1, 1) - timedelta(days=1)
 
-        # 从数据库获取打卡数据
+        # 从数据库获取打卡数据（移除CheckInDetail依赖）
         checkins = CheckInCalendar.objects.filter(
             user=request.user, calendar_type=checkin_type, date__range=[start_date.date(), end_date.date()]
-        ).select_related("detail")
+        )
 
         # 构建日历数据
         calendar_data = {}
         for checkin in checkins:
             date_str = checkin.date.strftime("%Y-%m-%d")
-            # 构建详情数据
+            # 注意：CheckInDetail模型已被删除，详情数据暂时为空
             detail_data = {}
-            if hasattr(checkin, "detail") and checkin.detail:
-                detail_data = {
-                    "workout_type": getattr(checkin.detail, "workout_type", None),
-                    "duration": getattr(checkin.detail, "duration", None),
-                    "intensity": getattr(checkin.detail, "intensity", None),
-                    "training_parts": getattr(checkin.detail, "training_parts", []),
-                    "feeling_rating": getattr(checkin.detail, "feeling_rating", None),
-                    "notes": getattr(checkin.detail, "notes", ""),
-                    "mood": getattr(checkin.detail, "mood", None),
-                    "practice_type": getattr(checkin.detail, "practice_type", None),
-                    "song_name": getattr(checkin.detail, "song_name", ""),
-                }
 
             calendar_data[date_str] = {"id": checkin.id, "status": checkin.status, "detail": detail_data}
 

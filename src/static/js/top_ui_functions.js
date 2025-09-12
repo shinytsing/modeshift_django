@@ -44,9 +44,15 @@ function switchTheme(theme) {
     })
     .then(response => {
         // 检查响应状态
-        if (response.status === 302 || response.status === 401) {
+        if (response.status === 401) {
             // 用户未登录，重定向到登录页面
             console.log('用户未登录，重定向到登录页面');
+            window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
+        
+        if (response.status === 302) {
+            // 重定向响应，直接跳转
             window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
             return;
         }
@@ -54,7 +60,16 @@ function switchTheme(theme) {
         // 检查响应是否为JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('响应不是JSON格式');
+            console.warn('响应不是JSON格式，content-type:', contentType);
+            // 尝试解析为JSON，如果失败则使用本地主题更新
+            return response.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.warn('无法解析响应为JSON，使用本地主题更新');
+                    return null;
+                }
+            });
         }
         
         return response.json();
@@ -190,7 +205,16 @@ function showUserDropdown() {
     const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
     
     if (!dropdownContent) {
-        console.error('❌ 用户下拉菜单元素未找到');
+        console.warn('❌ 用户下拉菜单元素未找到，尝试重新查找...');
+        // 尝试等待一下再查找
+        setTimeout(() => {
+            const retryDropdown = document.getElementById('userDropdownContent');
+            if (retryDropdown) {
+                showUserDropdown();
+            } else {
+                console.error('❌ 用户下拉菜单元素仍然未找到');
+            }
+        }, 200);
         return;
     }
     
@@ -224,7 +248,7 @@ function hideUserDropdown() {
     const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
     
     if (!dropdownContent) {
-        console.error('❌ 用户下拉菜单元素未找到');
+        console.warn('❌ 用户下拉菜单元素未找到，跳过隐藏操作');
         return;
     }
     
@@ -250,7 +274,16 @@ function toggleUserDropdown() {
     const dropdownContent = document.getElementById('userDropdownContent');
     
     if (!dropdownContent) {
-        console.error('❌ 用户下拉菜单元素未找到');
+        console.warn('❌ 用户下拉菜单元素未找到，尝试重新查找...');
+        // 尝试等待一下再查找
+        setTimeout(() => {
+            const retryDropdown = document.getElementById('userDropdownContent');
+            if (retryDropdown) {
+                toggleUserDropdown();
+            } else {
+                console.error('❌ 用户下拉菜单元素仍然未找到');
+            }
+        }, 200);
         return;
     }
     

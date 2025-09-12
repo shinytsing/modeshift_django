@@ -189,10 +189,9 @@ def fitness_profile(request):
             UserFitnessAchievement.objects.filter(user=request.user).select_related("achievement").order_by("-earned_at")[:10]
         )
 
-        # 获取最近的训练记录
+        # 获取最近的训练记录（移除CheckInDetail依赖）
         recent_workouts = (
             CheckInCalendar.objects.filter(user=request.user, calendar_type="fitness", status="completed")
-            .select_related("detail")
             .order_by("-date")[:5]
         )
 
@@ -209,16 +208,15 @@ def fitness_profile(request):
             user=request.user, calendar_type="fitness", status="completed", date__year=current_year, date__month=current_month
         ).count()
 
-        # 获取训练类型分布
+        # 获取训练类型分布（移除CheckInDetail依赖）
         workout_types = CheckInCalendar.objects.filter(
             user=request.user, calendar_type="fitness", status="completed"
-        ).select_related("detail")
+        )
 
         type_distribution = {}
         for workout in workout_types:
-            if hasattr(workout, "detail") and workout.detail and workout.detail.workout_type:
-                workout_type = workout.detail.workout_type
-                type_distribution[workout_type] = type_distribution.get(workout_type, 0) + 1
+            # 注意：CheckInDetail模型已被删除，训练类型暂时无法获取
+            pass
 
         # 获取身体数据（从用户档案中获取）
         body_data = {

@@ -4734,6 +4734,16 @@
         
         // 加载用户主题
         async function loadUserTheme() {
+            // 检查用户是否登录，如果没有登录则使用默认主题
+            const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+            if (!isLoggedIn) {
+                currentTheme = 'work';
+                applyGlobalTheme(currentTheme);
+                updateThemeBadge(currentTheme);
+                updateActiveThemeItem(currentTheme);
+                return;
+            }
+            
             try {
                 const response = await fetch('/users/theme/', {
                     headers: {
@@ -5176,6 +5186,20 @@
                     return;
                 }
                 
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
+                    return;
+                }
+                
                 // 显示加载状态
                 const themeName = themeConfig[theme].name;
                 showNotification(`正在切换到${themeName}模式并跳转页面...`, 'info');
@@ -5242,6 +5266,20 @@
                 if (!theme || !themeConfig[theme]) {
                     console.error('Invalid theme:', theme);
                     showNotification('无效的主题参数', 'error');
+                    return;
+                }
+                
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
                     return;
                 }
                 
@@ -5319,6 +5357,20 @@
                 if (!theme || !themeConfig[theme]) {
                     console.error('Invalid theme:', theme);
                     showNotification('无效的主题参数', 'error');
+                    return;
+                }
+                
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
                     return;
                 }
                 

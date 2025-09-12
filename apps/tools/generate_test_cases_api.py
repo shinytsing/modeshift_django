@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ToolUsageLog
-from .utils import DeepSeekClient
+from .services.llm_service import generate_test_cases
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -163,17 +163,14 @@ class GenerateTestCasesAPI(APIView):
             if user_prompt and "{requirement}" not in user_prompt:
                 logger.warning(f"用户 {request.user.username} 使用的自定义提示词中未包含{{requirement}}占位符")
 
-            # 2. 调用DeepSeek API生成测试用例（传递批量参数）
+            # 2. 调用统一大模型服务生成测试用例
             try:
-                deepseek = DeepSeekClient()
-                raw_response = deepseek.generate_test_cases(
-                    requirement, final_prompt, is_batch=is_batch, batch_id=batch_id, total_batches=total_batches
-                )
+                raw_response = generate_test_cases(requirement, final_prompt)
                 if not raw_response:
-                    raise ValueError("未从API获取到有效响应")
+                    raise ValueError("未从AI服务获取到有效响应")
             except Exception as e:
-                logger.error(f"DeepSeek API调用失败: {str(e)}", exc_info=True)
-                return Response({"error": f"AI接口调用失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                logger.error(f"大模型服务调用失败: {str(e)}", exc_info=True)
+                return Response({"error": f"AI服务不可用: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             print("deepseek返回" + raw_response)
             # 3. 解析API响应为结构化数据
             test_cases = self._parse_test_cases(raw_response)
@@ -489,3 +486,50 @@ class GenerateTestCasesAPI(APIView):
             error_topic = root_topic.addSubTopic()
             error_topic.setTitle("测试用例内容")
             return workbook
+
+    def _generate_feishu_format(self, test_cases, raw_response):
+        """生成飞书兼容的Markdown格式"""
+        try:
+            # 生成飞书兼容的Markdown内容
+            feishu_content = '# 测试用例文档\n\n'
+            feishu_content += '> 本文档由AI测试用例生成器自动生成，支持飞书直接导入\n\n'
+            
+            # 解析原始响应内容
+            lines = raw_response.split('\n')
+            current_module = None
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # 检测模块标题
+                if line.startswith('## '):
+                    if current_module:
+                        feishu_content += '\n---\n\n'
+                    current_module = line[3:].strip()
+                    feishu_content += f'## 📋 {current_module}\n\n'
+                # 检测测试用例
+                elif line.startswith('### '):
+                    test_case = line[4:].strip()
+                    feishu_content += f'### ✅ {test_case}\n\n'
+                # 检测用例详情
+                elif line.startswith('- '):
+                    detail = line[2:].strip()
+                    feishu_content += f'- {detail}\n'
+                # 其他内容
+                elif line:
+                    feishu_content += f'{line}\n'
+            
+            feishu_content += '\n---\n\n'
+            feishu_content += '## 📊 文档信息\n\n'
+            feishu_content += f'- **生成时间**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n'
+            feishu_content += '- **生成工具**: AI测试用例生成器\n'
+            feishu_content += '- **格式**: 飞书兼容Markdown\n'
+            feishu_content += '- **用途**: 可直接导入飞书文档使用\n\n'
+            
+            return feishu_content
+            
+        except Exception as e:
+            logger.error(f"生成飞书格式失败: {str(e)}", exc_info=True)
+            return f"# 测试用例文档\n\n生成飞书格式失败: {str(e)}"

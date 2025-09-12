@@ -358,10 +358,10 @@ class FeatureDiscovery {
 
 
 
-// 导出类供其他模块使用
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { FeatureRecommendation, FeatureDiscovery };
-}
+    // 导出类供其他模块使用
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = { FeatureRecommendation, FeatureDiscovery };
+    }
 
     // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', function() {

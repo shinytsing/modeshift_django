@@ -25,23 +25,30 @@ DATABASES = {
     }
 }
 
-# 缓存配置 - 与生产环境一致，使用本地内存缓存
+# 缓存配置 - 使用Redis缓存，解决多进程验证码问题
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
-            "MAX_ENTRIES": 1000,
-            "CULL_FREQUENCY": 3,
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 50,
+                "retry_on_timeout": True,
+            },
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
         },
+        "KEY_PREFIX": "qatoolbox_dev",
+        "TIMEOUT": 60 * 60 * 24,  # 24小时
     },
     "session": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "session-cache",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
         "OPTIONS": {
-            "MAX_ENTRIES": 1000,
-            "CULL_FREQUENCY": 3,
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
+        "KEY_PREFIX": "session_dev",
+        "TIMEOUT": 60 * 60 * 24 * 30,  # 30天
     },
 }
 

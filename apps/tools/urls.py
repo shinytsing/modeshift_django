@@ -17,6 +17,7 @@ except ImportError:
 # =============================================================================
 
 from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, TaskListAPI, TaskStatusAPI
+from .views.download_views import TaskDownloadAPI
 from .fitness_tools_views import (
     bmi_calculator,
     body_analyzer,
@@ -614,6 +615,7 @@ urlpatterns = [
     path("api/async/generate-testcases/", AsyncGenerateTestCasesAPI.as_view(), name="async_generate_test_cases_api"),
     path("api/async/task/delete/", DeleteTaskAPI.as_view(), name="delete_task_api"),
     path("api/async/task/<str:task_id>/", TaskStatusAPI.as_view(), name="task_status_api"),
+    path("api/async/task/<str:task_id>/download/<str:format_type>/", TaskDownloadAPI.as_view(), name="task_download_api"),
     path("api/async/tasks/", TaskListAPI.as_view(), name="task_list_api"),
     path("fitness_center/", fitness_center, name="fitness_center"),
     path("training_plan_editor/", training_plan_editor, name="training_plan_editor"),

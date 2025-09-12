@@ -927,6 +927,9 @@
             
             // 保存结果到全局变量供下载使用
             window.currentTestResult = result;
+            
+            // 显示任务完成信息
+            showMessage('🎉 测试用例生成完成！可以下载多种格式文件', 'success');
         }
 
         function resetForm() {
@@ -977,37 +980,139 @@
         }
         
         function downloadXmindFile() {
-            // 从服务器下载XMind文件
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const filename = `测试用例_${timestamp}.xmind`;
+            // 生成XMind格式的思维导图文件
+            const testCaseText = window.currentTestResult || document.getElementById('testCaseDisplay').textContent;
             
-            // 创建下载链接
-            const downloadUrl = `/tools/download/${filename}`;
+            // 创建XMind格式的XML内容
+            const xmindContent = generateXmindContent(testCaseText);
+            
+            const blob = new Blob([xmindContent], { type: 'application/xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = filename;
+            a.href = url;
+            a.download = `测试用例_${new Date().toISOString().slice(0, 10)}.xmind`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
-            showMessage('XMind文件已下载！', 'success');
+            showMessage('XMind格式文件已下载！', 'success');
         }
         
         function downloadFeishuFile() {
-            // 从服务器下载飞书格式文件
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const filename = `测试用例_${timestamp}_feishu.md`;
+            // 生成飞书兼容的Markdown格式文件
+            const testCaseText = window.currentTestResult || document.getElementById('testCaseDisplay').textContent;
             
-            // 创建下载链接
-            const downloadUrl = `/tools/download/${filename}`;
+            // 创建飞书格式的Markdown内容
+            const feishuContent = generateFeishuContent(testCaseText);
+            
+            const blob = new Blob([feishuContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = filename;
+            a.href = url;
+            a.download = `测试用例_${new Date().toISOString().slice(0, 10)}_feishu.md`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
             showMessage('飞书格式文件已下载！', 'success');
+        }
+        
+        function generateXmindContent(testCaseText) {
+            // 生成XMind格式的XML内容
+            const lines = testCaseText.split('\n');
+            let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xmlContent += '<map version="1.0.1">\n';
+            xmlContent += '  <node TEXT="测试用例文档" STYLE="bubble" COLOR="#000000">\n';
+            
+            let currentModule = null;
+            let moduleNode = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 检测模块标题
+                if (line.startsWith('## ')) {
+                    currentModule = line.substring(3).trim();
+                    moduleNode = `    <node TEXT="${escapeXml(currentModule)}" COLOR="#FF7F50" STYLE="fork">\n`;
+                    xmlContent += moduleNode;
+                }
+                // 检测测试用例
+                else if (line.startsWith('- ') && currentModule) {
+                    const testCase = line.substring(2).trim();
+                    xmlContent += `      <node TEXT="${escapeXml(testCase)}" COLOR="#4682B4" STYLE="bullet"/>\n`;
+                }
+                // 检测用例详情
+                else if (line.startsWith('* ') && currentModule) {
+                    const detail = line.substring(2).trim();
+                    xmlContent += `      <node TEXT="${escapeXml(detail)}" COLOR="#32CD32" STYLE="bullet"/>\n`;
+                }
+            }
+            
+            if (currentModule) {
+                xmlContent += '    </node>\n';
+            }
+            
+            xmlContent += '  </node>\n';
+            xmlContent += '</map>';
+            
+            return xmlContent;
+        }
+        
+        function generateFeishuContent(testCaseText) {
+            // 生成飞书兼容的Markdown内容
+            let feishuContent = '# 测试用例文档\n\n';
+            feishuContent += '> 本文档由AI测试用例生成器自动生成，支持飞书直接导入\n\n';
+            
+            const lines = testCaseText.split('\n');
+            let currentModule = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 检测模块标题
+                if (line.startsWith('## ')) {
+                    if (currentModule) {
+                        feishuContent += '\n---\n\n';
+                    }
+                    currentModule = line.substring(3).trim();
+                    feishuContent += `## 📋 ${currentModule}\n\n`;
+                }
+                // 检测测试用例
+                else if (line.startsWith('- ')) {
+                    const testCase = line.substring(2).trim();
+                    feishuContent += `### ✅ ${testCase}\n\n`;
+                }
+                // 检测用例详情
+                else if (line.startsWith('* ')) {
+                    const detail = line.substring(2).trim();
+                    feishuContent += `- ${detail}\n`;
+                }
+                // 其他内容
+                else if (line) {
+                    feishuContent += `${line}\n`;
+                }
+            }
+            
+            feishuContent += '\n---\n\n';
+            feishuContent += '## 📊 文档信息\n\n';
+            feishuContent += '- **生成时间**: ' + new Date().toLocaleString() + '\n';
+            feishuContent += '- **生成工具**: AI测试用例生成器\n';
+            feishuContent += '- **格式**: 飞书兼容Markdown\n';
+            feishuContent += '- **用途**: 可直接导入飞书文档使用\n\n';
+            
+            return feishuContent;
+        }
+        
+        function escapeXml(text) {
+            return text.replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&apos;');
         }
 
         function toggleDefaultPrompt() {

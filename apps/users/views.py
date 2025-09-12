@@ -780,9 +780,12 @@ def admin_force_logout_api(request, user_id):
 # 主题API
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
-@login_required
 def theme_api(request):
     """用户主题设置API"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录"}, status=401, content_type="application/json")
+    
     try:
         if request.method == "GET":
             # 获取用户当前主题

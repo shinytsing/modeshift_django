@@ -2804,7 +2804,11 @@ async function exportTodayPlan() {
       
       // 下载图片
       const today = new Date();
-      const dateStr = today.toISOString().split('T')[0];
+      // 使用本地时间生成日期字符串，避免UTC时区问题
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
       const todayName = weekdays[today.getDay()];
       
@@ -3015,7 +3019,12 @@ async function exportFullWeekPlan() {
       document.body.removeChild(exportContainer);
       
       // 下载图片
-      const dateStr = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      // 使用本地时间生成日期字符串，避免UTC时区问题
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       const link = document.createElement('a');
       link.download = `完整周训练计划_${fullWeekData.name}_${dateStr}.png`;
       link.href = canvas.toDataURL('image/png');

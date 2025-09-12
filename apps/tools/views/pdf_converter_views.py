@@ -68,19 +68,21 @@ def pdf_converter_stats_api(request):
 
         from ..models.legacy_models import PDFConversionRecord
 
-        # 获取所有转换记录（全站统计）
+        # 统计信息使用全站数据（所有用户看到相同数据）
+        all_conversions = PDFConversionRecord.objects.all()
+        total_conversions = all_conversions.count()
+        successful_conversions = all_conversions.filter(status="success").count()
+        
+        # 最近转换记录保持用户个人可见
         if request.user.is_authenticated:
-            # 已登录用户：显示个人数据
+            # 已登录用户：显示个人最近转换记录
             user_conversions = PDFConversionRecord.objects.filter(user=request.user)
         else:
-            # 未登录用户：显示全站聚合数据
-            user_conversions = PDFConversionRecord.objects.all()
+            # 未登录用户：没有记录
+            user_conversions = PDFConversionRecord.objects.none()
 
-        total_conversions = user_conversions.count()
-        successful_conversions = user_conversions.filter(status="success").count()
-
-        # 修复平均转换时间计算
-        successful_conversions_with_time = user_conversions.filter(status="success", conversion_time__gt=0)
+        # 修复平均转换时间计算 - 使用全站数据
+        successful_conversions_with_time = all_conversions.filter(status="success", conversion_time__gt=0)
 
         if successful_conversions_with_time.exists():
             avg_speed = successful_conversions_with_time.aggregate(avg_time=Avg("conversion_time"))["avg_time"]
@@ -92,8 +94,8 @@ def pdf_converter_stats_api(request):
             # 如果没有转换记录，使用默认时间
             avg_speed = 2.5  # 默认平均转换时间
 
-        # 修复满意度计算
-        rated_conversions = user_conversions.filter(
+        # 修复满意度计算 - 使用全站数据
+        rated_conversions = all_conversions.filter(
             status="success", satisfaction_rating__isnull=False, satisfaction_rating__gte=1, satisfaction_rating__lte=5
         )
 

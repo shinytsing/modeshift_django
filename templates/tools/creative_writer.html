@@ -954,6 +954,14 @@ async function switchGlobalThemeWithRefresh(theme) {
     };
     const themeName = themeNames[theme] || theme;
     
+    // 检查用户是否登录
+    const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+    if (!isLoggedIn) {
+      // 未登录用户只切换前端主题，不调用后端API
+      showMessage(`已切换到${themeName}模式`, 'success');
+      return;
+    }
+    
     // 更新后端
     const response = await fetch('/users/theme/', {
       method: 'POST',
@@ -1008,6 +1016,14 @@ async function switchGlobalTheme(theme) {
       'emo': 'Emo'
     };
     const themeName = themeNames[theme] || theme;
+    
+    // 检查用户是否登录
+    const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+    if (!isLoggedIn) {
+      // 未登录用户只切换前端主题，不调用后端API
+      showMessage(`已切换到${themeName}模式`, 'success');
+      return;
+    }
     
     // 更新后端
     const response = await fetch('/users/theme/', {
