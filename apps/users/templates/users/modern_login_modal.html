@@ -1,0 +1,925 @@
+<!-- 现代化登录弹窗 -->
+<div id="loginModal" class="modern-login-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closeLoginModal()"></div>
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-logo">
+        <div class="logo-icon">
+          <i class="fas fa-code"></i>
+        </div>
+        <div class="logo-text">
+          <span class="brand-name">ModeShift</span>
+          <span class="brand-tagline">极客工坊</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeLoginModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-content">
+      <!-- 消息显示区域 -->
+      {% if messages %}
+        <div class="message-container">
+          {% for message in messages %}
+            <div class="message message-{{ message.tags }}">
+              <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>登录</span>
+        </button>
+        <button class="auth-tab" data-tab="register">
+          <i class="fas fa-user-plus"></i>
+          <span>注册</span>
+        </button>
+      </div>
+      
+      <!-- 登录表单 -->
+      <div class="auth-form-container" id="loginForm">
+        <form method="POST" class="auth-form" id="loginFormElement">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="login">
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" name="username" class="form-input" placeholder="用户名" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password" class="form-input" placeholder="密码" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>登录</span>
+          </button>
+        </form>
+      </div>
+      
+      <!-- 注册表单 -->
+      <div class="auth-form-container" id="registerForm" style="display: none;">
+        <form method="POST" class="auth-form" id="registerFormElement">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="register">
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" name="username" class="form-input" placeholder="用户名" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password" class="form-input" placeholder="密码" required id="registerPasswordInput">
+              <div class="input-line"></div>
+            </div>
+            <!-- 密码强度指示器 -->
+            <div class="password-strength" id="registerPasswordStrength" style="display: none;">
+              <div class="strength-bar">
+                <div class="strength-fill" id="registerStrengthFill"></div>
+              </div>
+              <div class="strength-text" id="registerStrengthText">密码强度</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" name="password_confirm" class="form-input" placeholder="确认密码" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" name="email" class="form-input email-input" placeholder="邮箱（可选）">
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-user-plus"></i>
+            <span>注册</span>
+          </button>
+        </form>
+      </div>
+      
+      <!-- 一键登录区域 -->
+      <div class="social-login-section">
+        <div class="divider">
+          <span>一键注册</span>
+        </div>
+        
+        <div class="social-buttons">
+          <button class="social-btn google-btn" onclick="initiateGoogleAuth()" title="Google 登录">
+            <div class="social-icon">
+              <svg viewBox="0 0 24 24" width="32" height="32">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+            </div>
+            <span>Google 登录</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 服务条款和隐私政策 -->
+      <div class="legal-notice">
+        <p>
+          继续使用即表示您同意我们的
+          <a href="#" onclick="showTermsOfService()" class="legal-link">服务条款</a>
+          和
+          <a href="#" onclick="showPrivacyPolicy()" class="legal-link">隐私政策</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 服务条款弹窗 -->
+<div id="termsModal" class="legal-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closeTermsModal()"></div>
+  <div class="modal-container legal-container">
+    <div class="modal-header">
+      <h3>服务条款</h3>
+      <button class="modal-close" onclick="closeTermsModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-content legal-content">
+      <div id="termsContent">
+        <!-- 服务条款内容将通过JavaScript加载 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 隐私政策弹窗 -->
+<div id="privacyModal" class="legal-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closePrivacyModal()"></div>
+  <div class="modal-container legal-container">
+    <div class="modal-header">
+      <h3>隐私政策</h3>
+      <button class="modal-close" onclick="closePrivacyModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-content legal-content">
+      <div id="privacyContent">
+        <!-- 隐私政策内容将通过JavaScript加载 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* 现代化登录弹窗样式 */
+.modern-login-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 1;
+}
+
+.modal-container {
+  position: relative;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 212, 255, 0.2);
+  width: 420px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  backdrop-filter: blur(20px);
+  z-index: 2;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+  50% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.8); }
+  100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.brand-tagline {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+/* 消息样式 */
+.message-container {
+  margin-bottom: 20px;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.message-error {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+}
+
+.message-success {
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  color: #28a745;
+  animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+}
+
+.message-info {
+  background: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  color: #17a2b8;
+}
+
+.message i {
+  font-size: 16px;
+}
+
+.auth-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-tab.active {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+}
+
+.auth-tab:hover:not(.active) {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+  z-index: 1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00d4ff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+}
+
+.input-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  transition: width 0.3s ease;
+}
+
+.form-input:focus + .input-line {
+  width: 100%;
+}
+
+
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.social-login-section {
+  margin-top: 24px;
+}
+
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  position: relative;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 0 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.social-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.social-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.social-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.google-btn:hover {
+  border-color: #4285F4;
+  background: rgba(66, 133, 244, 0.1);
+}
+
+
+.legal-notice {
+  margin-top: 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.legal-link {
+  color: #00d4ff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legal-link:hover {
+  color: #0099cc;
+}
+
+/* 法律文档弹窗样式 */
+.legal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legal-container {
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+}
+
+.legal-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.legal-content h1,
+.legal-content h2,
+.legal-content h3 {
+  color: white;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.legal-content h1 {
+  font-size: 24px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  padding-bottom: 8px;
+}
+
+.legal-content h2 {
+  font-size: 20px;
+}
+
+.legal-content h3 {
+  font-size: 16px;
+}
+
+.legal-content p {
+  margin-bottom: 12px;
+}
+
+.legal-content ul,
+.legal-content ol {
+  margin-bottom: 12px;
+  padding-left: 20px;
+}
+
+.legal-content li {
+  margin-bottom: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .modal-container {
+    width: 95vw;
+    margin: 20px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+  
+  .social-buttons {
+    gap: 8px;
+  }
+  
+  .social-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+}
+
+/* 动画效果 */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-container {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* 加载状态 */
+.btn-primary.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.btn-primary.loading::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 密码强度指示器样式 */
+.password-strength {
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+.strength-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+/* 密码强度等级颜色 */
+.password-strength.weak .strength-fill {
+  background: linear-gradient(90deg, #ff4757, #ff6b7a);
+  width: 25%;
+}
+
+.password-strength.fair .strength-fill {
+  background: linear-gradient(90deg, #ffa502, #ffb142);
+  width: 50%;
+}
+
+.password-strength.good .strength-fill {
+  background: linear-gradient(90deg, #2ed573, #7bed9f);
+  width: 75%;
+}
+
+.password-strength.strong .strength-fill {
+  background: linear-gradient(90deg, #00d4ff, #0099cc);
+  width: 100%;
+}
+
+.password-strength.weak .strength-text {
+  color: #ff4757;
+}
+
+.password-strength.fair .strength-text {
+  color: #ffa502;
+}
+
+.password-strength.good .strength-text {
+  color: #2ed573;
+}
+
+.password-strength.strong .strength-text {
+  color: #00d4ff;
+}
+
+/* 邮箱输入框样式 - 不强制高亮，和其他输入框一样 */
+.email-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.email-input:focus + .input-line {
+  width: 0%;
+}
+</style>
+
+<script>
+// 密码强度检测函数
+function checkPasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    // 检查常见弱密码
+    const weakPasswords = [
+        "password", "123456", "qwerty", "admin", "12345678", "password123",
+        "123456789", "1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm",
+        "111111", "000000", "123123", "abc123", "password1", "admin123",
+        "root", "user", "guest", "test", "demo", "sample", "default",
+        "1234", "12345", "1234567", "123456789", "987654321", "654321",
+        "qwerty123", "asdf1234", "zxcv1234", "iloveyou", "welcome",
+        "monkey", "dragon", "master", "hello", "letmein", "princess",
+        "qazwsx", "michael", "jordan", "harley", "ranger", "shadow",
+        "sunshine", "superman", "qwertyui", "trustno1", "batman"
+    ];
+    
+    if (weakPasswords.includes(password.toLowerCase())) {
+        return {
+            strength: 'weak',
+            strengthText: '弱',
+            score: 0,
+            feedback: ['密码过于简单，请选择更复杂的密码']
+        };
+    }
+    
+    // 长度检查
+    if (password.length >= 8) {
+        score += 1;
+    } else {
+        feedback.push('至少8个字符');
+    }
+    
+    // 包含小写字母
+    if (/[a-z]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含小写字母');
+    }
+    
+    // 包含大写字母
+    if (/[A-Z]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含大写字母');
+    }
+    
+    // 包含数字
+    if (/\d/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含数字');
+    }
+    
+    // 包含特殊字符
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含特殊字符');
+    }
+    
+    // 检查连续重复字符
+    if (/(.)\1{2,}/.test(password)) {
+        score -= 1;
+        feedback.push('避免连续重复字符');
+    }
+    
+    // 检查连续数字或字母
+    if (/123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password)) {
+        score -= 1;
+        feedback.push('避免连续字符');
+    }
+    
+    // 检查键盘模式
+    const keyboardPatterns = [
+        'qwerty', 'asdfgh', 'zxcvbn', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm',
+        'qazwsx', 'wsxedc', 'edcrfv', 'rfvtgb', 'tgbyhn', 'yhnujm'
+    ];
+    
+    for (let pattern of keyboardPatterns) {
+        if (password.toLowerCase().includes(pattern)) {
+            score -= 1;
+            feedback.push('避免键盘模式');
+            break;
+        }
+    }
+    
+    // 确保分数不为负数
+    score = Math.max(0, score);
+    
+    // 根据分数确定强度等级
+    let strength = '';
+    let strengthText = '';
+    
+    if (score <= 1) {
+        strength = 'weak';
+        strengthText = '弱';
+    } else if (score <= 2) {
+        strength = 'fair';
+        strengthText = '一般';
+    } else if (score <= 3) {
+        strength = 'good';
+        strengthText = '良好';
+    } else {
+        strength = 'strong';
+        strengthText = '强';
+    }
+    
+    return {
+        strength: strength,
+        strengthText: strengthText,
+        score: score,
+        feedback: feedback
+    };
+}
+
+// 更新密码强度显示
+function updatePasswordStrength(inputId, strengthId, fillId, textId) {
+    const passwordInput = document.getElementById(inputId);
+    const strengthDiv = document.getElementById(strengthId);
+    const strengthFill = document.getElementById(fillId);
+    const strengthText = document.getElementById(textId);
+    
+    if (!passwordInput || !strengthDiv) return;
+    
+    const password = passwordInput.value;
+    
+    if (password.length === 0) {
+        strengthDiv.style.display = 'none';
+        return;
+    }
+    
+    strengthDiv.style.display = 'block';
+    
+    const result = checkPasswordStrength(password);
+    
+    // 移除所有强度类
+    strengthDiv.className = 'password-strength';
+    // 添加新的强度类
+    strengthDiv.classList.add(result.strength);
+    
+    // 更新文本
+    if (strengthText) {
+        strengthText.textContent = `密码强度: ${result.strengthText}`;
+    }
+}
+
+// 页面加载完成后绑定事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 绑定注册表单密码强度检测
+    const registerPasswordInput = document.getElementById('registerPasswordInput');
+    if (registerPasswordInput) {
+        registerPasswordInput.addEventListener('input', function() {
+            updatePasswordStrength(
+                'registerPasswordInput',
+                'registerPasswordStrength',
+                'registerStrengthFill',
+                'registerStrengthText'
+            );
+        });
+    }
+});
+</script>
+
