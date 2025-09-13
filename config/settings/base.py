@@ -395,6 +395,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "allauth": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         "apps.tools": {
             "handlers": ["console", "file"],
             "level": "DEBUG",
@@ -452,6 +457,10 @@ SOCIALACCOUNT_PROVIDERS = {
         "OAUTH_PKCE_ENABLED": True,
     }
 }
+
+# 启用社交账户自动重定向
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # 站点ID（django-allauth需要）
 SITE_ID = 1

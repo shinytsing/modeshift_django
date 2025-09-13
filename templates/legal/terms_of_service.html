@@ -5,10 +5,18 @@
 
 {% block extra_css %}
 <style>
-/* 页面背景 */
-body {
-    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-    min-height: 100vh;
+/* 羊皮纸风格页面背景 - 完全全屏 */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+    background: 
+        linear-gradient(45deg, #f4f1e8 0%, #f7f3e9 25%, #f9f5ea 50%, #f7f3e9 75%, #f4f1e8 100%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="parchment" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="%23f4f1e8"/><circle cx="20" cy="20" r="2" fill="%23e8e0d0" opacity="0.3"/><circle cx="80" cy="30" r="1.5" fill="%23e8e0d0" opacity="0.2"/><circle cx="30" cy="70" r="1" fill="%23e8e0d0" opacity="0.4"/><circle cx="70" cy="80" r="2.5" fill="%23e8e0d0" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23parchment)"/></svg>');
+    background-attachment: fixed;
+    background-size: cover;
     position: relative;
 }
 
@@ -20,84 +28,58 @@ body::before {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 20% 80%, rgba(80, 80, 120, 0.4) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(120, 80, 120, 0.4) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(80, 120, 160, 0.3) 0%, transparent 50%);
+        radial-gradient(ellipse at 30% 20%, rgba(139, 69, 19, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(160, 82, 45, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(210, 180, 140, 0.02) 0%, transparent 50%);
     z-index: -1;
-    animation: backgroundShift 20s ease infinite;
 }
 
-@keyframes backgroundShift {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
-}
-
+/* 羊皮纸内容区域 - 完全全屏显示 */
 .legal-content {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 3rem;
-    line-height: 1.7;
-    color: #1a202c;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
+    width: 100vw;
+    min-height: 100vh;
+    max-width: none;
+    margin: 0;
+    padding: 2rem 3rem;
+    line-height: 1.8;
+    color: #000000 !important; /* 纯黑色文字 - 强制优先级 */
+    background: 
+        linear-gradient(135deg, #fefcf7 0%, #fdf9f0 50%, #fefcf7 100%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="paper" patternUnits="userSpaceOnUse" width="200" height="200"><rect width="200" height="200" fill="%23fefcf7"/><path d="M0,50 Q50,40 100,50 T200,50" stroke="%23f0e6d2" stroke-width="0.5" fill="none" opacity="0.3"/><path d="M0,100 Q50,90 100,100 T200,100" stroke="%23f0e6d2" stroke-width="0.3" fill="none" opacity="0.2"/><path d="M0,150 Q50,140 100,150 T200,150" stroke="%23f0e6d2" stroke-width="0.4" fill="none" opacity="0.25"/></pattern></defs><rect width="200" height="200" fill="url(%23paper)"/></svg>');
+    border-radius: 8px;
     box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255, 255, 255, 0.3);
+        0 8px 32px rgba(139, 69, 19, 0.15),
+        0 0 0 1px rgba(160, 82, 45, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
     position: relative;
     overflow: hidden;
+    border: 2px solid #d2b48c;
 }
 
-.legal-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
-    background-size: 300% 100%;
-    animation: gradientMove 3s ease infinite;
-}
-
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
+/* 标题样式 - 纯黑色文字 */
 .legal-content h1 {
-    color: #1a202c;
-    border-bottom: 3px solid transparent;
-    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
+    border-bottom: 3px solid #8b4513;
     padding-bottom: 1rem;
     margin-bottom: 2rem;
     font-size: 2.5rem;
     font-weight: 700;
     text-align: center;
     position: relative;
-}
-
-.legal-content h1::after {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    border-radius: 2px;
+    font-family: 'Times New Roman', serif;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .legal-content h2 {
-    color: #1a202c;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     margin-top: 2.5rem;
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
     font-weight: 600;
     position: relative;
     padding-left: 1rem;
+    font-family: 'Times New Roman', serif;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .legal-content h2::before {
@@ -108,22 +90,26 @@ body::before {
     transform: translateY(-50%);
     width: 4px;
     height: 20px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #8b4513, #a0522d);
     border-radius: 2px;
 }
 
 .legal-content h3 {
-    color: #2d3748;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     margin-top: 1.5rem;
     margin-bottom: 0.8rem;
     font-size: 1.2rem;
     font-weight: 500;
+    font-family: 'Times New Roman', serif;
 }
 
+/* 段落和列表 - 纯黑色文字 */
 .legal-content p {
     margin-bottom: 1.2rem;
-    color: #2d3748;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     font-size: 1rem;
+    font-family: 'Times New Roman', serif;
+    text-align: justify;
 }
 
 .legal-content ul, .legal-content ol {
@@ -133,20 +119,22 @@ body::before {
 
 .legal-content li {
     margin-bottom: 0.8rem;
-    color: #2d3748;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     position: relative;
+    font-family: 'Times New Roman', serif;
 }
 
 .legal-content ul li::marker {
-    color: #667eea;
+    color: #8b4513;
     font-weight: bold;
 }
 
+/* 联系信息区域 */
 .contact-info {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.1));
     padding: 2rem;
     border-radius: 15px;
-    border: 1px solid rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(139, 69, 19, 0.2);
     margin: 3rem 0;
     position: relative;
     overflow: hidden;
@@ -159,30 +147,49 @@ body::before {
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #8b4513, #a0522d);
 }
 
 .contact-info h3 {
-    color: #1a202c;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     margin-top: 0;
     font-size: 1.3rem;
 }
 
+.contact-info p {
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
+}
+
 .last-updated {
     font-style: italic;
-    color: #4a5568;
+    color: #000000 !important; /* 纯黑色 - 强制优先级 */
     text-align: right;
     margin-top: 3rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(102, 126, 234, 0.2);
+    border-top: 1px solid rgba(139, 69, 19, 0.2);
 }
 
-/* 响应式设计 */
+/* 链接样式 */
+.legal-content a {
+    color: #8b4513;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.legal-content a:hover {
+    color: #a0522d;
+    border-bottom-color: #a0522d;
+}
+
+/* 响应式设计 - 完全全屏显示 */
 @media (max-width: 768px) {
     .legal-content {
-        margin: 1rem;
-        padding: 2rem;
-        border-radius: 15px;
+        width: 100vw;
+        min-height: 100vh;
+        margin: 0;
+        padding: 1.5rem 2rem;
+        border-radius: 0;
     }
     
     .legal-content h1 {
