@@ -77,3 +77,8 @@ Thumbs.db
 
 # 外部依赖
 awesome-cursorrules/
+
+# Virtual environments
+venv/
+venv311/
+venv*/
