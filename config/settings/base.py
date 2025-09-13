@@ -212,7 +212,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 登录配置
-LOGIN_URL = "/users/login/"
+LOGIN_URL = "/"  # 重定向到主页，通过弹窗处理登录
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 

@@ -5,8 +5,9 @@ from . import views
 app_name = "users"
 
 urlpatterns = [
-    path("register/", views.register_view, name="register"),
-    path("login/", views.user_login, name="login"),
+    # API端点用于弹窗登录/注册
+    path("api/login/", views.user_login_api, name="login_api"),
+    path("api/register/", views.user_register_api, name="register_api"),
     path("logout/", views.user_logout, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
@@ -37,8 +38,6 @@ urlpatterns = [
     path("api/logout/", views.user_logout_api, name="user_logout_api"),
     path("api/extend-session/", views.extend_session_api, name="extend_session_api"),
     # 用户API端点
-    path("api/login/", views.user_login_api, name="user_login_api"),
-    path("api/register/", views.user_register_api, name="user_register_api"),
     path("api/profile/", views.user_profile_api, name="user_profile_api"),
     # 测试页面
     path("test-logout/", views.test_logout_view, name="test_logout"),

@@ -6,10 +6,12 @@
 import json
 import logging
 from datetime import datetime, timedelta
+from functools import wraps
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -18,9 +20,23 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def login_required_modal(view_func):
+    """
+    自定义登录装饰器，未登录时重定向到主页
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return view_func(request, *args, **kwargs)
+        else:
+            # 重定向到主页，用户可以手动点击登录按钮
+            return redirect('home')
+    return wrapper
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
+@login_required_modal
 def deepseek_api(request):
     """DeepSeek API - 真实实现"""
     try:

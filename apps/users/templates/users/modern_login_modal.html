@@ -43,7 +43,7 @@
       
       <!-- 登录表单 -->
       <div class="auth-form-container" id="loginForm">
-        <form method="POST" class="auth-form" id="loginFormElement">
+        <form method="POST" class="auth-form" id="loginFormElement" onsubmit="submitLoginForm(event)">
           {% csrf_token %}
           <input type="hidden" name="form_type" value="login">
           
@@ -73,7 +73,7 @@
       
       <!-- 注册表单 -->
       <div class="auth-form-container" id="registerForm" style="display: none;">
-        <form method="POST" class="auth-form" id="registerFormElement">
+        <form method="POST" class="auth-form" id="registerFormElement" onsubmit="submitRegisterForm(event)">
           {% csrf_token %}
           <input type="hidden" name="form_type" value="register">
           
@@ -906,6 +906,143 @@ function updatePasswordStrength(inputId, strengthId, fillId, textId) {
     }
 }
 
+// 显示登录弹窗
+function showLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // 防止背景滚动
+    }
+}
+
+// 登录表单提交
+async function submitLoginForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('loginFormElement');
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    
+    if (!username || !password) {
+        showMessage('请填写用户名和密码', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/users/api/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('登录成功！', 'success');
+            setTimeout(() => {
+                closeLoginModal();
+                window.location.reload(); // 刷新页面以更新用户状态
+            }, 1000);
+        } else {
+            showMessage(data.message || '登录失败', 'error');
+        }
+    } catch (error) {
+        console.error('登录错误:', error);
+        showMessage('网络错误，请重试', 'error');
+    }
+}
+
+// 注册表单提交
+async function submitRegisterForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('registerFormElement');
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('password_confirm');
+    const email = formData.get('email');
+    
+    if (!username || !password || !passwordConfirm) {
+        showMessage('请填写所有必填字段', 'error');
+        return;
+    }
+    
+    if (password !== passwordConfirm) {
+        showMessage('两次输入的密码不一致', 'error');
+        return;
+    }
+    
+    if (password.length < 8) {
+        showMessage('密码必须至少8位', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/users/api/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('注册成功！', 'success');
+            setTimeout(() => {
+                closeLoginModal();
+                window.location.reload(); // 刷新页面以更新用户状态
+            }, 1000);
+        } else {
+            showMessage(data.message || '注册失败', 'error');
+        }
+    } catch (error) {
+        console.error('注册错误:', error);
+        showMessage('网络错误，请重试', 'error');
+    }
+}
+
+// 显示消息
+function showMessage(message, type) {
+    const messageContainer = document.querySelector('.message-container');
+    if (messageContainer) {
+        messageContainer.innerHTML = `
+            <div class="message message-${type}">
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        // 3秒后自动隐藏消息
+        setTimeout(() => {
+            messageContainer.innerHTML = '';
+        }, 3000);
+    }
+}
+
+// 关闭登录弹窗
+function closeLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // 恢复滚动
+    }
+}
+
 // 页面加载完成后绑定事件
 document.addEventListener('DOMContentLoaded', function() {
     // 绑定注册表单密码强度检测
@@ -918,6 +1055,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 'registerStrengthFill',
                 'registerStrengthText'
             );
+        });
+    }
+    
+    // 绑定弹窗关闭事件
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        // 点击背景关闭弹窗
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeLoginModal();
+            }
+        });
+        
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                closeLoginModal();
+            }
         });
     }
 });

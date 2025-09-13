@@ -6,9 +6,24 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.static import serve
+from functools import wraps
 
 
-@login_required  # 仅允许登录用户访问
+def login_required_modal(view_func):
+    """
+    自定义登录装饰器，未登录时重定向到主页
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return view_func(request, *args, **kwargs)
+        else:
+            # 重定向到主页，用户可以手动点击登录按钮
+            return redirect('home')
+    return wrapper
+
+
+@login_required_modal  # 使用自定义装饰器
 def tool_view(request):
     # 获取用户偏好模式
     try:
@@ -28,6 +43,7 @@ def tool_view(request):
 
 # 添加一个根视图函数
 def home_view(request):
+    # 主页不自动跳转或显示弹窗，让用户自由浏览
     return render(request, "home.html")  # 显示首页
 
 
@@ -59,7 +75,7 @@ def custom_static_serve(request, path):
     return response
 
 
-@login_required
+@login_required_modal
 def secure_media_serve(request, path):
     """安全的媒体文件服务，需要登录验证"""
     try:

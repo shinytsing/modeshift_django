@@ -435,12 +435,12 @@ document.addEventListener('DOMContentLoaded', function() {
     <h2 style="color: #333; margin-bottom: 1rem; font-size: 2rem;">🔒 需要登录</h2>
     <p style="color: #666; margin-bottom: 2rem; font-size: 1.1rem;">请先登录以使用我们的神奇工具！✨</p>
     <div>
-      <a href="{% url 'users:login' %}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 50px; margin-right: 1rem; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+      <button onclick="showLoginModal()" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 50px; margin-right: 1rem; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: none; cursor: pointer;">
         <i class="fas fa-sign-in-alt"></i> 登录
-      </a>
-      <a href="{% url 'users:register' %}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; border-radius: 50px; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+      </button>
+      <button onclick="showLoginModal()" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; border-radius: 50px; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: none; cursor: pointer;">
         <i class="fas fa-user-plus"></i> 注册
-      </a>
+      </button>
     </div>
   </div>
 </div>

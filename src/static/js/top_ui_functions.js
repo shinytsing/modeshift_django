@@ -31,6 +31,14 @@ function toggleTheme() {
 
 // 主题切换函数
 function switchTheme(theme) {
+    // 防止重复请求
+    if (window.themeSwitchInProgress) {
+        console.log('主题切换正在进行中，跳过重复请求');
+        return;
+    }
+    
+    window.themeSwitchInProgress = true;
+    
     // 发送主题切换请求到后端
     fetch('/users/theme/', {
         method: 'POST',
@@ -45,16 +53,30 @@ function switchTheme(theme) {
     .then(response => {
         // 检查响应状态
         if (response.status === 401) {
-            // 用户未登录，重定向到登录页面
-            console.log('用户未登录，重定向到登录页面');
-            window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
-            return;
+            // 用户未登录，检查是否在首页
+            console.log('用户未登录，主题切换API需要登录');
+            if (window.location.pathname === '/' || window.location.pathname === '') {
+                // 在首页时不自动重定向，只显示提示
+                console.log('在首页，不自动重定向到登录页面');
+                return;
+            } else {
+                // 在其他页面时才重定向
+                window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
         }
         
         if (response.status === 302) {
-            // 重定向响应，直接跳转
-            window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
-            return;
+            // 重定向响应，检查是否在首页
+            if (window.location.pathname === '/' || window.location.pathname === '') {
+                // 在首页时不自动重定向
+                console.log('在首页，忽略重定向响应');
+                return;
+            } else {
+                // 在其他页面时才重定向
+                window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
         }
         
         // 检查响应是否为JSON
@@ -80,12 +102,18 @@ function switchTheme(theme) {
             updatePageTheme(theme);
         } else if (data) {
             console.error('主题切换失败:', data.error);
+            // 即使失败也更新本地主题
+            updatePageTheme(theme);
         }
     })
     .catch(error => {
         console.error('主题切换请求失败:', error);
         // 如果请求失败，仍然更新本地主题
         updatePageTheme(theme);
+    })
+    .finally(() => {
+        // 重置请求状态
+        window.themeSwitchInProgress = false;
     });
 }
 
