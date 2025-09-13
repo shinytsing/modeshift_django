@@ -43,6 +43,35 @@ def modern_demo_view(request):
     return render(request, "modern_demo.html")
 
 
+def test_geek_login_view(request):
+    """极客风格登录弹窗测试页面"""
+    return render(request, "test_geek_login.html")
+
+
+def terms_of_service_view(request):
+    """服务条款页面"""
+    return render(request, "legal/terms_of_service.html")
+
+
+def privacy_policy_view(request):
+    """隐私政策页面"""
+    return render(request, "legal/privacy_policy.html")
+
+
+def google_oauth_test_view(request):
+    """Google OAuth测试页面"""
+    import os
+    context = {
+        'google_client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID'),
+        'google_client_secret': os.getenv('GOOGLE_OAUTH_CLIENT_SECRET'),
+    }
+    return render(request, "google_oauth_test.html", context)
+
+def error_animation_test_view(request):
+    """错误动画测试页面"""
+    return render(request, "test_error_animation.html")
+
+
 def health_check_view(request):
     """健康检查视图"""
     from django.http import JsonResponse
@@ -57,6 +86,11 @@ urlpatterns = [
     path("welcome/", welcome_view, name="welcome"),
     path("theme-demo/", theme_demo_view, name="theme_demo"),
     path("modern-demo/", modern_demo_view, name="modern_demo"),
+    path("test-geek-login/", test_geek_login_view, name="test_geek_login"),
+    path("terms/", terms_of_service_view, name="terms_of_service"),
+    path("privacy/", privacy_policy_view, name="privacy_policy"),
+        path("google-oauth-test/", google_oauth_test_view, name="google_oauth_test"),
+        path("error-animation-test/", error_animation_test_view, name="error_animation_test"),
     path("version-history/", version_history_view, name="version_history"),
     path("help/", help_page_view, name="help_page"),
     path("admin/", admin.site.urls),
@@ -66,6 +100,8 @@ urlpatterns = [
     path("users/", include("apps.users.urls", namespace="users")),
     path("content/", include("apps.content.urls", namespace="content")),
     path("share/", include("apps.share.urls", namespace="share")),
+    # allauth URLs
+    path("accounts/", include("allauth.urls")),
     # Favicon路由
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),
 ]

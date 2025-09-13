@@ -40,6 +40,7 @@ dependencies = [
     "django-ranged-response>=0.2.0",
     "django-ratelimit>=4.1.0",
     "django-simple-captcha>=0.6.2",
+    "django-allauth>=0.57.0",
     "djangorestframework>=3.16.1",
     "docx2pdf>=0.1.8",
     "gevent>=25.8.2",

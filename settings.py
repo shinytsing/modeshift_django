@@ -190,7 +190,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # 登录配置
-LOGIN_URL = "/users/login/"  # 登录URL路径
+LOGIN_URL = "/"  # 登录URL路径 - 重定向到首页
 LOGIN_REDIRECT_URL = "/"  # 登录后重定向URL
 LOGOUT_REDIRECT_URL = "/"  # 登出后重定向URL
 

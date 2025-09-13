@@ -1,7 +1,7 @@
 // Share.js - 分享功能JavaScript文件
 // 这个文件用于处理分享相关的功能
 
-console.log('Share.js loaded');
+// Share.js loaded
 
 // 分享功能
 function shareContent(url, title, description) {
@@ -11,9 +11,9 @@ function shareContent(url, title, description) {
             text: description,
             url: url
         }).then(() => {
-            console.log('分享成功');
+            // 分享成功
         }).catch((error) => {
-            console.log('分享失败:', error);
+            // 分享失败
         });
     } else {
         // 降级处理：复制链接到剪贴板
@@ -25,9 +25,9 @@ function shareContent(url, title, description) {
 function copyToClipboard(text) {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
-            console.log('链接已复制到剪贴板');
+            // 链接已复制到剪贴板
         }).catch((error) => {
-            console.log('复制失败:', error);
+            // 复制失败
         });
     } else {
         // 降级处理
@@ -37,7 +37,7 @@ function copyToClipboard(text) {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        console.log('链接已复制到剪贴板');
+        // 链接已复制到剪贴板
     }
 }
 

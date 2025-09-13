@@ -906,12 +906,13 @@ function updatePasswordStrength(inputId, strengthId, fillId, textId) {
     }
 }
 
-// 显示登录弹窗
+// 显示登录弹窗 - 统一使用极客登录弹窗
 function showLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // 防止背景滚动
+    // 直接显示极客登录弹窗
+    if (typeof showGeekLoginModal === 'function') {
+        showGeekLoginModal();
+    } else {
+        console.warn('极客登录弹窗不可用，请检查相关文件是否正确加载');
     }
 }
 

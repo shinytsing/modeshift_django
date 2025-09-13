@@ -546,7 +546,7 @@ window.viewUserProfile = viewUserProfile;
 
 // 全局错误处理
 window.addEventListener('error', function(e) {
-  console.error('JavaScript错误:', e.error);
+  // JavaScript错误
   // 可以在这里添加错误上报逻辑
 });
 

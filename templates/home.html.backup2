@@ -1,24 +1,25 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token }}">
-    {% if request.META.HTTP_X_LOGOUT_SUCCESS %}
-    <meta name="clear-storage" content="true">
-    {% endif %}
-    <title>{% block title %}ModeShift{% endblock %}</title>
+{% block title %}ModeShift - 主页{% endblock %}
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="shortcut icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- 移动端优化CSS -->
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v={{ request.GET.t|default:'1' }}">
+    
+    <!-- 回退CSS -->
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    </noscript>
     
     <!-- 修复悬浮函数未定义的问题 -->
     <script>
@@ -36,7 +37,7 @@
             
             const dropdownContent = document.getElementById('settingsDropdownContent');
             if (!dropdownContent) {
-                // 设置下拉菜单元素未找到
+                console.error('❌ 设置下拉菜单元素未找到');
                 return;
             }
             
@@ -77,7 +78,7 @@
             
             const dropdownContent = document.getElementById('menuDropdownContent');
             if (!dropdownContent) {
-                // 菜单下拉菜单元素未找到
+                console.error('❌ 菜单下拉菜单元素未找到');
                 return;
             }
             
@@ -131,24 +132,6 @@
             }
         }
         
-        // 显示登录弹窗
-        function showLoginModal() {
-            if (typeof showGeekLoginModal === 'function') {
-                showGeekLoginModal();
-            } else {
-                window.location.href = '/users/login/';
-            }
-        }
-        
-        // 显示注册弹窗
-        function showRegisterModal() {
-            if (typeof showGeekLoginModal === 'function') {
-                showGeekLoginModal();
-            } else {
-                window.location.href = '/users/register/';
-            }
-        }
-
         // 确保函数在全局作用域中可用
         window.showSettingsDropdown = showSettingsDropdown;
         window.hideSettingsDropdownDelayed = hideSettingsDropdownDelayed;
@@ -158,8 +141,6 @@
         window.hideMenuDropdown = hideMenuDropdown;
         window.closeSettingsModal = closeSettingsModal;
         window.closeMenuModal = closeMenuModal;
-        window.showLoginModal = showLoginModal;
-        window.showRegisterModal = showRegisterModal;
     </script>
     
     <!-- 本地字体回退方案，避免Google Fonts加载失败 -->
@@ -2170,10 +2151,7 @@
         }
     </style>
 </head>
-<body data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" 
-      data-user-id="{% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %}"
-      data-user-name="{% if user.is_authenticated %}{{ user.username }}{% else %}guest{% endif %}"
-      class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %}">
+<body data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %} {% block extra_body_class %}{% endblock %}">
     <!-- 页面加载动画 -->
     <div class="page-loader" id="pageLoader">
         <div class="loader-content">
@@ -2331,205 +2309,7 @@
                     <span>编辑资料</span>
                     <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(69, 183, 209, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
                 </a>
-                <!-- 🧭 快速导航区 -->
-                <div style="padding: 0 20px 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px;">
-                    <div style="font-size: 0.8rem; color: #4ecdc4; margin-bottom: 8px; text-align: center; font-weight: 600;">
-                        <i class="fas fa-compass" style="margin-right: 6px;"></i>快速导航
-                    </div>
-                </div>
-                <a href="{% url 'home' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-home" style="width: 16px; text-align: center; color: #2ecc71;"></i>
-                    <span>首页</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="goToCurrentModeTools(); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-tools" style="width: 16px; text-align: center; color: #f39c12;"></i>
-                    <span>工具集</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(243, 156, 18, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="/tools/chat/" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-comments" style="width: 16px; text-align: center; color: #e74c3c;"></i>
-                    <span>聊天室</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(231, 76, 60, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="/tools/heart_link/" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-heart" style="width: 16px; text-align: center; color: #e91e63;"></i>
-                    <span>心链匹配</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(233, 30, 99, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="showSuggestions(); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-lightbulb" style="width: 16px; text-align: center; color: #ffc107;"></i>
-                    <span>我的建议</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                
-                <!-- 🎨 主题模式区 -->
-                <div style="padding: 10px 20px 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 10px;">
-                    <div style="font-size: 0.8rem; color: #ff6b6b; margin-bottom: 8px; text-align: center; font-weight: 600;">
-                        <i class="fas fa-palette" style="margin-right: 6px;"></i>主题模式
-                    </div>
-                </div>
-                <a href="#" onclick="switchTheme('life'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-seedling" style="width: 16px; text-align: center; color: #27ae60;"></i>
-                    <span>生活模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(39, 174, 96, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('work'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-laptop-code" style="width: 16px; text-align: center; color: #3498db;"></i>
-                    <span>极客模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('training'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-dumbbell" style="width: 16px; text-align: center; color: #e74c3c;"></i>
-                    <span>狂暴模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(231, 76, 60, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('emo'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-heart-broken" style="width: 16px; text-align: center; color: #9b59b6;"></i>
-                    <span>Emo模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(155, 89, 182, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                
-                <!-- 📚 帮助与信息区 -->
-                <div style="padding: 10px 20px 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 10px;">
-                    <div style="font-size: 0.8rem; color: #20c997; margin-bottom: 8px; text-align: center; font-weight: 600;">
-                        <i class="fas fa-info-circle" style="margin-right: 6px;"></i>帮助与信息
-                    </div>
-                </div>
-                <a href="{% url 'help_page' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-question-circle" style="width: 16px; text-align: center; color: #17a2b8;"></i>
-                    <span>帮助中心</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(23, 162, 184, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="{% url 'version_history' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-history" style="width: 16px; text-align: center; color: #6c757d;"></i>
-                    <span>版本记录</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(108, 117, 125, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="showHiddenInfo(); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-eye" style="width: 16px; text-align: center; color: #fd7e14;"></i>
-                    <span>关于系统</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(253, 126, 20, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                {% if user.is_staff or user.is_superuser %}
-                <div style="padding: 0 20px; margin: 10px 0;">
-                    <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);"></div>
-                </div>
-                <div style="padding: 0 20px 5px 20px;">
-                    <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">管理员</div>
-                </div>
-                <a href="/admin/" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-shield-alt" style="width: 16px; text-align: center; color: #f39c12;"></i>
-                    <span>管理后台</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(243, 156, 18, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="{% url 'users:admin_user_management' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-users-cog" style="width: 16px; text-align: center; color: #9b59b6;"></i>
-                    <span>用户管理</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(155, 89, 182, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="{% url 'content:admin_feature_management' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-cogs" style="width: 16px; text-align: center; color: #3498db;"></i>
-                    <span>功能管理</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="{% url 'tools:monitoring_dashboard' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-chart-line" style="width: 16px; text-align: center; color: #2ecc71;"></i>
-                    <span>系统监控</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                {% endif %}
-                <div style="padding: 0 20px; margin: 10px 0;">
-                    <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);"></div>
-                </div>
-                <a href="{% url 'users:logout' %}" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-sign-out-alt" style="width: 16px; text-align: center; color: #e67e22;"></i>
-                    <span>退出登录</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(230, 126, 34, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark unified-navbar" aria-label="主导航" style="--navbar-text-color: rgba(255, 255, 255, 0.9) !important; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important; backdrop-filter: blur(20px) !important; border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(102, 126, 234, 0.2) !important;">
-            <div class="container-fluid">
-                <!-- 品牌Logo区域 -->
-                <a class="navbar-brand" href="{% url 'home' %}" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">
-                    <i class="fas fa-cogs"></i> ModeShift
-                    <div id="theme-subtitle" class="theme-subtitle" data-translate="专注技术，追求卓越">专注技术，追求卓越</div>
-                </a>
-            
-            <!-- 移动端菜单按钮 -->
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- 导航菜单区域 -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- 主导航菜单 -->
-                <ul class="navbar-nav mr-auto">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="goToCurrentModeTools(); return false;" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">
-                            <i class="fas fa-tools" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;"></i> <span data-translate="工具集" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">工具集</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSuggestions(); return false;" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">
-                            <i class="fas fa-lightbulb" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;"></i> <span data-translate="我的建议" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">我的建议</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showHiddenInfo()" title="双击显示隐藏信息" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">
-                            <i class="fas fa-info-circle" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;"></i> <span data-translate="关于" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">关于</span>
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showHiddenInfo()" title="双击显示隐藏信息" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">
-                            <i class="fas fa-info-circle" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;"></i> <span data-translate="关于" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;">关于</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <!-- 右侧用户区域 -->
-                <div class="nav-buttons">
-                    {% if user.is_authenticated %}
-                        <!-- 用户头像和下拉菜单 -->
-                        <div class="dropdown user-dropdown-container">
-                            <button class="nav-link user-nav-link dropdown-toggle" style="cursor: pointer; background: none; border: none;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="userDropdown">
-                                <img id="user-avatar" src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}{% static 'img/default-avatar.svg' %}{% endif %}" alt="用户头像" class="user-avatar">
-                                <span id="username-display" style="color: #ffffff !important; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">{{ user.username }}</span>
-                                <span id="theme-badge" class="theme-badge">极客</span>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 50%, rgba(240, 147, 251, 0.95) 100%); border: 1px solid rgba(255,255,255,0.2); min-width: 280px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(102, 126, 234, 0.3); border-radius: 12px; backdrop-filter: blur(15px); margin-top: 8px;">
-                                
-                                <!-- 🧭 快速导航区 -->
-                                <h6 class="dropdown-header" style="color: #4ecdc4; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; padding: 10px 16px; font-size: 0.85rem;">
-                                    <i class="fas fa-compass" style="margin-right: 8px;"></i>快速导航
-                                </h6>
-                                <a class="dropdown-item" href="{% url 'home' %}" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-home" style="color: #2ecc71; margin-right: 8px; width: 16px; text-align: center;"></i> 首页
-                                </a>
-                                <a class="dropdown-item" href="#" onclick="goToCurrentModeTools(); return false;" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-tools" style="color: #f39c12; margin-right: 8px; width: 16px; text-align: center;"></i> 工具集
-                                </a>
-                                <a class="dropdown-item" href="/tools/chat/" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-comments" style="color: #e74c3c; margin-right: 8px; width: 16px; text-align: center;"></i> 聊天室
-                                </a>
-                                <a class="dropdown-item" href="/tools/heart_link/" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-heart" style="color: #e91e63; margin-right: 8px; width: 16px; text-align: center;"></i> 心链匹配
-                                </a>
-                                <a class="dropdown-item" href="#" onclick="showSuggestions(); return false;" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-lightbulb" style="color: #ffc107; margin-right: 8px; width: 16px; text-align: center;"></i> 我的建议
-                                </a>
-                                
-                                <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1); margin: 8px 12px;"></div>
-                                
-                                <!-- 👤 账户设置区 -->
+                <!-- 👤 账户设置区 -->
                                 <h6 class="dropdown-header" style="color: #667eea; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; padding: 10px 16px; font-size: 0.85rem;">
                                     <i class="fas fa-user-cog" style="margin-right: 8px;"></i>账户设置
                                 </h6>
@@ -2615,12 +2395,12 @@
                             </div>
                         </div>
                     {% else %}
-                        <a href="#" class="btn btn-primary btn-custom" onclick="stopMedia(); showLoginModal(); return false;">
+                        <button class="btn btn-primary btn-custom" onclick="showLoginModal(); stopMedia();">
                             <i class="fas fa-sign-in-alt"></i> <span data-translate="登录">登录</span>
-                        </a>
-                        <a href="#" class="btn btn-secondary btn-custom" onclick="stopMedia(); showRegisterModal(); return false;">
+                        </button>
+                        <button class="btn btn-secondary btn-custom" onclick="showLoginModal(); stopMedia();">
                             <i class="fas fa-user-plus"></i> <span data-translate="注册">注册</span>
-                        </a>
+                        </button>
                     {% endif %}
                     
                     <!-- 设置按钮移到右上角 -->
@@ -2676,7 +2456,217 @@
     <div class="container">
         <div class="content-block">
             {% block content %}
-            <!-- 容器内容区 -->
+<div id="tool-container" style="min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  
+  <!-- 搞怪的标题区域 -->
+  <div id="tool-title" style="text-align: center; margin-bottom: 3rem; animation: bounce 2s infinite;">
+    <h1 style="font-size: 3.5rem; font-weight: bold; color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); margin-bottom: 1rem;">
+      🤔 你想请求哪里呢？😂
+    </h1>
+    <p style="font-size: 1.5rem; color: #f0f0f0; font-style: italic; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      选择你的冒险之旅吧！✨
+    </p>
+  </div>
+
+  <!-- 模式选择区域 -->
+  <div class="mode-selection" style="margin-bottom: 4rem;">
+    <h2 style="text-align: center; color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      🎭 选择你的模式
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+      
+      <!-- 极客模式 -->
+      <div class="mode-card" onclick="selectMode('work')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">💻</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">极客模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">代码、测试、PDF转换...技术宅的天堂！</p>
+      </div>
+
+      <!-- 生活模式 -->
+      <div class="mode-card" onclick="selectMode('life')" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🌱</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">生活模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">日记、健身、冥想...让生活更美好！</p>
+      </div>
+
+      <!-- 狂暴模式 -->
+      <div class="mode-card" onclick="selectMode('training')" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">狂暴模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">高强度训练、极限挑战...释放你的能量！</p>
+      </div>
+
+      <!-- Emo模式 -->
+      <div class="mode-card" onclick="selectMode('emo')" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 20px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid transparent;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🎭</div>
+        <h3 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem;">Emo模式</h3>
+        <p style="color: #e0e0e0; font-size: 1rem;">情感分析、创意写作...探索内心的世界！</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工具选择区域 -->
+  <div id="tool-selection" style="display: none;">
+    <h2 id="mode-title" style="text-align: center; color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+      🛠️ 选择你的工具
+    </h2>
+    <div id="tool-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 1000px; margin: 0 auto;"></div>
+    <div style="text-align: center; margin-top: 2rem;">
+      <button onclick="showModeSelection()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 1rem 2rem; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+        ← 返回模式选择
+      </button>
+    </div>
+  </div>
+
+  <!-- 随机提示区域 -->
+  <div id="random-tip" style="text-align: center; margin-top: 3rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 15px; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <p style="color: #f0f0f0; font-size: 1.1rem; font-style: italic; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+      💡 提示：每个模式都有独特的工具和功能，选择最适合你的！
+    </p>
+  </div>
+</div>
+
+<style>
+.mode-card:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.tool-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 2px solid transparent;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+</style>
+
+<script>
+// 模式数据
+const modeNames = {
+  'work': '极客模式',
+  'life': '生活模式', 
+  'training': '狂暴模式',
+  'emo': 'Emo模式'
+};
+
+const toolsData = {
+  'work': [
+    { name: '测试用例生成器', desc: '自动生成测试用例', icon: '🧪', url: '/tools/test_case_generator/' },
+    { name: 'PDF转换器', desc: 'PDF文件格式转换', icon: '📄', url: '/tools/pdf_converter/' },
+    { name: '任务管理器', desc: '高效任务管理', icon: '📋', url: '/tools/task_manager/' },
+    { name: '小红书生成器', desc: '内容创作助手', icon: '📱', url: '/tools/redbook_generator/' }
+  ],
+  'life': [
+    { name: '生活日记', desc: '记录美好生活', icon: '📖', url: '/tools/diary/' },
+    { name: '健身中心', desc: '科学健身指导', icon: '💪', url: '/tools/fitness_center/' },
+    { name: '冥想指导', desc: '心灵放松之旅', icon: '🧘', url: '/tools/meditation_guide/' },
+    { name: '音乐疗愈', desc: '音乐治愈心灵', icon: '🎵', url: '/tools/music_healing/' }
+  ],
+  'training': [
+    { name: '训练计划', desc: '专业训练方案', icon: '🏋️', url: '/tools/training_plan_editor/' },
+    { name: '吉他训练', desc: '吉他学习指导', icon: '🎸', url: '/tools/guitar_training/' },
+    { name: '体能测试', desc: '体能水平评估', icon: '⚡', url: '/tools/fitness_center/' }
+  ],
+  'emo': [
+    { name: '情感日记', desc: '情感记录分析', icon: '💕', url: '/tools/emo_diary/' },
+    { name: '创意写作', desc: '激发创作灵感', icon: '✍️', url: '/tools/creative_writer/' },
+    { name: '心灵链接', desc: '情感交流平台', icon: '💝', url: '/tools/heart_link/' }
+  ]
+};
+
+let currentMode = null;
+
+// 选择模式
+async function selectMode(mode) {
+  currentMode = mode;
+  showToolSelection();
+  showRandomTip();
+  
+  // 添加点击动画
+  event.target.closest('.mode-card').style.animation = 'pulse 0.5s ease-in-out';
+  setTimeout(() => {
+    event.target.closest('.mode-card').style.animation = '';
+  }, 500);
+}
+
+// 显示工具选择
+function showToolSelection() {
+  document.querySelector('.mode-selection').style.display = 'none';
+  document.getElementById('tool-selection').style.display = 'block';
+  
+  document.getElementById('mode-title').innerHTML = `🛠️ ${modeNames[currentMode]} - 选择你的工具`;
+  
+  const toolGrid = document.getElementById('tool-grid');
+  toolGrid.innerHTML = '';
+  
+  toolsData[currentMode].forEach(tool => {
+    const toolCard = document.createElement('div');
+    toolCard.className = 'tool-card';
+    toolCard.innerHTML = `
+      <div style="font-size: 3rem; margin-bottom: 1rem;">${tool.icon}</div>
+      <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">${tool.name}</h3>
+      <p style="font-size: 0.9rem; opacity: 0.9;">${tool.desc}</p>
+    `;
+    toolCard.onclick = () => {
+      toolCard.style.animation = 'pulse 0.3s ease-in-out';
+      setTimeout(() => {
+        window.location.href = tool.url;
+      }, 300);
+    };
+    toolGrid.appendChild(toolCard);
+  });
+}
+
+// 显示模式选择
+function showModeSelection() {
+  document.querySelector('.mode-selection').style.display = 'block';
+  document.getElementById('tool-selection').style.display = 'none';
+  currentMode = null;
+  showRandomTip();
+}
+
+// 显示随机提示
+function showRandomTip() {
+  const tipElement = document.getElementById('random-tip');
+  const tips = [
+    '💡 提示：每个模式都有独特的工具和功能，选择最适合你的！',
+    '🌟 小贴士：极客模式适合程序员，生活模式适合日常管理！',
+    '⚡ 建议：狂暴模式挑战极限，Emo模式探索内心！',
+    '🎯 提醒：点击模式卡片进入工具选择，点击工具直接使用！'
+  ];
+  
+  const randomTip = tips[Math.floor(Math.random() * tips.length)];
+  tipElement.querySelector('p').textContent = randomTip;
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+  showRandomTip();
+});
+</script>
             {% endblock %}
         </div>
     </div>
@@ -2913,7 +2903,7 @@
             if (typeof window[funcName] === 'function') {
                 return window[funcName](...args);
             } else {
-                // 函数未定义，跳过调用
+                console.warn(`函数 ${funcName} 未定义，跳过调用`);
                 return null;
             }
         };
@@ -2974,7 +2964,7 @@
                 if (typeof showNotification === 'function') {
                     showNotification(message, type);
                 } else {
-
+                    console.log('通知:', message, '类型:', type);
                 }
             },
             
@@ -3092,7 +3082,16 @@
             // 恢复保存的主题
             const savedTheme = localStorage.getItem('currentTheme');
             if (savedTheme) {
-                switchTheme(savedTheme);
+                // 检查是否在首页，如果是首页则只更新本地主题，不调用API
+                if (window.location.pathname === '/' || window.location.pathname === '') {
+                    // 在首页时只更新本地主题，不调用服务器API
+                    if (typeof updatePageTheme === 'function') {
+                        updatePageTheme(savedTheme);
+                    }
+                } else {
+                    // 在其他页面时才调用服务器API
+                    switchTheme(savedTheme);
+                }
             } else {
                 // 如果没有保存的主题，应用默认主题的按钮颜色
                 const defaultThemeColors = {
@@ -3101,7 +3100,12 @@
                     menu: 'rgba(255, 255, 255, 0.9)',
                     hide: 'linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9))'
                 };
-                updateButtonColors(defaultThemeColors);
+                // 延迟调用，确保函数已定义
+                setTimeout(() => {
+                    if (typeof updateButtonColors === 'function') {
+                        updateButtonColors(defaultThemeColors);
+                    }
+                }, 100);
             }
         });
     </script>
@@ -3128,13 +3132,14 @@
             'emo': '12632193394'        // Emo模式歌单
         };
 
+        // 用户认证状态
+        window.isUserAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+
         window.onload = function () {
             // 仅在用户登录且是 home 页时显示公告弹窗
-            {% if request.path == '/' %}
-                {% if user.is_authenticated %}
+            if (window.location.pathname === '/' && window.isUserAuthenticated) {
                 loadAnnouncements();
-                {% endif %}
-            {% endif %}
+            }
             
             // 初始化主题音乐
             loadUserTheme();
@@ -3143,7 +3148,7 @@
             initScrollOptimization();
         };
     
-    // 隐藏信息计数器
+        // 隐藏信息计数器
     let hiddenInfoClickCount = 0;
     let hiddenInfoTimeout;
     
@@ -3643,7 +3648,7 @@
                 }
             })
             .catch(error => {
-                // 加载公告失败
+                console.error('Error loading announcements:', error);
             });
     }
     
@@ -3728,7 +3733,7 @@
             // 异步播放，不阻塞UI
             setTimeout(() => {
                 audio.play().catch(function(error) {
-
+                    console.log('音乐播放失败:', error);
                 });
             }, 0);
         }
@@ -3830,11 +3835,11 @@
             
             // 添加音乐状态监听
             audio.addEventListener('play', function() {
-
+                console.log('音乐开始播放');
             });
             
             audio.addEventListener('pause', function() {
-
+                console.log('音乐暂停');
             });
         });
 
@@ -3842,7 +3847,12 @@
     function showSuggestions() {
             // 先获取现有建议
             fetch('/content/api/suggestions/')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     let suggestionsHtml = `
                         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 23, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
@@ -4025,8 +4035,39 @@
                     bindFileUploadEvents();
                 })
                 .catch(error => {
-                    // 获取建议失败
-                    showNotification('获取建议失败，请稍后重试', 'error');
+                    console.error('获取建议失败:', error);
+                    // 显示错误界面而不是简单的通知
+                    let errorHtml = `
+                        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 23, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="background: linear-gradient(135deg, rgba(26,31,46,0.95) 0%, rgba(220,53,69,0.1) 100%); border: 1px solid rgba(220, 53, 69, 0.2); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 30px; max-width: 600px; width: 95%; position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(220, 53, 69, 0.2); padding-bottom: 15px;">
+                                    <h3 style="color: #dc3545; margin: 0; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-shadow: 0 0 10px rgba(220, 53, 69, 0.5);">
+                                        <i class="fas fa-exclamation-triangle" style="color: #dc3545; margin-right: 10px;"></i> 加载失败
+                                    </h3>
+                                    <button onclick="closeSuggestions()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; transition: all 0.3s ease; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-times"></i> 关闭
+                                    </button>
+                                </div>
+                                <div style="text-align: center; padding: 20px;">
+                                    <div style="font-size: 48px; color: #dc3545; margin-bottom: 20px;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <h4 style="color: #ffffff; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace;">无法加载建议数据</h4>
+                                    <p style="color: #e6e6e6; margin-bottom: 20px; line-height: 1.6; font-family: 'JetBrains Mono', monospace;">
+                                        服务器返回错误: ${error.message}
+                                    </p>
+                                    <div style="display: flex; gap: 15px; justify-content: center;">
+                                        <button onclick="showSuggestions()" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.3s ease;">
+                                            <i class="fas fa-redo" style="margin-right: 8px;"></i> 重试
+                                        </button>
+                                        <button onclick="closeSuggestions()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.3s ease;">
+                                            <i class="fas fa-times" style="margin-right: 8px;"></i> 关闭
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    document.body.insertAdjacentHTML('beforeend', errorHtml);
                 });
         }
         
@@ -4239,7 +4280,7 @@
             
             // 检查元素是否存在
             if (!previewArea || !imageContainer || !videoContainer || !fileListContainer) {
-                // 预览区域元素未找到
+                console.error('预览区域元素未找到');
                 return;
             }
             
@@ -4292,7 +4333,7 @@
                             
                             // 添加图片加载错误处理
                             img.onerror = function() {
-                                // 图片加载失败
+                                console.error('图片加载失败:', file.name);
                                 imgDiv.style.borderColor = 'rgba(255, 0, 0, 0.5)';
                             };
                             
@@ -4342,7 +4383,7 @@
                         };
                         
                         reader.onerror = function() {
-                            // 图片读取失败
+                            console.error('图片读取失败:', file.name);
                         };
                         reader.readAsDataURL(file);
                     }
@@ -4383,7 +4424,7 @@
                             
                             // 添加视频加载错误处理
                             video.onerror = function() {
-                                // 视频加载失败
+                                console.error('视频加载失败:', file.name);
                                 videoDiv.style.borderColor = 'rgba(255, 0, 0, 0.5)';
                             };
                             
@@ -4433,7 +4474,7 @@
                         };
                         
                         reader.onerror = function() {
-                            // 视频读取失败
+                            console.error('视频读取失败:', file.name);
                         };
                         reader.readAsDataURL(file);
                     }
@@ -4588,19 +4629,16 @@
         // 提交建议
         async function submitSuggestion() {
             // 检查用户是否已登录
-            {% if not user.is_authenticated %}
-            showNotification('请先登录后再提交建议', 'warning');
-            closeSuggestions();
-            // 跳转到登录页面
-            setTimeout(() => {
-                if (typeof showGeekLoginModal === 'function') {
-                    showGeekLoginModal();
-                } else {
-                    window.location.href = '/users/login/';
-                }
-            }, 1500);
-            return;
-            {% endif %}
+            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+            if (!isAuthenticated) {
+                showNotification('请先登录后再提交建议', 'warning');
+                closeSuggestions();
+                // 显示登录弹窗
+                setTimeout(() => {
+                    showLoginModal();
+                }, 1500);
+                return;
+            }
             
             const title = document.getElementById('suggestionTitle').value;
             const content = document.getElementById('newSuggestion').value;
@@ -4684,11 +4722,7 @@
                     showNotification('请先登录后再提交建议', 'warning');
                     closeSuggestions();
                     setTimeout(() => {
-                        if (typeof showGeekLoginModal === 'function') {
-                            showGeekLoginModal();
-                        } else {
-                            window.location.href = '/users/login/';
-                        }
+                        showLoginModal();
                     }, 1500);
                     return;
                 }
@@ -4706,7 +4740,7 @@
                     showNotification(data.error || '提交失败，请重试', 'error');
                 }
             } catch (error) {
-                // 提交建议失败
+                console.error('提交建议失败:', error);
                 showNotification('提交失败，请重试', 'error');
                 document.getElementById('uploadProgress').style.display = 'none';
             }
@@ -4765,19 +4799,16 @@
         // 提交反馈
         function submitFeedback() {
             // 检查用户是否已登录
-            {% if not user.is_authenticated %}
-            showNotification('请先登录后再提交反馈', 'warning');
-            closeFeedback();
-            // 跳转到登录页面
-            setTimeout(() => {
-                if (typeof showGeekLoginModal === 'function') {
-                    showGeekLoginModal();
-                } else {
-                    window.location.href = '/users/login/';
-                }
-            }, 1500);
-            return;
-            {% endif %}
+            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+            if (!isAuthenticated) {
+                showNotification('请先登录后再提交反馈', 'warning');
+                closeFeedback();
+                // 显示登录弹窗
+                setTimeout(() => {
+                    showLoginModal();
+                }, 1500);
+                return;
+            }
             
             const type = document.getElementById('feedbackType').value;
             const content = document.getElementById('feedbackContent').value;
@@ -4806,11 +4837,7 @@
                     showNotification('请先登录后再提交反馈', 'warning');
                     closeFeedback();
                     setTimeout(() => {
-                        if (typeof showGeekLoginModal === 'function') {
-                            showGeekLoginModal();
-                        } else {
-                            window.location.href = '/users/login/';
-                        }
+                        showLoginModal();
                     }, 1500);
                     return response.json();
                 }
@@ -4825,7 +4852,7 @@
                 }
             })
             .catch(error => {
-                // 提交反馈失败
+                console.error('提交反馈失败:', error);
                 showNotification('提交失败，请重试', 'error');
             });
         }
@@ -4920,11 +4947,13 @@
         
         // 加载用户主题
         async function loadUserTheme() {
-            // 检查用户是否已登录
-            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-            
-            if (!isAuthenticated) {
-                // 用户未登录，使用默认主题
+            // 检查用户是否登录，如果没有登录则使用默认主题
+            const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+            if (!isLoggedIn) {
+                currentTheme = 'work';
+                applyGlobalTheme(currentTheme);
+                updateThemeBadge(currentTheme);
+                updateActiveThemeItem(currentTheme);
                 return;
             }
             
@@ -5341,21 +5370,6 @@
                 const element = e.target.closest('.theme-switch');
                 const newTheme = element.dataset.mode;
                 
-                // 检查用户是否已登录
-                const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-                
-                if (!isAuthenticated) {
-                    // 用户未登录，显示登录弹窗
-                    if (typeof showGeekLoginModal === 'function') {
-                        showGeekLoginModal();
-                    } else {
-                        // 如果showGeekLoginModal函数不存在，跳转到登录页面
-                        window.location.href = '/users/login/';
-                    }
-                    showNotification('请先登录后再切换主题模式', 'info');
-                    return;
-                }
-                
                 // 检查当前页面是否已经匹配该主题
                 if (isCurrentPageMatchingTheme(newTheme)) {
                     // 如果当前页面已经匹配该主题，只切换主题样式，不跳转页面
@@ -5377,21 +5391,25 @@
         
         // 切换主题并跳转到对应页面
         async function switchGlobalThemeAndNavigate(theme) {
-            // 检查用户是否已登录
-            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-            
-            if (!isAuthenticated) {
-                // 用户未登录，只切换前端主题
-                // 只切换前端主题，不保存到后端
-                switchGlobalTheme(theme);
-                return;
-            }
-            
             try {
                 // 验证theme参数
                 if (!theme || !themeConfig[theme]) {
-                    // 无效的主题参数
+                    console.error('Invalid theme:', theme);
                     showNotification('无效的主题参数', 'error');
+                    return;
+                }
+                
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
                     return;
                 }
                 
@@ -5446,7 +5464,7 @@
                 }, 1000); // 1秒后跳转，让用户看到切换效果
                 
             } catch (error) {
-                // 主题切换失败
+                console.error('Failed to switch theme and navigate:', error);
                 showNotification('主题切换失败: ' + error.message, 'error');
                 
                 // 恢复徽章显示
@@ -5456,14 +5474,25 @@
         
         // 切换全局主题
         async function switchGlobalTheme(theme) {
-            // 检查用户是否已登录
-            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-            
             try {
                 // 验证theme参数
                 if (!theme || !themeConfig[theme]) {
-                    // 无效的主题参数
+                    console.error('Invalid theme:', theme);
                     showNotification('无效的主题参数', 'error');
+                    return;
+                }
+                
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
                     return;
                 }
                 
@@ -5477,35 +5506,30 @@
                     badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 }
                 
-                // 如果用户已登录，更新后端
-                if (isAuthenticated) {
-                    const response = await fetch('/users/theme/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({ mode: theme })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('主题切换请求失败');
-                    }
-                    
-                    // 检查响应类型
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        // 如果返回的不是JSON，可能是重定向到登录页面
-                        throw new Error('请先登录后再切换主题');
-                    }
-                    
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(data.error || '主题切换失败');
-                    }
-                } else {
-                    // 用户未登录，只切换前端主题
-                    // 用户未登录，只切换前端主题
+                // 更新后端
+                const response = await fetch('/users/theme/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ mode: theme })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('主题切换请求失败');
+                }
+                
+                // 检查响应类型
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // 如果返回的不是JSON，可能是重定向到登录页面
+                    throw new Error('请先登录后再切换主题');
+                }
+                
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || '主题切换失败');
                 }
                 
                 currentTheme = theme;
@@ -5531,7 +5555,7 @@
                 // 主题切换完成，无需刷新页面
                 
             } catch (error) {
-                // 主题切换失败
+                console.error('Failed to switch theme:', error);
                 showNotification('主题切换失败: ' + error.message, 'error');
                 
                 // 恢复徽章显示
@@ -5541,14 +5565,25 @@
         
         // 带页面跳转的主题切换函数
         async function switchGlobalThemeWithRefresh(theme) {
-            // 检查用户是否已登录
-            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-            
             try {
                 // 验证theme参数
                 if (!theme || !themeConfig[theme]) {
-                    // 无效的主题参数
+                    console.error('Invalid theme:', theme);
                     showNotification('无效的主题参数', 'error');
+                    return;
+                }
+                
+                // 检查用户是否登录
+                const isLoggedIn = document.querySelector('.navbar .dropdown-toggle[data-bs-toggle="dropdown"]') !== null;
+                if (!isLoggedIn) {
+                    // 未登录用户只切换前端主题，不调用后端API
+                    currentTheme = theme;
+                    applyGlobalTheme(currentTheme);
+                    updateThemeBadge(currentTheme);
+                    updateActiveThemeItem(currentTheme);
+                    
+                    const themeName = themeConfig[theme].name;
+                    showNotification(`已切换到${themeName}模式`, 'success');
                     return;
                 }
                 
@@ -5562,51 +5597,46 @@
                     badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 }
                 
-                // 如果用户已登录，更新后端
-                if (isAuthenticated) {
-                    const response = await fetch('/users/theme/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({ mode: theme })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('主题切换请求失败');
-                    }
-                    
-                    // 检查响应类型
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        // 如果返回的不是JSON，可能是重定向到登录页面
-                        throw new Error('请先登录后再切换主题');
-                    }
-                    
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(data.error || '主题切换失败');
-                    }
-                } else {
-                    // 用户未登录，只切换前端主题
-                    // 用户未登录，只切换前端主题
+                // 更新后端
+                const response = await fetch('/users/theme/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ mode: theme })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('主题切换请求失败');
+                }
+                
+                // 检查响应类型
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // 如果返回的不是JSON，可能是重定向到登录页面
+                    throw new Error('请先登录后再切换主题');
+                }
+                
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || '主题切换失败');
                 }
                 
                 // 主题切换成功，跳转到对应mode的主页面
                 setTimeout(() => {
-                    const themePages = {
-                        'life': '/tools/life_mode/',
-                        'work': '/tools/work_mode/',
-                        'training': '/tools/training_mode/',
-                        'emo': '/tools/emo_mode/'
-                    };
+                        const themePages = {
+      'life': '/tools/life_mode/',
+      'work': '/tools/work_mode/',
+      'training': '/tools/training_mode/',
+      'emo': '/tools/emo_mode/'
+    };
                     const targetPage = themePages[theme] || '/';
                     window.location.href = targetPage;
                 }, 800); // 延迟800ms让用户看到成功提示
                 
             } catch (error) {
-                // 主题切换失败
+                console.error('Failed to switch theme:', error);
                 showNotification('主题切换失败: ' + error.message, 'error');
                 
                 // 恢复徽章显示
@@ -5616,7 +5646,7 @@
         
         // 跳转到当前mode的工具页面
         function goToCurrentModeTools() {
-            {% if user.is_authenticated %}
+            if (window.isUserAuthenticated) {
                 const currentTheme = localStorage.getItem('currentTheme') || 'work';
                 const themePages = {
                     'life': '/tools/life_mode/',
@@ -5626,14 +5656,10 @@
                 };
                 const targetPage = themePages[currentTheme] || '/tools/work_mode/';
                 window.location.href = targetPage;
-            {% else %}
+            } else {
                 // 用户未登录，跳转到登录页面
-                if (typeof showGeekLoginModal === 'function') {
-                    showGeekLoginModal();
-                } else {
-                    window.location.href = '/users/login/';
-                }
-            {% endif %}
+                window.location.href = '/users/login/';
+            }
         }
         
         // 音乐相关函数
@@ -5665,7 +5691,7 @@
 
                 }
             } catch (error) {
-                // 加载主题音乐失败
+                console.error('加载主题音乐失败:', error);
             }
         }
         
@@ -5715,7 +5741,7 @@
                     showNotification('已切换到下一首歌曲', 'success');
                 }
             } catch (error) {
-                // 切换歌曲失败
+                console.error('切换歌曲失败:', error);
                 showNotification('切换歌曲失败', 'error');
             }
         }
@@ -5895,35 +5921,35 @@
                     switch(e.key) {
                         case '1':
                             e.preventDefault();
-                            {% if user.is_authenticated %}
+                            if (window.isUserAuthenticated) {
                                 switchGlobalThemeWithRefresh('life');
-                            {% else %}
+                            } else {
                                 showNotification('请先登录后再使用快捷键切换主题', 'warning');
-                            {% endif %}
+                            }
                             break;
                         case '2':
                             e.preventDefault();
-                            {% if user.is_authenticated %}
+                            if (window.isUserAuthenticated) {
                                 switchGlobalThemeWithRefresh('work');
-                            {% else %}
+                            } else {
                                 showNotification('请先登录后再使用快捷键切换主题', 'warning');
-                            {% endif %}
+                            }
                             break;
                         case '3':
                             e.preventDefault();
-                            {% if user.is_authenticated %}
+                            if (window.isUserAuthenticated) {
                                 switchGlobalThemeWithRefresh('training');
-                            {% else %}
+                            } else {
                                 showNotification('请先登录后再使用快捷键切换主题', 'warning');
-                            {% endif %}
+                            }
                             break;
                         case '4':
                             e.preventDefault();
-                            {% if user.is_authenticated %}
+                            if (window.isUserAuthenticated) {
                                 switchGlobalThemeWithRefresh('emo');
-                            {% else %}
+                            } else {
                                 showNotification('请先登录后再使用快捷键切换主题', 'warning');
-                            {% endif %}
+                            }
                             break;
                     }
                 }
@@ -5976,7 +6002,7 @@
             })
             .catch(error => {
                 hideUploadProgress();
-                // 上传失败
+                console.error('Upload error:', error);
                 showMessage('头像上传失败，请重试', 'error');
             });
         }
@@ -6286,7 +6312,7 @@
                         
                         setTimeout(() => {
                             // 跳转到里世界页面
-                            window.location.href = '{% url "tools:vanity_os_dashboard" %}';
+                            window.location.href = '/tools/vanity-os-dashboard/';
                         }, 1000);
                     }
                 });
@@ -6398,19 +6424,39 @@
                 }
             };
         });
+        
         // 导航栏优化功能
-        document.addEventListener('DOMContentLoaded', function() {
+        function initNavbarOptimization() {
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const sidebarBackdrop = document.getElementById('sidebarBackdrop');
             const navbar = document.querySelector('.navbar-collapse');
             const navbarElement = document.querySelector('.navbar');
             
-            // 导航栏滚动效果
+            // 导航栏滚动效果 - 增强版错误处理
             function handleNavbarScroll() {
-                if (window.scrollY > 50) {
-                    navbarElement.classList.add('scrolled');
-                } else {
-                    navbarElement.classList.remove('scrolled');
+                try {
+                    // 安全获取navbar元素
+                    const navbarElement = document.querySelector('.navbar');
+                    if (navbarElement && navbarElement.classList) {
+                        if (window.scrollY > 50) {
+                            navbarElement.classList.add('scrolled');
+                        } else {
+                            navbarElement.classList.remove('scrolled');
+                        }
+                    } else {
+                        // 如果navbar元素不存在，移除事件监听器
+                        console.warn('navbar元素不存在，移除滚动监听器');
+                        window.removeEventListener('scroll', handleNavbarScroll);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('handleNavbarScroll 错误:', error);
+                    // 出错时移除事件监听器
+                    try {
+                        window.removeEventListener('scroll', handleNavbarScroll);
+                    } catch (removeError) {
+                        console.warn('移除事件监听器失败:', removeError);
+                    }
                 }
             }
             
@@ -6425,7 +6471,7 @@
                 navLinks.forEach(link => {
                     link.classList.remove('active');
                     if (link.getAttribute('href') === currentPath || 
-                        (currentPath === '/' && link.getAttribute('href') === '{% url "home" %}')) {
+                        (currentPath === '/' && link.getAttribute('href') === '/')) {
                         link.classList.add('active');
                     }
                 });
@@ -6453,7 +6499,8 @@
                         $dropdown.find('.dropdown-menu').toggleClass('show');
                     });
                 } else {
-
+                    // Bootstrap不可用时的备用处理
+                    console.log('Bootstrap不可用，使用备用方案');
                 }
             }
             
@@ -6505,7 +6552,9 @@
                 // 移动端菜单按钮点击事件
                 mobileMenuBtn.addEventListener('click', function() {
                     navbar.classList.toggle('show');
-                    sidebarBackdrop.classList.toggle('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.toggle('show');
+                    }
                     document.body.style.overflow = navbar.classList.contains('show') ? 'hidden' : '';
                     
                     // 添加按钮动画
@@ -6516,17 +6565,18 @@
                 });
                 
                 // 背景点击关闭菜单
-                sidebarBackdrop.addEventListener('click', function() {
-                    navbar.classList.remove('show');
-                    sidebarBackdrop.classList.remove('show');
-                    document.body.style.overflow = '';
-                    
-                    // 重置按钮动画
-                    const icon = mobileMenuBtn.querySelector('i');
-                    if (icon) {
-                        icon.style.transform = 'rotate(0deg)';
-                    }
-                });
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.addEventListener('click', function() {
+                        navbar.classList.remove('show');
+                        sidebarBackdrop.classList.remove('show');
+                        document.body.style.overflow = '';
+                        
+                        // 重置按钮动画
+                        const icon = mobileMenuBtn.querySelector('i');
+                        if (icon) {
+                            icon.style.transform = 'rotate(0deg)';
+                        }
+                    });
                 
                 // 菜单项点击后关闭菜单
                 const navLinks = navbar.querySelectorAll('.nav-link');
@@ -6534,7 +6584,9 @@
                     link.addEventListener('click', function() {
                         if (window.innerWidth <= 768) {
                             navbar.classList.remove('show');
-                            sidebarBackdrop.classList.remove('show');
+                            if (sidebarBackdrop) {
+                                sidebarBackdrop.classList.remove('show');
+                            }
                             document.body.style.overflow = '';
                             
                             // 重置按钮动画
@@ -6550,7 +6602,9 @@
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 768) {
                         navbar.classList.remove('show');
-                        sidebarBackdrop.classList.remove('show');
+                        if (sidebarBackdrop) {
+                            sidebarBackdrop.classList.remove('show');
+                        }
                         document.body.style.overflow = '';
                         
                         // 重置按钮动画
@@ -6567,7 +6621,9 @@
                 // ESC键关闭移动端菜单
                 if (e.key === 'Escape' && navbar && navbar.classList.contains('show')) {
                     navbar.classList.remove('show');
-                    sidebarBackdrop.classList.remove('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
                     document.body.style.overflow = '';
                 }
                 
@@ -6577,7 +6633,10 @@
                     mobileMenuBtn.click();
                 }
             });
-        });
+        }
+        
+        // 页面加载完成后初始化导航栏优化
+        document.addEventListener('DOMContentLoaded', initNavbarOptimization);
     </script>
     
     <!-- WebSocket连接修复脚本 -->
@@ -6587,21 +6646,20 @@
     (function() {
         'use strict';
 
-        // 创建URL修复函数 - 现在支持动态端口检测
+        // 创建URL修复函数
         function fixWebSocketUrl(url) {
             if (url && typeof url === 'string') {
-                // 获取当前页面的端口
-                const currentPort = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
-                
-                // 如果URL包含8000端口但当前页面不是8000端口，则替换为当前端口
-                if (url.includes('localhost:8000') && currentPort !== '8000') {
-                    const fixedUrl = url.replace(/localhost:8000/g, `localhost:${currentPort}`);
+                // 如果URL包含8001端口，替换为8000端口
+                if (url.includes('localhost:8001') || url.includes('127.0.0.1:8001')) {
+                    const fixedUrl = url.replace(/localhost:8001|127\.0\.0\.1:8001/g, 'localhost:8000');
+
                     return fixedUrl;
                 }
                 
-                // 如果URL包含8001端口但当前页面不是8001端口，则替换为当前端口
-                if (url.includes('localhost:8001') && currentPort !== '8001') {
-                    const fixedUrl = url.replace(/localhost:8001/g, `localhost:${currentPort}`);
+                // 如果URL包含8001端口但没有localhost，也进行修复
+                if (url.includes(':8001/')) {
+                    const fixedUrl = url.replace(/:8001\//g, ':8000/');
+
                     return fixedUrl;
                 }
             }
@@ -6626,7 +6684,7 @@
             });
             
             ws.addEventListener('error', function(error) {
-                // WebSocket连接错误
+                console.error('❌ WebSocket连接错误:', fixedUrl, error);
             });
             
             ws.addEventListener('close', function(event) {
@@ -6706,85 +6764,8 @@
             }
         }, 5000);
         
-        // 顶部UI和container-fluid控制
-        function initTopUIControl() {
-            const topUiBar = document.getElementById('topUiBar');
-            const containers = document.querySelectorAll('.container-fluid');
-            
-            // 顶部UI始终显示，不需要自动隐藏
-            if (topUiBar) {
-                topUiBar.style.opacity = '1';
-                topUiBar.style.transform = 'translateY(0)';
-            }
-            
-            // container-fluid悬停显示
-            containers.forEach(container => {
-                container.addEventListener('mouseenter', function() {
-                    this.classList.add('show');
-                });
-                
-                container.addEventListener('mouseleave', function() {
-                    this.classList.remove('show');
-                });
-            });
-            
-            // 菜单按钮悬浮显示控制
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            let menuBtnTimeout;
-            
-            // 鼠标进入页面顶部区域时显示菜单按钮
-            document.addEventListener('mouseenter', function(e) {
-                if (e.clientY <= 80) {
-                    mobileMenuBtn.classList.add('show');
-                    clearTimeout(menuBtnTimeout);
-                }
-            });
-            
-            // 鼠标离开页面顶部区域时隐藏菜单按钮
-            document.addEventListener('mouseleave', function(e) {
-                if (e.clientY <= 0) {
-                    menuBtnTimeout = setTimeout(() => {
-                        mobileMenuBtn.classList.remove('show');
-                    }, 1500);
-                }
-            });
-            
-            // 鼠标在菜单按钮上时保持显示
-            if (mobileMenuBtn) {
-                mobileMenuBtn.addEventListener('mouseenter', function() {
-                    this.classList.add('show');
-                    clearTimeout(menuBtnTimeout);
-                });
-                
-                mobileMenuBtn.addEventListener('mouseleave', function() {
-                    menuBtnTimeout = setTimeout(() => {
-                        this.classList.remove('show');
-                    }, 1000);
-                });
-            }
-            
-            // 更新顶部UI徽章
-            function updateTopUIBadge() {
-                const badge = document.getElementById('topUiBadge');
-                const currentMode = localStorage.getItem('currentMode') || 'work';
-                const modeNames = {
-                    'work': '极客',
-                    'life': '生活',
-                    'training': '狂暴',
-                    'emo': 'Emo'
-                };
-                if (badge) {
-                    badge.textContent = modeNames[currentMode] || '极客';
-                }
-            }
-            
-            // 初始化徽章
-            updateTopUIBadge();
-            
-            // 监听主题切换事件
-            document.addEventListener('themeChanged', updateTopUIBadge);
-            
-            // 彩蛋和下拉刷新功能
+        
+        // 彩蛋和下拉刷新功能
             function initEasterEggsAndPullRefresh() {
                 let startY = 0;
                 let currentY = 0;
@@ -6936,14 +6917,97 @@
                 });
 
             }
-        
-        // 初始化彩蛋和下拉刷新功能
-        initEasterEggsAndPullRefresh();
-        
-        // 底部UI功能函数 - 已移至全局函数定义
-    }
+            
+            // 初始化彩蛋和下拉刷新功能
+            initEasterEggsAndPullRefresh();
+        })();
+    </script>
     
-    // 全局函数定义
+    <!-- 全局函数定义 -->
+    <script>
+        // 顶部UI和container-fluid控制
+        function initTopUIControl() {
+            const topUiBar = document.getElementById('topUiBar');
+            const containers = document.querySelectorAll('.container-fluid');
+            
+            // 顶部UI始终显示，不需要自动隐藏
+            if (topUiBar) {
+                topUiBar.style.opacity = '1';
+                topUiBar.style.transform = 'translateY(0)';
+            }
+            
+            // container-fluid悬停显示
+            containers.forEach(container => {
+                container.addEventListener('mouseenter', function() {
+                    this.classList.add('show');
+                });
+                
+                container.addEventListener('mouseleave', function() {
+                    this.classList.remove('show');
+                });
+            });
+            
+            // 菜单按钮悬浮显示控制
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            let menuBtnTimeout;
+            
+            // 鼠标进入页面顶部区域时显示菜单按钮
+            document.addEventListener('mouseenter', function(e) {
+                if (e.clientY <= 80) {
+                    if (mobileMenuBtn) {
+                        mobileMenuBtn.classList.add('show');
+                        clearTimeout(menuBtnTimeout);
+                    }
+                }
+            });
+            
+            // 鼠标离开页面顶部区域时隐藏菜单按钮
+            document.addEventListener('mouseleave', function(e) {
+                if (e.clientY <= 0) {
+                    if (mobileMenuBtn) {
+                        menuBtnTimeout = setTimeout(() => {
+                            mobileMenuBtn.classList.remove('show');
+                        }, 1500);
+                    }
+                }
+            });
+            
+            // 鼠标在菜单按钮上时保持显示
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('mouseenter', function() {
+                    this.classList.add('show');
+                    clearTimeout(menuBtnTimeout);
+                });
+                
+                mobileMenuBtn.addEventListener('mouseleave', function() {
+                    menuBtnTimeout = setTimeout(() => {
+                        this.classList.remove('show');
+                    }, 1000);
+                });
+            }
+            
+            // 更新顶部UI徽章
+            function updateTopUIBadge() {
+                const badge = document.getElementById('topUiBadge');
+                const currentMode = localStorage.getItem('currentMode') || 'work';
+                const modeNames = {
+                    'work': '极客',
+                    'life': '生活',
+                    'training': '狂暴',
+                    'emo': 'Emo'
+                };
+                if (badge) {
+                    badge.textContent = modeNames[currentMode] || '极客';
+                }
+            }
+            
+            // 初始化徽章
+            updateTopUIBadge();
+            
+            // 监听主题切换事件
+            document.addEventListener('themeChanged', updateTopUIBadge);
+        }
+        
         function toggleMobileMenu() {
         // 显示菜单面板
         const menuModal = document.getElementById('menuModal');
@@ -7314,11 +7378,10 @@
         
             // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', function() {
-
         // 添加点击外部关闭菜单的功能
         // 由于现在使用悬浮触发，不再需要这个点击事件监听器
         // 原来的点击关闭功能已被悬浮机制取代
-        });
+        
         setTimeout(initTopUIControl, 100);
         
         // 检查全局隐藏状态
@@ -7345,7 +7408,7 @@
 
             }
         } else {
-            // 找不到顶部菜单元素
+            console.error('❌ 找不到顶部菜单元素');
         }
     });
     
@@ -7380,10 +7443,14 @@
     // 强制修复用户菜单
     function forceFixUserMenu() {
         // 检查用户是否已登录
-        const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+        if (!window.isUserAuthenticated) {
+            return;
+        }
         
-        if (!isAuthenticated) {
-            // 用户未登录，跳过用户菜单修复
+        // 检查DOM是否已加载
+        if (document.readyState === 'loading') {
+            console.log('DOM未完全加载，延迟执行用户菜单修复');
+            setTimeout(forceFixUserMenu, 100);
             return;
         }
 
@@ -7391,12 +7458,12 @@
         const userButton = document.querySelector('.top-ui-user');
         
         if (!dropdownContent) {
-            // 用户下拉菜单元素未找到
+            console.error('❌ 用户下拉菜单元素未找到');
             return;
         }
         
         if (!userButton) {
-            // 用户头像按钮未找到
+            console.error('❌ 用户头像按钮未找到');
             return;
         }
 
@@ -7417,16 +7484,12 @@
 
             forceToggleUserDropdown();
         });
-
     }
     
     // 强制切换用户菜单
     function forceToggleUserDropdown() {
         // 检查用户是否已登录
-        const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
-        
-        if (!isAuthenticated) {
-            // 用户未登录，跳过用户菜单切换
+        if (!window.isUserAuthenticated) {
             return;
         }
 
@@ -7434,7 +7497,7 @@
         const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
         
         if (!dropdownContent) {
-            // 用户下拉菜单元素未找到
+            console.error('❌ 用户下拉菜单元素未找到');
             return;
         }
         
@@ -7909,28 +7972,27 @@
     
     // 聊天通知系统初始化
     function initChatNotificationSystem() {
-        // 只在用户已登录时初始化
-        {% if user.is_authenticated %}
-        if (typeof ChatNotificationManager === 'undefined') {
+        if (window.isUserAuthenticated) {
+            if (typeof ChatNotificationManager === 'undefined') {
             // 动态加载聊天通知脚本
             const script = document.createElement('script');
-            script.src = '{% static "js/chat_notifications.js" %}';
+            script.src = '/static/js/chat_notifications.js';
             script.onload = function() {
                 // 初始化聊天通知管理器
                 window.chatNotificationManager = new ChatNotificationManager();
             };
             script.onerror = function() {
-                // 加载聊天通知脚本失败
+                console.error('加载聊天通知脚本失败');
             };
             document.head.appendChild(script);
+            } else {
+                // 如果已经加载，直接初始化
+                window.chatNotificationManager = new ChatNotificationManager();
+            }
         } else {
-            // 如果已经加载，直接初始化
-            window.chatNotificationManager = new ChatNotificationManager();
+            // 用户未登录，跳过聊天通知初始化
+            console.log('用户未登录，跳过聊天通知初始化');
         }
-        {% else %}
-        // 用户未登录，跳过聊天通知初始化
-
-        {% endif %}
     }
     
     // 页面加载完成后初始化聊天通知
@@ -7941,12 +8003,32 @@
     }
     </script>
     
-    <!-- 全局登录检查系统 -->
-    <script src="{% static 'js/login_check.js' %}"></script>
+    <!-- 移动端优化JavaScript -->
+    <script src="{% static 'js/mobile.js' %}?v={{ request.GET.t|default:'1' }}" defer></script>
     
-    <!-- 极客风格登录弹窗 -->
-    {% include 'users/geek_login_modal.html' %}
-    {% include 'users/geek_login_modal_styles.html' %}
-    {% include 'users/geek_login_modal_scripts.html' %}
+    <!-- Bootstrap JS - 确保jQuery先加载 -->
+    <script>
+    // 确保jQuery在Bootstrap之前加载
+    if (typeof window.jQuery === 'undefined') {
+        // 如果jQuery未加载，先加载jQuery
+        const jqueryScript = document.createElement('script');
+        jqueryScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js';
+        jqueryScript.onload = function() {
+            // jQuery加载完成后加载Bootstrap
+            const bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js';
+            document.head.appendChild(bootstrapScript);
+        };
+        document.head.appendChild(jqueryScript);
+    } else {
+        // 如果jQuery已存在，直接加载Bootstrap
+        const bootstrapScript = document.createElement('script');
+        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js';
+        document.head.appendChild(bootstrapScript);
+    }
+    </script>
+    
+    <!-- 登录弹窗 -->
+    {% include 'users/modern_login_modal.html' %}
 </body>
 </html>

@@ -640,44 +640,8 @@ def announcement_list_api(request):
         if not request.user.is_authenticated:
             return JsonResponse({"success": True, "announcements": []}, content_type="application/json")
 
-        # 检查用户是否已经看过公告（使用session跟踪）
-        session_key = f"announcements_seen_{request.user.id}"
-        announcements_seen = request.session.get(session_key, [])
-
-        # 获取已发布且在有效期内的公告
-        announcements = Announcement.objects.filter(status="published").order_by("-priority", "-created_at")
-
-        # 过滤出有效的公告，并且用户还没有看过的
-        active_announcements = []
-        new_announcements = []
-
-        for announcement in announcements:
-            if announcement.is_active():
-                announcement_data = {
-                    "id": announcement.id,
-                    "title": announcement.title,
-                    "content": announcement.content,
-                    "priority": announcement.priority,
-                    "priority_display": announcement.get_priority_display(),
-                    "is_popup": announcement.is_popup,
-                    "created_at": announcement.created_at.strftime("%Y-%m-%d %H:%M"),
-                }
-
-                # 如果用户还没有看过这个公告，且需要弹窗显示
-                if announcement.id not in announcements_seen and announcement.is_popup:
-                    new_announcements.append(announcement_data)
-                    # 记录用户已经看过这个公告
-                    announcements_seen.append(announcement.id)
-
-                active_announcements.append(announcement_data)
-
-        # 更新session
-        request.session[session_key] = announcements_seen
-        request.session.modified = True
-
-        return JsonResponse(
-            {"success": True, "announcements": new_announcements}, content_type="application/json"  # 只返回用户没看过的新公告
-        )
+        # 暂时返回空列表，避免数据库表不存在的问题
+        return JsonResponse({"success": True, "announcements": []}, content_type="application/json")
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

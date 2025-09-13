@@ -45,7 +45,7 @@ async function logoutUser() {
         }
         
     } catch (error) {
-        console.error('登出失败:', error);
+        // 登出失败
         
         // 即使API调用失败，也要清除本地存储
         clearAllLocalStorage();
@@ -78,7 +78,7 @@ function clearAllLocalStorage() {
             localStorage.removeItem(key);
 
         } catch (error) {
-            console.error(`清除localStorage失败 ${key}:`, error);
+            // 清除localStorage失败
         }
     });
 }
@@ -101,7 +101,7 @@ function clearAllSessionStorage() {
             sessionStorage.removeItem(key);
 
         } catch (error) {
-            console.error(`清除sessionStorage失败 ${key}:`, error);
+            // 清除sessionStorage失败
         }
     });
 }

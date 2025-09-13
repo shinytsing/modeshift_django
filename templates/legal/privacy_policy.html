@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}隐私政策 - ModeShift{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 页面背景 */
+body {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(80, 80, 120, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(120, 80, 120, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(80, 120, 160, 0.3) 0%, transparent 50%);
+    z-index: -1;
+    animation: backgroundShift 20s ease infinite;
+}
+
+@keyframes backgroundShift {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.legal-content {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 3rem;
+    line-height: 1.7;
+    color: #1a202c;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.legal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 300% 100%;
+    animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.legal-content h1 {
+    color: #1a202c;
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+}
+
+.legal-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.legal-content h2 {
+    color: #1a202c;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.legal-content h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.legal-content h3 {
+    color: #2d3748;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.legal-content p {
+    margin-bottom: 1.2rem;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.legal-content ul, .legal-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.legal-content li {
+    margin-bottom: 0.8rem;
+    color: #2d3748;
+    position: relative;
+}
+
+.legal-content ul li::marker {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.contact-info {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    margin: 3rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.contact-info h3 {
+    color: #1a202c;
+    margin-top: 0;
+    font-size: 1.3rem;
+}
+
+.last-updated {
+    font-style: italic;
+    color: #4a5568;
+    text-align: right;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.data-table th, .data-table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-content">
+    <h1>隐私政策</h1>
+    
+    <p><strong>生效日期：</strong>2024年12月29日</p>
+    
+    <h2>1. 引言</h2>
+    <p>ModeShift（以下简称"我们"）非常重视您的隐私权。本隐私政策详细说明了我们如何收集、使用、存储和保护您的个人信息。通过使用我们的服务，您同意本隐私政策中描述的数据处理做法。</p>
+    
+    <h2>2. 我们收集的信息</h2>
+    
+    <h3>2.1 您主动提供的信息</h3>
+    <ul>
+        <li><strong>账户信息：</strong>用户名、邮箱地址、密码（加密存储）</li>
+        <li><strong>个人资料：</strong>头像、昵称、个人简介等</li>
+        <li><strong>内容数据：</strong>您创建的任务、笔记、文件等</li>
+        <li><strong>通信记录：</strong>与AI助手的对话内容</li>
+    </ul>
+    
+    <h3>2.2 自动收集的信息</h3>
+    <ul>
+        <li><strong>使用数据：</strong>访问时间、页面浏览、功能使用情况</li>
+        <li><strong>设备信息：</strong>IP地址、浏览器类型、操作系统</li>
+        <li><strong>日志数据：</strong>服务器日志、错误报告</li>
+        <li><strong>Cookie数据：</strong>会话信息、偏好设置</li>
+    </ul>
+    
+    <h2>3. 信息使用目的</h2>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>信息类型</th>
+                <th>使用目的</th>
+                <th>法律依据</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>账户信息</td>
+                <td>用户认证、账户管理</td>
+                <td>合同履行</td>
+            </tr>
+            <tr>
+                <td>使用数据</td>
+                <td>服务改进、功能优化</td>
+                <td>合法利益</td>
+            </tr>
+            <tr>
+                <td>通信记录</td>
+                <td>AI服务提供、个性化体验</td>
+                <td>用户同意</td>
+            </tr>
+            <tr>
+                <td>设备信息</td>
+                <td>安全防护、反欺诈</td>
+                <td>合法利益</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>4. 信息共享</h2>
+    <p>我们不会出售、出租或以其他方式披露您的个人信息，除非：</p>
+    <ul>
+        <li>获得您的明确同意</li>
+        <li>法律要求或法院命令</li>
+        <li>保护我们的权利和财产</li>
+        <li>与可信的第三方服务提供商合作（在严格保密协议下）</li>
+    </ul>
+    
+    <h2>5. 数据安全</h2>
+    <h3>5.1 技术措施</h3>
+    <ul>
+        <li>使用HTTPS加密传输</li>
+        <li>数据库加密存储</li>
+        <li>定期安全更新</li>
+        <li>访问控制和身份验证</li>
+    </ul>
+    
+    <h3>5.2 管理措施</h3>
+    <ul>
+        <li>员工隐私培训</li>
+        <li>数据访问权限限制</li>
+        <li>定期安全审计</li>
+        <li>事件响应计划</li>
+    </ul>
+    
+    <h2>6. 数据保留</h2>
+    <p>我们仅在实现收集目的所需的时间内保留您的个人信息：</p>
+    <ul>
+        <li><strong>账户数据：</strong>账户存在期间</li>
+        <li><strong>使用日志：</strong>12个月</li>
+        <li><strong>通信记录：</strong>根据用户设置（可删除）</li>
+        <li><strong>法律要求：</strong>根据相关法律要求</li>
+    </ul>
+    
+    <h2>7. 您的权利</h2>
+    <p>根据适用的隐私法律，您享有以下权利：</p>
+    <ul>
+        <li><strong>访问权：</strong>查看我们持有的您的个人信息</li>
+        <li><strong>更正权：</strong>更正不准确或不完整的信息</li>
+        <li><strong>删除权：</strong>要求删除您的个人信息</li>
+        <li><strong>限制处理权：</strong>限制我们处理您的信息</li>
+        <li><strong>数据可携权：</strong>以结构化格式获取您的数据</li>
+        <li><strong>反对权：</strong>反对某些类型的数据处理</li>
+    </ul>
+    
+    <h2>8. Cookie和跟踪技术</h2>
+    <p>我们使用Cookie和类似技术来：</p>
+    <ul>
+        <li>记住您的登录状态</li>
+        <li>保存您的偏好设置</li>
+        <li>分析网站使用情况</li>
+        <li>提供个性化体验</li>
+    </ul>
+    <p>您可以通过浏览器设置管理Cookie偏好。</p>
+    
+    <h2>9. 第三方服务</h2>
+    <p>我们的服务可能包含第三方链接或集成。这些第三方服务有自己的隐私政策，我们建议您仔细阅读。</p>
+    
+    <h2>10. 儿童隐私</h2>
+    <p>我们的服务不面向13岁以下的儿童。我们不会故意收集儿童的个人信息。如果发现收集了儿童信息，我们将立即删除。</p>
+    
+    <h2>11. 国际数据传输</h2>
+    <p>您的信息可能被传输到您所在国家/地区以外的地方进行处理。我们将确保适当的保护措施到位。</p>
+    
+    <h2>12. 政策更新</h2>
+    <p>我们可能会不时更新本隐私政策。重大变更将通过服务内通知或电子邮件告知您。继续使用服务即表示您接受更新后的政策。</p>
+    
+    <div class="contact-info">
+        <h3>联系我们</h3>
+        <p>如果您对本隐私政策有任何疑问，或希望行使您的隐私权利，请通过以下方式联系我们：</p>
+        <p><strong>邮箱：</strong>1009383129@qq.com</p>
+        <p>我们将在30天内回复您的请求。</p>
+    </div>
+    
+    <div class="last-updated">
+        <p>最后更新：2024年12月29日</p>
+    </div>
+</div>
+{% endblock %}

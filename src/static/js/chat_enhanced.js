@@ -1,7 +1,7 @@
 // Chat Enhanced.js - 增强聊天功能JavaScript文件
 // 这个文件用于处理增强聊天相关的功能
 
-console.log('Chat Enhanced.js loaded');
+// Chat Enhanced.js loaded
 
 // 聊天增强功能
 class ChatEnhanced {
@@ -13,7 +13,7 @@ class ChatEnhanced {
     }
 
     init() {
-        console.log('初始化增强聊天功能，房间ID:', this.roomId);
+        // 初始化增强聊天功能
         this.setupEventListeners();
         this.connectWebSocket();
     }
@@ -35,7 +35,7 @@ class ChatEnhanced {
 
     connectWebSocket() {
         if (!this.roomId) {
-            console.error('房间ID未设置');
+            // 房间ID未设置
             return;
         }
 
@@ -46,7 +46,7 @@ class ChatEnhanced {
             this.websocket = new WebSocket(wsUrl);
             
             this.websocket.onopen = () => {
-                console.log('WebSocket连接已建立');
+                // WebSocket连接已建立
                 this.isConnected = true;
                 this.processMessageQueue();
             };
@@ -56,18 +56,18 @@ class ChatEnhanced {
             };
             
             this.websocket.onclose = () => {
-                console.log('WebSocket连接已关闭');
+                // WebSocket连接已关闭
                 this.isConnected = false;
                 // 尝试重连
                 setTimeout(() => this.connectWebSocket(), 3000);
             };
             
             this.websocket.onerror = (error) => {
-                console.error('WebSocket错误:', error);
+                // WebSocket错误
             };
             
         } catch (error) {
-            console.error('WebSocket连接失败:', error);
+            // WebSocket连接失败
         }
     }
 
@@ -96,10 +96,10 @@ class ChatEnhanced {
     handleMessage(data) {
         try {
             const message = JSON.parse(data);
-            console.log('收到消息:', message);
+            // 收到消息
             // 这里可以添加消息处理逻辑
         } catch (error) {
-            console.error('消息解析错误:', error);
+            // 消息解析错误
         }
     }
 

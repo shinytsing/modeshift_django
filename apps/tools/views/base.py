@@ -22,7 +22,7 @@ def is_admin(user):
 
 def admin_required(view_func):
     """管理员权限装饰器"""
-    decorated_view = user_passes_test(is_admin, login_url="/users/login/")(view_func)
+    decorated_view = user_passes_test(is_admin, login_url="/")(view_func)
     return decorated_view
 
 

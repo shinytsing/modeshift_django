@@ -1,0 +1,742 @@
+<script>
+// 极客风格登录弹窗JavaScript功能
+
+// 全局变量
+let matrixAnimation;
+let particlesAnimation;
+let typingAnimation;
+
+// 矩阵背景动画
+class MatrixAnimation {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:,.<>?';
+        this.charArray = this.chars.split('');
+        this.fontSize = 14;
+        this.columns = Math.floor(canvas.width / this.fontSize);
+        this.drops = [];
+        
+        // 初始化水滴
+        for (let i = 0; i < this.columns; i++) {
+            this.drops[i] = 1;
+        }
+        
+        this.animate();
+    }
+    
+    animate() {
+        // 半透明黑色背景，创造拖尾效果
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.ctx.fillStyle = '#0F0';
+        this.ctx.font = this.fontSize + 'px monospace';
+        
+        for (let i = 0; i < this.drops.length; i++) {
+            const text = this.charArray[Math.floor(Math.random() * this.charArray.length)];
+            this.ctx.fillText(text, i * this.fontSize, this.drops[i] * this.fontSize);
+            
+            if (this.drops[i] * this.fontSize > this.canvas.height && Math.random() > 0.975) {
+                this.drops[i] = 0;
+            }
+            this.drops[i]++;
+        }
+        
+        matrixAnimation = requestAnimationFrame(() => this.animate());
+    }
+    
+    destroy() {
+        if (matrixAnimation) {
+            cancelAnimationFrame(matrixAnimation);
+        }
+    }
+}
+
+// 粒子效果动画
+class ParticlesAnimation {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.particleCount = 50;
+        
+        this.initParticles();
+        this.animate();
+    }
+    
+    initParticles() {
+        for (let i = 0; i < this.particleCount; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                size: Math.random() * 3 + 1,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+    }
+    
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.particles.forEach(particle => {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            
+            // 边界检查
+            if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+            if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+            
+            // 绘制粒子
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(0, 255, 255, ${particle.opacity})`;
+            this.ctx.fill();
+            
+            // 连接附近的粒子
+            this.particles.forEach(otherParticle => {
+                const dx = particle.x - otherParticle.x;
+                const dy = particle.y - otherParticle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 100) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(particle.x, particle.y);
+                    this.ctx.lineTo(otherParticle.x, otherParticle.y);
+                    this.ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 * (1 - distance / 100)})`;
+                    this.ctx.stroke();
+                }
+            });
+        });
+        
+        particlesAnimation = requestAnimationFrame(() => this.animate());
+    }
+    
+    destroy() {
+        if (particlesAnimation) {
+            cancelAnimationFrame(particlesAnimation);
+        }
+    }
+}
+
+// 打字机效果
+class TypewriterEffect {
+    constructor(element, text, speed = 50) {
+        this.element = element;
+        this.text = text;
+        this.speed = speed;
+        this.currentIndex = 0;
+    }
+    
+    start() {
+        this.element.textContent = '';
+        this.type();
+    }
+    
+    type() {
+        if (this.currentIndex < this.text.length) {
+            this.element.textContent += this.text.charAt(this.currentIndex);
+            this.currentIndex++;
+            setTimeout(() => this.type(), this.speed);
+        }
+    }
+}
+
+// 密码强度检测函数（增强版）
+function checkPasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    // 检查常见弱密码
+    const weakPasswords = [
+        "password", "123456", "qwerty", "admin", "12345678", "password123",
+        "123456789", "1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm",
+        "111111", "000000", "123123", "abc123", "password1", "admin123",
+        "root", "user", "guest", "test", "demo", "sample", "default",
+        "1234", "12345", "1234567", "123456789", "987654321", "654321",
+        "qwerty123", "asdf1234", "zxcv1234", "iloveyou", "welcome",
+        "monkey", "dragon", "master", "hello", "letmein", "princess",
+        "qazwsx", "michael", "jordan", "harley", "ranger", "shadow",
+        "sunshine", "superman", "qwertyui", "trustno1", "batman"
+    ];
+    
+    if (weakPasswords.includes(password.toLowerCase())) {
+        return {
+            strength: 'weak',
+            strengthText: 'CRITICAL',
+            score: 0,
+            feedback: ['密码过于简单，请选择更复杂的密码']
+        };
+    }
+    
+    // 长度检查
+    if (password.length >= 8) {
+        score += 1;
+    } else {
+        feedback.push('至少8个字符');
+    }
+    
+    // 包含小写字母
+    if (/[a-z]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含小写字母');
+    }
+    
+    // 包含大写字母
+    if (/[A-Z]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含大写字母');
+    }
+    
+    // 包含数字
+    if (/\d/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含数字');
+    }
+    
+    // 包含特殊字符
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        score += 1;
+    } else {
+        feedback.push('包含特殊字符');
+    }
+    
+    // 检查连续重复字符
+    if (/(.)\1{2,}/.test(password)) {
+        score -= 1;
+        feedback.push('避免连续重复字符');
+    }
+    
+    // 检查连续数字或字母
+    if (/123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password)) {
+        score -= 1;
+        feedback.push('避免连续字符');
+    }
+    
+    // 检查键盘模式
+    const keyboardPatterns = [
+        'qwerty', 'asdfgh', 'zxcvbn', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm',
+        'qazwsx', 'wsxedc', 'edcrfv', 'rfvtgb', 'tgbyhn', 'yhnujm'
+    ];
+    
+    for (let pattern of keyboardPatterns) {
+        if (password.toLowerCase().includes(pattern)) {
+            score -= 1;
+            feedback.push('避免键盘模式');
+            break;
+        }
+    }
+    
+    // 确保分数不为负数
+    score = Math.max(0, score);
+    
+    // 根据分数确定强度等级
+    let strength = '';
+    let strengthText = '';
+    
+    if (score <= 1) {
+        strength = 'weak';
+        strengthText = 'CRITICAL';
+    } else if (score <= 2) {
+        strength = 'fair';
+        strengthText = 'WEAK';
+    } else if (score <= 3) {
+        strength = 'good';
+        strengthText = 'GOOD';
+    } else {
+        strength = 'strong';
+        strengthText = 'STRONG';
+    }
+    
+    return {
+        strength: strength,
+        strengthText: strengthText,
+        score: score,
+        feedback: feedback
+    };
+}
+
+// 更新密码强度显示
+function updatePasswordStrength(inputId, strengthId, fillId, textId) {
+    const passwordInput = document.getElementById(inputId);
+    const strengthDiv = document.getElementById(strengthId);
+    const strengthFill = document.getElementById(fillId);
+    const strengthText = document.getElementById(textId);
+    
+    if (!passwordInput || !strengthDiv) return;
+    
+    const password = passwordInput.value;
+    
+    if (password.length === 0) {
+        strengthDiv.style.display = 'none';
+        return;
+    }
+    
+    strengthDiv.style.display = 'block';
+    
+    const result = checkPasswordStrength(password);
+    
+    // 移除所有强度类
+    strengthDiv.className = 'password-strength';
+    // 添加新的强度类
+    strengthDiv.classList.add(result.strength);
+    
+    // 更新文本
+    if (strengthText) {
+        strengthText.textContent = `SECURITY LEVEL: ${result.strengthText}`;
+    }
+}
+
+// 显示极客登录弹窗
+function showGeekLoginModal() {
+    const modal = document.getElementById('geekLoginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // 初始化动画
+        initAnimations();
+        
+        // 添加终端启动音效（可选）
+        playTerminalSound();
+        
+        // 显示欢迎消息
+        showTerminalMessage('[SYSTEM] 正在初始化认证系统...', 'info');
+        setTimeout(() => {
+            showTerminalMessage('[READY] 系统就绪，请输入认证信息', 'success');
+        }, 1000);
+    }
+}
+
+// 初始化动画效果
+function initAnimations() {
+    // 矩阵背景
+    const matrixCanvas = document.getElementById('matrixCanvas');
+    if (matrixCanvas) {
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+        new MatrixAnimation(matrixCanvas);
+    }
+    
+    // 粒子效果
+    const particlesCanvas = document.getElementById('particlesCanvas');
+    if (particlesCanvas) {
+        particlesCanvas.width = window.innerWidth;
+        particlesCanvas.height = window.innerHeight;
+        new ParticlesAnimation(particlesCanvas);
+    }
+}
+
+// 播放终端音效（可选）
+function playTerminalSound() {
+    // 这里可以添加音效，比如终端启动声音
+    // 由于浏览器限制，需要用户交互才能播放音频
+    console.log('[AUDIO] Terminal startup sound would play here');
+}
+
+// 显示终端消息
+function showTerminalMessage(message, type = 'info') {
+    const messagesContainer = document.getElementById('terminalMessages');
+    if (messagesContainer) {
+        // 清空所有现有消息
+        messagesContainer.innerHTML = '';
+        
+        const messageLine = document.createElement('div');
+        messageLine.className = 'message-line';
+        
+        const prefix = document.createElement('span');
+        prefix.className = 'message-prefix';
+        prefix.textContent = type.toUpperCase();
+        
+        const text = document.createElement('span');
+        text.className = `message-text message-${type}`;
+        text.textContent = message;
+        
+        messageLine.appendChild(prefix);
+        messageLine.appendChild(text);
+        messagesContainer.appendChild(messageLine);
+        
+        // 滚动到底部
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// 显示错误动画提示
+function showErrorAnimation(message, type = 'error') {
+    const messagesContainer = document.getElementById('terminalMessages');
+    if (!messagesContainer) return;
+    
+    // 清空现有消息
+    messagesContainer.innerHTML = '';
+    
+    // 创建错误消息行
+    const messageLine = document.createElement('div');
+    messageLine.className = 'message-line error-animation';
+    
+    const prefix = document.createElement('span');
+    prefix.className = 'message-prefix error-prefix';
+    prefix.textContent = type.toUpperCase();
+    
+    const text = document.createElement('span');
+    text.className = `message-text message-${type} error-text`;
+    text.textContent = message;
+    
+    messageLine.appendChild(prefix);
+    messageLine.appendChild(text);
+    messagesContainer.appendChild(messageLine);
+    
+    // 添加闪烁动画
+    messageLine.style.animation = 'errorBlink 0.5s ease-in-out 3';
+    
+    // 添加震动效果
+    const modal = document.getElementById('geekLoginModal');
+    if (modal) {
+        modal.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+            modal.style.animation = '';
+        }, 500);
+    }
+    
+    // 添加红色边框闪烁
+    const formContainer = document.querySelector('.geek-modal-container');
+    if (formContainer) {
+        formContainer.style.border = '2px solid #ff0000';
+        formContainer.style.animation = 'borderFlash 0.5s ease-in-out 3';
+        setTimeout(() => {
+            formContainer.style.border = '';
+            formContainer.style.animation = '';
+        }, 1500);
+    }
+    
+    // 播放错误音效（如果支持）
+    playErrorSound();
+    
+    // 3秒后恢复正常状态
+    setTimeout(() => {
+        messageLine.style.animation = '';
+    }, 1500);
+}
+
+// 播放错误音效
+function playErrorSound() {
+    // 创建简单的错误音效
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(100, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+        console.log('[AUDIO] 错误音效播放失败:', error);
+    }
+}
+
+// 切换认证标签页
+function switchAuthTab(tab) {
+    // 更新标签页状态
+    document.querySelectorAll('.auth-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    
+    // 显示对应表单
+    document.querySelectorAll('.auth-form-container').forEach(form => {
+        form.style.display = 'none';
+    });
+    document.getElementById('geek' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Form').style.display = 'block';
+    
+    // 显示切换消息
+    const action = tab === 'login' ? '登录' : '注册';
+    showTerminalMessage(`[ACTION] 切换到${action}模式`, 'info');
+}
+
+// 极客登录表单提交
+async function submitGeekLoginForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('geekLoginFormElement');
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    
+    if (!username || !password) {
+        showErrorAnimation('[ERROR] 请填写用户名和密码', 'error');
+        return;
+    }
+    
+    showTerminalMessage('[AUTH] 正在验证用户凭据...', 'info');
+    
+    try {
+        // 获取CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+        
+        const response = await fetch('/users/api/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showTerminalMessage('[SUCCESS] 认证成功！正在重定向...', 'success');
+            setTimeout(() => {
+                closeGeekLoginModal();
+                window.location.reload();
+            }, 1500);
+        } else {
+            showErrorAnimation(`[ERROR] ${data.message || '认证失败'}`, 'error');
+        }
+    } catch (error) {
+        console.error('登录错误:', error);
+        showErrorAnimation('[ERROR] 网络连接失败，请重试', 'error');
+    }
+}
+
+// 极客注册表单提交
+async function submitGeekRegisterForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('geekRegisterFormElement');
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('password_confirm');
+    const email = formData.get('email');
+    
+    if (!username || !password || !passwordConfirm) {
+        showErrorAnimation('[ERROR] 请填写所有必填字段', 'error');
+        return;
+    }
+    
+    if (password !== passwordConfirm) {
+        showErrorAnimation('[ERROR] 两次输入的密码不一致', 'error');
+        return;
+    }
+    
+    if (password.length < 8) {
+        showErrorAnimation('[ERROR] 密码必须至少8位', 'error');
+        return;
+    }
+    
+    showTerminalMessage('[REGISTER] 正在创建新用户账户...', 'info');
+    
+    try {
+        // 获取CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+        
+        const response = await fetch('/users/api/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showTerminalMessage('[SUCCESS] 账户创建成功！正在重定向...', 'success');
+            setTimeout(() => {
+                closeGeekLoginModal();
+                // 跳转到指定页面或首页
+                const redirectUrl = data.redirect_url || '/';
+                window.location.href = redirectUrl;
+            }, 1500);
+        } else {
+            showErrorAnimation(`[ERROR] ${data.message || '注册失败'}`, 'error');
+        }
+    } catch (error) {
+        console.error('注册错误:', error);
+        showErrorAnimation('[ERROR] 网络连接失败，请重试', 'error');
+    }
+}
+
+// 关闭极客登录弹窗
+function closeGeekLoginModal() {
+    const modal = document.getElementById('geekLoginModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        
+        // 清理动画
+        if (matrixAnimation) {
+            cancelAnimationFrame(matrixAnimation);
+        }
+        if (particlesAnimation) {
+            cancelAnimationFrame(particlesAnimation);
+        }
+        
+        showTerminalMessage('[SYSTEM] 认证系统已关闭', 'info');
+    }
+}
+
+// 键盘快捷键处理
+function handleKeyboardShortcuts(event) {
+    const modal = document.getElementById('geekLoginModal');
+    if (!modal || modal.style.display === 'none') return;
+    
+    // 检查event.key是否存在
+    if (!event || !event.key) return;
+    
+    switch(event.key.toLowerCase()) {
+        case 'escape':
+            closeGeekLoginModal();
+            break;
+        case 'l':
+            if (!event.ctrlKey && !event.altKey) {
+                event.preventDefault();
+                switchAuthTab('login');
+            }
+            break;
+        case 'r':
+            if (!event.ctrlKey && !event.altKey) {
+                event.preventDefault();
+                switchAuthTab('register');
+            }
+            break;
+        case 'g':
+            if (!event.ctrlKey && !event.altKey) {
+                event.preventDefault();
+                initiateGoogleAuth();
+            }
+            break;
+    }
+}
+
+// Google认证
+function initiateGoogleAuth() {
+    showTerminalMessage('[OAUTH] 正在初始化Google认证...', 'info');
+    
+    // 重定向到Google OAuth登录
+    setTimeout(() => {
+        showTerminalMessage('[REDIRECT] 跳转到Google认证页面...', 'info');
+        window.location.href = '/accounts/google/login/';
+    }, 1000);
+}
+
+// 显示服务条款
+function showTermsOfService() {
+    const modal = document.getElementById('termsModal');
+    if (modal) {
+        modal.style.display = 'block';
+        showTerminalMessage('[LEGAL] 正在加载服务条款...', 'info');
+    }
+}
+
+// 显示隐私政策
+function showPrivacyPolicy() {
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'block';
+        showTerminalMessage('[LEGAL] 正在加载隐私政策...', 'info');
+    }
+}
+
+// 关闭服务条款弹窗
+function closeTermsModal() {
+    const modal = document.getElementById('termsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 关闭隐私政策弹窗
+function closePrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 绑定注册表单密码强度检测
+    const registerPasswordInput = document.getElementById('geekRegisterPasswordInput');
+    if (registerPasswordInput) {
+        registerPasswordInput.addEventListener('input', function() {
+            updatePasswordStrength(
+                'geekRegisterPasswordInput',
+                'geekRegisterPasswordStrength',
+                'geekRegisterStrengthFill',
+                'geekRegisterStrengthText'
+            );
+        });
+    }
+    
+    // 绑定键盘快捷键
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    
+    // 绑定弹窗关闭事件
+    const modal = document.getElementById('geekLoginModal');
+    if (modal) {
+        // 点击背景关闭弹窗
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeGeekLoginModal();
+            }
+        });
+    }
+    
+    // 窗口大小改变时重新初始化动画
+    window.addEventListener('resize', function() {
+        const matrixCanvas = document.getElementById('matrixCanvas');
+        const particlesCanvas = document.getElementById('particlesCanvas');
+        
+        if (matrixCanvas) {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+        }
+        
+        if (particlesCanvas) {
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+        }
+    });
+    
+    // 初始化终端状态
+    showTerminalMessage('[INIT] ModeShift Terminal v2.0.1 已启动', 'success');
+    showTerminalMessage('[INFO] 使用键盘快捷键: [L]登录 [R]注册 [G]Google [ESC]关闭', 'info');
+});
+
+// 全局函数，供外部调用
+window.showGeekLoginModal = showGeekLoginModal;
+window.closeGeekLoginModal = closeGeekLoginModal;
+window.switchAuthTab = switchAuthTab;
+window.submitGeekLoginForm = submitGeekLoginForm;
+window.submitGeekRegisterForm = submitGeekRegisterForm;
+window.initiateGoogleAuth = initiateGoogleAuth;
+window.showTermsOfService = showTermsOfService;
+window.showPrivacyPolicy = showPrivacyPolicy;
+window.closeTermsModal = closeTermsModal;
+window.closePrivacyModal = closePrivacyModal;
+</script>

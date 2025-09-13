@@ -1,0 +1,279 @@
+<!-- 极客风格登录弹窗 -->
+<div id="geekLoginModal" class="geek-login-modal" style="display: none;">
+  <!-- 矩阵风格背景 -->
+  <div class="matrix-background">
+    <canvas id="matrixCanvas"></canvas>
+  </div>
+  
+  <!-- 粒子效果背景 -->
+  <div class="particles-background">
+    <canvas id="particlesCanvas"></canvas>
+  </div>
+  
+  <div class="modal-backdrop" onclick="closeGeekLoginModal()"></div>
+  
+  <div class="geek-modal-container">
+    <!-- 终端风格标题栏 -->
+    <div class="terminal-header">
+      <div class="terminal-controls">
+        <div class="control-btn close-btn" onclick="closeGeekLoginModal()"></div>
+        <div class="control-btn minimize-btn"></div>
+        <div class="control-btn maximize-btn"></div>
+      </div>
+      <div class="terminal-title">
+        <span class="terminal-icon">⚡</span>
+        <span class="terminal-text">ModeShift Terminal v2.0.1</span>
+        <span class="terminal-status">[ONLINE]</span>
+      </div>
+    </div>
+    
+    <!-- 终端内容区域 -->
+    <div class="terminal-content">
+      <!-- ASCII艺术Logo -->
+      <div class="ascii-logo">
+        <pre class="ascii-art">
+    ███╗   ███╗ ██████╗ ██████╗ ███████╗███████╗██╗  ██╗██╗████████╗
+    ████╗ ████║██╔═══██╗██╔══██╗██╔════╝██╔════╝██║  ██║██║╚══██╔══╝
+    ██╔████╔██║██║   ██║██║  ██║█████╗  ███████╗███████║██║   ██║   
+    ██║╚██╔╝██║██║   ██║██║  ██║██╔══╝  ╚════██║██╔══██║██║   ██║   
+    ██║ ╚═╝ ██║╚██████╔╝██████╔╝███████╗███████║██║  ██║██║   ██║   
+    ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝
+        </pre>
+      </div>
+      
+      <!-- 命令行提示符 -->
+      <div class="command-prompt">
+        <span class="prompt-user">root@modeshift</span>
+        <span class="prompt-separator">:</span>
+        <span class="prompt-path">~/auth</span>
+        <span class="prompt-separator">$</span>
+        <span class="typing-cursor">█</span>
+      </div>
+      
+      <!-- 消息显示区域 -->
+      <div class="terminal-messages" id="terminalMessages">
+      </div>
+      
+      <!-- 认证标签页 -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">
+          <span class="tab-icon">🔐</span>
+          <span class="tab-text">LOGIN</span>
+          <span class="tab-shortcut">[L]</span>
+        </button>
+        <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">
+          <span class="tab-icon">👤</span>
+          <span class="tab-text">REGISTER</span>
+          <span class="tab-shortcut">[R]</span>
+        </button>
+      </div>
+      
+      <!-- 登录表单 -->
+      <div class="auth-form-container" id="geekLoginForm">
+        <form method="POST" class="geek-form" id="geekLoginFormElement" onsubmit="submitGeekLoginForm(event)">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="login">
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">👤</span>
+              <span class="label-text">USERNAME:</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="text" name="username" class="geek-input" placeholder="输入用户名..." required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">🔑</span>
+              <span class="label-text">PASSWORD:</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="password" name="password" class="geek-input" placeholder="输入密码..." required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <button type="submit" class="geek-btn primary">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">EXECUTE LOGIN</span>
+            <span class="btn-shortcut">[ENTER]</span>
+          </button>
+          
+          <!-- Google OAuth登录 -->
+          <div class="oauth-divider">
+            <span class="divider-text">OR</span>
+          </div>
+          
+          <a href="{% url 'google_login' %}" class="geek-btn google-oauth">
+            <span class="btn-icon">🔍</span>
+            <span class="btn-text">GOOGLE AUTH</span>
+            <span class="btn-shortcut">[G]</span>
+          </a>
+        </form>
+      </div>
+      
+      <!-- 注册表单 -->
+      <div class="auth-form-container" id="geekRegisterForm" style="display: none;">
+        <form method="POST" class="geek-form" id="geekRegisterFormElement" onsubmit="submitGeekRegisterForm(event)">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="register">
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">👤</span>
+              <span class="label-text">USERNAME:</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="text" name="username" class="geek-input" placeholder="输入用户名..." required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">🔑</span>
+              <span class="label-text">PASSWORD:</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="password" name="password" class="geek-input" placeholder="输入密码..." required id="geekRegisterPasswordInput">
+              <div class="input-glow"></div>
+            </div>
+            <!-- 密码强度指示器 -->
+            <div class="password-strength" id="geekRegisterPasswordStrength" style="display: none;">
+              <div class="strength-bar">
+                <div class="strength-fill" id="geekRegisterStrengthFill"></div>
+              </div>
+              <div class="strength-text" id="geekRegisterStrengthText">SECURITY LEVEL: UNKNOWN</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">🔒</span>
+              <span class="label-text">CONFIRM PASSWORD:</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="password" name="password_confirm" class="geek-input" placeholder="确认密码..." required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-label">
+              <span class="label-icon">📧</span>
+              <span class="label-text">EMAIL (OPTIONAL):</span>
+            </div>
+            <div class="geek-input-wrapper">
+              <span class="input-prefix">></span>
+              <input type="email" name="email" class="geek-input" placeholder="输入邮箱地址...">
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <button type="submit" class="geek-btn primary">
+            <span class="btn-icon">🚀</span>
+            <span class="btn-text">CREATE ACCOUNT</span>
+            <span class="btn-shortcut">[ENTER]</span>
+          </button>
+          
+          <!-- Google OAuth注册 -->
+          <div class="oauth-divider">
+            <span class="divider-text">OR</span>
+          </div>
+          
+          <a href="{% url 'google_login' %}" class="geek-btn google-oauth">
+            <span class="btn-icon">🔍</span>
+            <span class="btn-text">GOOGLE REGISTER</span>
+            <span class="btn-shortcut">[G]</span>
+          </a>
+        </form>
+      </div>
+      
+      
+      <!-- 服务条款和隐私政策 -->
+      <div class="legal-notice">
+        <div class="legal-text">
+          <span class="legal-prefix">[LEGAL]</span>
+          <span class="legal-content">
+            继续使用即表示您同意我们的
+            <a href="{% url 'terms_of_service' %}" class="legal-link">服务条款</a>
+            和
+            <a href="{% url 'privacy_policy' %}" class="legal-link">隐私政策</a>
+          </span>
+        </div>
+      </div>
+      
+      <!-- 终端状态栏 -->
+      <div class="terminal-status-bar">
+        <div class="status-item">
+          <span class="status-label">CONNECTION:</span>
+          <span class="status-value online">SECURE</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">PROTOCOL:</span>
+          <span class="status-value">HTTPS/2</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">ENCRYPTION:</span>
+          <span class="status-value">AES-256</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 服务条款弹窗 -->
+<div id="termsModal" class="geek-legal-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closeTermsModal()"></div>
+  <div class="geek-modal-container legal-container">
+    <div class="terminal-header">
+      <div class="terminal-controls">
+        <div class="control-btn close-btn" onclick="closeTermsModal()"></div>
+        <div class="control-btn minimize-btn"></div>
+        <div class="control-btn maximize-btn"></div>
+      </div>
+      <div class="terminal-title">
+        <span class="terminal-icon">📋</span>
+        <span class="terminal-text">TERMS OF SERVICE</span>
+        <span class="terminal-status">[LEGAL]</span>
+      </div>
+    </div>
+    <div class="terminal-content legal-content">
+      <div id="termsContent">
+        <!-- 服务条款内容将通过JavaScript加载 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 隐私政策弹窗 -->
+<div id="privacyModal" class="geek-legal-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closePrivacyModal()"></div>
+  <div class="geek-modal-container legal-container">
+    <div class="terminal-header">
+      <div class="terminal-controls">
+        <div class="control-btn close-btn" onclick="closePrivacyModal()"></div>
+        <div class="control-btn minimize-btn"></div>
+        <div class="control-btn maximize-btn"></div>
+      </div>
+      <div class="terminal-title">
+        <span class="terminal-icon">🔒</span>
+        <span class="terminal-text">PRIVACY POLICY</span>
+        <span class="terminal-status">[LEGAL]</span>
+      </div>
+    </div>
+    <div class="terminal-content legal-content">
+      <div id="privacyContent">
+        <!-- 隐私政策内容将通过JavaScript加载 -->
+      </div>
+    </div>
+  </div>
+</div>

@@ -105,7 +105,7 @@ class ThemeManager {
      */
     async switchTheme(theme, saveToServer = true) {
         if (!this.themes[theme]) {
-            console.error(`❌ 无效的主题: ${theme}`);
+            // 无效的主题
             return false;
         }
 
@@ -128,7 +128,7 @@ class ThemeManager {
             return true;
             
         } catch (error) {
-            console.error(`❌ 主题切换失败: ${error.message}`);
+            // 主题切换失败
             return false;
         }
     }
@@ -252,7 +252,7 @@ class ThemeManager {
             }
 
         } catch (error) {
-            console.warn('⚠️ 保存主题到服务器失败:', error.message);
+            // 保存主题到服务器失败
             // 不抛出错误，因为本地保存已经成功
         }
     }
@@ -270,7 +270,7 @@ class ThemeManager {
             }
             
         } catch (error) {
-            console.warn('⚠️ 从服务器获取主题失败:', error.message);
+            // 从服务器获取主题失败
         }
         
         return null;

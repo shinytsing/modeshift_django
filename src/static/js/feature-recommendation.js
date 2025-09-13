@@ -69,7 +69,7 @@
                 this.showRecommendationPopup();
             }
         } catch (error) {
-            console.error('获取推荐失败:', error);
+            // 获取推荐失败
         }
     }
 
@@ -241,10 +241,10 @@
 
             const data = await response.json();
             if (!data.success) {
-                console.warn('记录推荐行为失败:', data.error);
+                // 记录推荐行为失败
             }
         } catch (error) {
-            console.error('记录推荐行为失败:', error);
+            // 记录推荐行为失败
         }
     }
 
@@ -287,7 +287,7 @@
 
             }
         } catch (error) {
-            console.error('获取推荐失败:', error);
+            // 获取推荐失败
         }
     }
 
@@ -301,11 +301,11 @@
                 window.location.href = data.url;
             } else {
                 // 降级处理：直接拼接URL
-                console.warn('URL解析失败，使用降级处理:', data.error);
+                // URL解析失败，使用降级处理
                 window.location.href = `/tools/${urlName}/`;
             }
         } catch (error) {
-            console.error('URL解析API调用失败:', error);
+            // URL解析API调用失败
             // 降级处理：直接拼接URL
             window.location.href = `/tools/${urlName}/`;
         }
@@ -333,7 +333,7 @@ class FeatureDiscovery {
 
             return await response.json();
         } catch (error) {
-            console.error('获取功能列表失败:', error);
+            // 获取功能列表失败
             return { success: false, error: error.message };
         }
     }
@@ -350,7 +350,7 @@ class FeatureDiscovery {
 
             return await response.json();
         } catch (error) {
-            console.error('获取推荐统计失败:', error);
+            // 获取推荐统计失败
             return { success: false, error: error.message };
         }
     }

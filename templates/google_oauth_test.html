@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Google OAuth 测试 - ModeShift{% endblock %}
+
+{% block extra_css %}
+<style>
+.oauth-test-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+    border: 1px solid #333;
+}
+
+.oauth-test-title {
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+}
+
+.oauth-info {
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #00ffff;
+}
+
+.oauth-info h3 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+}
+
+.oauth-info p {
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.oauth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.oauth-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.oauth-btn:hover {
+    background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
+}
+
+.oauth-btn .icon {
+    font-size: 1.2rem;
+}
+
+.config-status {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #2a2a2a;
+}
+
+.config-status h4 {
+    color: #ffff00;
+    margin-bottom: 1rem;
+}
+
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.config-item:last-child {
+    border-bottom: none;
+}
+
+.config-label {
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+}
+
+.config-value {
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.config-value.missing {
+    color: #ff4444;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oauth-test-container">
+    <h1 class="oauth-test-title">🔍 Google OAuth 测试页面</h1>
+    
+    <div class="oauth-info">
+        <h3>📋 配置说明</h3>
+        <p>1. 在Google Cloud Console中创建OAuth 2.0客户端ID</p>
+        <p>2. 设置授权重定向URI: <code>{{ request.scheme }}://{{ request.get_host }}/accounts/google/login/callback/</code></p>
+        <p>3. 在环境变量中设置GOOGLE_OAUTH_CLIENT_ID和GOOGLE_OAUTH_CLIENT_SECRET</p>
+        <p>4. 重启Django服务器</p>
+    </div>
+    
+    <div class="oauth-buttons">
+        <a href="{% url 'google_login' %}" class="oauth-btn">
+            <span class="icon">🔍</span>
+            <span>Google OAuth 登录</span>
+        </a>
+        
+        <a href="{% url 'home' %}" class="oauth-btn" style="background: linear-gradient(135deg, #666 0%, #444 100%);">
+            <span class="icon">🏠</span>
+            <span>返回首页</span>
+        </a>
+    </div>
+    
+    <div class="config-status">
+        <h4>⚙️ 配置状态</h4>
+        <div class="config-item">
+            <span class="config-label">GOOGLE_OAUTH_CLIENT_ID:</span>
+            <span class="config-value {% if not google_client_id %}missing{% endif %}">
+                {% if google_client_id %}已配置{% else %}未配置{% endif %}
+            </span>
+        </div>
+        <div class="config-item">
+            <span class="config-label">GOOGLE_OAUTH_CLIENT_SECRET:</span>
+            <span class="config-value {% if not google_client_secret %}missing{% endif %}">
+                {% if google_client_secret %}已配置{% else %}未配置{% endif %}
+            </span>
+        </div>
+        <div class="config-item">
+            <span class="config-label">django-allauth:</span>
+            <span class="config-value">已安装</span>
+        </div>
+        <div class="config-item">
+            <span class="config-label">Google Provider:</span>
+            <span class="config-value">已启用</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,14 @@
 import json
 import re
+import logging
 from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,12 +19,12 @@ from django.views.decorators.http import require_http_methods
 
 from apps.content.views import admin_required
 
-from .forms import ProfileEditForm, UserRegistrationForm
-from .models import Profile, UserActionLog, UserActivityLog, UserMembership, UserRole, UserSessionStats, UserStatus, UserTheme
-from .services.progressive_captcha_service import ProgressiveCaptchaService
+from ..forms import ProfileEditForm, UserRegistrationForm
+from ..models import Profile, UserActionLog, UserActivityLog, UserMembership, UserRole, UserSessionStats, UserStatus, UserTheme
+from ..services.progressive_captcha_service import ProgressiveCaptchaService
+from ..services.rate_limit_service import RateLimitService, rate_limit_decorator
 
-
-
+logger = logging.getLogger(__name__)
 
 # 注册模板过滤器
 @register.filter
@@ -57,19 +60,26 @@ def status_color(status_code):
 
 
 def has_repeated_characters(password):
-    """检查密码中是否有连续重复的字符"""
+    """检查密码中是否有连续重复的字符（3个或以上）"""
+    count = 1
     for i in range(len(password) - 1):
         if password[i] == password[i + 1]:
-            return True
+            count += 1
+            if count >= 3:  # 3个或以上连续重复字符
+                return True
+        else:
+            count = 1
     return False
 
 
 def has_consecutive_characters(password):
     """检查密码中是否有完全连续的字符"""
-    # 检查字符是否是连续的，例如 "12345678" 或 "abcdefg"
-    for i in range(len(password) - 1):
-        if ord(password[i]) + 1 == ord(password[i + 1]):
-            return True
+    # 检查数字是否是连续的，例如 "12345678"
+    if re.search(r'0123456789', password) or re.search(r'1234567890', password):
+        return True
+    # 检查字母是否是连续的，例如 "abcdefg"
+    if re.search(r'abcdefghijklmnopqrstuvwxyz', password.lower()) or re.search(r'zyxwvutsrqponmlkjihgfedcba', password.lower()):
+        return True
     return False
 
 
@@ -84,37 +94,7 @@ def has_two_different_character_types(password):
     return sum(bool(t) for t in types.values()) >= 2
 
 
-def register_view(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        password_confirm = request.POST["password_confirm"]
-        email = request.POST.get("email", None)  # 邮箱为可选字段
-
-        if password == password_confirm:
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "用户名已存在，请选择其他用户名。", extra_tags="username")  # 对应标签
-            else:
-                if len(password) < 8:
-                    messages.error(request, "密码必须大于8位。", extra_tags="password")
-                elif has_repeated_characters(password):
-                    messages.error(request, "密码不能包含连续重复的字符。", extra_tags="password")
-                elif has_consecutive_characters(password):
-                    messages.error(request, "密码不能是完全连续的字符。", extra_tags="password")
-                elif not has_two_different_character_types(password):
-                    messages.error(request, "密码必须包含至少两种不同的字符类型（如字母和数字）。", extra_tags="password")
-                else:
-                    try:
-                        user = User.objects.create_user(username=username, password=password, email=email)
-                        user.save()
-                        messages.success(request, f"{username} 的账户已创建！")
-                        return redirect("users:login")
-                    except Exception as e:
-                        messages.error(request, f"错误: {str(e)}")
-        else:
-            messages.error(request, "密码输入不一致，请重新确认。", extra_tags="password_confirm")  # 对应标签
-
-    return render(request, "users/register.html")
+# register_view 已删除，使用现代化弹窗登录
 
 
 def logout_view(request):
@@ -126,77 +106,391 @@ def logout_view(request):
     return redirect("home")  # 重定向到首页或其他指定页面
 
 
-def register(request):
+# register 函数已删除，使用现代化弹窗登录
+
+
+# user_login 函数已删除，使用现代化弹窗登录
+
+
+def modern_login_modal(request):
+    """现代化弹窗登录视图"""
+    if request.user.is_authenticated:
+        return redirect("home")
+    
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # 创建用户角色、状态和会员信息
+        form_type = request.POST.get("form_type", "login")
+        
+        if form_type == "register":
+            return handle_modal_register(request)
+        else:
+            return handle_modal_login(request)
+    
+    # 如果是直接访问登录URL，重定向到首页
+    # 登录弹窗应该通过JavaScript调用，而不是直接访问
+    return redirect("/")
+
+
+def handle_modal_register(request):
+    """处理弹窗注册逻辑"""
+    # 检查速率限制
+    is_allowed, remaining, reset_time = RateLimitService.check_rate_limit(
+        request, 'register', max_attempts=3, window_minutes=15
+    )
+    
+    if not is_allowed:
+        messages.error(request, f"❌ 注册尝试次数过多，请{15}分钟后再试")
+        return redirect("/")
+    
+    username = request.POST.get("username", "").strip()
+    password = request.POST.get("password", "")
+    password_confirm = request.POST.get("password_confirm", "")
+    email = request.POST.get("email", "").strip()
+    
+    # 详细的输入验证
+    if not username:
+        messages.error(request, "❌ 用户名不能为空，请输入用户名")
+        return redirect("/")
+    
+    if not password:
+        messages.error(request, "❌ 密码不能为空，请输入密码")
+        return redirect("/")
+    
+    if not password_confirm:
+        messages.error(request, "❌ 请确认密码")
+        return redirect("/")
+    
+    # 用户名验证
+    if len(username) < 3:
+        messages.error(request, "❌ 用户名至少需要3个字符")
+        return redirect("/")
+    
+    if len(username) > 30:
+        messages.error(request, "❌ 用户名不能超过30个字符")
+        return redirect("/")
+    
+    # 检查用户名格式（只允许字母、数字、下划线）
+    import re
+    if not re.match(r"^[a-zA-Z0-9_]+$", username):
+        messages.error(request, "❌ 用户名只能包含字母、数字和下划线")
+        return redirect("/")
+    
+    # 检查敏感词
+    sensitive_words = ["admin", "root", "system", "test", "user", "guest"]
+    if username.lower() in sensitive_words:
+        messages.error(request, "❌ 用户名包含敏感词，请选择其他用户名")
+        return redirect("/")
+    
+    # 密码验证
+    if password != password_confirm:
+        messages.error(request, "❌ 两次输入的密码不一致，请重新确认")
+        return redirect("/")
+    
+    if len(password) < 8:
+        messages.error(request, "❌ 密码长度至少需要8个字符")
+        return redirect("/")
+    
+    if len(password) > 128:
+        messages.error(request, "❌ 密码长度不能超过128个字符")
+        return redirect("/")
+    
+    # 密码复杂度检查
+    if not re.search(r"[A-Za-z]", password):
+        messages.error(request, "❌ 密码必须包含至少一个字母")
+        return redirect("/")
+    
+    if not re.search(r"\d", password):
+        messages.error(request, "❌ 密码必须包含至少一个数字")
+        return redirect("/")
+    
+    # 检查常见弱密码
+    weak_passwords = [
+        "password", "123456", "qwerty", "admin", "12345678", "password123",
+        "123456789", "1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm",
+        "111111", "000000", "123123", "abc123", "password1", "admin123",
+        "root", "user", "guest", "test", "demo", "sample", "default",
+        "1234", "12345", "1234567", "123456789", "987654321", "654321",
+        "qwerty123", "asdf1234", "zxcv1234", "iloveyou", "welcome",
+        "monkey", "dragon", "master", "hello", "letmein", "princess",
+        "qazwsx", "michael", "jordan", "harley", "ranger", "shadow",
+        "sunshine", "superman", "qwertyui", "trustno1", "batman",
+        "thomas", "hockey", "ranger", "daniel", "hannah", "maggie",
+        "jessica", "charlie", "jordan", "michelle", "andrew", "joshua",
+        "angela", "kevin", "steven", "brian", "nicole", "kimberly",
+        "christina", "jennifer", "elizabeth", "robert", "anthony",
+        "mark", "donald", "steven", "paul", "andrew", "joshua",
+        "kenneth", "kevin", "brian", "george", "timothy", "jose",
+        "jeffrey", "ryan", "jacob", "gary", "nicholas", "eric",
+        "jonathan", "stephen", "larry", "justin", "scott", "brandon",
+        "benjamin", "samuel", "gregory", "frank", "raymond", "alexander",
+        "patrick", "jack", "dennis", "jerry", "tyler", "aaron",
+        "jose", "henry", "douglas", "adam", "peter", "nathan",
+        "zachary", "kyle", "walter", "harold", "jeremy", "ethan",
+        "carl", "keith", "roger", "gerald", "arthur", "lawrence",
+        "sean", "christian", "wayne", "arthur", "ryan", "louis",
+        "philip", "bobby", "johnny", "ralph", "eugene", "howard",
+        "juan", "roy", "victor", "arthur", "albert", "arthur",
+        "arthur", "arthur", "arthur", "arthur", "arthur", "arthur"
+    ]
+    if password.lower() in weak_passwords:
+        messages.error(request, "❌ 密码过于简单，请选择更复杂的密码")
+        return redirect("/")
+    
+    if has_repeated_characters(password):
+        messages.error(request, "❌ 密码不能包含连续重复的字符")
+        return redirect("/")
+    
+    if not has_two_different_character_types(password):
+        messages.error(request, "❌ 密码必须包含至少两种不同的字符类型（如字母和数字）")
+        return redirect("/")
+    
+    # 邮箱验证（如果提供）
+    if email:
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            messages.error(request, "❌ 邮箱格式不正确")
+            return redirect("/")
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "❌ 该邮箱已被注册，请使用其他邮箱")
+            return redirect("/")
+    
+    # 检查用户名是否已存在
+    if User.objects.filter(username=username).exists():
+        messages.error(request, "❌ 用户名已存在，请选择其他用户名")
+        return redirect("/")
+    
+    try:
+        # 创建用户
+        user = User.objects.create_user(username=username, password=password, email=email)
+        
+        # 创建用户相关记录
+        try:
             UserRole.objects.create(user=user, role="user")
             UserStatus.objects.create(user=user, status="active")
             UserMembership.objects.create(user=user, membership_type="free")
             Profile.objects.create(user=user)
-
-            # 自动登录用户
-            from django.contrib.auth import login
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            
-            messages.success(request, "注册成功！已自动登录。")
-            return redirect("home")  # 跳转到首页
-    else:
-        form = UserRegistrationForm()
-
-    return render(request, "users/register.html", {"form": form})
-
-
-def user_login(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        # 检查验证码验证状态（支持新旧两种验证码）
-        click_verified = request.session.get("click_captcha_verified", False)
-        progressive_verified = request.session.get("progressive_captcha_verified", False)
-
-        if not (click_verified or progressive_verified):
-            messages.error(request, "请先完成验证码验证")
-            return render(request, "users/login.html")
-
-        # 清除验证状态，防止重复使用
-        request.session.pop("click_captcha_verified", None)
-        request.session.pop("progressive_captcha_verified", None)
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
+        except Exception as e:
+            logger.error(f"Failed to create user related records: {e}")
+            # 如果相关记录创建失败，删除用户
+            user.delete()
+            messages.error(request, "❌ 注册失败，请稍后重试")
+            return redirect("/")
+        
+        # 记录注册活动
+        try:
+            from ..models import UserActivityLog
+            UserActivityLog.objects.create(
+                user=user,
+                activity_type="register",
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                details={"registration_method": "modal", "success": True},
+            )
+        except Exception as e:
+            logger.error(f"Failed to log registration activity: {e}")
+        
+        # 自动登录用户
+        try:
             login(request, user)
-
-            # 记录登录活动
-            try:
-                from .models import UserActivityLog
-
-                x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-                if x_forwarded_for:
-                    ip = x_forwarded_for.split(",")[0]
-                else:
-                    ip = request.META.get("REMOTE_ADDR")
-
-                UserActivityLog.objects.create(
-                    user=user,
-                    activity_type="login",
-                    ip_address=ip,
-                    user_agent=request.META.get("HTTP_USER_AGENT", ""),
-                    details={"login_method": "password", "success": True},
-                )
-            except Exception as e:
-                print(f"记录登录活动失败: {e}")
-
-            messages.success(request, f"欢迎回来，{user.username}！")
-            next_url = request.GET.get("next", "home")
-            return redirect(next_url)
+            
+            # 新用户注册成功，应该显示欢迎窗口
+            request.session['show_welcome_modal'] = True
+            
+            messages.success(request, f"🎉 欢迎 {username}！注册成功并已自动登录。您现在可以开始使用所有功能了！")
+        except Exception as e:
+            logger.error(f"Failed to auto-login user: {e}")
+            messages.success(request, f"✅ 注册成功！请手动登录。")
+        
+        next_url = request.GET.get("next", "/")
+        # 如果next参数是相对路径，确保以/开头
+        if next_url and not next_url.startswith('/'):
+            next_url = '/' + next_url
+        return redirect(next_url)
+        
+    except Exception as e:
+        logger.error(f"Registration failed: {e}", exc_info=True)
+        
+        # 记录详细的错误信息用于调试
+        logger.error(f"Registration attempt details - Username: {username}, Email: {email}, IP: {request.META.get('REMOTE_ADDR')}")
+        
+        # 根据不同的异常类型提供不同的错误信息
+        error_message = str(e).lower()
+        if "username" in error_message and "already exists" in error_message:
+            messages.error(request, "❌ 用户名已存在，请选择其他用户名")
+        elif "email" in error_message and "already exists" in error_message:
+            messages.error(request, "❌ 该邮箱已被注册，请使用其他邮箱")
+        elif "password" in error_message:
+            messages.error(request, "❌ 密码格式不正确")
+        elif "username" in error_message:
+            messages.error(request, "❌ 用户名格式不正确")
+        elif "database" in error_message or "connection" in error_message:
+            messages.error(request, "❌ 数据库连接失败，请稍后重试")
+            logger.critical(f"Database error during registration: {e}")
+        elif "integrity" in error_message:
+            messages.error(request, "❌ 数据完整性错误，请检查输入信息")
         else:
-            messages.error(request, "用户名或密码错误")
+            messages.error(request, "❌ 注册失败，请检查输入信息或稍后重试")
+            logger.error(f"Unknown registration error: {e}")
+        
+        return redirect("/")
 
-    return render(request, "users/login.html")
+
+def handle_modal_login(request):
+    """处理弹窗登录逻辑"""
+    # 检查速率限制
+    is_allowed, remaining, reset_time = RateLimitService.check_rate_limit(
+        request, 'login', max_attempts=5, window_minutes=15
+    )
+    
+    if not is_allowed:
+        messages.error(request, f"❌ 登录尝试次数过多，请{15}分钟后再试")
+        return redirect("/")
+    
+    username = request.POST.get("username", "").strip()
+    password = request.POST.get("password", "")
+    
+    # 详细的输入验证
+    if not username:
+        messages.error(request, "❌ 请输入用户名")
+        return redirect("/")
+    
+    if not password:
+        messages.error(request, "❌ 请输入密码")
+        return redirect("/")
+    
+    # 检查用户名长度
+    if len(username) < 3:
+        messages.error(request, "❌ 用户名格式不正确")
+        return redirect("/")
+    
+    # 检查密码长度
+    if len(password) < 1:
+        messages.error(request, "❌ 密码不能为空")
+        return redirect("/")
+    
+    # 尝试认证用户
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        # 检查用户状态
+        if not user.is_active:
+            messages.error(request, "❌ 账户已被禁用，请联系管理员")
+            return redirect("/")
+        
+        # 登录成功
+        login(request, user)
+        
+        # 检查是否应该显示欢迎窗口
+        from ..models import UserWelcomeModal
+        should_show_welcome = UserWelcomeModal.should_show_welcome(user)
+        
+        # 记录登录活动
+        try:
+            from ..models import UserActivityLog
+            x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(",")[0]
+            else:
+                ip = request.META.get("REMOTE_ADDR")
+            
+            UserActivityLog.objects.create(
+                user=user,
+                activity_type="login",
+                ip_address=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                details={"login_method": "modal_password", "success": True, "show_welcome": should_show_welcome},
+            )
+        except Exception as e:
+            logger.error(f"Failed to log login activity: {e}")
+        
+        messages.success(request, f"✅ 欢迎回来，{user.username}！您已成功登录。")
+        
+        # 如果应该显示欢迎窗口，在session中标记
+        if should_show_welcome:
+            request.session['show_welcome_modal'] = True
+        
+        next_url = request.GET.get("next", "/")
+        # 如果next参数是相对路径，确保以/开头
+        if next_url and not next_url.startswith('/'):
+            next_url = '/' + next_url
+        return redirect(next_url)
+    else:
+        # 登录失败 - 提供更详细的错误信息并记录安全日志
+        ip_address = request.META.get('REMOTE_ADDR')
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        # 记录失败的登录尝试
+        logger.warning(f"Failed login attempt - Username: {username}, IP: {ip_address}, User-Agent: {user_agent}")
+        
+        # 检查用户名是否存在
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "❌ 密码错误，请检查密码是否正确")
+            logger.info(f"Login failed: incorrect password for existing user '{username}' from IP {ip_address}")
+        else:
+            messages.error(request, "❌ 用户名不存在，请检查用户名是否正确")
+            logger.info(f"Login failed: non-existent username '{username}' from IP {ip_address}")
+        
+        # 记录失败的活动日志
+        try:
+            from ..models import UserActivityLog
+            UserActivityLog.objects.create(
+                user=None,  # 未认证用户
+                activity_type="login_failed",
+                ip_address=ip_address,
+                user_agent=user_agent,
+                details={"username": username, "reason": "authentication_failed"},
+            )
+        except Exception as log_error:
+            logger.error(f"Failed to log login failure: {log_error}")
+        
+        return redirect("/")
+
+
+def terms_of_service_api(request):
+    """服务条款API"""
+    try:
+        import os
+        from django.conf import settings
+        
+        # 读取服务条款文件
+        terms_file = os.path.join(settings.BASE_DIR, 'apps', 'users', 'resources', 'terms_of_service.html')
+        
+        if os.path.exists(terms_file):
+            with open(terms_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return JsonResponse({"success": True, "content": content})
+        else:
+            return JsonResponse({"success": False, "message": "服务条款文件不存在"}, status=404)
+            
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"读取服务条款失败: {str(e)}"}, status=500)
+
+
+def privacy_policy_api(request):
+    """隐私政策API"""
+    try:
+        import os
+        from django.conf import settings
+        
+        # 读取隐私政策文件
+        privacy_file = os.path.join(settings.BASE_DIR, 'apps', 'users', 'resources', 'privacy_policy.html')
+        
+        if os.path.exists(privacy_file):
+            with open(privacy_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return JsonResponse({"success": True, "content": content})
+        else:
+            return JsonResponse({"success": False, "message": "隐私政策文件不存在"}, status=404)
+            
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"读取隐私政策失败: {str(e)}"}, status=500)
+
+
+def test_modern_login(request):
+    """现代化登录测试页面"""
+    return render(request, "test_modern_login.html")
+
+# handle_register 函数已删除，使用现代化弹窗登录
+
+# handle_login 函数已删除，使用现代化弹窗登录
 
 
 def user_logout(request):
@@ -1225,84 +1519,10 @@ def session_status_api(request):
         return JsonResponse({"success": False, "message": f"获取session状态失败: {str(e)}"}, status=500)
 
 
-# 用户登录API
-@csrf_exempt
-@require_http_methods(["POST"])
-def user_login_api(request):
-    """用户登录API"""
-    try:
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        
-        if not username or not password:
-            return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
-        
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return JsonResponse({
-                "success": True, 
-                "message": "登录成功",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email
-                }
-            })
-        else:
-            return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
-            
-    except Exception as e:
-        return JsonResponse({"success": False, "message": f"登录失败: {str(e)}"}, status=500)
+# user_login_api 已删除，使用现代化弹窗登录
 
 
-# 用户注册API
-@csrf_exempt
-@require_http_methods(["POST"])
-def user_register_api(request):
-    """用户注册API"""
-    try:
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        email = data.get('email', '')
-        
-        if not username or not password:
-            return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
-        
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({"success": False, "message": "用户名已存在"}, status=400)
-        
-        if len(password) < 8:
-            return JsonResponse({"success": False, "message": "密码必须大于8位"}, status=400)
-        
-        user = User.objects.create_user(username=username, password=password, email=email)
-        
-        # 创建用户相关记录
-        UserRole.objects.create(user=user, role="user")
-        UserStatus.objects.create(user=user, status="active")
-        UserMembership.objects.create(user=user, membership_type="free")
-        Profile.objects.create(user=user)
-        
-        # 自动登录用户
-        from django.contrib.auth import login
-        from django.contrib.auth.backends import ModelBackend
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        
-        return JsonResponse({
-            "success": True, 
-            "message": "注册成功，已自动登录",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email
-            },
-            "redirect_url": "/"  # 注册成功后跳转到首页
-        })
-        
-    except Exception as e:
-        return JsonResponse({"success": False, "message": f"注册失败: {str(e)}"}, status=500)
+# user_register_api 已删除，使用现代化弹窗登录
 
 
 # 用户资料API
@@ -1362,3 +1582,196 @@ def user_profile_api(request):
             
     except Exception as e:
         return JsonResponse({"success": False, "message": f"操作失败: {str(e)}"}, status=500)
+
+
+# 欢迎窗口API
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def welcome_modal_api(request):
+    """欢迎窗口API - 标记欢迎窗口已显示"""
+    try:
+        from ..models import UserWelcomeModal
+        
+        # 标记欢迎窗口已显示
+        UserWelcomeModal.mark_welcome_shown(request.user)
+        
+        # 清除session中的标记
+        if 'show_welcome_modal' in request.session:
+            del request.session['show_welcome_modal']
+        
+        return JsonResponse({
+            "success": True,
+            "message": "欢迎窗口已标记为已显示"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": f"操作失败: {str(e)}"
+        }, status=500)
+
+
+# 用户名验证API
+@csrf_exempt
+@require_http_methods(["POST"])
+def validate_username_api(request):
+    """用户名验证API - 检查用户名是否可用"""
+    # 检查速率限制
+    is_allowed, remaining, reset_time = RateLimitService.check_rate_limit(
+        request, 'validate_username', max_attempts=20, window_minutes=5
+    )
+    
+    if not is_allowed:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": f"验证请求过于频繁，请{5}分钟后再试"
+        }, status=429)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get("username", "").strip()
+        
+        if not username:
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "用户名不能为空"
+            })
+        
+        # 基础格式验证
+        if len(username) < 3:
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "用户名至少需要3个字符"
+            })
+        
+        if len(username) > 30:
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "用户名不能超过30个字符"
+            })
+        
+        # 检查用户名格式（只允许字母、数字、下划线）
+        if not re.match(r"^[a-zA-Z0-9_]+$", username):
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "用户名只能包含字母、数字和下划线"
+            })
+        
+        # 检查敏感词
+        sensitive_words = ["admin", "root", "system", "test", "user", "guest", "moderator", "support"]
+        if username.lower() in sensitive_words:
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "用户名包含敏感词，请选择其他用户名"
+            })
+        
+        # 检查用户名是否已存在
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                "success": True,
+                "available": False,
+                "message": "用户名已存在，请选择其他用户名"
+            })
+        
+        return JsonResponse({
+            "success": True,
+            "available": True,
+            "message": "用户名可用"
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": "请求数据格式错误"
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": f"验证失败: {str(e)}"
+        }, status=500)
+
+
+# 邮箱验证API
+@csrf_exempt
+@require_http_methods(["POST"])
+def validate_email_api(request):
+    """邮箱验证API - 检查邮箱是否可用"""
+    # 检查速率限制
+    is_allowed, remaining, reset_time = RateLimitService.check_rate_limit(
+        request, 'validate_email', max_attempts=20, window_minutes=5
+    )
+    
+    if not is_allowed:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": f"验证请求过于频繁，请{5}分钟后再试"
+        }, status=429)
+    
+    try:
+        data = json.loads(request.body)
+        email = data.get("email", "").strip()
+        
+        # 如果邮箱为空，认为是可用的（因为邮箱是可选的）
+        if not email:
+            return JsonResponse({
+                "success": True,
+                "available": True,
+                "message": "邮箱为空（可选）"
+            })
+        
+        # 检查邮箱格式
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "邮箱格式不正确"
+            })
+        
+        # 检查邮箱域名黑名单
+        domain = email.split("@")[1] if "@" in email else ""
+        blacklisted_domains = getattr(settings, "BLACKLISTED_EMAIL_DOMAINS", [
+            "10minutemail.com", "tempmail.org", "guerrillamail.com", "mailinator.com"
+        ])
+        if domain.lower() in blacklisted_domains:
+            return JsonResponse({
+                "success": False,
+                "available": False,
+                "message": "该邮箱域名不被允许"
+            })
+        
+        # 检查邮箱是否已存在
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({
+                "success": True,
+                "available": False,
+                "message": "该邮箱已被注册，请使用其他邮箱"
+            })
+        
+        return JsonResponse({
+            "success": True,
+            "available": True,
+            "message": "邮箱可用"
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": "请求数据格式错误"
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "available": False,
+            "message": f"验证失败: {str(e)}"
+        }, status=500)

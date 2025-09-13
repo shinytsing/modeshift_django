@@ -12,7 +12,7 @@
         
         log: function(message) {
             if (window.console && window.console.log) {
-                console.log(`[Mobile Optimized] ${message}`);
+                // Mobile Optimized log
             }
         },
         
@@ -385,7 +385,7 @@
             
             // 在开发环境中显示错误
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                console.error('Error:', event.error);
+                // Error occurred
             }
         },
         

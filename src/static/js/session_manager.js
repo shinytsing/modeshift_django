@@ -24,7 +24,7 @@
         init: function() {
             this.bindEvents();
             this.startSessionCheck();
-            console.log('Session Manager initialized');
+            // Session Manager initialized
         },
         
         /**
@@ -77,11 +77,11 @@
          * 处理会话超时
          */
         handleSessionTimeout: function() {
-            console.log('Session timeout detected');
+            // Session timeout detected
             
             // 显示超时提示
             if (confirm('您的会话已超时，是否重新登录？')) {
-                window.location.href = '/users/login/';
+                showGeekLoginModal();
             } else {
                 // 清除本地存储并重定向到首页
                 this.clearSession();
@@ -95,10 +95,10 @@
         handleVisibilityChange: function() {
             if (document.hidden) {
                 // 页面隐藏时暂停某些操作
-                console.log('Page hidden, pausing session checks');
+                // Page hidden, pausing session checks
             } else {
                 // 页面显示时恢复操作
-                console.log('Page visible, resuming session checks');
+                // Page visible, resuming session checks
                 this.updateActivity();
             }
         },
@@ -122,7 +122,7 @@
                 };
                 sessionStorage.setItem('sessionData', JSON.stringify(sessionData));
             } catch (error) {
-                console.error('Failed to save session state:', error);
+                // Failed to save session state
             }
         },
         
@@ -137,7 +137,7 @@
                     lastActivityTime = data.lastActivity || Date.now();
                 }
             } catch (error) {
-                console.error('Failed to restore session state:', error);
+                // Failed to restore session state
             }
         },
         
@@ -150,7 +150,7 @@
                 localStorage.removeItem('userToken');
                 localStorage.removeItem('userData');
             } catch (error) {
-                console.error('Failed to clear session:', error);
+                // Failed to clear session
             }
         },
         

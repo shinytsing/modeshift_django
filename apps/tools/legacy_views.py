@@ -37,7 +37,7 @@ def is_admin(user):
 # 管理员权限装饰器
 def admin_required(view_func):
     """管理员权限装饰器"""
-    decorated_view = user_passes_test(is_admin, login_url="/users/login/")(view_func)
+    decorated_view = user_passes_test(is_admin, login_url="/")(view_func)
     return decorated_view
 
 
@@ -2299,7 +2299,7 @@ def create_heart_link_request_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2421,7 +2421,7 @@ def cancel_heart_link_request_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2472,7 +2472,7 @@ def check_heart_link_status_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2597,7 +2597,7 @@ def cleanup_heart_link_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2700,7 +2700,7 @@ def get_chat_messages_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2798,7 +2798,7 @@ def send_message_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -2921,7 +2921,7 @@ def update_online_status_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -3015,7 +3015,7 @@ def get_online_users_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -3079,7 +3079,7 @@ def get_active_chat_rooms_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4189,7 +4189,7 @@ def send_image_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4336,7 +4336,7 @@ def send_audio_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4471,7 +4471,7 @@ def send_file_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4573,7 +4573,7 @@ def send_video_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4685,7 +4685,7 @@ def delete_message_api(request, room_id, message_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -4757,7 +4757,7 @@ def mark_messages_read_api(request, room_id):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -7061,50 +7061,36 @@ def feature_recommendations_api(request):
             limit = int(request.GET.get("limit", 6))
             force_show = request.GET.get("force_show", "false").lower() == "true"
 
-            # 创建推荐引擎实例
-            engine = FeatureRecommendationEngine()
-
-            # 获取用户上下文信息
-            context = {
-                "ip_address": request.META.get("REMOTE_ADDR"),
-                "user_agent": request.META.get("HTTP_USER_AGENT", ""),
-            }
-
-            # 获取推荐
-            recommendations = engine.get_recommendations_for_user(user=request.user, limit=limit, context=context)
-
-            # 格式化推荐数据
+            # 简化版本：直接返回基础功能推荐
+            from apps.tools.models import Feature
+            
+            # 获取基础功能
+            basic_features = Feature.objects.filter(
+                is_active=True, 
+                is_public=True
+            ).order_by('-recommendation_weight')[:limit]
+            
             formatted_recommendations = []
-            for rec in recommendations:
-                feature = rec.get("feature")  # 推荐引擎返回的是字典，包含feature键
-                if feature:
-                    # 获取推荐理由
-                    reason = rec.get("reason", "为您推荐一个实用功能")
-
-                    # 获取功能类别显示名称
-                    category_display = feature.get_category_display()
-
-                    formatted_recommendations.append(
-                        {
-                            "id": feature.id,
-                            "name": feature.name,
-                            "description": feature.description,
-                            "category": feature.category,
-                            "category_display": category_display,
-                            "icon_class": feature.icon_class,
-                            "icon_color": feature.icon_color,
-                            "url_name": feature.url_name,
-                            "recommendation_weight": feature.recommendation_weight,
-                            "popularity_score": feature.popularity_score,
-                            "recommendation_reason": reason,
-                        }
-                    )
+            for feature in basic_features:
+                formatted_recommendations.append({
+                    "id": feature.id,
+                    "name": feature.name,
+                    "description": feature.description,
+                    "category": feature.category,
+                    "category_display": feature.get_category_display(),
+                    "icon_class": feature.icon_class,
+                    "icon_color": feature.icon_color,
+                    "url_name": feature.url_name,
+                    "recommendation_weight": feature.recommendation_weight,
+                    "popularity_score": feature.popularity_score,
+                    "recommendation_reason": "为您推荐一个实用功能",
+                })
 
             return JsonResponse(
                 {
                     "success": True,
                     "data": formatted_recommendations,
-                    "algorithm": algorithm,
+                    "algorithm": "basic",
                     "count": len(formatted_recommendations),
                 }
             )
@@ -7968,7 +7954,7 @@ def number_match_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,
@@ -8065,7 +8051,7 @@ def cancel_number_match_api(request):
 
     if not request.user.is_authenticated:
         return JsonResponse(
-            {"success": False, "error": "请先登录", "redirect_url": "/users/login/"},
+            {"success": False, "error": "请先登录", "redirect_url": "/"},
             status=401,
             content_type="application/json",
             headers=response_headers,

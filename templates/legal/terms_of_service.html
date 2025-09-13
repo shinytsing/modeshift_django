@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}服务条款 - ModeShift{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 页面背景 */
+body {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(80, 80, 120, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(120, 80, 120, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(80, 120, 160, 0.3) 0%, transparent 50%);
+    z-index: -1;
+    animation: backgroundShift 20s ease infinite;
+}
+
+@keyframes backgroundShift {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.legal-content {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 3rem;
+    line-height: 1.7;
+    color: #1a202c;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.legal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 300% 100%;
+    animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.legal-content h1 {
+    color: #1a202c;
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+}
+
+.legal-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.legal-content h2 {
+    color: #1a202c;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.legal-content h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.legal-content h3 {
+    color: #2d3748;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.legal-content p {
+    margin-bottom: 1.2rem;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.legal-content ul, .legal-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.legal-content li {
+    margin-bottom: 0.8rem;
+    color: #2d3748;
+    position: relative;
+}
+
+.legal-content ul li::marker {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.contact-info {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    margin: 3rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.contact-info h3 {
+    color: #1a202c;
+    margin-top: 0;
+    font-size: 1.3rem;
+}
+
+.last-updated {
+    font-style: italic;
+    color: #4a5568;
+    text-align: right;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .legal-content {
+        margin: 1rem;
+        padding: 2rem;
+        border-radius: 15px;
+    }
+    
+    .legal-content h1 {
+        font-size: 2rem;
+    }
+    
+    .legal-content h2 {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-content">
+    <h1>服务条款</h1>
+    
+    <p><strong>生效日期：</strong>2024年12月29日</p>
+    
+    <h2>1. 服务概述</h2>
+    <p>欢迎使用ModeShift平台（以下简称"本服务"）。本服务条款（以下简称"条款"）是您与ModeShift之间关于使用本服务的法律协议。通过访问或使用本服务，您同意受本条款的约束。</p>
+    
+    <h2>2. 服务内容</h2>
+    <p>ModeShift是一个综合性的在线工具平台，提供以下服务：</p>
+    <ul>
+        <li>AI聊天和对话服务</li>
+        <li>任务管理和项目管理工具</li>
+        <li>文件处理和转换服务</li>
+        <li>健康管理和健身工具</li>
+        <li>学习和教育辅助功能</li>
+        <li>其他相关在线服务</li>
+    </ul>
+    
+    <h2>3. 用户责任</h2>
+    <h3>3.1 合法使用</h3>
+    <p>您承诺：</p>
+    <ul>
+        <li>仅将本服务用于合法目的</li>
+        <li>不从事任何违法、有害或恶意活动</li>
+        <li>不侵犯他人的知识产权或其他权利</li>
+        <li>不传播恶意软件或进行网络攻击</li>
+    </ul>
+    
+    <h3>3.2 账户安全</h3>
+    <p>您有责任：</p>
+    <ul>
+        <li>保护您的账户密码和登录信息</li>
+        <li>及时通知我们任何未经授权的账户使用</li>
+        <li>对您账户下的所有活动负责</li>
+    </ul>
+    
+    <h2>4. 隐私和数据保护</h2>
+    <p>我们重视您的隐私权。我们收集、使用和保护您的个人信息的方式详见我们的<a href="{% url 'privacy_policy' %}" style="color: #3498db;">隐私政策</a>。</p>
+    
+    <h2>5. 知识产权</h2>
+    <p>本服务及其所有内容、功能和技术均受版权、商标和其他知识产权法律保护。未经我们明确书面许可，您不得复制、修改、分发或创建衍生作品。</p>
+    
+    <h2>6. 服务可用性</h2>
+    <p>我们努力保持服务的持续可用性，但不保证服务不会中断。我们保留随时修改、暂停或终止服务的权利，无需事先通知。</p>
+    
+    <h2>7. 免责声明</h2>
+    <p>本服务按"现状"提供，不提供任何明示或暗示的保证。在法律允许的最大范围内，我们不对以下情况承担责任：</p>
+    <ul>
+        <li>服务中断或数据丢失</li>
+        <li>第三方内容或链接</li>
+        <li>用户行为造成的任何损失</li>
+        <li>间接、偶然或后果性损害</li>
+    </ul>
+    
+    <h2>8. 服务变更</h2>
+    <p>我们保留随时修改本条款的权利。重大变更将通过服务内通知或电子邮件告知用户。继续使用服务即表示您接受修改后的条款。</p>
+    
+    <h2>9. 终止</h2>
+    <p>我们或您都可以随时终止本协议。终止后，您访问和使用服务的权利将立即停止。</p>
+    
+    <h2>10. 适用法律</h2>
+    <p>本条款受中华人民共和国法律管辖。任何争议应通过友好协商解决，协商不成的，提交有管辖权的人民法院解决。</p>
+    
+    <div class="contact-info">
+        <h3>联系我们</h3>
+        <p>如果您对本服务条款有任何疑问，请通过以下方式联系我们：</p>
+        <p><strong>邮箱：</strong>1009383129@qq.com</p>
+    </div>
+    
+    <div class="last-updated">
+        <p>最后更新：2024年12月29日</p>
+    </div>
+</div>
+{% endblock %}

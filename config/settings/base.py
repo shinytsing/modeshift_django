@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sites",  # 用于CAPTCHA
+    "django.contrib.sites",  # 用于CAPTCHA和allauth
     "captcha",
     "rest_framework",  # DRF框架
     "corsheaders",
@@ -77,6 +77,11 @@ INSTALLED_APPS = [
     "django_filters",
     # Channels支持
     "channels",
+    # django-allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     # 自定义应用
     "apps.users",
     "apps.content",
@@ -93,6 +98,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # allauth中间件
+    "allauth.account.middleware.AccountMiddleware",
     # 会话持久化中间件 - 暂时禁用，避免Redis依赖问题
     # 'apps.users.middleware.SessionPersistenceMiddleware',
     "apps.users.middleware.SessionExtensionMiddleware",  # Session延长中间件
@@ -341,6 +348,8 @@ BLACKLISTED_EMAIL_DOMAINS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
     "https://shenyiqing.xin",
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -410,3 +419,39 @@ os.makedirs(os.path.join(MEDIA_ROOT, "ai_links/icons"), exist_ok=True)
 os.makedirs(os.path.join(MEDIA_ROOT, "chat_images"), exist_ok=True)  # 添加聊天图片目录
 os.makedirs(os.path.join(MEDIA_ROOT, "temp_audio"), exist_ok=True)  # 添加临时音频目录
 os.makedirs(BASE_DIR / "logs", exist_ok=True)
+
+# django-allauth配置
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# allauth基本配置
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "none"  # 开发环境不验证邮箱
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+
+# Google OAuth配置
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "OAUTH_PKCE_ENABLED": True,
+    }
+}
+
+# 站点ID（django-allauth需要）
+SITE_ID = 1

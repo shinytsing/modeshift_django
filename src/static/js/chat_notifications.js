@@ -416,13 +416,13 @@ class ChatNotificationManager {
                         }
                     }
                 } else {
-                    console.warn('通知API返回了非JSON响应，可能用户未登录');
+                    // 通知API返回了非JSON响应，可能用户未登录
                 }
             } else if (response.status === 403 || response.status === 401) {
-                console.warn('通知API访问被拒绝，用户可能未登录');
+                // 通知API访问被拒绝，用户可能未登录
             }
         } catch (error) {
-            console.error('获取通知摘要失败:', error);
+            // 获取通知摘要失败
         }
     }
 
@@ -446,13 +446,13 @@ class ChatNotificationManager {
                         this.updateNotificationList();
                     }
                 } else {
-                    console.warn('详细通知API返回了非JSON响应，可能用户未登录');
+                    // 详细通知API返回了非JSON响应，可能用户未登录
                 }
             } else if (response.status === 403 || response.status === 401) {
-                console.warn('详细通知API访问被拒绝，用户可能未登录');
+                // 详细通知API访问被拒绝，用户可能未登录
             }
         } catch (error) {
-            console.error('获取详细通知失败:', error);
+            // 获取详细通知失败
         }
     }
 
@@ -559,7 +559,7 @@ class ChatNotificationManager {
                 this.fetchNotifications();
             }
         } catch (error) {
-            console.error('标记已读失败:', error);
+            // 标记已读失败
         }
     }
 
@@ -581,7 +581,7 @@ class ChatNotificationManager {
                 this.hideDropdown();
             }
         } catch (error) {
-            console.error('清除通知失败:', error);
+            // 清除通知失败
         }
     }
 

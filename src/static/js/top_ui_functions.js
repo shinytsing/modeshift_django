@@ -5,7 +5,6 @@
 function toggleTheme() {
     const badge = document.getElementById('topUiBadge');
     if (!badge) {
-        console.warn('主题标识元素未找到');
         return;
     }
     
@@ -33,7 +32,15 @@ function toggleTheme() {
 function switchTheme(theme) {
     // 防止重复请求
     if (window.themeSwitchInProgress) {
-        console.log('主题切换正在进行中，跳过重复请求');
+        return;
+    }
+    
+    // 检查用户是否已登录
+    const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+    
+    if (!isAuthenticated) {
+        // 用户未登录，只更新本地主题
+        updatePageTheme(theme);
         return;
     }
     
@@ -47,48 +54,31 @@ function switchTheme(theme) {
             'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify({
-            mode: theme  // 修改参数名从 theme 改为 mode
+            mode: theme
         })
     })
     .then(response => {
         // 检查响应状态
         if (response.status === 401) {
-            // 用户未登录，检查是否在首页
-            console.log('用户未登录，主题切换API需要登录');
-            if (window.location.pathname === '/' || window.location.pathname === '') {
-                // 在首页时不自动重定向，只显示提示
-                console.log('在首页，不自动重定向到登录页面');
-                return;
-            } else {
-                // 在其他页面时才重定向
-                window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
-                return;
-            }
+            // 用户未登录，只更新本地主题
+            updatePageTheme(theme);
+            return null;
         }
         
         if (response.status === 302) {
-            // 重定向响应，检查是否在首页
-            if (window.location.pathname === '/' || window.location.pathname === '') {
-                // 在首页时不自动重定向
-                console.log('在首页，忽略重定向响应');
-                return;
-            } else {
-                // 在其他页面时才重定向
-                window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname);
-                return;
-            }
+            // 重定向响应，只更新本地主题
+            updatePageTheme(theme);
+            return null;
         }
         
         // 检查响应是否为JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            console.warn('响应不是JSON格式，content-type:', contentType);
             // 尝试解析为JSON，如果失败则使用本地主题更新
             return response.text().then(text => {
                 try {
                     return JSON.parse(text);
                 } catch (e) {
-                    console.warn('无法解析响应为JSON，使用本地主题更新');
                     return null;
                 }
             });
@@ -100,14 +90,12 @@ function switchTheme(theme) {
         if (data && data.success) {
             // 更新页面主题
             updatePageTheme(theme);
-        } else if (data) {
-            console.error('主题切换失败:', data.error);
+        } else {
             // 即使失败也更新本地主题
             updatePageTheme(theme);
         }
     })
     .catch(error => {
-        console.error('主题切换请求失败:', error);
         // 如果请求失败，仍然更新本地主题
         updatePageTheme(theme);
     })
@@ -207,8 +195,6 @@ function hideTopUI() {
             topUiBar.style.setProperty('opacity', '1', 'important');
 
         }, 3000);
-    } else {
-        console.error('❌ 未找到topUiBar元素');
     }
 }
 
@@ -218,7 +204,6 @@ let hideDropdownTimer = null;
 function showUserDropdown() {
     // 检查DOM是否已加载
     if (document.readyState === 'loading') {
-        console.log('DOM未完全加载，延迟执行用户下拉菜单显示');
         setTimeout(showUserDropdown, 100);
         return;
     }
@@ -233,14 +218,11 @@ function showUserDropdown() {
     const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
     
     if (!dropdownContent) {
-        console.warn('❌ 用户下拉菜单元素未找到，尝试重新查找...');
         // 尝试等待一下再查找
         setTimeout(() => {
             const retryDropdown = document.getElementById('userDropdownContent');
             if (retryDropdown) {
                 showUserDropdown();
-            } else {
-                console.error('❌ 用户下拉菜单元素仍然未找到');
             }
         }, 200);
         return;
@@ -276,7 +258,6 @@ function hideUserDropdown() {
     const chevronIcon = document.querySelector('.top-ui-user .fa-chevron-down');
     
     if (!dropdownContent) {
-        console.warn('❌ 用户下拉菜单元素未找到，跳过隐藏操作');
         return;
     }
     
@@ -302,14 +283,11 @@ function toggleUserDropdown() {
     const dropdownContent = document.getElementById('userDropdownContent');
     
     if (!dropdownContent) {
-        console.warn('❌ 用户下拉菜单元素未找到，尝试重新查找...');
         // 尝试等待一下再查找
         setTimeout(() => {
             const retryDropdown = document.getElementById('userDropdownContent');
             if (retryDropdown) {
                 toggleUserDropdown();
-            } else {
-                console.error('❌ 用户下拉菜单元素仍然未找到');
             }
         }, 200);
         return;
