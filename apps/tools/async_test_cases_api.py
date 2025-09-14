@@ -34,17 +34,8 @@ class AsyncGenerateTestCasesAPI(APIView):
             # 创建异步任务 - 智能选择模式
             user_id = request.user.username if request.user.is_authenticated else "anonymous"
             
-            # 检查是否有可用的AI服务
-            from .services.llm_service import get_llm_service
-            llm_service = get_llm_service()
-            available_providers = llm_service.get_available_providers()
-            
-            # 如果没有可用的AI服务，使用Mock模式
-            use_mock_mode = len(available_providers) == 0
-            if use_mock_mode:
-                logger.warning("没有可用的AI服务，使用Mock模式")
-            
-            task_manager = get_task_manager(mock_mode=use_mock_mode)
+            # 使用真实AI服务
+            task_manager = get_task_manager()
             task_id = task_manager.create_task(
                 requirement=requirement,
                 user_prompt=user_prompt,

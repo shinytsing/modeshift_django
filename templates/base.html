@@ -243,10 +243,10 @@
             left: 0 !important;
             right: 0 !important;
             z-index: 9999 !important;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
-            backdrop-filter: blur(20px) !important;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(102, 126, 234, 0.2) !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
             padding: 15px 20px !important;
             display: flex !important;
             justify-content: space-around !important;
@@ -269,11 +269,11 @@
             position: absolute;
             right: 0;
             top: 100%;
-            background: linear-gradient(135deg, rgba(10, 10, 10, 0.95) 0%, rgba(26, 26, 26, 0.95) 50%, rgba(45, 45, 45, 0.95) 100%);
-            backdrop-filter: blur(20px);
-            border: 2px solid #00ff41;
+            background: transparent;
+            backdrop-filter: none;
+            border: none;
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 255, 65, 0.3), 0 0 20px rgba(0, 255, 65, 0.1);
+            box-shadow: none;
             min-width: 200px;
             z-index: 10000;
             margin-top: 10px;
@@ -2251,7 +2251,7 @@
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     
     <!-- 顶部固定UI -->
-    <div class="top-ui-bar" id="topUiBar" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 9999 !important; background: rgba(0, 0, 0, 0.05) !important; backdrop-filter: blur(10px) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important; padding: 15px 20px !important; display: flex !important; justify-content: space-around !important; align-items: center !important; opacity: 1 !important; transform: translateY(0) !important; transition: all 0.3s ease !important; border-radius: 0 0 15px 15px !important; min-height: 70px !important; visibility: visible !important;">
+    <div class="top-ui-bar" id="topUiBar" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 9999 !important; background: transparent !important; backdrop-filter: none !important; border-bottom: none !important; box-shadow: none !important; padding: 15px 20px !important; display: flex !important; justify-content: space-around !important; align-items: center !important; opacity: 1 !important; transform: translateY(0) !important; transition: all 0.3s ease !important; border-radius: 0 0 15px 15px !important; min-height: 70px !important; visibility: visible !important;">
         <script>
             // 立即确保顶部菜单显示
             document.getElementById('topUiBar').style.display = 'flex';
@@ -2363,32 +2363,6 @@
                     <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
                 </a>
                 
-                <!-- 🎨 主题模式区 -->
-                <div style="padding: 10px 20px 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 10px;">
-                    <div style="font-size: 0.8rem; color: #ff6b6b; margin-bottom: 8px; text-align: center; font-weight: 600;">
-                        <i class="fas fa-palette" style="margin-right: 6px;"></i>主题模式
-                    </div>
-                </div>
-                <a href="#" onclick="switchTheme('life'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-seedling" style="width: 16px; text-align: center; color: #27ae60;"></i>
-                    <span>生活模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(39, 174, 96, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('work'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-laptop-code" style="width: 16px; text-align: center; color: #3498db;"></i>
-                    <span>极客模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('training'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-dumbbell" style="width: 16px; text-align: center; color: #e74c3c;"></i>
-                    <span>狂暴模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(231, 76, 60, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
-                <a href="#" onclick="switchTheme('emo'); return false;" class="top-ui-dropdown-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; border-radius: 8px; margin: 0 10px 5px 10px; position: relative; overflow: hidden;">
-                    <i class="fas fa-heart-broken" style="width: 16px; text-align: center; color: #9b59b6;"></i>
-                    <span>Emo模式</span>
-                    <div class="item-hover-effect" style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(155, 89, 182, 0.1), transparent); transition: left 0.3s ease; opacity: 0;"></div>
-                </a>
                 
                 <!-- 📚 帮助与信息区 -->
                 <div style="padding: 10px 20px 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 10px;">
@@ -2511,22 +2485,6 @@
                                 <h6 class="dropdown-header" style="color: #4ecdc4; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; padding: 10px 16px; font-size: 0.85rem;">
                                     <i class="fas fa-compass" style="margin-right: 8px;"></i>快速导航
                                 </h6>
-                                <a class="dropdown-item" href="{% url 'home' %}" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-home" style="color: #2ecc71; margin-right: 8px; width: 16px; text-align: center;"></i> 首页
-                                </a>
-                                <a class="dropdown-item" href="#" onclick="goToCurrentModeTools(); return false;" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-tools" style="color: #f39c12; margin-right: 8px; width: 16px; text-align: center;"></i> 工具集
-                                </a>
-                                <a class="dropdown-item" href="/tools/chat/" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-comments" style="color: #e74c3c; margin-right: 8px; width: 16px; text-align: center;"></i> 聊天室
-                                </a>
-                                <a class="dropdown-item" href="/tools/heart_link/" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-heart" style="color: #e91e63; margin-right: 8px; width: 16px; text-align: center;"></i> 心链匹配
-                                </a>
-                                <a class="dropdown-item" href="#" onclick="showSuggestions(); return false;" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-lightbulb" style="color: #ffc107; margin-right: 8px; width: 16px; text-align: center;"></i> 我的建议
-                                </a>
-                                
                                 <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1); margin: 8px 12px;"></div>
                                 
                                 <!-- 👤 账户设置区 -->
@@ -2537,32 +2495,14 @@
                                     <i class="fas fa-user-edit" style="color: #4ecdc4; margin-right: 8px; width: 16px; text-align: center;"></i> 个人资料
                                 </a>
                                 <a class="dropdown-item" href="#" id="edit-avatar-btn" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-user-circle" style="color: #45b7d1; margin-right: 8px; width: 16px; text-align: center;"></i> 编辑头像
+                                    <i class="fas fa-user-circle" style="color: #45b7d1; margin-right: 8px; width: 16px; text-align: center;"></i> 编辑资料
                                 </a>
                                 <a class="dropdown-item" href="#" onclick="openShareFromMenu(); return false;" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-share-alt" style="color: #17a2b8; margin-right: 8px; width: 16px; text-align: center;"></i> 分享当前页
+                                    <i class="fas fa-share-alt" style="color: #17a2b8; margin-right: 8px; width: 16px; text-align: center;"></i> 分享功能
                                 </a>
                                 
                                 <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1); margin: 8px 12px;"></div>
                                 
-                                <!-- 🎨 界面模式区 -->
-                                <h6 class="dropdown-header" style="color: #ff6b6b; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; padding: 10px 16px; font-size: 0.85rem;">
-                                    <i class="fas fa-palette" style="margin-right: 8px;"></i>界面模式
-                                </h6>
-                                <a class="dropdown-item theme-switch" href="#" data-mode="life" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-seedling" style="color: #27ae60; margin-right: 8px; width: 16px; text-align: center;"></i> 生活模式
-                                </a>
-                                <a class="dropdown-item theme-switch" href="#" data-mode="work" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-laptop-code" style="color: #3498db; margin-right: 8px; width: 16px; text-align: center;"></i> 极客模式
-                                </a>
-                                <a class="dropdown-item theme-switch" href="#" data-mode="training" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-dumbbell" style="color: #e74c3c; margin-right: 8px; width: 16px; text-align: center;"></i> 狂暴模式
-                                </a>
-                                <a class="dropdown-item theme-switch" href="#" data-mode="emo" style="color: #fff; padding: 10px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 2px 8px;">
-                                    <i class="fas fa-heart-broken" style="color: #9b59b6; margin-right: 8px; width: 16px; text-align: center;"></i> Emo模式
-                                </a>
-                                
-                                <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1); margin: 8px 12px;"></div>
                                 
                                 <!-- 📚 帮助与信息区 -->
                                 <h6 class="dropdown-header" style="color: #20c997; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; padding: 10px 16px; font-size: 0.85rem;">
@@ -2602,11 +2542,6 @@
                                 {% endif %}
                                 
                                 <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1); margin: 8px 12px;"></div>
-                                
-                                <!-- 💡 设置提示 -->
-                                <div class="dropdown-item" style="color: rgba(255,255,255,0.8); font-size: 0.75rem; padding: 8px 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-style: italic; background: rgba(255,255,255,0.05);">
-                                    <i class="fas fa-cog" style="margin-right: 6px; color: #ffc107;"></i> 更多设置请访问右上角齿轮按钮
-                                </div>
                                 
                                 <!-- 🚪 登出 -->
                                 <a class="dropdown-item logout-btn" href="{% url 'users:logout' %}" onclick="stopMedia();" style="color: #ff6b6b; padding: 12px 16px; transition: all 0.3s ease; border-radius: 6px; margin: 8px 8px 4px 8px; border-top: 2px solid rgba(255,255,255,0.1); background: rgba(255, 107, 107, 0.1);">
@@ -3217,28 +3152,16 @@
         const isDark = brightness < 128;
         
         if (isDark) {
-            // 深色背景 - 使用较亮的顶部栏
-            const lightR = Math.min(255, r + 100);
-            const lightG = Math.min(255, g + 100);
-            const lightB = Math.min(255, b + 100);
-            
-            const topBarBg = `linear-gradient(135deg, rgba(${lightR}, ${lightG}, ${lightB}, 0.9) 0%, rgba(${Math.min(255, lightR + 30)}, ${Math.min(255, lightG + 30)}, ${Math.min(255, lightB + 30)}, 0.9) 100%)`;
-            
-            topUiBar.style.background = topBarBg;
-            topUiBar.style.borderBottom = '2px solid rgba(255, 255, 255, 0.3)';
-            topUiBar.style.boxShadow = `0 8px 32px rgba(${lightR}, ${lightG}, ${lightB}, 0.4), 0 0 20px rgba(${lightR}, ${lightG}, ${lightB}, 0.3)`;
+            // 深色背景 - 使用完全透明顶部栏
+            topUiBar.style.background = 'transparent';
+            topUiBar.style.borderBottom = 'none';
+            topUiBar.style.boxShadow = 'none';
             
         } else {
-            // 浅色背景 - 使用较暗的顶部栏
-            const darkR = Math.max(0, r - 100);
-            const darkG = Math.max(0, g - 100);
-            const darkB = Math.max(0, b - 100);
-            
-            const topBarBg = `linear-gradient(135deg, rgba(${darkR}, ${darkG}, ${darkB}, 0.9) 0%, rgba(${Math.max(0, darkR - 30)}, ${Math.max(0, darkG - 30)}, ${Math.max(0, darkB - 30)}, 0.9) 100%)`;
-            
-            topUiBar.style.background = topBarBg;
-            topUiBar.style.borderBottom = '2px solid rgba(0, 0, 0, 0.2)';
-            topUiBar.style.boxShadow = `0 8px 32px rgba(${darkR}, ${darkG}, ${darkB}, 0.4), 0 0 20px rgba(${darkR}, ${darkG}, ${darkB}, 0.3)`;
+            // 浅色背景 - 使用完全透明顶部栏
+            topUiBar.style.background = 'transparent';
+            topUiBar.style.borderBottom = 'none';
+            topUiBar.style.boxShadow = 'none';
         }
 
     }
@@ -3284,7 +3207,7 @@
         const themeStyles = {
             'work': {
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                topBarBg: 'linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 50%, rgba(15, 52, 96, 0.9) 100%)',
+                topBarBg: 'transparent',
                 color: '#e8e8e8',
                 buttonColors: {
                     about: 'linear-gradient(135deg, rgba(52, 152, 219, 0.9), rgba(41, 128, 185, 0.9))',
@@ -3295,7 +3218,7 @@
             },
             'life': {
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                topBarBg: 'linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%)',
+                topBarBg: 'transparent',
                 color: '#ffffff',
                 buttonColors: {
                     about: 'linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9))',
@@ -3306,7 +3229,7 @@
             },
             'training': {
                 background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff3838 100%)',
-                topBarBg: 'linear-gradient(135deg, rgba(255, 107, 107, 0.9) 0%, rgba(238, 90, 36, 0.9) 50%, rgba(255, 56, 56, 0.9) 100%)',
+                topBarBg: 'transparent',
                 color: '#ffffff',
                 buttonColors: {
                     about: 'linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(238, 90, 36, 0.9))',
@@ -3317,7 +3240,7 @@
             },
             'emo': {
                 background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%)',
-                topBarBg: 'linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 73, 94, 0.9) 50%, rgba(127, 140, 141, 0.9) 100%)',
+                topBarBg: 'transparent',
                 color: '#ecf0f1',
                 buttonColors: {
                     about: 'linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(52, 73, 94, 0.9))',
@@ -7036,27 +6959,6 @@
                     <button onclick="closeSettingsModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">×</button>
                 </div>
                 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">🎨 主题模式</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button onclick="switchTheme('work')" class="theme-btn" data-theme="work" style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease;">
-                            <div style="font-weight: 600;">极客模式</div>
-                            <div style="font-size: 0.8rem; opacity: 0.8;">专注技术</div>
-                        </button>
-                        <button onclick="switchTheme('life')" class="theme-btn" data-theme="life" style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease;">
-                            <div style="font-weight: 600;">生活模式</div>
-                            <div style="font-size: 0.8rem; opacity: 0.8;">轻松愉悦</div>
-                        </button>
-                        <button onclick="switchTheme('training')" class="theme-btn" data-theme="training" style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease;">
-                            <div style="font-weight: 600;">狂暴模式</div>
-                            <div style="font-size: 0.8rem; opacity: 0.8;">激情四射</div>
-                        </button>
-                        <button onclick="switchTheme('emo')" class="theme-btn" data-theme="emo" style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease;">
-                            <div style="font-weight: 600;">Emo模式</div>
-                            <div style="font-size: 0.8rem; opacity: 0.8;">情感表达</div>
-                        </button>
-                    </div>
-                </div>
                 
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 600;">🎵 音乐控制</label>
@@ -7484,7 +7386,7 @@
     {% block extra_js %}{% endblock %}
     
     <!-- 全局分享按钮 -->
-    {% include 'tools/share_button.html' %}
+    {% include 'tools/ai_assistant_widget.html' %}
     <script>
     // 全局隐藏顶部栏功能
     function hideTopUI() {
@@ -7916,16 +7818,25 @@
             const script = document.createElement('script');
             script.src = '{% static "js/chat_notifications.js" %}';
             script.onload = function() {
-                // 初始化聊天通知管理器
-                window.chatNotificationManager = new ChatNotificationManager();
+                // 脚本加载完成后，手动创建实例确保通知图标显示
+                console.log('ChatNotificationManager脚本加载完成');
+                if (typeof ChatNotificationManager !== 'undefined') {
+                    console.log('创建ChatNotificationManager实例');
+                    window.chatNotificationManager = new ChatNotificationManager();
+                } else {
+                    console.error('ChatNotificationManager类未定义');
+                }
             };
             script.onerror = function() {
                 // 加载聊天通知脚本失败
+                console.error('Failed to load chat notifications script');
             };
             document.head.appendChild(script);
         } else {
-            // 如果已经加载，直接初始化
-            window.chatNotificationManager = new ChatNotificationManager();
+            // 如果已经加载，检查是否已经初始化
+            if (!window.chatNotificationManager) {
+                window.chatNotificationManager = new ChatNotificationManager();
+            }
         }
         {% else %}
         // 用户未登录，跳过聊天通知初始化

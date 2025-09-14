@@ -285,51 +285,32 @@ def ai_analysis_api(request):
         return JsonResponse({"success": True, "analysis": ai_response})
     except Exception as e:
         logger.error(f"AI分析API错误: {str(e)}")
-        # 返回模拟分析结果作为备选
-        mock_analysis = generate_mock_analysis(data.get("userData", {}))
-        return JsonResponse({"success": True, "analysis": mock_analysis})
+        # 返回系统维护提示
+        return JsonResponse({
+            "success": False, 
+            "error": "AI服务暂时不可用，系统正在维护中，请稍后再试"
+        })
 
 
 def call_deepseek_api(prompt):
     """
-    调用DeepSeek API
+    调用AI服务进行命理分析
     """
     try:
-        # DeepSeek API配置
-        api_key = os.getenv("DEEPSEEK_API_KEY", "")
-        api_url = "https://api.deepseek.com/v1/chat/completions"
-
-        if not api_key:
-            raise Exception("DeepSeek API密钥未配置")
-
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "你是一位资深的中国传统命理学专家，精通八字命理和姻缘分析。请提供专业、详细且实用的分析建议。",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            "max_tokens": 2000,
-            "temperature": 0.7,
-        }
-
-        response = requests.post(api_url, headers=headers, json=payload, timeout=30)
-
-        if response.status_code == 200:
-            result = response.json()
-            ai_content = result["choices"][0]["message"]["content"]
-
-            # 解析AI回复并结构化
-            return parse_ai_response(ai_content)
-        else:
-            raise Exception(f"DeepSeek API调用失败: {response.status_code}")
+        from apps.tools.services.llm_service import get_llm_service
+        
+        # 使用统一的LLM服务
+        llm_service = get_llm_service()
+        
+        system_prompt = "你是一位资深的中国传统命理学专家，精通八字命理和姻缘分析。请提供专业、详细且实用的分析建议。"
+        
+        ai_content = llm_service.generate_content(prompt, system_prompt, temperature=0.7)
+        
+        # 解析AI回复并结构化
+        return parse_ai_response(ai_content)
 
     except Exception as e:
-        logger.error(f"DeepSeek API调用错误: {str(e)}")
+        logger.error(f"AI服务调用错误: {str(e)}")
         raise e
 
 
@@ -388,58 +369,3 @@ def parse_ai_response(ai_content):
     return {"title": "AI智能深度分析", "sections": sections}
 
 
-def generate_mock_analysis(user_data):
-    """
-    生成模拟AI分析结果（备选方案）
-    """
-    mode = user_data.get("mode", "couple")
-
-    if mode == "couple":
-        male_name = user_data.get("male", {}).get("name", "男方")
-        female_name = user_data.get("female", {}).get("name", "女方")
-
-        return {
-            "title": "AI智能深度分析",
-            "sections": [
-                {
-                    "title": "🧠 AI深度洞察",
-                    "content": f"基于大数据分析和传统命理学的结合，AI系统深度分析了{male_name}和{female_name}的八字信息。通过对比数万个成功案例，发现你们在五行配置上具有较好的互补性，特别是在性格匹配度方面表现出色。",
-                },
-                {
-                    "title": "🔮 未来趋势预测",
-                    "content": "根据八字运势和现代心理学分析，预测你们的感情发展将在接下来的6-12个月内迎来重要转机。建议在春季（3-5月）或秋季（9-11月）考虑重要的感情决定，这些时期的能量场最为和谐。",
-                },
-                {
-                    "title": "💡 个性化建议",
-                    "content": "AI建议你们在日常相处中要注意沟通方式的调整。建议多进行户外活动，如登山、散步等，这有助于增强你们的感情纽带。同时要避免在情绪波动较大的时期做重要决定。",
-                },
-                {
-                    "title": "⚠️ 注意事项",
-                    "content": "需要特别关注的是双方在处理压力时的不同方式。建议建立定期的深度沟通机制，每周安排固定时间进行心灵交流，这将大大提升你们的关系稳定性。",
-                },
-            ],
-        }
-    else:
-        person_name = user_data.get("person", {}).get("name", "您")
-
-        return {
-            "title": "AI智能深度分析",
-            "sections": [
-                {
-                    "title": "🧠 个人特质分析",
-                    "content": f"AI系统分析了{person_name}的八字特征，发现您具有较强的感情敏感度和直觉能力。您的性格中既有温和的一面，也有坚定的原则性，这种平衡使您在感情中能够给予对方安全感。",
-                },
-                {
-                    "title": "💕 理想伴侣画像",
-                    "content": "基于您的八字分析，最适合您的伴侣类型应该具备：稳重可靠的性格、良好的沟通能力、以及与您互补的五行属性。建议寻找在事业上有一定成就，同时注重家庭生活的对象。",
-                },
-                {
-                    "title": "🌟 姻缘时机预测",
-                    "content": "AI预测您的最佳姻缘时期将在未来18个月内出现。特别是在农历的春季和夏季，桃花运势最为旺盛。建议在这段时间内多参加社交活动，扩大交友圈。",
-                },
-                {
-                    "title": "📋 行动建议",
-                    "content": "建议您在寻找另一半的过程中保持开放的心态，不要过分拘泥于外在条件。重点关注对方的品格和价值观是否与您匹配。同时，提升自己的内在修养也很重要。",
-                },
-            ],
-        }

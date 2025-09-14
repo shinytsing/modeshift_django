@@ -166,6 +166,7 @@ class ChatMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="发送者")
     message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default="text", verbose_name="消息类型")
     content = models.TextField(verbose_name="内容")
+    metadata = models.JSONField(default=dict, blank=True, verbose_name="元数据")
     file_url = models.URLField(blank=True, verbose_name="文件链接")
     file_size = models.IntegerField(default=0, verbose_name="文件大小")
     reply_to = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="回复消息")

@@ -17,7 +17,7 @@
             --error-color: #ff4757;
             --success-color: #2ed573;
             --info-color: #3742fa;
-            
+
             /* 深色主题 */
             --bg-primary: #0a0a0a;
             --bg-secondary: #1a1a1a;
@@ -27,7 +27,7 @@
             --text-muted: #666666;
             --border-color: #333333;
             --border-glow: rgba(0, 255, 136, 0.3);
-            
+
             /* 动画效果 */
             --glow-shadow: 0 0 20px var(--border-glow);
             --glow-shadow-strong: 0 0 30px var(--primary-color);
@@ -57,7 +57,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.05) 0%, transparent 50%);
@@ -442,20 +442,20 @@
                 margin: 10px;
                 padding: 15px;
             }
-            
+
             h1 {
                 font-size: 2rem;
             }
-            
+
             .stats-container {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .task-item-header {
                 flex-direction: column;
                 gap: 10px;
             }
-            
+
             .task-meta {
                 flex-direction: column;
                 gap: 10px;
@@ -538,7 +538,7 @@
 <div id="app">
         <h1>后台任务管理器</h1>
         <p class="subtitle">🚀 查看所有后台任务的运行状态和结果</p>
-        
+
         <!-- 快速导航 -->
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="/tools/test_case_generator/" class="btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 8px; text-decoration: none; transition: var(--transition);">
@@ -590,11 +590,22 @@
         // 页面加载时获取任务列表
         document.addEventListener('DOMContentLoaded', function() {
             loadTasks();
+            
+            // 检查URL参数中是否有task_id，如果有则自动滚动到该任务
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskId = urlParams.get('task_id');
+            if (taskId) {
+                // 延迟执行，确保任务列表已加载
+                setTimeout(() => {
+                    scrollToTask(taskId);
+                }, 1000);
+            }
+            
             // 每30秒自动刷新一次
             setInterval(loadTasks, 30000);
             // 每10秒更新一次剩余时间显示
             setInterval(updateRemainingTimes, 10000);
-            
+
             // 点击外部关闭下载菜单
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.download-dropdown')) {
@@ -615,6 +626,15 @@
                     const tasks = response.data.tasks || [];
                     updateStats(tasks);
                     renderTasks(tasks);
+                    
+                    // 如果URL中有task_id参数，滚动到该任务
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const taskId = urlParams.get('task_id');
+                    if (taskId) {
+                        setTimeout(() => {
+                            scrollToTask(taskId);
+                        }, 500);
+                    }
                 } else {
                     content.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>加载任务失败</p></div>';
                 }
@@ -623,6 +643,33 @@
                 console.error('加载任务失败:', error);
                 content.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>加载任务失败，请稍后重试</p></div>';
             });
+        }
+
+        function scrollToTask(taskId) {
+            // 查找包含指定task_id的任务元素
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskElement) {
+                // 滚动到该任务元素
+                taskElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // 高亮显示该任务
+                taskElement.style.border = '2px solid var(--primary-color)';
+                taskElement.style.boxShadow = '0 0 20px var(--primary-color)';
+                
+                // 3秒后移除高亮
+                setTimeout(() => {
+                    taskElement.style.border = '';
+                    taskElement.style.boxShadow = '';
+                }, 3000);
+                
+                // 显示通知
+                showNotification(`已跳转到任务 ${taskId.substring(0, 8)}...`, 'success');
+            } else {
+                console.log(`未找到任务 ${taskId}`);
+            }
         }
 
         function updateStats(tasks) {
@@ -639,10 +686,10 @@
 
         function renderTasks(tasks) {
             const content = document.getElementById('taskListContent');
-            
+
             // 检查任务状态变化并发送通知
             checkTaskStatusChanges(tasks);
-            
+
             if (tasks.length === 0) {
                 content.innerHTML = `
                     <div class="empty-state">
@@ -668,7 +715,7 @@
                 const completedTime = task.completed_at ? new Date(task.completed_at).toLocaleString() : '';
 
                 return `
-                    <div class="task-item">
+                    <div class="task-item" data-task-id="${task.id}">
                         <div class="task-item-header">
                             <div class="task-id">${task.id.substring(0, 8)}...</div>
                             <div class="task-status ${statusClass}">
@@ -676,11 +723,11 @@
                                 ${statusText}
                             </div>
                         </div>
-                        
+
                         <div class="task-requirement">
                             ${task.requirement.substring(0, 100)}${task.requirement.length > 100 ? '...' : ''}
                         </div>
-                        
+
                         ${task.status === 'running' || task.status === 'pending' ? `
                             <div class="task-progress">
                                 <div class="progress-bar">
@@ -692,13 +739,13 @@
                                 </div>
                             </div>
                         ` : ''}
-                        
+
                         <div class="task-meta">
                             <div>
                                 <i class="fas fa-clock"></i> 创建时间: ${createdTime}
                                 ${completedTime ? `<br><i class="fas fa-check"></i> 完成时间: ${completedTime}` : ''}
                                 ${task.status === 'pending' || task.status === 'running' ? `
-                                    <br><i class="fas fa-hourglass-half"></i> 
+                                    <br><i class="fas fa-hourglass-half"></i>
                                     <span style="color: ${isTaskNearTimeout(task.created_at) ? 'var(--warning-color)' : 'var(--text-muted)'}">
                                         剩余时间: ${getRemainingTime(task.created_at)}
                                     </span>
@@ -766,18 +813,18 @@
                         <body>
                             <h2>任务结果</h2>
                             <div class="actions">
-                                <button class="btn" onclick="downloadResult()">下载结果</button>
+                                <button class="btn" onclick="downloadResultLocal()">下载结果</button>
                                 <button class="btn" onclick="copyResult()">复制内容</button>
                             </div>
                             <pre id="resultContent">${response.data.result}</pre>
                             <script>
-                                function downloadResult() {
+                                function downloadResultLocal() {
                                     const content = document.getElementById('resultContent').textContent;
                                     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
                                     const url = URL.createObjectURL(blob);
                                     const a = document.createElement('a');
                                     a.href = url;
-                                    a.download = '任务结果_${taskId.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.txt';
+                                    a.download = '任务结果_' + taskId.substring(0, 8) + '_' + new Date().toISOString().slice(0, 10) + '.txt';
                                     document.body.appendChild(a);
                                     a.click();
                                     document.body.removeChild(a);
@@ -791,7 +838,7 @@
                                         alert('复制失败，请手动选择复制');
                                     });
                                 }
-                            </script>
+                            <\/script>
                         </body>
                         </html>
                     `);
@@ -806,19 +853,19 @@
         function downloadResult(taskId, format = 'txt') {
             // 使用新的下载API端点
             const downloadUrl = `/tools/api/async/task/${taskId}/download/${format}/`;
-            
+
             // 创建隐藏的下载链接
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.style.display = 'none';
             document.body.appendChild(link);
-            
+
             // 触发下载
             link.click();
-            
+
             // 清理
             document.body.removeChild(link);
-            
+
             showNotification(`${format.toUpperCase()}格式文件下载中...`, 'success');
         }
 
@@ -831,7 +878,7 @@
                         m.classList.remove('show');
                     }
                 });
-                
+
                 // 切换当前菜单
                 menu.classList.toggle('show');
             }
@@ -842,57 +889,57 @@
             const lines = testCaseText.split('\n');
             let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>' + '\\n';
             xmlContent += '<map version="1.0.1">' + '\\n';
-            xmlContent += '  <node TEXT="测试用例文档" STYLE="bubble" COLOR="#000000">' + '\\n';
-            
+            xmlContent += '  <node TEXT="测试用例文档" STYLE_ATTR="bubble" COLOR_ATTR="#000000">' + '\\n';
+
             let currentModule = null;
             let moduleNode = null;
-            
+
             for (let line of lines) {
                 line = line.trim();
                 if (!line) continue;
-                
+
                 // 检测模块标题
                 if (line.startsWith('## ')) {
                     if (currentModule) {
                         xmlContent += '    </node>\\n';
                     }
                     currentModule = line.substring(3).trim();
-                    xmlContent += `    <node TEXT="${escapeXml(currentModule)}" COLOR="#FF7F50" STYLE="fork">\\n`;
+                    xmlContent += `    <node TEXT="${escapeXml(currentModule)}" COLOR_ATTR="#FF7F50" STYLE_ATTR="fork">\\n`;
                 }
                 // 检测测试用例
                 else if (line.startsWith('### ') && currentModule) {
                     const testCase = line.substring(4).trim();
-                    xmlContent += `      <node TEXT="${escapeXml(testCase)}" COLOR="#4682B4" STYLE="bullet"/>\\n`;
+                    xmlContent += `      <node TEXT="${escapeXml(testCase)}" COLOR_ATTR="#4682B4" STYLE_ATTR="bullet"/>\\n`;
                 }
                 // 检测用例详情
                 else if (line.startsWith('- ') && currentModule) {
                     const detail = line.substring(2).trim();
-                    xmlContent += `      <node TEXT="${escapeXml(detail)}" COLOR="#32CD32" STYLE="bullet"/>\\n`;
+                    xmlContent += `      <node TEXT="${escapeXml(detail)}" COLOR_ATTR="#32CD32" STYLE_ATTR="bullet"/>\\n`;
                 }
             }
-            
+
             if (currentModule) {
                 xmlContent += '    </node>\\n';
             }
-            
+
             xmlContent += '  </node>\\n';
             xmlContent += '</map>';
-            
+
             return xmlContent;
         }
-        
+
         function generateFeishuContent(testCaseText) {
             // 生成飞书兼容的Markdown内容
             let feishuContent = '# 测试用例文档\n\n';
             feishuContent += '> 本文档由AI测试用例生成器自动生成，支持飞书直接导入\n\n';
-            
+
             const lines = testCaseText.split('\n');
             let currentModule = null;
-            
+
             for (let line of lines) {
                 line = line.trim();
                 if (!line) continue;
-                
+
                 // 检测模块标题
                 if (line.startsWith('## ')) {
                     if (currentModule) {
@@ -916,17 +963,17 @@
                     feishuContent += `${line}\n`;
                 }
             }
-            
+
             feishuContent += '\n---\n\n';
             feishuContent += '## 📊 文档信息\n\n';
             feishuContent += '- **生成时间**: ' + new Date().toLocaleString() + '\n';
             feishuContent += '- **生成工具**: AI测试用例生成器\n';
             feishuContent += '- **格式**: 飞书兼容Markdown\n';
             feishuContent += '- **用途**: 可直接导入飞书文档使用\n\n';
-            
+
             return feishuContent;
         }
-        
+
         function escapeXml(text) {
             return text.replace(/&/g, '&amp;')
                      .replace(/</g, '&lt;')
@@ -954,7 +1001,7 @@
             if (!confirm('确定要删除这个任务吗？\n\n注意：如果任务正在运行，将会被停止并删除。')) {
                 return;
             }
-            
+
             // 发送删除请求
             axios.post('/tools/api/async/task/delete/', {
                 task_id: taskId
@@ -980,14 +1027,14 @@
             const timeoutMs = 60 * 60 * 1000; // 1小时
             const elapsed = now - created;
             const remaining = timeoutMs - elapsed;
-            
+
             if (remaining <= 0) {
                 return '已超时';
             }
-            
+
             const minutes = Math.floor(remaining / (1000 * 60));
             const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-            
+
             if (minutes > 0) {
                 return `${minutes}分${seconds}秒`;
             } else {
@@ -1001,7 +1048,7 @@
             const timeoutMs = 60 * 60 * 1000; // 1小时
             const elapsed = now - created;
             const remaining = timeoutMs - elapsed;
-            
+
             // 如果剩余时间少于10分钟，显示警告
             return remaining < 10 * 60 * 1000;
         }
@@ -1031,15 +1078,15 @@
                     <span>${message}</span>
                 </div>
             `;
-            
+
             // 添加到页面
             document.body.appendChild(notification);
-            
+
             // 显示动画
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
-            
+
             // 自动隐藏
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -1063,13 +1110,13 @@
 
         // 任务状态变化通知
         let lastTaskStates = {};
-        
+
         function checkTaskStatusChanges(tasks) {
             tasks.forEach(task => {
                 const taskId = task.id;
                 const currentStatus = task.status;
                 const lastStatus = lastTaskStates[taskId];
-                
+
                 // 如果状态发生变化
                 if (lastStatus && lastStatus !== currentStatus) {
                     if (currentStatus === 'completed') {
@@ -1078,7 +1125,7 @@
                         showNotification(`任务 "${task.requirement.substring(0, 30)}..." 执行失败`, 'error');
                     }
                 }
-                
+
                 // 更新状态记录
                 lastTaskStates[taskId] = currentStatus;
             });

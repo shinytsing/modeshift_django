@@ -16,9 +16,12 @@ from ..models.chat_models import ChatMessage, ChatNotification, ChatRoom
 
 @csrf_exempt
 @require_http_methods(["GET"])
-@login_required
 def get_unread_notifications_api(request):
     """获取未读通知API"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
+    
     try:
         # 确保ChatNotification表存在
         from django.db import connection
@@ -48,18 +51,22 @@ def get_unread_notifications_api(request):
         # 构建响应数据
         notifications_data = []
         for notification in unread_notifications[:10]:  # 最近10条
-            notifications_data.append(
-                {
-                    "id": notification.id,
-                    "room_id": notification.room.room_id,
-                    "room_name": notification.room.name,
-                    "sender_username": notification.message.sender.username,
-                    "message_preview": notification.message.content[:50]
-                    + ("..." if len(notification.message.content) > 50 else ""),
-                    "message_type": notification.message.message_type,
-                    "created_at": notification.created_at.isoformat(),
-                }
-            )
+            notification_data = {
+                "id": notification.id,
+                "room_id": notification.room.room_id,
+                "room_name": notification.room.name,
+                "sender_username": notification.message.sender.username,
+                "message_preview": notification.message.content[:50]
+                + ("..." if len(notification.message.content) > 50 else ""),
+                "message_type": notification.message.message_type,
+                "created_at": notification.created_at.isoformat(),
+            }
+            
+            # 添加metadata信息（如果存在）
+            if notification.message.metadata:
+                notification_data["metadata"] = notification.message.metadata
+            
+            notifications_data.append(notification_data)
 
         rooms_data = []
         for room in unread_rooms:
@@ -79,9 +86,12 @@ def get_unread_notifications_api(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
 def mark_notifications_read_api(request):
     """标记通知为已读API"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
+    
     try:
         data = json.loads(request.body)
         room_id = data.get("room_id")
@@ -121,9 +131,12 @@ def mark_notifications_read_api(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
 def clear_all_notifications_api(request):
     """清除所有通知API"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
+    
     try:
         # 确保ChatNotification表存在
         from django.db import connection
@@ -154,6 +167,10 @@ def create_chat_notification(message, exclude_sender=True):
     当有新消息时调用此函数
     """
     try:
+        # 跳过系统消息的自动通知创建，避免重复通知
+        if message.message_type == "system":
+            return
+            
         room = message.room
 
         # 获取聊天室的所有用户
@@ -184,9 +201,12 @@ def create_chat_notification(message, exclude_sender=True):
 
 @csrf_exempt
 @require_http_methods(["GET"])
-@login_required
 def get_notification_summary_api(request):
     """获取通知摘要API - 用于右上角显示"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
+    
     try:
         # 添加调试信息
         import logging
@@ -252,9 +272,12 @@ def get_notification_summary_api(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
 def create_system_notification_api(request):
     """创建系统通知API"""
+    # 检查用户是否登录
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
+    
     try:
         data = json.loads(request.body)
         title = data.get("title", "系统通知")

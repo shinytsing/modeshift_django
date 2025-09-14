@@ -46,7 +46,7 @@ def generic_file_download(request, filename):
                 content_type = "application/vnd.xmind.workbook"
             elif filename.endswith(".txt"):
                 content_type = "text/plain"
-            elif filename.endswith(".md"):
+            elif filename.endswith(".mm"):
                 content_type = "text/markdown"
             else:
                 content_type = "application/octet-stream"

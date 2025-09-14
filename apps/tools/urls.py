@@ -202,6 +202,9 @@ from .views.base_views import (
     get_vanity_tasks_stats_api,
 )
 
+# 从AI助手视图导入
+from .views.ai_assistant_views import ai_assistant_api, ai_assistant_features_api
+
 # 🔧 基础工具视图
 from .views.basic_tools_views import (
     ai_analysis_api,
@@ -1132,4 +1135,7 @@ urlpatterns = [
     # 训练模式导入API
     path("api/fitness/training-modes/", get_training_modes_api, name="get_training_modes_api"),
     path("api/fitness/import-training-mode/", import_training_mode_api, name="import_training_mode_api"),
+    # AI助手相关API路由
+    path("api/ai-assistant/", ai_assistant_api, name="ai_assistant_api"),
+    path("api/ai-assistant/features/", ai_assistant_features_api, name="ai_assistant_features_api"),
 ]
