@@ -137,22 +137,27 @@ class TaskDownloadAPI(APIView):
             return Response({"error": f"生成XMind文件失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def _generate_feishu_file(self, content, task_id):
-        """生成飞书格式文件"""
+        """生成飞书格式文件（FreeMind格式）"""
         try:
-            # 生成飞书兼容的Markdown内容
-            feishu_content = self._generate_feishu_content(content)
+            # 使用现有的FreeMind生成方法
+            from .generate_test_cases_api import GenerateTestCasesAPI
+            generator = GenerateTestCasesAPI()
             
-            filename = f"任务结果_{task_id[:8]}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_feishu.md"
+            # 解析内容为测试用例结构
+            test_cases = self._parse_content_to_structure(content)
+            feishu_content = generator._generate_freemind(test_cases)
+            
+            filename = f"任务结果_{task_id[:8]}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_feishu.mm"
             
             # 创建临时文件
-            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.md') as tmp:
+            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.mm') as tmp:
                 tmp.write(feishu_content)
                 tmp_path = tmp.name
             
             try:
                 response = FileResponse(
                     open(tmp_path, 'rb'),
-                    content_type='text/markdown; charset=utf-8',
+                    content_type='application/x-freemind; charset=utf-8',
                     as_attachment=True,
                     filename=filename
                 )
@@ -205,3 +210,47 @@ class TaskDownloadAPI(APIView):
         feishu_content += '- **用途**: 可直接导入飞书文档使用\n\n'
         
         return feishu_content
+    
+    def _parse_content_to_structure(self, content):
+        """解析测试用例内容为结构化的数据格式"""
+        try:
+            lines = content.split('\n')
+            structure = {}
+            current_module = None
+            current_cases = []
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # 检测模块标题
+                if line.startswith('## '):
+                    # 保存之前的模块
+                    if current_module and current_cases:
+                        structure[current_module] = current_cases
+                    
+                    # 开始新模块
+                    current_module = line[3:].strip()
+                    current_cases = []
+                
+                # 检测测试用例
+                elif line.startswith('### ') and current_module:
+                    test_case = line[4:].strip()
+                    current_cases.append(test_case)
+            
+            # 保存最后一个模块
+            if current_module and current_cases:
+                structure[current_module] = current_cases
+            
+            return {
+                "title": "测试用例文档",
+                "structure": structure
+            }
+            
+        except Exception as e:
+            logger.error(f"解析内容结构失败: {e}")
+            return {
+                "title": "测试用例文档",
+                "structure": {"默认模块": ["解析失败"]}
+            }

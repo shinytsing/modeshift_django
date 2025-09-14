@@ -8,8 +8,8 @@ from django.conf import settings
 from django.core.files import File
 from django.utils.text import slugify
 
-import defusedxml.ElementTree as ET
-import defusedxml.minidom as minidom
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 import xmind
 from rest_framework import status
 from rest_framework.response import Response
@@ -43,6 +43,7 @@ class GenerateTestCasesAPI(APIView):
 3. **异常测试**：重要错误处理、边界条件、异常流程
 4. **安全测试**：基本数据安全、权限控制、输入验证
 5. **性能测试**：基本性能指标、响应时间
+6. **兼容性测试**：浏览器兼容、设备兼容、版本兼容
 
 ## 用例结构（每个用例必须包含）
 - **用例ID**：TC-模块-序号（如：TC-登录-001）
@@ -55,11 +56,12 @@ class GenerateTestCasesAPI(APIView):
 - **测试类型**：功能/界面/异常/安全/性能
 
 ## 数量要求（必须满足）
-- **每个功能模块至少8个用例，推荐10-15个**
-- **总用例数量至少50个，推荐55-60个**
+- **每个测试维度至少10个用例，推荐15-20个**
+- **总用例数量至少100个，推荐120-150个**
+- **测试维度包括：功能测试、界面测试、异常测试、安全测试、性能测试、兼容性测试**
 - **用例分布：正向60% + 异常25% + 边界15%**
 - **必须覆盖所有核心功能和关键场景**
-- **如果遇到token限制，请生成最重要的用例，确保完整性**
+- **优先保证数量和质量，生成时间可以适当延长**
 
 ## 输出格式（严格按照此格式）
 ```
@@ -196,10 +198,10 @@ class GenerateTestCasesAPI(APIView):
                 xmind_path = os.path.join(output_dir, xmind_filename)
                 xmind.save(xmind_workbook, xmind_path)
 
-                # 生成飞书导入格式文件（Markdown格式）
-                feishu_filename = outfile_name.replace(".mm", "_feishu.md")
+                # 生成飞书导入格式文件（FreeMind格式）
+                feishu_filename = outfile_name.replace(".mm", "_feishu.mm")
                 feishu_path = os.path.join(output_dir, feishu_filename)
-                feishu_content = self._generate_feishu_format(test_cases, raw_response)
+                feishu_content = self._generate_feishu_freemind_format(test_cases, raw_response)
                 with open(feishu_path, "w", encoding="utf-8") as f:
                     f.write(feishu_content)
 
@@ -279,10 +281,11 @@ class GenerateTestCasesAPI(APIView):
             return Response({"error": f"服务器处理失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _parse_test_cases(self, raw_response):
-        """解析API响应为层级结构，增强鲁棒性"""
+        """解析API响应为层级结构，增强鲁棒性，支持新的prompt格式"""
         sections = {}
         current_section = None
         current_case = []
+        current_case_content = []
         line_number = 0  # 用于错误定位
 
         try:
@@ -294,43 +297,68 @@ class GenerateTestCasesAPI(APIView):
                 if not line:
                     continue
 
-                # 处理标题行（# 开头）
-                if line.startswith("#"):
+                # 处理一级标题（# 开头）- 文档标题
+                if line.startswith("# ") and not line.startswith("## "):
                     # 如果有未完成的用例，添加到当前章节
-                    if current_case and current_section:
-                        sections[current_section].append("\n".join(current_case))
-                        current_case = []
-                    # 设置新章节（支持多级标题，但统一处理为一级章节）
-                    current_section = line.lstrip("# ").strip()
+                    if current_case_content and current_section:
+                        sections[current_section].append("\n".join(current_case_content))
+                        current_case_content = []
+                    # 这是文档标题，跳过
+                    continue
+                    
+                # 处理二级标题（## 开头）- 模块名称
+                elif line.startswith("## "):
+                    # 如果有未完成的用例，添加到当前章节
+                    if current_case_content and current_section:
+                        sections[current_section].append("\n".join(current_case_content))
+                        current_case_content = []
+                    
+                    # 设置新章节
+                    current_section = line.lstrip("## ").strip()
                     # 处理可能的重复章节名
                     if current_section in sections:
-                        # 添加计数器避免覆盖
                         counter = 1
                         original_section = current_section
                         while current_section in sections:
                             current_section = f"{original_section}_{counter}"
                             counter += 1
                     sections[current_section] = []
-                # 处理列表项（- 或 * 开头）
-                elif line.startswith(("-", "*")) and current_section:
+                    
+                # 处理三级标题（### 开头）- 测试用例标题
+                elif line.startswith("### ") and current_section:
                     # 如果有未完成的用例，添加到当前章节
-                    if current_case:
-                        sections[current_section].append("\n".join(current_case))
-                        current_case = []
-                    # 添加新用例的第一行
-                    current_case.append(line.lstrip("-* ").strip())
-                # 处理用例的多行内容
-                elif current_case and current_section:
-                    current_case.append(line)
+                    if current_case_content and current_section:
+                        sections[current_section].append("\n".join(current_case_content))
+                        current_case_content = []
+                    
+                    # 开始新的测试用例
+                    case_title = line.lstrip("### ").strip()
+                    current_case_content = [case_title]
+                    
+                # 处理用例详情（**字段名**：内容）
+                elif line.startswith("**") and "**：" in line and current_case_content:
+                    current_case_content.append(line)
+                    
+                # 处理测试步骤列表
+                elif line.startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.")) and current_case_content:
+                    current_case_content.append(line)
+                    
+                # 处理其他用例内容
+                elif current_case_content and current_section and not line.startswith("#"):
+                    # 跳过总结部分
+                    if line.startswith("- 总用例数量") or line.startswith("- 功能模块数量") or line.startswith("- 测试覆盖情况") or line.startswith("- 测试类型分布"):
+                        continue
+                    current_case_content.append(line)
 
             # 添加最后一个用例
-            if current_case and current_section:
-                sections[current_section].append("\n".join(current_case))
+            if current_case_content and current_section:
+                sections[current_section].append("\n".join(current_case_content))
 
             # 如果没有解析到任何章节，创建一个默认章节
             if not sections:
                 sections["默认测试场景"] = [raw_response]
 
+            logger.info(f"解析完成，共解析到 {len(sections)} 个模块")
             return {"title": "AI生成测试用例", "structure": sections}
 
         except Exception as e:
@@ -341,8 +369,13 @@ class GenerateTestCasesAPI(APIView):
     def _generate_freemind(self, test_cases):
         """生成飞书兼容的FreeMind格式XML，增强兼容性处理"""
         try:
-            # 避免XML命名空间问题
-            ET.register_namespace("", "http://freemind.sourceforge.net/wiki/index.php/XML")
+            # 避免XML命名空间问题 - 使用标准ElementTree而不是defusedxml
+            import xml.etree.ElementTree as ET_standard
+            try:
+                ET_standard.register_namespace("", "http://freemind.sourceforge.net/wiki/index.php/XML")
+            except AttributeError:
+                # 某些版本的ElementTree不支持register_namespace，跳过
+                pass
 
             # FreeMind根节点
             map_root = ET.Element("map")
@@ -435,37 +468,69 @@ class GenerateTestCasesAPI(APIView):
             # 设置根主题
             root_topic.setTitle("AI生成测试用例")
 
-            # 解析测试用例内容，构建层级结构
-            content = test_cases.get("content", "")
-            lines = content.split("\n")
+            # 处理解析后的结构化数据
+            if isinstance(test_cases, dict) and "structure" in test_cases:
+                structure = test_cases["structure"]
+                
+                # 遍历每个模块
+                for module_name, test_cases_list in structure.items():
+                    if not module_name or not test_cases_list:
+                        continue
+                        
+                    # 创建模块节点
+                    module_topic = root_topic.addSubTopic()
+                    module_topic.setTitle(module_name)
+                    
+                    # 处理该模块下的测试用例
+                    for case_content in test_cases_list:
+                        if not case_content:
+                            continue
+                            
+                        # 解析用例内容
+                        case_lines = case_content.split('\n')
+                        case_title = case_lines[0] if case_lines else "未命名用例"
+                        
+                        # 创建用例节点
+                        case_topic = module_topic.addSubTopic()
+                        case_topic.setTitle(case_title)
+                        
+                        # 添加用例详情
+                        for detail_line in case_lines[1:]:
+                            if detail_line.strip():
+                                detail_topic = case_topic.addSubTopic()
+                                detail_topic.setTitle(detail_line.strip())
+            else:
+                # 如果没有结构化数据，尝试解析原始内容
+                content = test_cases.get("content", "")
+                if content:
+                    lines = content.split("\n")
+                    current_section = None
+                    current_section_topic = None
 
-            current_section = None
-            current_section_topic = None
+                    for line in lines:
+                        line = line.strip()
+                        if not line:
+                            continue
 
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
+                        # 检测二级标题（## 模块名称）
+                        if line.startswith("## "):
+                            current_section = line[3:].strip()
+                            current_section_topic = root_topic.addSubTopic()
+                            current_section_topic.setTitle(current_section)
 
-                # 检测二级标题（## 模块名称）
-                if line.startswith("## "):
-                    current_section = line[3:].strip()
-                    current_section_topic = root_topic.addSubTopic()
-                    current_section_topic.setTitle(current_section)
+                        # 检测用例（以 ### 开头）
+                        elif line.startswith("### ") and current_section_topic:
+                            case_content = line[4:].strip()
+                            case_topic = current_section_topic.addSubTopic()
+                            case_topic.setTitle(case_content)
 
-                # 检测用例（以 - 开头）
-                elif line.startswith("- ") and current_section_topic:
-                    case_content = line[2:].strip()
-                    case_topic = current_section_topic.addSubTopic()
-                    case_topic.setTitle(case_content)
-
-                # 检测用例详情（以 * 开头）
-                elif line.startswith("* ") and current_section_topic:
-                    detail_content = line[2:].strip()
-                    if current_section_topic.getSubTopics():
-                        last_case = current_section_topic.getSubTopics()[-1]
-                        detail_topic = last_case.addSubTopic()
-                        detail_topic.setTitle(detail_content)
+                        # 检测用例详情（以 ** 开头）
+                        elif line.startswith("**") and "**：" in line and current_section_topic:
+                            detail_content = line.strip()
+                            if current_section_topic.getSubTopics():
+                                last_case = current_section_topic.getSubTopics()[-1]
+                                detail_topic = last_case.addSubTopic()
+                                detail_topic.setTitle(detail_content)
 
             # 如果没有解析到内容，创建默认结构
             if not root_topic.getSubTopics():
@@ -533,3 +598,12 @@ class GenerateTestCasesAPI(APIView):
         except Exception as e:
             logger.error(f"生成飞书格式失败: {str(e)}", exc_info=True)
             return f"# 测试用例文档\n\n生成飞书格式失败: {str(e)}"
+    
+    def _generate_feishu_freemind_format(self, test_cases, raw_response):
+        """生成飞书兼容的FreeMind格式"""
+        try:
+            # 使用现有的FreeMind格式生成方法，但针对飞书进行优化
+            return self._generate_freemind_format(test_cases, raw_response)
+        except Exception as e:
+            logger.error(f"生成飞书FreeMind格式失败: {str(e)}", exc_info=True)
+            return f"生成飞书FreeMind格式失败: {str(e)}"

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class AsyncTaskManager:
     """异步任务管理器 - 支持真正的后台任务"""
 
-    def __init__(self, mock_mode=False):
+    def __init__(self):
         self.tasks: Dict[str, Dict[str, Any]] = {}
         self.task_lock = threading.Lock()
         # 使用项目根目录下的task_storage目录
@@ -24,7 +24,6 @@ class AsyncTaskManager:
         self.storage_dir = os.path.join(project_root, "task_storage")
         # 任务超时配置（小时）
         self.task_timeout_hours = 24  # 增加到24小时，避免任务被过早清理
-        self.mock_mode = mock_mode  # 添加mock模式支持
         self._ensure_storage_dir()
         self._load_tasks_from_storage()
         self._start_cleanup_thread()
@@ -309,23 +308,17 @@ class AsyncTaskManager:
                 self._save_tasks_to_storage()
 
             # 步骤6: 生成兼容性测试用例 (75-90%)
-            time.sleep(2)
+            time.sleep(5)  # 增加等待时间，确保AI有足够时间生成更多用例
             with self.task_lock:
                 self.tasks[task_id]["progress"] = 90
                 self.tasks[task_id]["current_step"] = "整理和优化"
                 self._save_tasks_to_storage()
 
-            # 调用 API 或使用Mock模式
-            if self.mock_mode:
-                # Mock模式：生成模拟的测试用例
-                result = self._generate_mock_test_cases(requirement, user_prompt)
-                logger.info(f"使用Mock模式生成测试用例: {task_id}")
-            else:
-                # 真实模式：尝试使用免费API
-                result = self._generate_with_free_api(requirement, user_prompt, task_id)
+            # 使用真实AI服务生成测试用例（支持接续生成）
+            result = self._generate_with_ai_service_continue(requirement, user_prompt, task_id)
 
             # 步骤7: 完成 (90-100%)
-            time.sleep(1)
+            time.sleep(3)  # 增加完成后的等待时间
             with self.task_lock:
                 self.tasks[task_id]["status"] = "completed"
                 self.tasks[task_id]["progress"] = 100
@@ -351,164 +344,94 @@ class AsyncTaskManager:
 
             logger.error(f"后台任务失败: {task_id}, 错误: {e}")
 
-    def _generate_mock_test_cases(self, requirement: str, user_prompt: str) -> str:
-        """生成模拟的测试用例"""
-        from datetime import datetime
-        
-        mock_content = f"""# 测试用例文档
 
-## 功能测试用例
+    def _generate_with_ai_service(self, requirement: str, user_prompt: str, task_id: str) -> str:
+        """使用AI服务生成测试用例"""
+        try:
+            logger.info(f"开始使用AI服务生成测试用例: {task_id}")
+            llm_service = get_llm_service()
+            
+            # 检查可用服务
+            available_providers = llm_service.get_available_providers()
+            logger.info(f"可用AI服务: {[p.value for p in available_providers]}")
+            
+            if not available_providers:
+                logger.error(f"没有可用的AI服务: {task_id}")
+                return self._generate_maintenance_message(requirement, user_prompt)
+            
+            result = llm_service.generate_test_cases(requirement, user_prompt)
+            logger.info(f"AI服务生成成功: {task_id}")
+            return result
+        except Exception as e:
+            logger.error(f"AI服务生成失败: {task_id}, 错误: {e}")
+            import traceback
+            logger.error(f"详细错误信息: {traceback.format_exc()}")
+            # 如果AI服务不可用，返回系统维护提示
+            logger.warning(f"AI服务不可用，返回系统维护提示: {task_id}")
+            return self._generate_maintenance_message(requirement, user_prompt)
 
-### TC-001：用户登录功能测试
-**测试场景**：用户使用有效凭据登录系统
-**前置条件**：系统正常运行，用户账户已注册
-**测试步骤**：
-1. 打开登录页面
-2. 输入有效的用户名和密码
-3. 点击登录按钮
-**预期结果**：成功登录并跳转到主页
-**优先级**：P0
-**测试类型**：功能测试
+    def _generate_with_ai_service_continue(self, requirement: str, user_prompt: str, task_id: str) -> str:
+        """使用AI服务接续生成测试用例"""
+        try:
+            logger.info(f"开始使用AI服务接续生成测试用例: {task_id}")
+            llm_service = get_llm_service()
+            
+            # 检查可用服务
+            available_providers = llm_service.get_available_providers()
+            logger.info(f"可用AI服务: {[p.value for p in available_providers]}")
+            
+            if not available_providers:
+                logger.error(f"没有可用的AI服务: {task_id}")
+                return self._generate_maintenance_message(requirement, user_prompt)
+            
+            # 使用接续生成方法
+            result = llm_service.generate_test_cases_continue(requirement, user_prompt)
+            logger.info(f"AI服务接续生成成功: {task_id}, 结果长度: {len(result)}")
+            
+            # 更新任务进度
+            with self.task_lock:
+                self.tasks[task_id]["current_step"] = "生成完成，检查质量"
+                self._save_tasks_to_storage()
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"AI服务接续生成失败: {task_id}, 错误: {e}")
+            import traceback
+            logger.error(f"详细错误信息: {traceback.format_exc()}")
+            return self._generate_maintenance_message(requirement, user_prompt)
 
-### TC-002：用户注册功能测试
-**测试场景**：新用户注册账户
-**前置条件**：系统正常运行，用户未注册
-**测试步骤**：
-1. 打开注册页面
-2. 填写用户信息（用户名、密码、邮箱）
-3. 点击注册按钮
-**预期结果**：成功注册并发送验证邮件
-**优先级**：P0
-**测试类型**：功能测试
+    def _generate_maintenance_message(self, requirement: str, user_prompt: str) -> str:
+        """生成系统维护提示消息"""
+        return f"""# 系统维护提示
 
-### TC-003：密码重置功能测试
-**测试场景**：用户忘记密码时重置密码
-**前置条件**：用户账户已注册
-**测试步骤**：
-1. 点击"忘记密码"链接
-2. 输入注册邮箱
-3. 点击发送重置邮件
-**预期结果**：收到密码重置邮件
-**优先级**：P1
-**测试类型**：功能测试
+## 抱歉，AI服务暂时不可用
 
-## 界面测试用例
+**需求描述**：{requirement}
 
-### TC-004：登录页面界面测试
-**测试场景**：验证登录页面UI元素
-**前置条件**：访问登录页面
-**测试步骤**：
-1. 检查页面标题
-2. 验证输入框样式
-3. 检查按钮状态
-**预期结果**：界面元素正常显示
-**优先级**：P2
-**测试类型**：界面测试
+**状态**：AI服务维护中
 
-### TC-005：响应式设计测试
-**测试场景**：在不同设备上测试页面显示
-**前置条件**：准备不同尺寸的设备
-**测试步骤**：
-1. 在桌面浏览器中测试
-2. 在平板设备中测试
-3. 在手机设备中测试
-**预期结果**：页面适配良好
-**优先级**：P2
-**测试类型**：界面测试
+### 可能原因
+1. **DeepSeek API余额不足** - 需要充值API账户
+2. **腾讯混元API配额用完** - 需要检查API使用情况
+3. **网络连接问题** - 请检查网络连接
+4. **API服务临时故障** - 服务商可能正在维护
 
-## 性能测试用例
+### 解决建议
+1. **立即解决**：联系管理员检查API账户余额和配额
+2. **临时方案**：稍后重新尝试（服务可能自动恢复）
+3. **长期方案**：配置更多AI服务提供商作为备用
+4. **技术支持**：如问题持续，请联系系统管理员
 
-### TC-006：页面加载性能测试
-**测试场景**：测试页面加载速度
-**前置条件**：网络环境正常
-**测试步骤**：
-1. 清除浏览器缓存
-2. 访问登录页面
-3. 记录加载时间
-**预期结果**：页面加载时间小于3秒
-**优先级**：P1
-**测试类型**：性能测试
-
-### TC-007：并发用户测试
-**测试场景**：多用户同时登录
-**前置条件**：准备多个测试账户
-**测试步骤**：
-1. 同时使用10个账户登录
-2. 监控系统响应
-3. 检查错误率
-**预期结果**：系统稳定运行
-**优先级**：P1
-**测试类型**：性能测试
-
-## 安全测试用例
-
-### TC-008：SQL注入测试
-**测试场景**：测试输入框SQL注入防护
-**前置条件**：准备SQL注入测试数据
-**测试步骤**：
-1. 在用户名输入框输入SQL注入代码
-2. 在密码输入框输入SQL注入代码
-3. 提交登录表单
-**预期结果**：系统拒绝恶意输入
-**优先级**：P0
-**测试类型**：安全测试
-
-### TC-009：XSS攻击测试
-**测试场景**：测试跨站脚本攻击防护
-**前置条件**：准备XSS测试脚本
-**测试步骤**：
-1. 在输入框输入XSS脚本
-2. 提交表单
-3. 检查页面输出
-**预期结果**：脚本被转义或过滤
-**优先级**：P0
-**测试类型**：安全测试
-
-## 兼容性测试用例
-
-### TC-010：浏览器兼容性测试
-**测试场景**：在不同浏览器中测试功能
-**前置条件**：准备不同浏览器
-**测试步骤**：
-1. 在Chrome中测试登录功能
-2. 在Firefox中测试登录功能
-3. 在Safari中测试登录功能
-**预期结果**：功能在所有浏览器中正常
-**优先级**：P2
-**测试类型**：兼容性测试
-
-## 总结
-
-本次测试用例生成完成，共包含10个测试用例，覆盖了以下方面：
-- 功能测试：3个用例（登录、注册、密码重置）
-- 界面测试：2个用例（UI元素、响应式设计）
-- 性能测试：2个用例（加载性能、并发测试）
-- 安全测试：2个用例（SQL注入、XSS防护）
-- 兼容性测试：1个用例（浏览器兼容性）
-
-所有测试用例都按照标准格式编写，包含完整的测试步骤和预期结果，可以直接用于测试执行。
+### 当前状态
+- 系统运行正常
+- AI服务调用失败
+- 已记录详细错误日志
 
 ---
 **生成时间**：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-**生成工具**：ModeShift测试用例生成器（Mock模式）
-**需求描述**：{requirement}
-**状态**：已完成
-"""
-        return mock_content
-
-    def _generate_with_free_api(self, requirement: str, user_prompt: str, task_id: str) -> str:
-        """使用统一的大模型服务生成测试用例"""
-        try:
-            logger.info(f"开始使用统一大模型服务生成测试用例: {task_id}")
-            llm_service = get_llm_service()
-            result = llm_service.generate_test_cases(requirement, user_prompt)
-            logger.info(f"大模型服务生成成功: {task_id}")
-            return result
-        except Exception as e:
-            logger.error(f"大模型服务生成失败: {task_id}, 错误: {e}")
-            # 如果AI服务不可用，自动切换到Mock模式
-            logger.warning(f"AI服务不可用，自动切换到Mock模式: {task_id}")
-            return self._generate_mock_test_cases(requirement, user_prompt)
+**状态**：AI服务维护中
+**建议操作**：联系管理员检查API配置"""
 
     def _create_completion_notification(self, task_id: str, task: Dict[str, Any]):
         """创建任务完成通知"""
@@ -523,25 +446,52 @@ class AsyncTaskManager:
                 logger.warning("未找到admin用户，跳过通知创建")
                 return
 
-            # 创建一个系统通知消息
+            # 创建一个系统通知消息，包含跳转链接信息
             requirement_preview = task.get("requirement", "")[:50] + ("..." if len(task.get("requirement", "")) > 50 else "")
-            system_message = f"🎉 后台任务已完成！\n\n📋 任务类型: 测试用例生成\n🆔 任务ID: {task_id[:8]}...\n📝 需求: {requirement_preview}\n⏰ 完成时间: {task.get('completed_at', '')}\n\n💡 您可以关闭页面，任务已在后台完成！"
+            system_message = f"🎉 后台任务已完成！\n\n📋 任务类型: 测试用例生成\n🆔 任务ID: {task_id[:8]}...\n📝 需求: {requirement_preview}\n⏰ 完成时间: {task.get('completed_at', '')}\n\n💡 点击查看任务结果！"
 
             # 创建系统聊天室（如果不存在）
             system_room, created = ChatRoom.objects.get_or_create(
                 name="系统通知", defaults={"description": "系统任务完成通知", "is_public": False, "created_by": admin_user}
             )
 
-            # 创建系统消息
-            system_chat_message = ChatMessage.objects.create(
-                room=system_room, sender=admin_user, content=system_message, message_type="system"
-            )
-
+            # 创建系统消息，将跳转信息编码到metadata中
+            jump_url = f"/tools/task_manager/?task_id={task_id}"
+            
             # 为任务创建者创建通知
             user_id = task.get("user_id")
             if user_id and user_id != "anonymous":
                 try:
                     user = User.objects.get(username=user_id)
+                    
+                    # 确保系统聊天室只有admin用户，避免重复通知
+                    if system_room.user1 != admin_user and system_room.user2 != admin_user:
+                        system_room.user1 = admin_user
+                        system_room.user2 = None
+                        system_room.save()
+                    
+                    # 检查是否已经存在相同的通知，避免重复
+                    existing_notification = ChatNotification.objects.filter(
+                        user=user,
+                        room=system_room,
+                        message__content__contains=f"任务ID: {task_id[:8]}...",
+                        is_read=False
+                    ).first()
+                    
+                    if existing_notification:
+                        logger.info(f"任务 {task_id[:8]}... 的通知已存在，跳过重复创建")
+                        return
+                    
+                    # 创建系统消息，将跳转信息存储在metadata中
+                    system_chat_message = ChatMessage.objects.create(
+                        room=system_room, 
+                        sender=admin_user, 
+                        content=system_message, 
+                        message_type="system",
+                        metadata={"jump_url": jump_url, "task_id": task_id}
+                    )
+                    
+                    # 手动创建通知，避免自动通知创建逻辑的干扰
                     ChatNotification.objects.create(user=user, room=system_room, message=system_chat_message, is_read=False)
                     logger.info(f"为用户 {user_id} 创建任务完成通知")
                 except User.DoesNotExist:
@@ -576,18 +526,12 @@ class AsyncTaskManager:
 # 全局任务管理器实例 - 使用单例模式
 _task_manager_instance = None
 
-def get_task_manager(mock_mode=False):
+def get_task_manager():
     """获取任务管理器单例"""
     global _task_manager_instance
-    # 如果请求的模式与当前实例不同，创建新实例
-    if _task_manager_instance is None or _task_manager_instance.mock_mode != mock_mode:
-        _task_manager_instance = AsyncTaskManager(mock_mode=mock_mode)
+    if _task_manager_instance is None:
+        _task_manager_instance = AsyncTaskManager()
     return _task_manager_instance
-
-
-def create_mock_task_manager():
-    """创建Mock模式的任务管理器实例"""
-    return AsyncTaskManager(mock_mode=True)
 
 # 为了向后兼容，保留原来的变量名
 task_manager = get_task_manager()
