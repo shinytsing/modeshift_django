@@ -21,14 +21,16 @@ logger = logging.getLogger(__name__)
 
 
 def _calculate_food_health_score(food):
-    """计算食物健康评分"""
-    score = 50  # 基础分
+    """计算食物健康评分 - 更严格的评分标准"""
+    score = 0  # 从0开始计算
     
-    # 营养成分评分
+    # 营养成分评分 (总分100分)
     if food.calories > 0:
-        # 蛋白质评分 (0-20分)
+        # 蛋白质评分 (0-25分)
         protein_ratio = (food.protein * 4) / food.calories * 100
-        if protein_ratio >= 15:
+        if protein_ratio >= 20:
+            score += 25
+        elif protein_ratio >= 15:
             score += 20
         elif protein_ratio >= 10:
             score += 15
@@ -37,79 +39,87 @@ def _calculate_food_health_score(food):
         else:
             score += 5
         
-        # 脂肪评分 (0-15分)
+        # 脂肪评分 (0-20分) - 低脂食物得分更高
         fat_ratio = (food.fat * 9) / food.calories * 100
-        if fat_ratio <= 20:
+        if fat_ratio <= 15:
+            score += 20
+        elif fat_ratio <= 25:
             score += 15
-        elif fat_ratio <= 30:
+        elif fat_ratio <= 35:
             score += 10
-        elif fat_ratio <= 40:
+        elif fat_ratio <= 45:
+            score += 5
+        else:
+            score += 0  # 高脂食物不得分
+        
+        # 碳水化合物评分 (0-15分)
+        carb_ratio = (food.carbohydrates * 4) / food.calories * 100
+        if 40 <= carb_ratio <= 60:
+            score += 15
+        elif 30 <= carb_ratio <= 70:
+            score += 10
+        elif 20 <= carb_ratio <= 80:
             score += 5
         else:
             score += 0
-        
-        # 碳水化合物评分 (0-10分)
-        carb_ratio = (food.carbohydrates * 4) / food.calories * 100
-        if 45 <= carb_ratio <= 65:
-            score += 10
-        elif 35 <= carb_ratio <= 75:
-            score += 7
-        else:
-            score += 3
     
-    # 膳食纤维评分 (0-10分)
+    # 膳食纤维评分 (0-15分)
     fiber_value = getattr(food, 'fiber', 0) or getattr(food, 'dietary_fiber', 0)
-    if fiber_value >= 5:
-        score += 10
+    if fiber_value >= 8:
+        score += 15
+    elif fiber_value >= 5:
+        score += 12
     elif fiber_value >= 3:
-        score += 7
+        score += 8
     elif fiber_value >= 1:
         score += 5
     else:
-        score += 2
-    
-    # 钠含量评分 (0-10分)
-    if food.sodium <= 200:
-        score += 10
-    elif food.sodium <= 400:
-        score += 7
-    elif food.sodium <= 600:
-        score += 5
-    elif food.sodium <= 800:
-        score += 3
-    else:
         score += 0
     
-    # 糖分评分 (0-10分)
-    if food.sugar <= 5:
-        score += 10
-    elif food.sugar <= 10:
-        score += 7
-    elif food.sugar <= 15:
+    # 钠含量评分 (0-15分) - 低钠食物得分更高
+    sodium_value = food.sodium if food.sodium > 0 else 500  # 如果钠为0，假设为500mg
+    if sodium_value <= 150:
+        score += 15
+    elif sodium_value <= 300:
+        score += 12
+    elif sodium_value <= 500:
+        score += 8
+    elif sodium_value <= 800:
         score += 5
-    elif food.sugar <= 25:
+    else:
+        score += 0  # 高钠食物不得分
+    
+    # 糖分评分 (0-10分) - 低糖食物得分更高
+    sugar_value = food.sugar if food.sugar > 0 else 10  # 如果糖为0，假设为10g
+    if sugar_value <= 3:
+        score += 10
+    elif sugar_value <= 6:
+        score += 8
+    elif sugar_value <= 10:
+        score += 5
+    elif sugar_value <= 15:
         score += 3
     else:
-        score += 0
+        score += 0  # 高糖食物不得分
     
-    # 健康标签加分 (0-15分)
+    # 健康标签加分 (0-10分) - 减少加分
     health_bonus = 0
     tags = getattr(food, 'tags', [])
     if isinstance(tags, list):
         if "素食" in tags:
-            health_bonus += 2
+            health_bonus += 1
         if "无麸质" in tags:
-            health_bonus += 2
+            health_bonus += 1
         if "低脂" in tags:
             health_bonus += 2
         if "高蛋白" in tags:
-            health_bonus += 3
+            health_bonus += 2
         if "低碳水" in tags:
-            health_bonus += 3
+            health_bonus += 2
         if "有机" in tags:
             health_bonus += 2
     
-    score += min(health_bonus, 15)  # 最多加15分
+    score += min(health_bonus, 10)  # 最多加10分
     
     # 确保分数在0-100范围内
     return max(0, min(100, int(score)))
