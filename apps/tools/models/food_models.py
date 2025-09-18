@@ -91,6 +91,9 @@ class FoodItem(models.Model):
     fiber = models.FloatField(default=0.0, verbose_name="膳食纤维(克)")
     sugar = models.FloatField(default=0.0, verbose_name="糖分(克)")
     sodium = models.FloatField(default=0.0, verbose_name="钠(毫克)")
+    
+    # 健康评分
+    health_score = models.IntegerField(default=50, verbose_name="健康评分(0-100)")
 
     is_active = models.BooleanField(default=True, verbose_name="是否启用")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -106,6 +109,103 @@ class FoodItem(models.Model):
 
     def get_meal_types_display(self):
         return ", ".join([dict(FoodRandomizer.MEAL_TYPE_CHOICES)[meal_type] for meal_type in self.meal_types])
+    
+    def calculate_health_score(self):
+        """计算健康评分"""
+        score = 50  # 基础分
+        
+        # 营养成分评分
+        if self.calories > 0:
+            # 蛋白质评分 (0-20分)
+            protein_ratio = (self.protein * 4) / self.calories * 100
+            if protein_ratio >= 15:
+                score += 20
+            elif protein_ratio >= 10:
+                score += 15
+            elif protein_ratio >= 5:
+                score += 10
+            else:
+                score += 5
+            
+            # 脂肪评分 (0-15分)
+            fat_ratio = (self.fat * 9) / self.calories * 100
+            if fat_ratio <= 20:
+                score += 15
+            elif fat_ratio <= 30:
+                score += 10
+            elif fat_ratio <= 40:
+                score += 5
+            else:
+                score += 0
+            
+            # 碳水化合物评分 (0-10分)
+            carb_ratio = (self.carbohydrates * 4) / self.calories * 100
+            if 45 <= carb_ratio <= 65:
+                score += 10
+            elif 35 <= carb_ratio <= 75:
+                score += 7
+            else:
+                score += 3
+        
+        # 膳食纤维评分 (0-10分)
+        if self.fiber >= 5:
+            score += 10
+        elif self.fiber >= 3:
+            score += 7
+        elif self.fiber >= 1:
+            score += 5
+        else:
+            score += 2
+        
+        # 钠含量评分 (0-10分)
+        if self.sodium <= 200:
+            score += 10
+        elif self.sodium <= 400:
+            score += 7
+        elif self.sodium <= 600:
+            score += 5
+        elif self.sodium <= 800:
+            score += 3
+        else:
+            score += 0
+        
+        # 糖分评分 (0-10分)
+        if self.sugar <= 5:
+            score += 10
+        elif self.sugar <= 10:
+            score += 7
+        elif self.sugar <= 15:
+            score += 5
+        elif self.sugar <= 25:
+            score += 3
+        else:
+            score += 0
+        
+        # 健康标签加分 (0-15分)
+        health_bonus = 0
+        if "素食" in self.tags:
+            health_bonus += 2
+        if "无麸质" in self.tags:
+            health_bonus += 2
+        if "低脂" in self.tags:
+            health_bonus += 2
+        if "高蛋白" in self.tags:
+            health_bonus += 3
+        if "低碳水" in self.tags:
+            health_bonus += 3
+        if "有机" in self.tags:
+            health_bonus += 2
+        
+        score += min(health_bonus, 15)  # 最多加15分
+        
+        # 确保分数在0-100范围内
+        return max(0, min(100, int(score)))
+    
+    def update_health_score(self):
+        """更新健康评分"""
+        self.health_score = self.calculate_health_score()
+        self.save(update_fields=['health_score'])
+        return self.health_score
 
 
 class FoodRandomizationSession(models.Model):

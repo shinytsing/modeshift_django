@@ -43,7 +43,7 @@ class Command(BaseCommand):
                 "allergens": ["坚果", "大豆"],
                 "tags": ["川菜", "经典", "麻辣"],
                 "is_high_protein": True,
-                "health_score": 75,
+                "health_score": random.randint(45, 85),  # 随机健康评分
                 "popularity_score": 9.2,
                 "image_url": "/static/img/food/default-food.svg",
                 "description": "经典川菜，口感麻辣鲜香，营养丰富",
@@ -154,7 +154,7 @@ class Command(BaseCommand):
                 "ingredients": ["意大利面", "番茄酱", "橄榄油", "罗勒", "大蒜"],
                 "allergens": ["麸质"],
                 "tags": ["意式", "经典", "西餐"],
-                "health_score": 75,
+                "health_score": random.randint(45, 85),  # 随机健康评分
                 "popularity_score": 8.7,
                 "image_url": "/static/img/food/default-food.svg",
                 "description": "经典意式料理，简单美味",
@@ -415,7 +415,7 @@ class Command(BaseCommand):
                 "tags": ["法式", "高级", "牛排"],
                 "is_high_protein": True,
                 "is_low_carb": True,
-                "health_score": 75,
+                "health_score": random.randint(45, 85),  # 随机健康评分
                 "popularity_score": 8.5,
                 "image_url": "/static/img/food/default-food.svg",
                 "description": "法式经典，精致美味",

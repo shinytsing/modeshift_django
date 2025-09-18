@@ -20,6 +20,101 @@ from apps.tools.models.legacy_models import FoodHistory, FoodItem, FoodPhotoBind
 logger = logging.getLogger(__name__)
 
 
+def _calculate_food_health_score(food):
+    """计算食物健康评分"""
+    score = 50  # 基础分
+    
+    # 营养成分评分
+    if food.calories > 0:
+        # 蛋白质评分 (0-20分)
+        protein_ratio = (food.protein * 4) / food.calories * 100
+        if protein_ratio >= 15:
+            score += 20
+        elif protein_ratio >= 10:
+            score += 15
+        elif protein_ratio >= 5:
+            score += 10
+        else:
+            score += 5
+        
+        # 脂肪评分 (0-15分)
+        fat_ratio = (food.fat * 9) / food.calories * 100
+        if fat_ratio <= 20:
+            score += 15
+        elif fat_ratio <= 30:
+            score += 10
+        elif fat_ratio <= 40:
+            score += 5
+        else:
+            score += 0
+        
+        # 碳水化合物评分 (0-10分)
+        carb_ratio = (food.carbohydrates * 4) / food.calories * 100
+        if 45 <= carb_ratio <= 65:
+            score += 10
+        elif 35 <= carb_ratio <= 75:
+            score += 7
+        else:
+            score += 3
+    
+    # 膳食纤维评分 (0-10分)
+    fiber_value = getattr(food, 'fiber', 0) or getattr(food, 'dietary_fiber', 0)
+    if fiber_value >= 5:
+        score += 10
+    elif fiber_value >= 3:
+        score += 7
+    elif fiber_value >= 1:
+        score += 5
+    else:
+        score += 2
+    
+    # 钠含量评分 (0-10分)
+    if food.sodium <= 200:
+        score += 10
+    elif food.sodium <= 400:
+        score += 7
+    elif food.sodium <= 600:
+        score += 5
+    elif food.sodium <= 800:
+        score += 3
+    else:
+        score += 0
+    
+    # 糖分评分 (0-10分)
+    if food.sugar <= 5:
+        score += 10
+    elif food.sugar <= 10:
+        score += 7
+    elif food.sugar <= 15:
+        score += 5
+    elif food.sugar <= 25:
+        score += 3
+    else:
+        score += 0
+    
+    # 健康标签加分 (0-15分)
+    health_bonus = 0
+    tags = getattr(food, 'tags', [])
+    if isinstance(tags, list):
+        if "素食" in tags:
+            health_bonus += 2
+        if "无麸质" in tags:
+            health_bonus += 2
+        if "低脂" in tags:
+            health_bonus += 2
+        if "高蛋白" in tags:
+            health_bonus += 3
+        if "低碳水" in tags:
+            health_bonus += 3
+        if "有机" in tags:
+            health_bonus += 2
+    
+    score += min(health_bonus, 15)  # 最多加15分
+    
+    # 确保分数在0-100范围内
+    return max(0, min(100, int(score)))
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def food_randomizer_pure_random_api(request):
@@ -159,7 +254,7 @@ def food_randomizer_pure_random_api(request):
                 "image_url": image_url,
                 "difficulty": food.difficulty,
                 "cooking_time": food.cooking_time,
-                "health_score": 75,  # 默认健康评分
+                "health_score": _calculate_food_health_score(selected_food),  # 动态计算健康评分
                 "nutrition": {
                     "protein": food.protein,
                     "fat": food.fat,
@@ -200,7 +295,7 @@ def food_randomizer_pure_random_api(request):
                         else 0
                     ),
                 },
-                "health_score": 75,  # 默认健康评分
+                "health_score": _calculate_food_health_score(selected_food),  # 动态计算健康评分
                 "is_healthy": True,  # 默认认为是健康的
             },
         }
@@ -362,7 +457,7 @@ def food_randomizer_history_api(request):
                         "cuisine": record.food_item.cuisine,
                         "meal_type": record.meal_type,
                         "calories": int(record.food_item.calories),
-                        "health_score": 75,  # 默认健康评分
+                        "health_score": _calculate_food_health_score(selected_food),  # 动态计算健康评分
                         "rating": record.rating,
                         "selected": True,  # FoodHistory记录的都是被选择的
                         "created_at": record.created_at.isoformat(),

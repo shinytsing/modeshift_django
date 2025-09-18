@@ -178,6 +178,107 @@ class FoodNutrition(models.Model):
             "carbs": round((carb_calories / total_calories) * 100, 1),
         }
 
+    def calculate_health_score(self):
+        """计算健康评分"""
+        score = 50  # 基础分
+        
+        # 营养成分评分
+        if self.calories > 0:
+            # 蛋白质评分 (0-20分)
+            protein_ratio = (self.protein * 4) / self.calories * 100
+            if protein_ratio >= 15:
+                score += 20
+            elif protein_ratio >= 10:
+                score += 15
+            elif protein_ratio >= 5:
+                score += 10
+            else:
+                score += 5
+            
+            # 脂肪评分 (0-15分)
+            fat_ratio = (self.fat * 9) / self.calories * 100
+            if fat_ratio <= 20:
+                score += 15
+            elif fat_ratio <= 30:
+                score += 10
+            elif fat_ratio <= 40:
+                score += 5
+            else:
+                score += 0
+            
+            # 碳水化合物评分 (0-10分)
+            carb_ratio = (self.carbohydrates * 4) / self.calories * 100
+            if 45 <= carb_ratio <= 65:
+                score += 10
+            elif 35 <= carb_ratio <= 75:
+                score += 7
+            else:
+                score += 3
+        
+        # 膳食纤维评分 (0-10分)
+        if self.dietary_fiber >= 5:
+            score += 10
+        elif self.dietary_fiber >= 3:
+            score += 7
+        elif self.dietary_fiber >= 1:
+            score += 5
+        else:
+            score += 2
+        
+        # 钠含量评分 (0-10分)
+        if self.sodium <= 200:
+            score += 10
+        elif self.sodium <= 400:
+            score += 7
+        elif self.sodium <= 600:
+            score += 5
+        elif self.sodium <= 800:
+            score += 3
+        else:
+            score += 0
+        
+        # 糖分评分 (0-10分)
+        if self.sugar <= 5:
+            score += 10
+        elif self.sugar <= 10:
+            score += 7
+        elif self.sugar <= 15:
+            score += 5
+        elif self.sugar <= 25:
+            score += 3
+        else:
+            score += 0
+        
+        # 健康标签加分 (0-15分)
+        health_bonus = 0
+        if self.is_vegetarian:
+            health_bonus += 2
+        if self.is_vegan:
+            health_bonus += 3
+        if self.is_gluten_free:
+            health_bonus += 2
+        if self.is_dairy_free:
+            health_bonus += 2
+        if self.is_low_carb:
+            health_bonus += 3
+        if self.is_high_protein:
+            health_bonus += 3
+        if self.is_low_fat:
+            health_bonus += 2
+        if self.is_organic:
+            health_bonus += 2
+        
+        score += min(health_bonus, 15)  # 最多加15分
+        
+        # 确保分数在0-100范围内
+        return max(0, min(100, int(score)))
+    
+    def update_health_score(self):
+        """更新健康评分"""
+        self.health_score = self.calculate_health_score()
+        self.save(update_fields=['health_score'])
+        return self.health_score
+
     def is_healthy(self):
         """简单的健康食物判断"""
         return self.health_score >= 70

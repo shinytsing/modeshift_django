@@ -271,7 +271,7 @@ class Command(BaseCommand):
                 "ingredients": ["面粉", "酵母", "猪肉", "蔬菜"],
                 "allergens": ["麸质"],
                 "tags": ["中式", "蒸制", "传统"],
-                "health_score": 75,
+                "health_score": random.randint(45, 85),  # 随机健康评分
                 "popularity_score": 8.8,
                 "image_url": "/static/img/food/default-food.svg",
                 "description": "中式传统点心",
@@ -334,7 +334,7 @@ class Command(BaseCommand):
                 "allergens": ["坚果", "大豆"],
                 "tags": ["川菜", "经典", "麻辣"],
                 "is_high_protein": True,
-                "health_score": 75,
+                "health_score": random.randint(45, 85),  # 随机健康评分
                 "popularity_score": 9.2,
                 "image_url": "/static/img/food/default-food.svg",
                 "description": "经典川菜，口感麻辣鲜香，营养丰富",
