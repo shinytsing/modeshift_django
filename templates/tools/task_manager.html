@@ -640,7 +640,7 @@
                 }
             })
             .catch(error => {
-                console.error('加载任务失败:', error);
+                // console.error(...)
                 content.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>加载任务失败，请稍后重试</p></div>';
             });
         }
@@ -668,7 +668,7 @@
                 // 显示通知
                 showNotification(`已跳转到任务 ${taskId.substring(0, 8)}...`, 'success');
             } else {
-                console.log(`未找到任务 ${taskId}`);
+                // console.log(...)
             }
         }
 
@@ -845,7 +845,7 @@
                 }
             })
             .catch(error => {
-                console.error('获取任务结果失败:', error);
+                // console.error(...)
                 showNotification('获取任务结果失败', 'error');
             });
         }
@@ -991,7 +991,7 @@
                 }
             })
             .catch(error => {
-                console.error('获取任务错误失败:', error);
+                // console.error(...)
                 showNotification('获取任务错误失败', 'error');
             });
         }
@@ -1016,7 +1016,7 @@
                 }
             })
             .catch(error => {
-                console.error('删除任务失败:', error);
+                // console.error(...)
                 showNotification('删除任务失败，请稍后重试', 'error');
             });
         }

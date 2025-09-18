@@ -7,12 +7,20 @@ from .base import *
 # 添加whitenoise到INSTALLED_APPS
 INSTALLED_APPS = INSTALLED_APPS + ['whitenoise.runserver_nostatic']
 
-# 添加whitenoise中间件和缓存中间件
+# 添加whitenoise中间件，移除缓存中间件避免HttpResponse序列化问题
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.cache.UpdateCacheMiddleware',
-] + MIDDLEWARE + [
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    'apps.users.middleware.SessionExtensionMiddleware',
+    'apps.tools.services.monitoring_service.PerformanceMonitoringMiddleware',
 ]
 
 # 生产环境特定配置 - 只设置DEBUG为False
@@ -44,45 +52,21 @@ DATABASES = {
     }
 }
 
-# 缓存配置 - 生产环境优化，使用Redis缓存
+# 缓存配置 - 暂时禁用缓存避免序列化问题
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL", "redis://:redis123@127.0.0.1:6379/1"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "max_connections": 50,
-                "retry_on_timeout": True,
-            },
-            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
-        },
-        "KEY_PREFIX": "qatoolbox",
-        "TIMEOUT": 60 * 60 * 24,  # 24小时
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     },
     "session": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL", "redis://:redis123@127.0.0.1:6379/2"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-        "KEY_PREFIX": "session",
-        "TIMEOUT": 60 * 60 * 24 * 30,  # 30天
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     },
     "staticfiles": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL", "redis://:redis123@127.0.0.1:6379/3"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-        "KEY_PREFIX": "static",
-        "TIMEOUT": 60 * 60 * 24 * 7,  # 7天
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     },
 }
 
-# 会话配置 - 生产环境使用Redis缓存
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "session"
+# 会话配置 - 使用数据库存储session
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
@@ -90,30 +74,21 @@ SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为Tru
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 
-# 页面缓存配置
-CACHE_MIDDLEWARE_ALIAS = "default"
-CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15分钟
-CACHE_MIDDLEWARE_KEY_PREFIX = "qatoolbox"
+# 页面缓存配置 - 完全禁用
+CACHE_MIDDLEWARE_ALIAS = None
+CACHE_MIDDLEWARE_SECONDS = 0
+CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
-# 数据库查询优化
-DATABASES["default"]["OPTIONS"].update({
-    "POOL_OPTIONS": {
-        "POOL_SIZE": 20,
-        "MAX_OVERFLOW": 30,
-        "RECYCLE": 300,
-        "PRE_PING": True,
-    },
-    "CONN_MAX_AGE": 60,  # 连接最大存活时间
-})
+# 数据库查询优化 - 使用默认PostgreSQL配置
 
-# 静态文件缓存
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# 静态文件缓存 - 使用简单存储避免manifest问题
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'bz2', 'tar', 'rar', '7z']
 
 # 静态文件配置 - 生产环境优化
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # 静态文件压缩配置
 WHITENOISE_USE_FINDERS = True
@@ -166,9 +141,12 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 
-# 文件上传限制 - 与开发环境一致
-DATA_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
-MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB
+# 文件上传限制 - 设置为100MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 DATA_UPLOAD_MAX_NUMBER_FILES = 1000
+
+# 站点URL配置 - 用于Google OAuth回调
+SITE_URL = "https://shenyiqing.xin"

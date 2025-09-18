@@ -730,7 +730,7 @@ async function loadDashboardData() {
       showError('加载数据失败: ' + data.message);
     }
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
+    // console.error(...)
     showError('网络错误，请稍后重试');
   }
 }
@@ -825,7 +825,7 @@ async function loadRelationshipTags() {
       displayRelationshipTags();
     }
   } catch (error) {
-    console.error('Error loading relationship tags:', error);
+    // console.error(...)
   }
 }
 
@@ -957,7 +957,7 @@ async function loadPersonProfiles() {
       populatePersonSelect();
     }
   } catch (error) {
-    console.error('Error loading person profiles:', error);
+    // console.error(...)
   }
 }
 
@@ -1015,7 +1015,7 @@ document.getElementById('createPersonForm').addEventListener('submit', async fun
       showError(data.message);
     }
   } catch (error) {
-    console.error('Error creating person profile:', error);
+    // console.error(...)
     showError('创建失败，请稍后重试');
   }
 });
@@ -1053,7 +1053,7 @@ document.getElementById('createInteractionForm').addEventListener('submit', asyn
       showError(data.message);
     }
   } catch (error) {
-    console.error('Error creating interaction:', error);
+    // console.error(...)
     showError('创建失败，请稍后重试');
   }
 });
@@ -1093,7 +1093,7 @@ document.getElementById('createMomentForm').addEventListener('submit', async fun
       showError(data.message);
     }
   } catch (error) {
-    console.error('Error creating important moment:', error);
+    // console.error(...)
     showError('创建失败，请稍后重试');
   }
 });

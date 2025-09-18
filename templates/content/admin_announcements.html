@@ -763,7 +763,7 @@ function loadAnnouncements() {
             }
         })
         .catch(error => {
-            console.error('请求失败:', error);
+            // console.error(...)
             showMessage('网络错误，请检查连接', 'error');
             displayEmptyState();
         })
@@ -934,7 +934,7 @@ function addAnnouncement() {
         }
     })
     .catch(error => {
-        console.error('请求失败:', error);
+        // console.error(...)
         showMessage('网络错误，请重试', 'error');
     })
     .finally(() => {
@@ -1020,7 +1020,7 @@ function updateAnnouncement() {
         }
     })
     .catch(error => {
-        console.error('请求失败:', error);
+        // console.error(...)
         showMessage('网络错误，请重试', 'error');
     })
     .finally(() => {
@@ -1057,7 +1057,7 @@ function toggleAnnouncementStatus(id) {
         }
     })
     .catch(error => {
-        console.error('请求失败:', error);
+        // console.error(...)
         showMessage('网络错误，请重试', 'error');
     });
 }
@@ -1087,7 +1087,7 @@ function deleteAnnouncement(id) {
         }
     })
     .catch(error => {
-        console.error('请求失败:', error);
+        // console.error(...)
         showMessage('网络错误，请重试', 'error');
     });
 }

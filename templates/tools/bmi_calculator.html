@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             loading.style.display = 'none';
             calculateBtn.disabled = false;
-            console.error('Error:', error);
+            // console.error(...)
             alert('网络错误，请重试');
         });
     });

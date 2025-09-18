@@ -2235,7 +2235,7 @@ let selectedFile = null;
 function animateNumber(element, target, duration = 2000) {
   // 安全检查
   if (!element || typeof target !== 'number' || isNaN(target)) {
-    console.warn('animateNumber: 无效的参数', { element, target });
+    // console.warn(...)
     return;
   }
   
@@ -2264,16 +2264,16 @@ function animateNumber(element, target, duration = 2000) {
           element.textContent = current.toFixed(1);
         }
       } catch (error) {
-        console.warn('animateNumber: 设置textContent失败', error);
+        // // console.warn(...)
       }
     } else {
       try {
-        element.textContent = current.toFixed(1);
+        element.textContent = current.toFixed(1);  // 调试信息已隐藏
       } catch (error) {
-        console.warn('animateNumber: 设置textContent失败', error);
+        // // console.warn(...)
       }
     }
-  }, 16);
+  }, 16);  // 调试信息已隐藏
 }
 
 // 选择转换类型
@@ -2455,13 +2455,13 @@ function updateUploadHint(type) {
         fileInput.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.txt';
     }
   } else {
-    console.warn('fileInput element not found, skipping accept attribute update');
+    // // console.warn(...)
   }
 }
 
 // 显示文本输入区域
 function showTextInput() {
-  const uploadArea = document.getElementById('uploadArea');
+  const uploadArea = document.getElementById('uploadArea');  // 调试信息已隐藏
   uploadArea.innerHTML = `
     <div class="upload-icon-modern">
       <i class="fas fa-edit"></i>
@@ -2702,7 +2702,7 @@ function performConversion() {
     }
   })
   .catch(error => {
-    console.error('转换错误:', error);
+    // console.error(...)
     let errorMessage = error.message;
     
     // 提供更友好的错误提示
@@ -2768,7 +2768,7 @@ function showConversionResult(data) {
   const fileName = selectedFile ? selectedFile.name : '文本内容';
   
   if (!resultContent) {
-    console.error('结果内容元素未找到');
+    // console.error(...)
     return;
   }
   
@@ -2833,7 +2833,7 @@ function showConversionResult(data) {
     
     // 检查下载URL是否存在
     if (!data.download_url) {
-      console.error('API响应中缺少download_url字段:', data);
+      // console.error(...)
       showNotification('转换成功但无法获取下载链接，请检查API响应', 'error');
       return;
     }
@@ -2962,7 +2962,7 @@ function performTextToPdfConversion(textContent) {
     }
   })
   .catch(error => {
-    console.error('转换错误:', error);
+    // console.error(...)
     let errorMessage = error.message;
     
     // 提供更友好的错误提示
@@ -3275,7 +3275,7 @@ function loadConversionStats() {
         // 更新最近转换记录
         updateRecentConversions(stats.recent_conversions);
       } else {
-        console.error('加载统计数据失败:', data.error);
+        // console.error(...)
         // 使用默认值
         const totalConversionsElement = document.getElementById('totalConversions');
         const totalFilesElement = document.getElementById('totalFiles');
@@ -3289,7 +3289,7 @@ function loadConversionStats() {
       }
     })
     .catch(error => {
-      console.error('请求统计数据失败:', error);
+      // console.error(...)
       // 使用默认值
       const totalConversionsElement = document.getElementById('totalConversions');
       const totalFilesElement = document.getElementById('totalFiles');
@@ -3334,7 +3334,7 @@ function updateRecentConversions(recentData) {
   recentData.forEach(record => {
     // 安全检查记录数据
     if (!record || typeof record !== 'object') {
-      console.warn('跳过无效的记录数据:', record);
+      // console.warn(...)
       return;
     }
     
@@ -3492,7 +3492,7 @@ function submitRating(recordId, rating) {
     }
   })
   .catch(error => {
-    console.error('评分提交错误:', error);
+    // console.error(...)
     showNotification('评分提交失败，请检查网络连接后重试', 'error');
   });
 }
@@ -3519,11 +3519,11 @@ function safeClick(elementId) {
   if (element) {
     element.click();
   } else {
-    console.warn(`Element with id '${elementId}' not found`);
+    // // console.warn(...)
     // 不显示错误通知，避免用户体验问题
     // 尝试重新创建元素
     if (elementId === 'fileInput') {
-      const uploadArea = document.getElementById('uploadArea');
+      const uploadArea = document.getElementById('uploadArea');  // 调试信息已隐藏
       if (uploadArea) {
         // 重新创建fileInput元素
         const fileInput = document.createElement('input');
@@ -3653,7 +3653,7 @@ function removeBatchFile(index) {
     handleBatchFileUpload({ target: { files: input.files } });
     
   } catch (error) {
-    console.error('移除文件失败:', error);
+    // console.error(...)
     showNotification('移除文件失败，请重新选择文件', 'error');
     
     // 重置文件输入
@@ -3707,7 +3707,7 @@ function performBatchConversion(files) {
     }
   })
   .catch(error => {
-    console.error('批量转换错误:', error);
+    // console.error(...)
     let errorMessage = error.message;
     
     // 提供更友好的错误提示
@@ -3982,7 +3982,7 @@ function initShortcutsHelp() {
   
   // 检查元素是否存在
   if (!helpBtn || !helpPanel || !closeBtn || !overlay) {
-    console.warn('快捷键帮助面板元素未找到，跳过初始化');
+    // console.warn(...)
     return;
   }
   
@@ -4036,7 +4036,7 @@ function checkPDFConverterStatus() {
             }
         })
         .catch(error => {
-            console.error('状态检查失败:', error);
+            // console.error(...)
         });
 }
 
@@ -4120,7 +4120,7 @@ function showSystemStatus() {
             }
         })
         .catch(error => {
-            console.error('状态检查失败:', error);
+            // console.error(...)
             showNotification('系统状态检查失败', 'error');
         });
 }
@@ -4171,7 +4171,7 @@ function showStatusDialog(content) {
 function downloadFile(url, filename) {
 
     if (!url) {
-        console.error('下载URL为空');
+        // console.error(...)
         showNotification('下载链接无效', 'error');
         return;
     }
@@ -4221,7 +4221,7 @@ function downloadFile(url, filename) {
         showNotification(`文件 "${filename}" 下载成功`, 'success');
     })
     .catch(error => {
-        console.error(`下载失败: ${error.message}`);
+        // console.error(...)
         
         // 方法2: 备用下载方法 - 直接链接
 

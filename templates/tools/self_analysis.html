@@ -1,102 +1,885 @@
 {% extends "tools/base_tool.html" %}
 
-{% block tool_title_inner %}人生百态镜{% endblock %}
-{% block tool_title_display %}人生百态镜{% endblock %}
-{% block tool_subtitle %}AI深度对话，照见真实的自己{% endblock %}
+{% block tool_title_inner %}🦋 内心探索者{% endblock %}
+{% block tool_title_display %}🦋 内心探索者{% endblock %}
+{% block tool_subtitle %}深度对话，照见最真实的自己{% endblock %}
 
 {% block tool_content %}
 <div class="self-analysis-container">
     <!-- 引导说明 -->
     <div class="analysis-guide">
-        <h3>🌟 开始你的自我探索之旅</h3>
-        <p>通过以下步骤，与AI进行深度交流，获得专属的自我说明书：</p>
-        <ol>
-            <li>让AI向你提问来了解你</li>
-            <li>回答完后，问他是否有遗漏的部分，让他继续提问</li>
-            <li>如果看不懂，让他用直白的语言询问</li>
-            <li>如果不知道，就回答不知道</li>
-            <li>让他总结</li>
-            <li>如果觉得总结不够完整，问他是否有遗漏</li>
-            <li>最后让他深入分析你这个人，综合考虑，提炼你的核心特质</li>
-            <li>最后可以让他帮你生成十个你最不敢面对的问题</li>
-        </ol>
+        <div class="guide-header">
+            <div class="mirror-icon">🪞</div>
+            <h3>开始你的自我探索之旅</h3>
+        </div>
+        <p class="guide-subtitle">通过深度对话，与AI一起探索内心世界，获得专属的自我说明书</p>
+        
+        <div class="guide-actions">
+            <button class="guide-btn primary" id="showGuideBtn">
+                <i class="fas fa-book"></i> 查看使用说明
+            </button>
+            <button class="guide-btn secondary" id="startExplorationBtn">
+                <i class="fas fa-play"></i> 开始探索
+            </button>
+        </div>
+        
+        <div class="guide-tips">
+            <div class="tip-item">
+                <span class="tip-icon">💡</span>
+                <span>保持开放和诚实，这是获得准确分析的关键</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">🔍</span>
+                <span>不要急于求成，深度探索需要时间和耐心</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">❤️</span>
+                <span>准备好面对真实的自己，包括那些不愿承认的部分</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用说明弹窗 -->
+    <div class="modal-overlay" id="guideModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>自我探索使用说明</h3>
+                <button class="close-btn" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="exploration-steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>让AI向你提问来了解你</strong>
+                            <span>AI会通过精心设计的问题，逐步了解你的内心世界</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>回答完后，问他是否有遗漏的部分</strong>
+                            <span>确保AI对你的了解是全面而深入的</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>如果看不懂，让他用直白的语言询问</strong>
+                            <span>确保每个问题都能被准确理解</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>如果不知道，就回答不知道</strong>
+                            <span>诚实面对自己的不确定，这也是自我认知的一部分</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <strong>让他总结</strong>
+                            <span>AI会基于对话内容，为你生成初步的自我画像</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <strong>如果觉得总结不够完整，问他是否有遗漏</strong>
+                            <span>确保自我画像的完整性和准确性</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <strong>让他深入分析你这个人，提炼核心特质</strong>
+                            <span>获得关于你性格、价值观、行为模式的深度洞察</span>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">8</div>
+                        <div class="step-content">
+                            <strong>最后让他生成十个你最不敢面对的问题</strong>
+                            <span>直面内心深处的恐惧和挑战，获得成长的机会</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeModalBtn2">关闭</button>
+                <button class="modal-btn primary" id="startFromModalBtn">开始探索</button>
+            </div>
+        </div>
     </div>
 
     <!-- 对话界面 -->
     <div class="chat-container">
+        <div class="chat-header">
+            <div class="ai-avatar">🦋</div>
+            <div class="ai-info">
+                <h4>AI内心探索者</h4>
+                <span class="ai-status">在线 · 准备开始深度对话</span>
+            </div>
+        </div>
+        
         <div class="chat-messages" id="chatMessages">
             <div class="message ai-message">
+                <div class="message-avatar">🦋</div>
                 <div class="message-content">
-                    <p>👋 你好！我是你的AI人生导师。让我们开始一段深度对话，通过这面"人生百态镜"，照见最真实的自己。</p>
-                    <p>请告诉我，你最近在想什么？或者有什么让你困惑的事情吗？</p>
+                    <div class="message-text">
+                        <p>你好，我是你的AI内心探索者。我将陪伴你进行一场深度的自我探索之旅。</p>
+                        <p>在开始之前，我想先了解你：<strong>你希望从这次自我探索中获得什么？</strong>是想更好地了解自己的性格特质，还是想解决某个具体的困惑？</p>
+                        <p>请诚实地告诉我你的想法，这将帮助我为你设计更精准的探索路径。</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="chat-input-container">
-            <textarea id="messageInput" placeholder="输入你的想法..." rows="3"></textarea>
-            <button id="sendButton" class="send-btn">
-                <i class="fas fa-paper-plane"></i> 发送
-            </button>
+            <div class="input-wrapper">
+                <textarea id="messageInput" placeholder="分享你的想法，开始这场内心探索..." rows="3"></textarea>
+                <div class="input-actions">
+                    <button id="sendButton" class="send-btn">
+                        <i class="fas fa-paper-plane"></i> 发送
+                    </button>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" data-action="start">开始探索</button>
+                <button class="quick-btn" data-action="continue">继续提问</button>
+                <button class="quick-btn" data-action="clarify">用直白语言</button>
+                <button class="quick-btn" data-action="summary">总结分析</button>
+            </div>
         </div>
     </div>
 
     <!-- 分析结果 -->
     <div class="analysis-results" id="analysisResults" style="display: none;">
-        <h3>📋 你的自我说明书</h3>
+        <div class="results-header">
+            <div class="results-icon">📋</div>
+            <h3>你的自我说明书</h3>
+            <p class="results-subtitle">基于深度对话生成的个人画像</p>
+        </div>
         <div class="result-content" id="resultContent"></div>
+        
+        <div class="results-actions">
+            <button class="action-btn secondary" id="exportBtn">
+                <i class="fas fa-download"></i> 导出分析
+            </button>
+            <button class="action-btn primary" id="newSessionBtn">
+                <i class="fas fa-redo"></i> 开始新探索
+            </button>
+        </div>
     </div>
 </div>
 
 <style>
+/* 奇异人生风格背景 */
+body {
+    background: 
+        /* 水彩风格渐变背景 */
+        linear-gradient(135deg, 
+            #e8d5c4 0%, 
+            #d4c4a8 15%, 
+            #c9b99a 30%, 
+            #b8a082 45%, 
+            #a09070 60%, 
+            #8b7355 75%, 
+            #7a6345 90%, 
+            #6b5539 100%
+        );
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        /* 水彩污渍效果 */
+        radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(160, 82, 45, 0.06) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, rgba(101, 67, 33, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 30% 80%, rgba(139, 69, 19, 0.03) 0%, transparent 25%),
+        radial-gradient(circle at 70% 20%, rgba(160, 82, 45, 0.02) 0%, transparent 20%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 整体容器 */
 .self-analysis-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
+    background: transparent;
+    min-height: 100vh;
 }
 
+/* 引导说明区域 - 奇异人生手绘风格 */
 .analysis-guide {
+    background: 
+        /* 水彩纸张效果 */
+        linear-gradient(135deg, 
+            rgba(248, 245, 240, 0.95) 0%, 
+            rgba(240, 235, 225, 0.9) 25%, 
+            rgba(232, 225, 210, 0.85) 50%, 
+            rgba(220, 210, 195, 0.9) 75%, 
+            rgba(210, 200, 180, 0.95) 100%
+        );
+    color: #2c1810;
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 
+        0 8px 32px rgba(139, 69, 19, 0.2),
+        0 4px 16px rgba(139, 69, 19, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 3px solid rgba(139, 69, 19, 0.3);
+    /* 手绘边缘效果 */
+    clip-path: polygon(0% 0%, 95% 0%, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0% 95%, 0% 5%);
+}
+
+.analysis-guide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* 边缘磨损效果 */
+        linear-gradient(45deg, rgba(139, 69, 19, 0.15) 0%, transparent 8%),
+        linear-gradient(-45deg, rgba(139, 69, 19, 0.12) 0%, transparent 8%),
+        linear-gradient(135deg, transparent 92%, rgba(139, 69, 19, 0.15) 100%),
+        linear-gradient(-135deg, transparent 92%, rgba(139, 69, 19, 0.12) 100%),
+        /* 纸张老化纹理 */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(139, 69, 19, 0.01) 3px,
+            rgba(139, 69, 19, 0.01) 4px
+        );
+    pointer-events: none;
+    border-radius: 7px;
+}
+
+.analysis-guide::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(139, 69, 19, 0.2) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(139, 69, 19, 0.15) 0%, transparent 25%);
+    border-radius: 9px;
+    z-index: -1;
+}
+
+.guide-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.mirror-icon {
+    font-size: 2.5em;
+    margin-right: 15px;
+    animation: pulse 2s infinite;
+    filter: sepia(0.3) contrast(1.2);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.guide-header h3 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #2c1810;
+    text-shadow: 
+        2px 2px 0px rgba(139, 69, 19, 0.3),
+        4px 4px 8px rgba(139, 69, 19, 0.2);
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    /* 手绘效果 */
+    transform: rotate(-0.5deg);
+    position: relative;
+}
+
+.guide-subtitle {
+    font-size: 1.1em;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 1;
+    color: #4a3c2a;
+    font-weight: 400;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    /* 手绘效果 */
+    transform: rotate(0.3deg);
+    text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.2);
+}
+
+/* 探索步骤 */
+.exploration-steps {
+    position: relative;
+    z-index: 1;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: 
+        /* 手绘便签效果 */
+        linear-gradient(135deg, 
+            rgba(255, 255, 200, 0.9) 0%, 
+            rgba(255, 248, 180, 0.8) 25%, 
+            rgba(255, 240, 160, 0.85) 50%, 
+            rgba(255, 232, 140, 0.8) 75%, 
+            rgba(255, 224, 120, 0.9) 100%
+        );
+    border-radius: 15px;
+    border: 2px solid rgba(139, 69, 19, 0.4);
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 6px 20px rgba(139, 69, 19, 0.3),
+        0 3px 10px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    position: relative;
+    /* 手绘倾斜效果 */
+    transform: rotate(0.5deg);
+    /* 手绘边缘 */
+    clip-path: polygon(0% 0%, 98% 0%, 100% 2%, 100% 98%, 98% 100%, 2% 100%, 0% 98%, 0% 2%);
+}
+
+.step-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* 边缘磨损 */
+        linear-gradient(45deg, rgba(139, 69, 19, 0.1) 0%, transparent 10%),
+        linear-gradient(-45deg, rgba(139, 69, 19, 0.08) 0%, transparent 10%);
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+.step-item:hover {
+    background: 
+        /* 污渍效果增强 */
+        radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.08) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, rgba(101, 67, 33, 0.05) 0%, transparent 30%),
+        /* 纸张纹理 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 69, 19, 0.015) 2px,
+            rgba(139, 69, 19, 0.015) 3px
+        ),
+        /* 基础色 */
+        linear-gradient(135deg, 
+            rgba(245, 245, 220, 0.95) 0%, 
+            rgba(240, 230, 140, 0.85) 25%, 
+            rgba(218, 165, 32, 0.75) 50%, 
+            rgba(184, 134, 11, 0.65) 75%, 
+            rgba(139, 69, 19, 0.55) 100%
+        );
+    transform: translateX(5px);
+    box-shadow: 
+        0 2px 8px rgba(139, 69, 19, 0.3),
+        0 4px 16px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.1);
+}
+
+.step-number {
+    background: 
+        /* 污渍和老化 */
+        radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.2) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(160, 82, 45, 0.15) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, rgba(101, 67, 33, 0.1) 0%, transparent 30%),
+        /* 基础色 */
+        linear-gradient(135deg, 
+            #8b4513 0%, 
+            #a0522d 25%, 
+            #cd853f 50%, 
+            #daa520 75%, 
+            #b8860b 100%
+        );
+    color: #f5f5dc;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    flex-shrink: 0;
+    box-shadow: 
+        0 2px 8px rgba(139, 69, 19, 0.5),
+        0 4px 16px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+    border: 1px solid rgba(139, 69, 19, 0.6);
+    position: relative;
+}
+
+.step-number::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #2c1810;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.3);
+    /* 手绘效果 */
+    transform: rotate(-0.2deg);
+}
+
+.step-content span {
+    font-size: 0.95em;
+    line-height: 1.5;
+    font-weight: 400;
+    color: #4a3c2a;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    text-shadow: 1px 1px 1px rgba(139, 69, 19, 0.2);
+}
+
+/* 引导操作按钮 */
+.guide-actions {
+    margin: 25px 0;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.guide-btn {
+    padding: 15px 30px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.guide-btn.primary {
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+    color: #f5f5dc;
+    border: 1px solid rgba(139, 69, 19, 0.5);
+    box-shadow: 
+        0 4px 15px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.guide-btn.secondary {
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(245, 245, 220, 0.8) 0%, rgba(240, 230, 140, 0.6) 100%);
+    color: #8b4513;
+    border: 1px solid rgba(139, 69, 19, 0.4);
+    box-shadow: 
+        0 2px 8px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.guide-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.guide-btn.primary:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.guide-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 提示信息 */
+.guide-tips {
+    margin-top: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: 
+        /* 手绘便签效果 */
+        linear-gradient(135deg, 
+            rgba(255, 255, 220, 0.9) 0%, 
+            rgba(255, 248, 200, 0.8) 50%, 
+            rgba(255, 240, 180, 0.9) 100%
+        );
+    border-radius: 12px;
+    border: 2px solid rgba(139, 69, 19, 0.3);
+    font-weight: 500;
+    color: #2c1810;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    box-shadow: 
+        0 4px 12px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    /* 手绘倾斜效果 */
+    transform: rotate(-0.3deg);
+    text-shadow: 1px 1px 1px rgba(139, 69, 19, 0.2);
+}
+
+.tip-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 500;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: 50vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f1f1f1;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 3px;
+}
+
+.modal-footer {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 12px 24px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-btn.primary {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.analysis-guide h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.5em;
+.modal-btn.secondary {
+    background: #6c757d;
+    color: white;
 }
 
-.analysis-guide ol {
-    margin: 0;
-    padding-left: 20px;
+.modal-btn:hover {
+    transform: translateY(-2px);
 }
 
-.analysis-guide li {
-    margin-bottom: 8px;
-    line-height: 1.6;
+.modal-btn.primary:hover {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
+.modal-btn.secondary:hover {
+    background: #5a6268;
+}
+
+/* 对话容器 - 奇异人生手绘风格 */
 .chat-container {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: 
+        /* 水彩纸张效果 */
+        linear-gradient(135deg, 
+            rgba(248, 245, 240, 0.95) 0%, 
+            rgba(240, 235, 225, 0.9) 25%, 
+            rgba(232, 225, 210, 0.85) 50%, 
+            rgba(220, 210, 195, 0.9) 75%, 
+            rgba(210, 200, 180, 0.95) 100%
+        );
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px rgba(139, 69, 19, 0.2),
+        0 4px 16px rgba(139, 69, 19, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     overflow: hidden;
     margin-bottom: 30px;
+    border: 3px solid rgba(139, 69, 19, 0.3);
+    position: relative;
+    /* 手绘边缘效果 */
+    clip-path: polygon(0% 0%, 95% 0%, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0% 95%, 0% 5%);
 }
 
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* 边缘磨损效果 */
+        linear-gradient(45deg, rgba(139, 69, 19, 0.12) 0%, transparent 8%),
+        linear-gradient(-45deg, rgba(139, 69, 19, 0.1) 0%, transparent 8%),
+        linear-gradient(135deg, transparent 92%, rgba(139, 69, 19, 0.12) 100%),
+        linear-gradient(-135deg, transparent 92%, rgba(139, 69, 19, 0.1) 100%),
+        /* 纸张老化纹理 */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(139, 69, 19, 0.008) 3px,
+            rgba(139, 69, 19, 0.008) 4px
+        );
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 7px;
+}
+
+.chat-header {
+    background: 
+        /* 奇异人生风格渐变 */
+        linear-gradient(135deg, 
+            rgba(139, 69, 19, 0.8) 0%, 
+            rgba(160, 82, 45, 0.9) 25%, 
+            rgba(101, 67, 33, 0.85) 50%, 
+            rgba(139, 69, 19, 0.9) 75%, 
+            rgba(160, 82, 45, 0.8) 100%
+        );
+    color: #f5f5dc;
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid rgba(139, 69, 19, 0.4);
+    position: relative;
+    z-index: 2;
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+    /* 手绘边缘效果 */
+    clip-path: polygon(0% 0%, 95% 0%, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0% 95%, 0% 5%);
+}
+
+.chat-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.ai-avatar {
+    font-size: 2em;
+    margin-right: 15px;
+    animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.ai-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.3em;
+    font-weight: 600;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    text-shadow: 
+        2px 2px 0px rgba(139, 69, 19, 0.5),
+        4px 4px 8px rgba(0, 0, 0, 0.3);
+    color: #f5f5dc;
+    /* 手绘效果 */
+    transform: rotate(-0.2deg);
+}
+
+.ai-status {
+    font-size: 0.9em;
+    opacity: 0.9;
+    font-weight: 400;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    color: #e8dcc0;
+    text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.3);
+}
+
+/* 消息区域 - 奇异人生手绘风格 */
 .chat-messages {
-    height: 400px;
+    height: 450px;
     overflow-y: auto;
-    padding: 20px;
-    background: #f8f9fa;
+    padding: 25px;
+    background: 
+        /* 水彩纸张效果 */
+        linear-gradient(135deg, 
+            rgba(248, 245, 240, 0.95) 0%, 
+            rgba(240, 235, 225, 0.9) 25%, 
+            rgba(232, 225, 210, 0.85) 50%, 
+            rgba(220, 210, 195, 0.9) 75%, 
+            rgba(210, 200, 180, 0.95) 100%
+        );
+    scrollbar-width: thin;
+    scrollbar-color: #8b4513 #f5f5dc;
+    position: relative;
+    z-index: 2;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f5f5dc;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #8b4513;
+    border-radius: 3px;
 }
 
 .message {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     display: flex;
+    align-items: flex-start;
 }
 
 .user-message {
@@ -107,67 +890,265 @@
     justify-content: flex-start;
 }
 
+.message-avatar {
+    font-size: 1.5em;
+    margin-right: 12px;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
 .message-content {
-    max-width: 70%;
-    padding: 15px 20px;
+    max-width: 75%;
+    padding: 18px 22px;
     border-radius: 20px;
     line-height: 1.6;
+    position: relative;
 }
 
 .user-message .message-content {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-bottom-right-radius: 5px;
+    background: 
+        /* 奇异人生风格渐变 */
+        linear-gradient(135deg, 
+            rgba(139, 69, 19, 0.9) 0%, 
+            rgba(160, 82, 45, 0.8) 25%, 
+            rgba(101, 67, 33, 0.85) 50%, 
+            rgba(139, 69, 19, 0.8) 75%, 
+            rgba(160, 82, 45, 0.9) 100%
+        );
+    color: #f5f5dc;
+    border-bottom-right-radius: 8px;
+    box-shadow: 
+        0 4px 12px rgba(139, 69, 19, 0.4),
+        0 8px 24px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+    border: 2px solid rgba(139, 69, 19, 0.5);
+    /* 手绘倾斜效果 */
+    transform: rotate(0.5deg);
 }
 
 .ai-message .message-content {
-    background: white;
-    color: #333;
-    border: 1px solid #e9ecef;
-    border-bottom-left-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: 
+        /* 奇异人生风格渐变 - 与user-message保持一致 */
+        linear-gradient(135deg, 
+            rgba(139, 69, 19, 0.9) 0%, 
+            rgba(160, 82, 45, 0.8) 25%, 
+            rgba(101, 67, 33, 0.85) 50%, 
+            rgba(139, 69, 19, 0.8) 75%, 
+            rgba(160, 82, 45, 0.9) 100%
+        );
+    color: #f5f5dc;
+    border-bottom-left-radius: 8px;
+    box-shadow: 
+        0 4px 12px rgba(139, 69, 19, 0.4),
+        0 8px 24px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+    border: 2px solid rgba(139, 69, 19, 0.5);
+    /* 手绘倾斜效果 */
+    transform: rotate(-0.5deg);
 }
 
+.message-text p {
+    margin: 0 0 12px 0;
+}
+
+.message-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* 输入区域 - 命运感羊皮纸风格 */
 .chat-input-container {
-    padding: 20px;
-    background: white;
-    border-top: 1px solid #e9ecef;
+    padding: 30px;
+    background: 
+        /* 命运感的神秘纹理 */
+        radial-gradient(circle at 15% 15%, rgba(139, 69, 19, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(160, 82, 45, 0.08) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, rgba(101, 67, 33, 0.06) 0%, transparent 30%),
+        /* 古老羊皮纸纹理 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 69, 19, 0.02) 2px,
+            rgba(139, 69, 19, 0.02) 3px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 3px,
+            rgba(160, 82, 45, 0.015) 3px,
+            rgba(160, 82, 45, 0.015) 4px
+        ),
+        /* 命运感渐变背景 */
+        linear-gradient(135deg, 
+            #2c1810 0%, 
+            #3d2817 15%, 
+            #4a3c2a 30%, 
+            #5d4e37 45%, 
+            #6b5539 60%, 
+            #8b4513 75%, 
+            #a0522d 90%, 
+            #cd853f 100%
+        );
+    border-top: 3px solid rgba(139, 69, 19, 0.6);
+    position: relative;
+    z-index: 2;
+    box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -2px 0 rgba(139, 69, 19, 0.3),
+        0 8px 32px rgba(0, 0, 0, 0.4);
+    /* 命运感边框效果 */
+    border-radius: 0 0 25px 25px;
+    /* 神秘光晕效果 */
+    box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -2px 0 rgba(139, 69, 19, 0.3),
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(139, 69, 19, 0.2);
+}
+
+.input-wrapper {
     display: flex;
     gap: 15px;
     align-items: flex-end;
+    margin-bottom: 15px;
 }
 
 #messageInput {
     flex: 1;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 12px 15px;
-    font-size: 14px;
+    border: 3px solid rgba(139, 69, 19, 0.6);
+    border-radius: 20px;
+    padding: 18px 25px;
+    font-size: 15px;
     resize: none;
-    transition: border-color 0.3s ease;
+    transition: all 0.4s ease;
+    background: 
+        /* 命运感神秘纹理 */
+        radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.06) 0%, transparent 35%),
+        /* 古老羊皮纸效果 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 1px,
+            rgba(139, 69, 19, 0.01) 1px,
+            rgba(139, 69, 19, 0.01) 2px
+        ),
+        /* 命运感渐变背景 */
+        linear-gradient(135deg, 
+            #f4f1e8 0%, 
+            #e8dcc0 20%, 
+            #d4c4a8 40%, 
+            #c9b99a 60%, 
+            #b8a082 80%, 
+            #a09070 100%
+        );
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    color: #2c1810;
+    font-weight: 500;
+    box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.2),
+        0 4px 16px rgba(139, 69, 19, 0.3),
+        0 0 10px rgba(139, 69, 19, 0.1);
+    /* 命运感倾斜效果 */
+    transform: rotate(0.3deg);
 }
 
 #messageInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #8b4513;
+    background: 
+        /* 命运感聚焦效果 */
+        radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.12) 0%, transparent 35%),
+        /* 古老羊皮纸效果增强 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 1px,
+            rgba(139, 69, 19, 0.02) 1px,
+            rgba(139, 69, 19, 0.02) 2px
+        ),
+        /* 命运感渐变背景 */
+        linear-gradient(135deg, 
+            #f4f1e8 0%, 
+            #e8dcc0 20%, 
+            #d4c4a8 40%, 
+            #c9b99a 60%, 
+            #b8a082 80%, 
+            #a09070 100%
+        );
+    box-shadow: 
+        0 0 0 4px rgba(139, 69, 19, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3),
+        0 8px 24px rgba(139, 69, 19, 0.4),
+        0 0 20px rgba(139, 69, 19, 0.2);
+    /* 命运感聚焦倾斜效果 */
+    transform: rotate(0.5deg) scale(1.02);
+}
+
+.input-actions {
+    display: flex;
+    align-items: center;
 }
 
 .send-btn {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
+    background: 
+        /* 命运感神秘光晕 */
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(139, 69, 19, 0.2) 0%, transparent 40%),
+        /* 命运感渐变 */
+        linear-gradient(135deg, 
+            #2c1810 0%, 
+            #3d2817 25%, 
+            #8b4513 50%, 
+            #a0522d 75%, 
+            #cd853f 100%
+        );
+    color: #f5f5dc;
+    border: 2px solid rgba(139, 69, 19, 0.7);
+    padding: 18px 28px;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 14px;
-    transition: transform 0.2s ease;
+    font-size: 15px;
+    transition: all 0.4s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    font-weight: 600;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    box-shadow: 
+        0 6px 20px rgba(139, 69, 19, 0.4),
+        0 0 15px rgba(139, 69, 19, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+    /* 命运感倾斜效果 */
+    transform: rotate(-0.5deg);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .send-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) rotate(-0.8deg) scale(1.05);
+    box-shadow: 
+        0 12px 30px rgba(139, 69, 19, 0.5),
+        0 0 25px rgba(139, 69, 19, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.4);
+    background: 
+        /* 命运感悬停光晕增强 */
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(139, 69, 19, 0.3) 0%, transparent 40%),
+        /* 命运感渐变增强 */
+        linear-gradient(135deg, 
+            #3d2817 0%, 
+            #4a3c2a 25%, 
+            #8b4513 50%, 
+            #a0522d 75%, 
+            #cd853f 100%
+        );
 }
 
 .send-btn:disabled {
@@ -176,30 +1157,224 @@
     transform: none;
 }
 
-.analysis-results {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+/* 快速操作按钮 */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.analysis-results h3 {
-    color: #667eea;
-    margin-bottom: 20px;
-    font-size: 1.5em;
+.quick-btn {
+    background: 
+        /* 命运感神秘纹理 */
+        radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.06) 0%, transparent 35%),
+        /* 古老羊皮纸效果 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 1px,
+            rgba(139, 69, 19, 0.01) 1px,
+            rgba(139, 69, 19, 0.01) 2px
+        ),
+        /* 命运感渐变背景 */
+        linear-gradient(135deg, 
+            rgba(244, 241, 232, 0.9) 0%, 
+            rgba(232, 220, 192, 0.8) 25%, 
+            rgba(212, 196, 168, 0.7) 50%, 
+            rgba(201, 185, 154, 0.8) 75%, 
+            rgba(184, 160, 130, 0.9) 100%
+        );
+    color: #2c1810;
+    border: 2px solid rgba(139, 69, 19, 0.5);
+    padding: 10px 18px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.4s ease;
+    font-weight: 600;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    box-shadow: 
+        0 4px 12px rgba(139, 69, 19, 0.3),
+        0 0 8px rgba(139, 69, 19, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.2);
+    /* 命运感倾斜效果 */
+    transform: rotate(0.2deg);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.quick-btn:hover {
+    background: 
+        /* 命运感悬停光晕增强 */
+        radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.12) 0%, transparent 35%),
+        /* 古老羊皮纸效果增强 */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 1px,
+            rgba(139, 69, 19, 0.02) 1px,
+            rgba(139, 69, 19, 0.02) 2px
+        ),
+        /* 命运感渐变背景增强 */
+        linear-gradient(135deg, 
+            rgba(244, 241, 232, 0.95) 0%, 
+            rgba(232, 220, 192, 0.85) 25%, 
+            rgba(212, 196, 168, 0.75) 50%, 
+            rgba(201, 185, 154, 0.85) 75%, 
+            rgba(184, 160, 130, 0.95) 100%
+        );
+    transform: translateY(-2px) rotate(0.4deg) scale(1.05);
+    box-shadow: 
+        0 6px 18px rgba(139, 69, 19, 0.4),
+        0 0 12px rgba(139, 69, 19, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(139, 69, 19, 0.3);
+}
+
+/* 分析结果 - 羊皮纸风格 */
+.analysis-results {
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(160, 82, 45, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #f5f5dc 0%, #f0e68c 25%, #daa520 50%, #b8860b 75%, #8b4513 100%);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 
+        0 0 0 1px rgba(139, 69, 19, 0.3),
+        0 20px 40px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(139, 69, 19, 0.4);
+    position: relative;
+}
+
+.analysis-results::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 69, 19, 0.02) 2px,
+            rgba(139, 69, 19, 0.02) 4px
+        );
+    pointer-events: none;
+    border-radius: 18px;
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 1;
+}
+
+.results-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+    filter: sepia(0.3) contrast(1.2);
+}
+
+.results-header h3 {
+    color: #8b4513;
+    margin: 0 0 10px 0;
+    font-size: 1.8em;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.3);
+}
+
+.results-subtitle {
+    color: #654321;
+    font-size: 1em;
+    margin: 0;
+    font-style: italic;
 }
 
 .result-content {
     line-height: 1.8;
-    color: #333;
+    color: #2c1810;
+    font-size: 1.05em;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 1;
 }
 
+.results-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.action-btn {
+    padding: 12px 24px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btn.primary {
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+    color: #f5f5dc;
+    border: 1px solid rgba(139, 69, 19, 0.5);
+    box-shadow: 
+        0 4px 15px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.secondary {
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(245, 245, 220, 0.8) 0%, rgba(240, 230, 140, 0.6) 100%);
+    color: #8b4513;
+    border: 1px solid rgba(139, 69, 19, 0.4);
+    box-shadow: 
+        0 2px 8px rgba(139, 69, 19, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.action-btn.primary:hover {
+    box-shadow: 
+        0 8px 25px rgba(139, 69, 19, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.action-btn.secondary:hover {
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(245, 245, 220, 0.9) 0%, rgba(240, 230, 140, 0.7) 100%);
+    box-shadow: 
+        0 4px 16px rgba(139, 69, 19, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* 加载动画 - 羊皮纸风格 */
 .loading {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
+    border: 3px solid #f5f5dc;
+    border-top: 3px solid #8b4513;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -209,16 +1384,40 @@
     100% { transform: rotate(360deg); }
 }
 
+/* 响应式设计 */
 @media (max-width: 768px) {
     .self-analysis-container {
         padding: 15px;
     }
     
-    .message-content {
-        max-width: 85%;
+    .analysis-guide {
+        padding: 20px;
     }
     
-    .chat-input-container {
+    .guide-header h3 {
+        font-size: 1.5em;
+    }
+    
+    .guide-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .guide-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .step-item {
+        padding: 12px;
+    }
+    
+    .message-content {
+        max-width: 85%;
+        padding: 15px 18px;
+    }
+    
+    .input-wrapper {
         flex-direction: column;
         align-items: stretch;
     }
@@ -227,11 +1426,59 @@
         align-self: flex-end;
         width: fit-content;
     }
+    
+    .quick-actions {
+        justify-content: center;
+    }
+    
+    .results-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    /* 弹窗响应式 */
+    .modal-overlay {
+        padding: 10px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.3em;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        max-height: 60vh;
+    }
+    
+    .modal-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>
 
 <script>
 let conversationHistory = [];
+let currentPhase = 'initial'; // initial, exploring, summarizing, analyzing, challenging
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('messageInput');
@@ -239,10 +1486,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chatMessages');
     const analysisResults = document.getElementById('analysisResults');
     const resultContent = document.getElementById('resultContent');
+    const quickButtons = document.querySelectorAll('.quick-btn');
+    const exportBtn = document.getElementById('exportBtn');
+    const newSessionBtn = document.getElementById('newSessionBtn');
+    
+    // 弹窗相关元素
+    const guideModal = document.getElementById('guideModal');
+    const showGuideBtn = document.getElementById('showGuideBtn');
+    const startExplorationBtn = document.getElementById('startExplorationBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalBtn2 = document.getElementById('closeModalBtn2');
+    const startFromModalBtn = document.getElementById('startFromModalBtn');
 
     // 发送消息
-    function sendMessage() {
-        const message = messageInput.value.trim();
+    function sendMessage(customMessage = null) {
+        const message = customMessage || messageInput.value.trim();
         if (!message) return;
 
         // 添加用户消息到界面
@@ -263,7 +1521,8 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 message: message,
-                history: conversationHistory
+                history: conversationHistory,
+                phase: currentPhase
             })
         })
         .then(response => response.json())
@@ -281,8 +1540,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     {role: 'assistant', content: data.response}
                 );
                 
+                // 更新当前阶段
+                updatePhase(data.response);
+                
                 // 检查是否包含分析结果关键词
-                if (data.response.includes('总结') || data.response.includes('分析') || data.response.includes('核心特质')) {
+                if (data.response.includes('总结') || data.response.includes('分析') || data.response.includes('核心特质') || data.response.includes('自我说明书')) {
                     showAnalysisResults(data.response);
                 }
             } else {
@@ -292,18 +1554,153 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             loadingMessage.remove();
             addMessage('网络错误，请检查连接后重试。', 'ai');
-            console.error('Error:', error);
         });
     }
 
+    // 更新当前阶段
+    function updatePhase(response) {
+        if (response.includes('开始探索') || response.includes('了解你')) {
+            currentPhase = 'exploring';
+        } else if (response.includes('总结') || response.includes('初步分析')) {
+            currentPhase = 'summarizing';
+        } else if (response.includes('深入分析') || response.includes('核心特质')) {
+            currentPhase = 'analyzing';
+        } else if (response.includes('不敢面对') || response.includes('挑战性问题')) {
+            currentPhase = 'challenging';
+        }
+    }
+
+    // 快速操作按钮处理
+    quickButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const action = this.dataset.action;
+            let message = '';
+            
+            switch(action) {
+                case 'start':
+                    message = '请开始向我提问，我想进行深度的自我探索。';
+                    break;
+                case 'continue':
+                    message = '请继续提问，我想让你更全面地了解我。';
+                    break;
+                case 'clarify':
+                    message = '请用更直白的语言重新提问，我想确保理解你的问题。';
+                    break;
+                case 'summary':
+                    message = '请基于我们的对话，为我总结一下你的观察和分析。';
+                    break;
+            }
+            
+            if (message) {
+                sendMessage(message);
+            }
+        });
+    });
+
+    // 导出分析结果
+    exportBtn.addEventListener('click', function() {
+        const content = resultContent.textContent || resultContent.innerText;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `自我分析报告_${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // 开始新探索
+    newSessionBtn.addEventListener('click', function() {
+        if (confirm('确定要开始新的探索吗？当前的分析结果将被清空。')) {
+            conversationHistory = [];
+            currentPhase = 'initial';
+            chatMessages.innerHTML = `
+                <div class="message ai-message">
+                    <div class="message-avatar">🎮</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <p>你好，我是你的AI内心探索者。我将陪伴你进行一场深度的自我探索之旅。</p>
+                            <p>在开始之前，我想先了解你：<strong>你希望从这次自我探索中获得什么？</strong>是想更好地了解自己的性格特质，还是想解决某个具体的困惑？</p>
+                            <p>请诚实地告诉我你的想法，这将帮助我为你设计更精准的探索路径。</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            analysisResults.style.display = 'none';
+        }
+    });
+
+    // 弹窗相关事件处理
+    function showModal() {
+        guideModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideModal() {
+        guideModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    function startExploration() {
+        hideModal();
+        sendMessage('请开始向我提问，我想进行深度的自我探索。');
+    }
+
+    // 显示使用说明弹窗
+    showGuideBtn.addEventListener('click', showModal);
+    
+    // 直接开始探索
+    startExplorationBtn.addEventListener('click', startExploration);
+    
+    // 关闭弹窗
+    closeModalBtn.addEventListener('click', hideModal);
+    closeModalBtn2.addEventListener('click', hideModal);
+    
+    // 从弹窗开始探索
+    startFromModalBtn.addEventListener('click', startExploration);
+    
+    // 点击背景关闭弹窗
+    guideModal.addEventListener('click', function(e) {
+        if (e.target === guideModal) {
+            hideModal();
+        }
+    });
+    
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && guideModal.style.display === 'flex') {
+            hideModal();
+        }
+    });
+
     // 添加消息到界面
     function addMessage(content, sender) {
+        // 确保content是字符串类型
+        const messageContent = String(content || '');
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
         
+        if (sender === 'ai') {
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'message-avatar';
+            avatarDiv.textContent = '🎮';
+            messageDiv.appendChild(avatarDiv);
+        }
+        
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        contentDiv.innerHTML = `<p>${content.replace(/\n/g, '<br>')}</p>`;
+        
+        if (sender === 'ai') {
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            textDiv.innerHTML = `<p>${messageContent.replace(/\n/g, '<br>')}</p>`;
+            contentDiv.appendChild(textDiv);
+        } else {
+            contentDiv.innerHTML = `<p>${messageContent.replace(/\n/g, '<br>')}</p>`;
+        }
         
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
@@ -317,9 +1714,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message ai-message';
         
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.textContent = '🎮';
+        messageDiv.appendChild(avatarDiv);
+        
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        contentDiv.innerHTML = '<div class="loading"></div> AI正在思考...';
+        const textDiv = document.createElement('div');
+        textDiv.className = 'message-text';
+        textDiv.innerHTML = '<div class="loading"></div> AI正在深度思考...';
+        contentDiv.appendChild(textDiv);
         
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
@@ -330,13 +1735,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 显示分析结果
     function showAnalysisResults(content) {
-        resultContent.innerHTML = content.replace(/\n/g, '<br>');
+        const resultText = String(content || '');
+        resultContent.innerHTML = resultText.replace(/\n/g, '<br>');
         analysisResults.style.display = 'block';
         analysisResults.scrollIntoView({ behavior: 'smooth' });
     }
 
     // 事件监听
-    sendButton.addEventListener('click', sendMessage);
+    sendButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
     
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {

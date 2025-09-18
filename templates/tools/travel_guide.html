@@ -653,14 +653,7 @@
   font-size: 0.8rem;
 }
 
-.cache-badge {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4CAF50;
-  padding: 0.2rem 0.5rem;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
+/* 缓存功能已移除，相关样式已删除 */
 
 .guide-header-actions {
   display: flex;
@@ -2986,7 +2979,7 @@ async function checkLocalData(destination) {
       hideFastMode();
     }
   } catch (error) {
-    console.error('检测本地数据失败:', error);
+    // // console.error(...)
     hideFastMode();
   }
 }
@@ -3007,8 +3000,8 @@ function showFastMode(destination) {
   }
   
   if (modeInfo && modeInfoText) {
-    modeInfoText.innerHTML = `✅ ${destination} 有本地数据，推荐使用快速模式 <span style="color: #4CAF50;">🏠 本地数据</span>`;
-    modeInfo.style.display = 'flex';
+    // 隐藏本地数据提示，因为已经没有本地数据了
+    modeInfo.style.display = 'none';
   }
 }
 
@@ -3024,13 +3017,8 @@ function hideFastMode() {
   }
   
   if (modeInfo && modeInfoText) {
-    const destination = document.getElementById('destination').value.trim();
-    if (destination) {
-      modeInfoText.innerHTML = `❌ ${destination} 没有本地数据，将使用DeepSeek功能 <span style="color: #2196F3;">🤖 DeepSeek</span>`;
-      modeInfo.style.display = 'flex';
-    } else {
-      modeInfo.style.display = 'none';
-    }
+    // 隐藏本地数据提示，因为已经没有本地数据了
+    modeInfo.style.display = 'none';
   }
   
   // 自动选择标准模式
@@ -3118,7 +3106,7 @@ async function generateTravelGuide() {
       showTravelForm();
     }
   } catch (error) {
-    console.error('生成攻略失败:', error);
+    // console.error(...)
     
     // 检查是否是服务不可用错误
     if (error.message && (error.message.includes('服务暂时不可用') || error.message.includes('API') || error.message.includes('网络'))) {
@@ -3643,7 +3631,7 @@ function displayAttractionDetails(attractions) {
   const content = document.getElementById('attractionDetailsContent');
   
   if (!container || !content) {
-    console.warn('景点详情容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -3674,7 +3662,7 @@ function displayCurrencyAdvice(currencyAdvice) {
   const content = document.getElementById('currencyAdviceContent');
   
   if (!container || !content) {
-    console.warn('货币兑换建议容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -3728,7 +3716,7 @@ function displayWeatherAdvice(weatherAdvice) {
   const content = document.getElementById('weatherAdviceContent');
   
   if (!container || !content) {
-    console.warn('天气建议容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -3800,7 +3788,7 @@ function displayCulturalInfo(culturalInfo) {
   const content = document.getElementById('culturalInfoContent');
   
   if (!container || !content) {
-    console.warn('文化信息容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -3859,7 +3847,7 @@ function displayPracticalTips(practicalTips) {
   const content = document.getElementById('practicalTipsContent');
   
   if (!container || !content) {
-    console.warn('实用贴士容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -3890,7 +3878,7 @@ function displayEmergencyInfo(emergencyInfo) {
   const content = document.getElementById('emergencyInfoContent');
   
   if (!container || !content) {
-    console.warn('紧急信息容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -4153,8 +4141,8 @@ function formatDetailedGuide(content) {
 
   // 确保content是字符串类型
   if (typeof content !== 'string') {
-    console.warn('formatDetailedGuide: content不是字符串类型，尝试转换:', content);
-    content = String(content || '');
+    // // console.warn(...)
+    content = String(content || '');  // 调试信息已隐藏
   }
   
   // 如果内容为空，返回默认内容
@@ -4171,7 +4159,7 @@ function formatDetailedGuide(content) {
       return '';
     }).join('');
   } catch (error) {
-    console.error('formatDetailedGuide 处理失败:', error);
+    // console.error(...)
     return `<p>攻略内容处理失败: ${error.message}</p>`;
   }
 }
@@ -4182,7 +4170,7 @@ function displayDailySchedule(dailySchedule) {
   const section = document.getElementById('dailySchedule');
   
   if (!container) {
-    console.warn('每日行程容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -4252,6 +4240,7 @@ function renderTimeSlot(title, activities) {
 // 辅助函数
 function getTravelStyleText(style) {
   const styleMap = {
+    'general': '通用型',
     'adventure': '冒险探索',
     'cultural': '文化体验',
     'leisure': '休闲放松',
@@ -4295,7 +4284,7 @@ function displayActivityTimeline(timeline) {
   const section = document.getElementById('activityTimeline');
   
   if (!container) {
-    console.warn('活动时间线容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -4346,7 +4335,7 @@ function displayCostBreakdown(costBreakdown) {
   const section = document.getElementById('costBreakdown');
   
   if (!container) {
-    console.warn('费用明细容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -4757,7 +4746,7 @@ async function exportPDF() {
       alert('导出失败: ' + (errorData.error || '未知错误'));
     }
   } catch (error) {
-    console.error('导出失败:', error);
+    // console.error(...)
     alert('导出失败，请重试');
   } finally {
     // 恢复按钮状态
@@ -4851,10 +4840,10 @@ async function loadTravelGuides() {
     if (data.success) {
       displayGuidesList(data.guides);
     } else {
-      console.error('加载攻略列表失败:', data.error);
+      // console.error(...)
     }
   } catch (error) {
-    console.error('加载攻略列表失败:', error);
+    // console.error(...)
   }
 }
 
@@ -4863,7 +4852,7 @@ function displayGuidesList(guides) {
   const container = document.getElementById('guidesContainer');
   
   if (!container) {
-    console.warn('攻略列表容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -4920,10 +4909,10 @@ async function loadGuideDetail(guideId) {
       displayTravelGuide(data.guide);
       showTravelForm(); // 切换到攻略显示页面
     } else {
-      console.error('加载攻略详情失败:', data.error);
+      // console.error(...)
     }
   } catch (error) {
-    console.error('加载攻略详情失败:', error);
+    // console.error(...)
   }
 }
 
@@ -4944,10 +4933,10 @@ async function toggleFavoriteGuide(guideId) {
       // 重新加载攻略列表
       loadTravelGuides();
     } else {
-      console.error('切换收藏状态失败:', data.error);
+      // console.error(...)
     }
   } catch (error) {
-    console.error('切换收藏状态失败:', error);
+    // console.error(...)
   }
 }
 
@@ -4964,6 +4953,7 @@ function getApiInfoText(guide) {
     'fallback': '🔄',
     'local_data': '🏠',
     'real_fallback': '📊',
+    'llm_service': '🤖',
     'unknown': '❓'
   };
   
@@ -4978,17 +4968,17 @@ function getApiInfoText(guide) {
     'fallback': '备用数据',
     'local_data': '本地数据',
     'real_fallback': '真实数据',
+    'llm_service': 'LLM服务',
     'unknown': '未知'
   };
   
   const apiUsed = guide.api_used || 'unknown';
-  const isCached = guide.is_cached || false;
   const generationTime = guide.generation_time || 0;
   const qualityScore = guide.data_quality_score || 0;
   const dataSource = guide.data_source || null;
   
-  let html = `<span class="api-icon">${apiIcons[apiUsed]}</span>`;
-  html += `<span>${apiNames[apiUsed]}</span>`;
+  let html = `<span class="api-icon">${apiIcons[apiUsed] || '❓'}</span>`;
+  html += `<span>${apiNames[apiUsed] || '未知'}</span>`;
   
   // 显示数据来源信息
   if (dataSource) {
@@ -4998,9 +4988,7 @@ function getApiInfoText(guide) {
     html += `<span style="color: ${sourceColor}; margin-left: 8px;">${sourceIcon} ${sourceText}</span>`;
   }
   
-  if (isCached) {
-    html += `<span class="cache-badge">缓存</span>`;
-  }
+  // 缓存功能已移除，不再显示缓存标识
   
   if (generationTime > 0) {
     html += `<span>(${generationTime.toFixed(1)}s)</span>`;
@@ -5037,8 +5025,8 @@ function openShareModal() {
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
   } else {
-    console.warn('分享模态框未找到，正在创建...');
-    createShareModal();
+    // // console.warn(...)
+    createShareModal();  // 调试信息已隐藏
   }
 }
 
@@ -5197,7 +5185,7 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
 
     }).catch(err => {
-      console.error('复制失败:', err);
+      // console.error(...)
       fallbackCopyToClipboard(text);
     });
   } else {
@@ -5221,7 +5209,7 @@ function fallbackCopyToClipboard(text) {
     document.execCommand('copy');
 
   } catch (err) {
-    console.error('复制失败:', err);
+    // console.error(...)
   }
   
   document.body.removeChild(textArea);
@@ -5478,11 +5466,11 @@ async function loadGoodPeopleGuides() {
     if (data.success) {
       displayGoodPeopleGuidesList(data.guides);
     } else {
-      console.error('加载好心人攻略列表失败:', data.error);
+      // console.error(...)
       showToast('加载攻略列表失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载好心人攻略列表失败:', error);
+    // console.error(...)
     showToast('网络错误，请重试');
   }
 }
@@ -5492,7 +5480,7 @@ function displayGoodPeopleGuidesList(guides) {
   const container = document.getElementById('goodPeopleGuidesContainer');
   
   if (!container) {
-    console.warn('好心人攻略列表容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -5576,11 +5564,11 @@ async function searchGoodPeopleGuides() {
     if (data.success) {
       displayGoodPeopleGuidesList(data.guides);
     } else {
-      console.error('搜索好心人攻略失败:', data.error);
+      // console.error(...)
       showToast('搜索失败: ' + data.error);
     }
   } catch (error) {
-    console.error('搜索好心人攻略失败:', error);
+    // console.error(...)
     showToast('网络错误，请重试');
   }
 }
@@ -5602,11 +5590,11 @@ async function loadGoodPeopleGuideDetail(guideId) {
       if (goodPeopleGuidesList) goodPeopleGuidesList.style.display = 'none';
       if (goodPeopleGuideDetail) goodPeopleGuideDetail.style.display = 'block';
     } else {
-      console.error('加载攻略详情失败:', data.error);
+      // console.error(...)
       showToast('加载攻略详情失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载攻略详情失败:', error);
+    // console.error(...)
     showToast('网络错误，请重试');
   }
 }
@@ -5618,7 +5606,7 @@ function displayGoodPeopleGuideDetail(guide) {
   const downloadBtn = document.querySelector('.download-btn');
   
   if (!container || !titleElement) {
-    console.warn('攻略详情容器不存在');
+    // console.warn(...)
     return;
   }
   
@@ -5760,7 +5748,7 @@ async function downloadGuide() {
       showToast('下载失败: ' + data.error);
     }
   } catch (error) {
-    console.error('下载攻略失败:', error);
+    // console.error(...)
     showToast('下载失败，请重试');
   }
 }
@@ -5793,7 +5781,7 @@ async function useGuide() {
       showToast('使用攻略失败: ' + data.error);
     }
   } catch (error) {
-    console.error('使用攻略失败:', error);
+    // console.error(...)
     showToast('使用攻略失败，请重试');
   }
 }
@@ -5915,7 +5903,7 @@ async function submitCreateGuide() {
       showToast('创建攻略失败: ' + data.error);
     }
   } catch (error) {
-    console.error('提交攻略失败:', error);
+    // console.error(...)
     showToast('网络错误，请重试');
   }
 }
@@ -5959,7 +5947,7 @@ async function downloadGoodPeopleGuide(guideId) {
       showToast('下载失败: ' + data.error);
     }
   } catch (error) {
-    console.error('下载攻略失败:', error);
+    // console.error(...)
     showToast('下载失败，请重试');
   }
 }
@@ -5986,7 +5974,7 @@ async function useGoodPeopleGuide(guideId) {
       showToast('使用攻略失败: ' + data.error);
     }
   } catch (error) {
-    console.error('使用攻略失败:', error);
+    // console.error(...)
     showToast('网络错误，请重试');
   }
 }

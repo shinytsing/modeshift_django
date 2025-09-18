@@ -385,7 +385,7 @@ function connectWebSocket() {
     };
     
     socket.onerror = function(error) {
-        console.error('WebSocket错误:', error);
+        // console.error(...)
         showStatus('连接错误', 'error');
     };
 }
@@ -416,7 +416,7 @@ async function handleWebSocketMessage(data) {
 
         }
     } catch (error) {
-        console.error('处理WebSocket消息失败:', error);
+        // console.error(...)
     }
 }
 
@@ -455,7 +455,7 @@ async function handleVideoOffer(offer) {
         startCallTimer();
         
     } catch (error) {
-        console.error('处理video offer失败:', error);
+        // console.error(...)
         showStatus('连接失败', 'error');
     }
 }
@@ -511,7 +511,7 @@ async function loadDeviceOptions() {
         if (speakerSelect.options.length > 1) speakerSelect.selectedIndex = 1;
         
     } catch (error) {
-        console.error('加载设备选项失败:', error);
+        // console.error(...)
         showStatus('无法访问设备列表', 'error');
     }
 }
@@ -552,7 +552,7 @@ async function startVideoChat() {
         startCallTimer();
         
     } catch (error) {
-        console.error('启动视频通话失败:', error);
+        // console.error(...)
         showStatus(`启动失败: ${error.message}`, 'error');
         updateConnectionStatus('offline');
     }
@@ -742,7 +742,7 @@ async function toggleScreenShare() {
             }
         }
     } catch (error) {
-        console.error('屏幕共享失败:', error);
+        // console.error(...)
         showStatus('屏幕共享失败', 'error');
     }
 }

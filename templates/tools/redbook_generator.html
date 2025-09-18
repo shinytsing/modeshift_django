@@ -605,7 +605,7 @@ function processFilesSequentially(files) {
             };
             
             reader.onerror = function() {
-                console.error('文件读取失败:', file.name);
+                // console.error(...)
                 showError(`文件 ${file.name} 读取失败`);
                 processedCount++;
                 
@@ -832,7 +832,7 @@ function bindEventListeners() {
             // 处理错误
             const errorMessage = error.response?.data?.error || '生成失败，请稍后重试';
             showError(errorMessage);
-            console.error('Error:', error);
+            // console.error(...)
         })
         .finally(() => {
             // 恢复按钮状态
@@ -972,7 +972,7 @@ function bindEventListeners() {
             // 处理错误
             const errorMessage = error.response?.data?.error || '爆款文案生成失败，请稍后重试';
             showError(errorMessage);
-            console.error('Error:', error);
+            // console.error(...)
         })
         .finally(() => {
             // 恢复按钮状态
@@ -1023,7 +1023,7 @@ function bindEventListeners() {
         }).catch(err => {
             copyStatus.textContent = '❌ 复制失败，请手动复制';
             copyStatus.style.color = '#dc3545';
-            console.error('复制失败:', err);
+            // console.error(...)
         });
     });
 

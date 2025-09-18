@@ -387,27 +387,17 @@
   <!-- 筛选器 -->
   <div class="timeline-filters">
     <div class="filter-group">
-      <label class="filter-label">年份</label>
-      <select id="yearFilter" class="filter-select">
-        <option value="">全部年份</option>
+      <label class="filter-label">年代</label>
+      <select id="decadeFilter" class="filter-select">
+        <option value="">全部年代</option>
       </select>
     </div>
     <div class="filter-group">
-      <label class="filter-label">月份</label>
-      <select id="monthFilter" class="filter-select">
-        <option value="">全部月份</option>
-        <option value="1">1月</option>
-        <option value="2">2月</option>
-        <option value="3">3月</option>
-        <option value="4">4月</option>
-        <option value="5">5月</option>
-        <option value="6">6月</option>
-        <option value="7">7月</option>
-        <option value="8">8月</option>
-        <option value="9">9月</option>
-        <option value="10">10月</option>
-        <option value="11">11月</option>
-        <option value="12">12月</option>
+      <label class="filter-label">类型</label>
+      <select id="typeFilter" class="filter-select">
+        <option value="">全部类型</option>
+        <option value="interaction">互动记录</option>
+        <option value="moment">重要时刻</option>
       </select>
     </div>
     <div class="filter-group">
@@ -432,6 +422,10 @@
       <div class="stat-number" id="totalItems">-</div>
       <div class="stat-label">总事件</div>
     </div>
+    <div class="stat-item">
+      <div class="stat-number" id="totalDecades">-</div>
+      <div class="stat-label">年代数</div>
+    </div>
   </div>
 
   <!-- 时光轴内容 -->
@@ -451,8 +445,8 @@
 let timelineData = [];
 let personProfiles = [];
 let currentFilters = {
-  year: '',
-  month: '',
+  decade: '',
+  type: '',
   person_id: ''
 };
 
@@ -467,8 +461,8 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadTimelineData() {
   try {
     const params = new URLSearchParams();
-    if (currentFilters.year) params.append('year', currentFilters.year);
-    if (currentFilters.month) params.append('month', currentFilters.month);
+    if (currentFilters.decade) params.append('decade', currentFilters.decade);
+    if (currentFilters.type) params.append('type', currentFilters.type);
     if (currentFilters.person_id) params.append('person_id', currentFilters.person_id);
     
     const response = await fetch(`/tools/api/meetsomeone/timeline/?${params}`);
@@ -477,12 +471,12 @@ async function loadTimelineData() {
     if (data.status === 'success') {
       displayTimelineData(data.data);
       updateStats(data.data.stats);
-      updateYearFilter(data.data.available_years);
+      updateDecadeFilter(data.data.available_decades);
     } else {
       showError('加载时光轴数据失败: ' + data.message);
     }
   } catch (error) {
-    console.error('Error loading timeline data:', error);
+    console.error('加载时光轴数据失败:', error);
     showError('网络错误，请稍后重试');
   }
 }
@@ -509,7 +503,7 @@ function displayTimelineData(data) {
     html += `
       <div class="timeline-group">
         <div class="timeline-month">
-          <div class="month-label">${group.month_name}</div>
+          <div class="month-label">${group.decade_name}</div>
         </div>
     `;
     
@@ -563,22 +557,23 @@ function updateStats(stats) {
   document.getElementById('totalInteractions').textContent = stats.total_interactions;
   document.getElementById('totalMoments').textContent = stats.total_moments;
   document.getElementById('totalItems').textContent = stats.total_items;
+  document.getElementById('totalDecades').textContent = stats.total_decades;
 }
 
-// 更新年份筛选器
-function updateYearFilter(years) {
-  const yearSelect = document.getElementById('yearFilter');
-  const currentYear = yearSelect.value;
+// 更新年代筛选器
+function updateDecadeFilter(decades) {
+  const decadeSelect = document.getElementById('decadeFilter');
+  const currentDecade = decadeSelect.value;
   
-  yearSelect.innerHTML = '<option value="">全部年份</option>';
-  years.forEach(year => {
+  decadeSelect.innerHTML = '<option value="">全部年代</option>';
+  decades.forEach(decade => {
     const option = document.createElement('option');
-    option.value = year;
-    option.textContent = year + '年';
-    if (year.toString() === currentYear) {
+    option.value = decade;
+    option.textContent = decade.replace('s', '年代'); // 例如: "2020s" -> "2020年代"
+    if (decade === currentDecade) {
       option.selected = true;
     }
-    yearSelect.appendChild(option);
+    decadeSelect.appendChild(option);
   });
 }
 
@@ -593,7 +588,7 @@ async function loadPersonProfiles() {
       updatePersonFilter();
     }
   } catch (error) {
-    console.error('Error loading person profiles:', error);
+    // console.error(...)
   }
 }
 
@@ -616,13 +611,13 @@ function updatePersonFilter() {
 
 // 初始化筛选器事件
 function initFilters() {
-  document.getElementById('yearFilter').addEventListener('change', function() {
-    currentFilters.year = this.value;
+  document.getElementById('decadeFilter').addEventListener('change', function() {
+    currentFilters.decade = this.value;
     loadTimelineData();
   });
   
-  document.getElementById('monthFilter').addEventListener('change', function() {
-    currentFilters.month = this.value;
+  document.getElementById('typeFilter').addEventListener('change', function() {
+    currentFilters.type = this.value;
     loadTimelineData();
   });
   

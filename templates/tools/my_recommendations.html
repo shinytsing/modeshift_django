@@ -503,7 +503,7 @@ class MyRecommendations {
                 this.showError('加载推荐失败: ' + data.error);
             }
         } catch (error) {
-            console.error('Error loading recommendations:', error);
+            // console.error(...)
             this.showError('网络错误，请稍后重试');
         }
     }
@@ -568,7 +568,7 @@ class MyRecommendations {
                 window.location.href = `/tools/${urlName}/`;
             }
         } catch (error) {
-            console.error('URL解析失败:', error);
+            // console.error(...)
             // 降级处理：直接拼接URL
             window.location.href = `/tools/${urlName}/`;
         }
@@ -612,7 +612,7 @@ class MyRecommendations {
                 })
             });
         } catch (error) {
-            console.error('Error recording action:', error);
+            // console.error(...)
         }
     }
 

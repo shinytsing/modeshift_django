@@ -934,12 +934,12 @@ function handleFileSelect(files) {
                 validateAudioFile(file);
                 validFiles.push(file);
             } catch (error) {
-                console.warn(`文件 ${file.name} 验证失败:`, error.message);
+                // // console.warn(...)
             }
         }
         
         if (validFiles.length === 0) {
-            handleError('没有有效的音频文件', '文件选择');
+            handleError('没有有效的音频文件', '文件选择');  // 调试信息已隐藏
             return;
         }
         
@@ -1009,7 +1009,7 @@ function convertAudioFiles() {
                 });
 
             } else {
-                console.error(`文件 ${file.name} 转换失败:`, data.message);
+                // console.error(...)
             }
             
             if (completedCount === totalFiles) {
@@ -1037,7 +1037,7 @@ function convertAudioFiles() {
         })
         .catch(error => {
             completedCount++;
-            console.error(`文件 ${file.name} 转换错误:`, error);
+            // console.error(...)
             
             if (completedCount === totalFiles) {
 
@@ -1182,10 +1182,10 @@ function addAudioFile(audioFile) {
     });
     
     audioElement.addEventListener('error', (e) => {
-        console.error(`音频 ${audioFile.id} 加载错误:`, e);
-        console.error('错误详情:', e.target.error);
-        console.error('网络状态:', e.target.networkState);
-        console.error('就绪状态:', e.target.readyState);
+        // console.error(...)
+        // console.error(...)
+        // console.error(...)
+        // console.error(...)
     });
     
     // 添加音频事件监听
@@ -1277,7 +1277,7 @@ function addAudioFile(audioFile) {
     });
     
     audioElement.addEventListener('error', (e) => {
-        console.error('音频播放错误:', e);
+        // console.error(...)
         handleError('音频文件无法播放，请检查文件是否损坏', '音频播放');
         resetAudioPlayback(audioFile.id);
     });
@@ -1292,14 +1292,14 @@ function togglePlay(audioId) {
     // 获取音频文件信息
     const audioFile = audioFiles.find(file => file.id === audioId);
     if (!audioFile) {
-        console.error('找不到音频文件:', audioId);
+        // console.error(...)
         return;
     }
     
     // 检查是否已有音频元素
     let audioElement = audioItem.querySelector('audio');
     if (!audioElement) {
-        console.error('音频元素不存在，这不应该发生');
+        // console.error(...)
         return;
     }
     
@@ -1347,7 +1347,7 @@ function togglePlay(audioId) {
                 audioItem.classList.add('playing');
             }
         }).catch(error => {
-            console.error('播放失败:', error);
+            // console.error(...)
             handleError('音频播放失败，请重试', '音频播放');
         });
     }
@@ -1409,39 +1409,39 @@ function setVolume(volume, audioId) {
         audioElement.volume = volumeLevel;
 
     } else {
-        console.warn('音频元素未找到，无法设置音量');
+        // // console.warn(...)
     }
 }
 
 // 进度条点击处理
 function handleProgressClick(event, audioId) {
 
-    const audioItem = document.querySelector(`[data-id="${audioId}"]`);
+    const audioItem = document.querySelector(`[data-id="${audioId}"]`);  // 调试信息已隐藏
     if (!audioItem) {
-        console.error('找不到音频项:', audioId);
+        // console.error(...)
         return;
     }
     
     const audioElement = audioItem.querySelector('audio');
     if (!audioElement) {
-        console.error('找不到音频元素:', audioId);
+        // console.error(...)
         return;
     }
     
     if (!audioElement.duration || isNaN(audioElement.duration)) {
-        console.warn('音频元素未准备好，无法跳转，duration:', audioElement.duration);
+        // console.warn(...)
         return;
     }
     
     if (audioElement.readyState < 1) {
-        console.warn('音频元素未准备好，readyState:', audioElement.readyState);
+        // console.warn(...)
         return;
     }
     
     // 从事件目标找到进度条元素
     const progressBar = event.target.closest('.progress-bar');
     if (!progressBar) {
-        console.error('找不到进度条元素');
+        // console.error(...)
         return;
     }
     
@@ -1484,7 +1484,7 @@ function handleProgressClick(event, audioId) {
                     audioElement.play().then(() => {
 
                     }).catch(error => {
-                        console.error('恢复播放失败:', error);
+                        // console.error(...)
                     });
                 }
                 return;
@@ -1507,7 +1507,7 @@ function handleProgressClick(event, audioId) {
                     audioElement.play().then(() => {
 
                     }).catch(error => {
-                        console.error('恢复播放失败:', error);
+                        // console.error(...)
                     });
                 }
                 return;
@@ -1529,16 +1529,16 @@ function handleProgressClick(event, audioId) {
                     audioElement.play().then(() => {
 
                     }).catch(error => {
-                        console.error('恢复播放失败:', error);
+                        // console.error(...)
                     });
                 }
                 return;
             }
             
-            console.warn('❌ 所有方法都失败了');
+            // console.warn(...)
             
         } catch (error) {
-            console.error('设置currentTime时出错:', error);
+            // console.error(...)
         }
     };
     
@@ -1565,30 +1565,30 @@ function handleProgressDrag(event, audioId) {
     
     const audioItem = document.querySelector(`[data-id="${audioId}"]`);
     if (!audioItem) {
-        console.error('找不到音频项:', audioId);
+        // console.error(...)
         return;
     }
     
     const audioElement = audioItem.querySelector('audio');
     if (!audioElement) {
-        console.error('找不到音频元素:', audioId);
+        // console.error(...)
         return;
     }
     
     if (!audioElement.duration || isNaN(audioElement.duration)) {
-        console.warn('音频元素未准备好，无法拖动，duration:', audioElement.duration);
+        // console.warn(...)
         return;
     }
     
     if (audioElement.readyState < 1) {
-        console.warn('音频元素未准备好，readyState:', audioElement.readyState);
+        // console.warn(...)
         return;
     }
     
     // 从事件目标找到进度条元素
     const progressBar = event.target.closest('.progress-bar');
     if (!progressBar) {
-        console.error('找不到进度条元素');
+        // console.error(...)
         return;
     }
     
@@ -1623,7 +1623,7 @@ function handleProgressDrag(event, audioId) {
         audioElement.currentTime = newTime;
 
     } catch (error) {
-        console.error('设置currentTime时出错:', error);
+        // console.error(...)
     }
     
     updateAudioProgress(audioId, newTime, audioElement.duration);
@@ -1647,7 +1647,7 @@ function handleProgressDrag(event, audioId) {
             audioElement.currentTime = moveTime;
 
         } catch (error) {
-            console.error('拖动中设置currentTime时出错:', error);
+            // console.error(...)
         }
         
         updateAudioProgress(audioId, moveTime, audioElement.duration);
@@ -1670,7 +1670,7 @@ function handleProgressDrag(event, audioId) {
             audioElement.play().then(() => {
 
             }).catch(error => {
-                console.error('恢复播放失败:', error);
+                // console.error(...)
             });
         }
     }
@@ -1793,7 +1793,7 @@ function getAudioFileInfo(audioFile) {
 
 // 错误处理函数
 function handleError(error, context) {
-    console.error(`错误 [${context}]:`, error);
+    // console.error(...)
     
     let errorMessage = '操作失败';
     if (error.message) {
@@ -1913,7 +1913,7 @@ async function generateZipFile() {
         // 检查响应状态
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('服务器响应错误:', response.status, errorText);
+            // console.error(...)
             throw new Error(`服务器错误: ${response.status} - ${errorText.substring(0, 200)}`);
         }
         
@@ -1921,7 +1921,7 @@ async function generateZipFile() {
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             const responseText = await response.text();
-            console.error('非JSON响应:', contentType, responseText.substring(0, 500));
+            // console.error(...));
             throw new Error('服务器返回了非JSON响应');
         }
         
@@ -1951,7 +1951,7 @@ async function generateZipFile() {
         }
         
     } catch (error) {
-        console.error('生成ZIP文件时出错:', error);
+        // console.error(...)
         
         // 提供更详细的错误信息
         let errorMessage = '生成ZIP文件时发生错误';
@@ -2137,9 +2137,9 @@ function generateWaveform(audioId, audioElement) {
         audioElement._waveformGenerated = true;
         
     } catch (error) {
-        console.warn('音频波形生成失败:', error);
+        // // console.warn(...)
         // 如果波形生成失败，显示静态波形
-        drawStaticWaveform(ctx, width, height);
+        drawStaticWaveform(ctx, width, height);  // 调试信息已隐藏
     }
 }
 
@@ -2174,13 +2174,13 @@ function extractAlbumCover(audioId, audioElement) {
                 generateSpectrumCover(audioId, audioElement);
             }
         }).catch(error => {
-            console.warn('提取真实封面失败，使用频谱封面:', error);
-            generateSpectrumCover(audioId, audioElement);
+            // // console.warn(...)
+            generateSpectrumCover(audioId, audioElement);  // 调试信息已隐藏
         });
         
     } catch (error) {
-        console.warn('无法提取专辑封面:', error);
-        generateSpectrumCover(audioId, audioElement);
+        // // console.warn(...)
+        generateSpectrumCover(audioId, audioElement);  // 调试信息已隐藏
     }
 }
 
@@ -2209,7 +2209,7 @@ async function extractRealAlbumCover(audioId, audioElement) {
         
         return false;
     } catch (error) {
-        console.warn('提取真实封面失败:', error);
+        // console.warn(...)
         return false;
     }
 }
@@ -2232,7 +2232,7 @@ async function parseAudioMetadata(arrayBuffer) {
         
         return null;
     } catch (error) {
-        console.warn('解析音频元数据失败:', error);
+        // console.warn(...)
         return null;
     }
 }
@@ -2328,9 +2328,9 @@ function generateSpectrumCover(audioId, audioElement) {
         }
         
     } catch (error) {
-        console.warn('生成频谱封面失败:', error);
+        // // console.warn(...)
         // 如果生成失败，使用默认封面
-        const albumCoverElement = document.getElementById(`album-cover-${audioId}`);
+        const albumCoverElement = document.getElementById(`album-cover-${audioId}`);  // 调试信息已隐藏
         if (albumCoverElement) {
             albumCoverElement.innerHTML = '<i class="fas fa-music"></i>';
         }
@@ -2407,13 +2407,13 @@ function testProgressBar(audioId) {
 
     const audioItem = document.querySelector(`[data-id="${audioId}"]`);
     if (!audioItem) {
-        console.error('找不到音频项:', audioId);
+        // console.error(...)
         return;
     }
     
     const audioElement = audioItem.querySelector('audio');
     if (!audioElement) {
-        console.error('找不到音频元素:', audioId);
+        // console.error(...)
         return;
     }
     
@@ -2451,17 +2451,17 @@ function testProgressBar(audioId) {
                         audioElement.play().then(() => {
 
                         }).catch(error => {
-                            console.error('恢复播放失败:', error);
+                            // console.error(...)
                         });
                     }
                 } else {
-                    console.warn('❌ currentTime设置失败');
-                    showResult('error', `❌ 进度条测试失败，期望: ${formatTime(testTime)}，实际: ${formatTime(actualTime)}`);
+                    // // console.warn(...)
+                    showResult('error', `❌ 进度条测试失败，期望: ${formatTime(testTime)}，实际: ${formatTime(actualTime)}`);  // 调试信息已隐藏
                 }
             }, 200);
             
         } catch (error) {
-            console.error('设置currentTime时出错:', error);
+            // console.error(...)
             showResult('error', `❌ 设置currentTime时出错: ${error.message}`);
         }
         
@@ -2469,9 +2469,9 @@ function testProgressBar(audioId) {
         updateAudioProgress(audioId, testTime, audioElement.duration);
         
     } else {
-        console.warn('❌ 音频未准备好，无法测试');
+        // // console.warn(...)
 
-        showResult('error', '❌ 音频未准备好，无法测试进度条');
+        showResult('error', '❌ 音频未准备好，无法测试进度条');  // 调试信息已隐藏
     }
 }
 

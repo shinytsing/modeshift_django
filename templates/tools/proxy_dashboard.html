@@ -948,9 +948,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.quickAccess = quickAccess;
     window.openWebBrowser = openWebBrowser;
     
-    console.log('All functions registered globally');
+    // // console.log(...)
     
-    initializeSystem();
+    initializeSystem();  // 调试信息已隐藏
     log('系统初始化完成');
 });
 
@@ -1622,12 +1622,12 @@ function getCookie(name) {
 
 // 打开Clash控制台
 function openClashDashboard() {
-    console.log('openClashDashboard function called'); // 调试日志
+    // // console.log(...) // 调试日志
     try {
-        window.open('/tools/clash-dashboard/', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        window.open('/tools/clash-dashboard/', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');  // 调试信息已隐藏
         log('🚀 已打开Clash内嵌代理控制台', 'success');
     } catch (error) {
-        console.error('Error opening Clash dashboard:', error);
+        // console.error(...)
         log('❌ 打开Clash控制台失败: ' + error.message, 'error');
     }
 }

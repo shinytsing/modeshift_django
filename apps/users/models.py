@@ -15,7 +15,7 @@ class UserRole(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        db_table = "apps.users_userrole"
+        db_table = "users_userrole"
         verbose_name = "用户角色"
         verbose_name_plural = "用户角色"
 

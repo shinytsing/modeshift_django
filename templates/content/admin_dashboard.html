@@ -661,7 +661,7 @@ function refreshDashboard() {
             }
         })
         .catch(error => {
-            console.error('刷新数据失败:', error);
+            // console.error(...)
             showNotification('数据刷新失败', 'error');
         })
         .finally(() => {

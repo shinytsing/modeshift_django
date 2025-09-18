@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     # 音频处理依赖
     libsndfile1 \
+    # 网络工具
+    netcat-openbsd \
     # 清理缓存
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

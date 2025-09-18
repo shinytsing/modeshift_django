@@ -371,7 +371,7 @@ async function loadIPLists() {
             displayWhitelistIPs(data.data.whitelist_ips);
         }
     } catch (error) {
-        console.error('加载IP列表失败:', error);
+        // console.error(...)
     }
 }
 
@@ -433,7 +433,7 @@ async function loadAttackLog() {
             displayAttackLog(data.data.attack_log);
         }
     } catch (error) {
-        console.error('加载攻击日志失败:', error);
+        // console.error(...)
     }
 }
 

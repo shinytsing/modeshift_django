@@ -31,14 +31,14 @@ if (!document.querySelector('meta[http-equiv="Cache-Control"]')) {
 // 强制清除所有缓存和旧函数 - 版本 2025.09.10.003
 (function() {
   const VERSION = '2025.09.10.003';
-  console.log('🧹 开始清除缓存和旧函数... 版本:', VERSION);
-  console.log('🔍 测试JavaScript执行 - 如果看到这条消息说明JS正在运行');
+  // // console.log(...)
+  // console.log(...)
   
   // 检查版本
-  const lastVersion = localStorage.getItem('fitness_page_version');
+  const lastVersion = localStorage.getItem('fitness_page_version');  // 调试信息已隐藏
   if (lastVersion !== VERSION) {
-    console.log('🔄 检测到新版本，清除所有缓存');
-    localStorage.clear();
+    // // console.log(...)
+    localStorage.clear();  // 调试信息已隐藏
     sessionStorage.clear();
     localStorage.setItem('fitness_page_version', VERSION);
   }
@@ -49,7 +49,7 @@ if (!document.querySelector('meta[http-equiv="Cache-Control"]')) {
   
   oldFunctions.forEach(funcName => {
     if (typeof window[funcName] !== 'undefined') {
-      console.log('🗑️ 删除旧函数:', funcName);
+      // console.log(...)
       delete window[funcName];
       hasOldFunctions = true;
     }
@@ -58,81 +58,81 @@ if (!document.querySelector('meta[http-equiv="Cache-Control"]')) {
   // 清除所有缓存
   if ('caches' in window) {
     caches.keys().then(function(names) {
-      console.log('🗑️ 清除缓存:', names);
+      // // console.log(...)
       return Promise.all(names.map(function(name) {
-        return caches.delete(name);
+        return caches.delete(name);  // 调试信息已隐藏
       }));
     }).catch(function(error) {
-      console.warn('缓存清除错误:', error);
-    });
+      // // console.warn(...)
+    });  // 调试信息已隐藏
   }
   
   // 强制重新加载页面（如果检测到旧函数）
   if (hasOldFunctions) {
-    console.log('⚠️ 检测到旧函数，强制重新加载页面');
+    // // console.log(...)
     setTimeout(() => {
-      window.location.reload(true);
+      window.location.reload(true);  // 调试信息已隐藏
     }, 100);
     return;
   }
   
-  console.log('✅ 缓存清除完成，版本:', VERSION);
-})();
+  // // console.log(...)
+})();  // 调试信息已隐藏
 
 // 测试函数 - 验证DOM元素和API
 function testFitnessPage() {
-  console.log('🧪 开始测试fitness页面...');
+  // // console.log(...)
   
   // 测试DOM元素
-  const planInfo = document.querySelector('.plan-info h4');
+  const planInfo = document.querySelector('.plan-info h4');  // 调试信息已隐藏
   const planDescription = document.querySelector('.plan-info p');
   const workoutPlan = document.getElementById('workoutPlan');
   
-  console.log('📋 DOM元素测试:');
-  console.log('  planInfo:', planInfo);
-  console.log('  planDescription:', planDescription);
-  console.log('  workoutPlan:', workoutPlan);
+  // // console.log(...)
+  // console.log(...)
+  // console.log(...)
+  // console.log(...)
   
   // 测试API调用
-  console.log('🌐 测试API调用...');
+  // console.log(...)
   fetch('/tools/api/training_plans/active/')
     .then(response => {
-      console.log('📡 API响应状态:', response.status);
-      return response.json();
+      // console.log(...)
+      return response.json();  // 调试信息已隐藏
     })
     .then(data => {
-      console.log('📊 API数据:', data);
+      // // console.log(...)
       if (data.success && data.has_plan) {
-        console.log('✅ API返回有效数据，应该显示计划');
+        // console.log(...)
         // 手动调用更新函数
-        updatePlanDisplay(data.plan);
+        updatePlanDisplay(data.plan);  // 调试信息已隐藏
       } else {
-        console.log('❌ API返回无计划状态');
+        // // console.log(...)
       }
     })
     .catch(error => {
-      console.error('💥 API调用失败:', error);
-    });
+      // console.error(...)
+    });  // 调试信息已隐藏
 }
 
 // 延迟执行测试
 setTimeout(testFitnessPage, 2000);
 
 // 立即执行简单测试
-console.log('🔍 立即测试 - JavaScript正在执行');
-console.log('🔍 当前时间:', new Date().toLocaleString());
-console.log('🔍 页面URL:', window.location.href);
+// // console.log(...)
+// console.log(...).toLocaleString());  // 调试信息已隐藏
+// // console.log(...)
 
 // 检查DOM元素是否存在
-const planInfo = document.querySelector('.plan-info h4');
+const planInfo = document.querySelector('.plan-info h4');  // 调试信息已隐藏
 const planDescription = document.querySelector('.plan-info p');
-console.log('🔍 DOM元素检查:');
-console.log('  planInfo:', planInfo);
-console.log('  planDescription:', planDescription);
+// // console.log(...)
+// console.log(...)
+// console.log(...)
 
 // 立即尝试加载计划
-console.log('🔍 立即尝试加载计划...');
-loadActivePlan();
+// console.log(...)
+loadActivePlan();  // 调试信息已隐藏
 </script>
 <div class="fitness-container">
 
@@ -2273,7 +2273,7 @@ function initShortcutsHelp() {
   
   // 检查元素是否存在
   if (!helpBtn || !helpPanel || !closeBtn || !overlay) {
-    console.warn('快捷键帮助面板元素未找到，跳过初始化');
+    // console.warn(...)
     return;
   }
   
@@ -2699,7 +2699,7 @@ async function showDayDetails(dayIndex) {
       showNoPlanModal();
     }
   } catch (error) {
-    console.error('获取训练详情失败:', error);
+    // console.error(...)
     alert('获取训练详情失败，请重试');
   }
 }
@@ -2716,7 +2716,7 @@ async function showFullWeekPlan() {
       showNoPlanModal();
     }
   } catch (error) {
-    console.error('获取训练计划失败:', error);
+    // console.error(...)
     alert('获取训练计划失败，请重试');
   }
 }
@@ -2896,7 +2896,7 @@ async function exportTodayPlan() {
     }
     
   } catch (error) {
-    console.error('导出今日计划失败:', error);
+    // console.error(...)
     showNotification('导出失败: ' + error.message, 'error');
   }
 }
@@ -2941,7 +2941,7 @@ async function getTodayPlanData() {
     
     return null;
   } catch (error) {
-    console.error('获取今日计划数据失败:', error);
+    // console.error(...)
     return null;
   }
 }
@@ -3104,7 +3104,7 @@ async function exportFullWeekPlan() {
     }
     
   } catch (error) {
-    console.error('导出完整周计划失败:', error);
+    // console.error(...)
     showNotification('导出失败: ' + error.message, 'error');
   }
 }
@@ -3688,7 +3688,7 @@ class CheckInCalendar {
         this.monthlyStats = data.monthly_stats || {};
       }
     } catch (error) {
-      console.error('加载日历数据失败:', error);
+      // console.error(...)
       // 设置默认值
       this.calendarData = {};
       this.streak = { current: 0, longest: 0 };
@@ -4089,7 +4089,7 @@ class CheckInCalendar {
         alert('打卡失败: ' + result.error);
       }
     } catch (error) {
-      console.error('提交打卡失败:', error);
+      // console.error(...)
       alert('打卡失败，请重试');
     }
   }
@@ -4141,7 +4141,7 @@ class CheckInCalendar {
         alert('已成功分享到社区！');
       }
     } catch (error) {
-      console.error('创建社区帖子失败:', error);
+      // console.error(...)
       alert('分享到社区失败，但打卡已保存');
     }
   }
@@ -4166,7 +4166,7 @@ class CheckInCalendar {
         alert('删除失败: ' + result.error);
       }
     } catch (error) {
-      console.error('删除打卡失败:', error);
+      // console.error(...)
       alert('删除失败，请重试');
     }
   }
@@ -4266,11 +4266,11 @@ class CheckInCalendar {
         this.renderPlanLibrary(data.plans || []);
         this.updatePlanStats(data.plans || []);
       } else {
-        console.error('加载计划库失败:', data.error);
+        // console.error(...)
         this.showPlanLibraryError();
       }
     } catch (error) {
-      console.error('加载计划库数据失败:', error);
+      // console.error(...)
       this.showPlanLibraryError();
     }
   }
@@ -4401,7 +4401,7 @@ function safeGetElement(selector) {
     const element = document.querySelector(selector);
     return element;
   } catch (error) {
-    console.warn('DOM元素访问失败:', selector, error);
+    // console.warn(...)
     return null;
   }
 }
@@ -4412,14 +4412,14 @@ function safeClassListOperation(element, operation, className) {
     try {
       element.classList[operation](className);
     } catch (error) {
-      console.warn('classList操作失败:', operation, className, error);
+      // // console.warn(...)
     }
   }
 }
 
 // 全屏训练计划功能
 function togglePlanFullscreen() {
-  const trainingCard = document.querySelector('.fitness-card');
+  const trainingCard = document.querySelector('.fitness-card');  // 调试信息已隐藏
   const fullscreenBtn = document.querySelector('.fullscreen-plan-btn');
   const fullscreenIcon = fullscreenBtn.querySelector('i');
   
@@ -4454,86 +4454,86 @@ document.addEventListener('keydown', function(e) {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🎬 DOMContentLoaded 事件触发');
+  // // console.log(...)
   try {
-    console.log('🔧 开始初始化...');
+    // console.log(...)
     
     // 初始化快捷键帮助
-    initShortcutsHelp();
-    console.log('✅ 快捷键帮助初始化完成');
+    initShortcutsHelp();  // 调试信息已隐藏
+    // // console.log(...)
     
     // 初始化打卡日历
-    window.checkInCalendar = new CheckInCalendar();
-    console.log('✅ 打卡日历初始化完成');
+    window.checkInCalendar = new CheckInCalendar();  // 调试信息已隐藏
+    // // console.log(...)
 
     // 绑定点击查看计划详情
     document.querySelectorAll('.plan-day').forEach(day => {
-      day.addEventListener('click', () => showDayDetails(parseInt(day.getAttribute('data-day')) - 1));
+      day.addEventListener('click', () => showDayDetails(parseInt(day.getAttribute('data-day')) - 1));  // 调试信息已隐藏
     });
-    console.log('✅ 计划详情点击事件绑定完成');
+    // // console.log(...)
     
     // 加载当前激活的训练计划
-    console.log('🚀 准备加载激活计划...');
-    loadActivePlan();
+    // console.log(...)
+    loadActivePlan();  // 调试信息已隐藏
     
     // 延迟恢复完成状态，确保DOM已加载
     setTimeout(() => {
       restoreExerciseCompletions();
-      console.log('✅ 完成状态恢复完成');
-    }, 1000);
+      // // console.log(...)
+    }, 1000);  // 调试信息已隐藏
     
-    console.log('🎉 初始化完成');
+    // // console.log(...)
   } catch (error) {
-    console.error('💥 初始化失败:', error);
+    // console.error(...)
   }
-});
+});  // 调试信息已隐藏
 
 // 加载当前激活的训练计划
 async function loadActivePlan() {
   try {
-    console.log('🚀 开始加载激活计划...');
-    console.log('📡 发送API请求到: /tools/api/training_plans/active/');
+    // // console.log(...)
+    // console.log(...)
     
-    const response = await fetch('/tools/api/training_plans/active/');
-    console.log('📥 API响应状态:', response.status, response.statusText);
+    const response = await fetch('/tools/api/training_plans/active/');  // 调试信息已隐藏
+    // // console.log(...)
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);  // 调试信息已隐藏
     }
     
     const data = await response.json();
-    console.log('📊 激活计划数据:', data);
-    console.log('✅ data.success:', data.success);
-    console.log('📋 data.has_plan:', data.has_plan);
+    // // console.log(...)
+    // console.log(...)
+    // console.log(...)
 
     if (data.success && data.has_plan) {
-      console.log('🎯 找到激活计划，开始更新显示...');
-      console.log('📝 计划详情:', data.plan);
-      updatePlanDisplay(data.plan);
-      console.log('✅ 计划显示更新完成');
+      // console.log(...)
+      // console.log(...)
+      updatePlanDisplay(data.plan);  // 调试信息已隐藏
+      // // console.log(...)
     } else {
-      console.log('❌ 没有激活计划，显示无计划状态');
-      console.log('🔍 原因: success=' + data.success + ', has_plan=' + data.has_plan);
-      showNoPlanDisplay();
+      // console.log(...)
+      // console.log(...)
+      showNoPlanDisplay();  // 调试信息已隐藏
     }
   } catch (error) {
-    console.error('💥 加载训练计划失败:', error);
-    console.error('🔍 错误详情:', error.message);
+    // console.error(...)
+    // console.error(...)
     showNoPlanDisplay();
   }
 }
 
 // 更新计划显示
 function updatePlanDisplay(plan) {
-  console.log('🎨 updatePlanDisplay 被调用，计划数据:', plan);
+  // // console.log(...)
 
   // 更新计划信息
-  const planInfo = document.querySelector('.plan-info h4');
+  const planInfo = document.querySelector('.plan-info h4');  // 调试信息已隐藏
   const planDescription = document.querySelector('.plan-info p');
-  console.log('📝 计划信息元素:', planInfo, planDescription);
-  console.log('🏷️ 计划名称:', plan.name);
-  console.log('⚙️ 计划模式:', plan.mode);
-  console.log('📅 计划周数:', plan.cycle_weeks);
+  // console.log(...)
+  // console.log(...)
+  // console.log(...)
+  // console.log(...)
   
   if (planInfo) {
     planInfo.textContent = `当前计划：${plan.name}`;
@@ -4847,22 +4847,22 @@ function updatePlanDisplay(plan) {
 
 // 显示无计划状态
 function showNoPlanDisplay() {
-  console.log('🚫 showNoPlanDisplay 被调用');
-  const planInfo = document.querySelector('.plan-info h4');
+  // // console.log(...)
+  const planInfo = document.querySelector('.plan-info h4');  // 调试信息已隐藏
   const planDescription = document.querySelector('.plan-info p');
   
-  console.log('📝 计划信息元素:', planInfo, planDescription);
+  // console.log(...)
   
   if (planInfo) {
     planInfo.textContent = '暂无激活计划';
-    console.log('✅ 更新计划标题为: 暂无激活计划');
+    // console.log(...)
   }
   if (planDescription) {
     planDescription.textContent = '选择模板或创建新计划开始训练';
-    console.log('✅ 更新计划描述');
+    // // console.log(...)
   }
   
-  const workoutPlan = document.getElementById('workoutPlan');
+  const workoutPlan = document.getElementById('workoutPlan');  // 调试信息已隐藏
   if (workoutPlan) {
     workoutPlan.innerHTML = `
       <div class="no-plan-message" style="
@@ -4899,7 +4899,7 @@ async function editActivePlan() {
       openPlanEditor();
     }
   } catch (error) {
-    console.error('获取激活计划失败:', error);
+    // console.error(...)
     // 出错时也跳转到编辑器
     openPlanEditor();
   }
@@ -4917,7 +4917,7 @@ async function openPlanLibrary() {
       alert('加载计划库失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载计划库失败:', error);
+    // console.error(...)
     alert('加载计划库失败，请重试');
   }
 }
@@ -4993,11 +4993,11 @@ async function openPlanTemplates() {
 
       showPlanTemplatesModal(templates);
     } else {
-      console.error('API返回错误:', data);
+      // console.error(...)
       alert('加载模板失败: ' + (data.error || '未知错误'));
     }
   } catch (error) {
-    console.error('加载模板失败:', error);
+    // console.error(...)
     alert('加载模板失败: ' + error.message);
   }
 }
@@ -5009,7 +5009,7 @@ function showPlanTemplatesModal(templates) {
   
   // 确保templates是数组
   if (!Array.isArray(templates)) {
-    console.warn('templates不是数组:', templates);
+    // console.warn(...)
     templates = [];
   }
   
@@ -5124,7 +5124,7 @@ async function applyPlan(planId, planName) {
       alert('应用计划失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     alert('应用计划失败，请重试');
   }
 }
@@ -5158,7 +5158,7 @@ async function applyTemplate(templateId, templateName) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('响应错误:', errorText);
+      // console.error(...)
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
@@ -5177,7 +5177,7 @@ async function applyTemplate(templateId, templateName) {
       alert('应用模板失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用模板失败:', error);
+    // console.error(...)
     alert('应用模板失败，请重试');
   }
 }
@@ -5194,7 +5194,7 @@ async function previewPlan(planId) {
       alert('加载计划详情失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载计划详情失败:', error);
+    // console.error(...)
     alert('加载计划详情失败，请重试');
   }
 }
@@ -5229,15 +5229,15 @@ async function previewTemplate(templateId) {
       if (template) {
         showPlanPreviewModal(template);
       } else {
-        console.error('未找到模板:', templateId, '可用模板:', Object.keys(templates));
+        // console.error(...));
         alert('未找到模板数据');
       }
     } else {
-      console.error('API错误:', data.error);
+      // console.error(...)
       alert('获取模板数据失败: ' + (data.error || '未知错误'));
     }
   } catch (error) {
-    console.error('预览模板失败:', error);
+    // console.error(...)
     alert('预览模板失败: ' + error.message);
   }
 }
@@ -6027,7 +6027,7 @@ async function applyPlan(planId, planName) {
       alert('应用计划失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     alert('应用计划失败，请重试');
   }
 }
@@ -6044,7 +6044,7 @@ async function previewPlan(planId) {
       alert('加载计划详情失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载计划详情失败:', error);
+    // console.error(...)
     alert('加载计划详情失败，请重试');
   }
 }
@@ -6055,7 +6055,7 @@ function safeToLowerCase(str) {
   try {
     return String(str).toLowerCase();
   } catch (error) {
-    console.warn('toLowerCase转换失败:', str, error);
+    // console.warn(...)
     return '';
   }
 }
@@ -6070,7 +6070,7 @@ document.addEventListener('input', function(e) {
         e.target.value = String(e.target.value);
       }
     } catch (error) {
-      console.warn('输入值处理错误:', error);
+      // console.warn(...)
       e.target.value = '';
     }
   }
@@ -6084,7 +6084,7 @@ document.addEventListener('keyup', function(e) {
         e.target.value = String(e.target.value);
       }
     } catch (error) {
-      console.warn('键盘输入处理错误:', error);
+      // console.warn(...)
       e.target.value = '';
     }
   }
@@ -6105,7 +6105,7 @@ function formatDateTime(dateString) {
       minute: '2-digit'
     });
   } catch (error) {
-    console.error('时间格式化错误:', error);
+    // console.error(...)
     return '未知';
   }
 }
@@ -6124,16 +6124,16 @@ function toggleExerciseDetails(element) {
         chevronIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
       }
     } else {
-      console.warn('未找到.exercise-details元素，可能这一天没有训练内容');
+      // // console.warn(...)
     }
   } catch (error) {
-    console.error('切换动作详情失败:', error);
+    // console.error(...)
   }
 }
 
 // 显示计划预览模态框
 function showPlanPreviewModal(plan) {
-  const modal = document.createElement('div');
+  const modal = document.createElement('div');  // 调试信息已隐藏
   modal.className = 'checkin-modal';
   
   let scheduleHTML = '';
@@ -6322,7 +6322,7 @@ async function previewPlanFromLibrary(planId) {
       showNotification('预览失败: ' + data.error, 'error');
     }
   } catch (error) {
-    console.error('预览计划失败:', error);
+    // console.error(...)
     showNotification('预览失败，请重试', 'error');
   }
 }
@@ -6463,7 +6463,7 @@ async function showApplyPlanModal(planId, planName) {
     });
     
   } catch (error) {
-    console.error('显示应用计划对话框失败:', error);
+    // console.error(...)
     showNotification('显示计划详情失败，请重试', 'error');
   }
 }
@@ -6486,7 +6486,7 @@ function toggleDayContent(dayNumber) {
 // 确认应用计划
 async function confirmApplyPlan(planId, planName) {
   try {
-    console.log('开始应用计划:', planId, planName);
+    // // console.log(...)
     
     const response = await fetch('/tools/api/training_plans/apply/', {
       method: 'POST',
@@ -6495,13 +6495,13 @@ async function confirmApplyPlan(planId, planName) {
         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
       },
       body: JSON.stringify({ plan_id: planId })
-    });
+    });  // 调试信息已隐藏
     
     const data = await response.json();
-    console.log('应用计划响应:', data);
+    // // console.log(...)
     
     if (data.success) {
-      showNotification(`已将"${planName}"设为激活计划`, 'success');
+      showNotification(`已将"${planName}"设为激活计划`, 'success');  // 调试信息已隐藏
       // 关闭模态框
       const modal = document.querySelector('.checkin-modal');
       if (modal) {
@@ -6514,14 +6514,14 @@ async function confirmApplyPlan(planId, planName) {
         await calendar.loadPlanLibrary();
       }
       
-      console.log('开始加载激活计划...');
-      await loadActivePlan();
-      console.log('激活计划加载完成');
+      // // console.log(...)
+      await loadActivePlan();  // 调试信息已隐藏
+      // // console.log(...)
     } else {
-      showNotification('应用失败: ' + data.error, 'error');
+      showNotification('应用失败: ' + data.error, 'error');  // 调试信息已隐藏
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     showNotification('应用失败，请重试', 'error');
   }
 }
@@ -6557,7 +6557,7 @@ async function deletePlan(planId, planName) {
       showNotification('删除失败: ' + data.error, 'error');
     }
   } catch (error) {
-    console.error('删除计划失败:', error);
+    // console.error(...)
     showNotification('删除失败，请重试', 'error');
   }
 }
@@ -6696,7 +6696,7 @@ async function getActivePlanData() {
       exportDate: new Date().toLocaleDateString('zh-CN')
     };
   } catch (error) {
-    console.error('获取计划数据失败:', error);
+    // console.error(...)
     return null;
   }
 }

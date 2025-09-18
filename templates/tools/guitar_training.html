@@ -1868,7 +1868,7 @@ class GuitarCheckInCalendar {
         this.monthlyStats = data.monthly_stats;
       }
     } catch (error) {
-      console.error('加载吉他日历数据失败:', error);
+      // console.error(...)
     }
   }
   
@@ -2177,7 +2177,7 @@ class GuitarCheckInCalendar {
         alert('打卡失败: ' + result.error);
       }
     } catch (error) {
-      console.error('提交吉他打卡失败:', error);
+      // console.error(...)
       alert('打卡失败，请重试');
     }
   }
@@ -2202,7 +2202,7 @@ class GuitarCheckInCalendar {
         alert('删除失败: ' + result.error);
       }
     } catch (error) {
-      console.error('删除吉他打卡失败:', error);
+      // console.error(...)
       alert('删除失败，请重试');
     }
   }

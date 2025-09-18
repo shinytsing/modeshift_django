@@ -41,4 +41,7 @@ urlpatterns = [
     path("api/profile/", views.user_profile_api, name="user_profile_api"),
     # 测试页面
     path("test-logout/", views.test_logout_view, name="test_logout"),
+    # Google Auth 代理（已移至 google_auth_urls.py）
+    # Google Auth 测试页面
+    path("google-auth-test/", views.google_auth_test_view, name="google_auth_test"),
 ]

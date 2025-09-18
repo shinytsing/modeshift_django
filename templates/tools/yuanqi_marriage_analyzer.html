@@ -539,7 +539,7 @@ function analyzeMarriage() {
             analyzeSingleDestiny();
         }
     } catch (error) {
-        console.error('Error in analyzeMarriage:', error);
+        // console.error(...)
         showNotification('分析过程中出现错误，请重试', 'warning');
     }
 }
@@ -1190,7 +1190,7 @@ async function generateReport() {
         
         showNotification('报告已生成并下载', 'success');
     } catch (error) {
-        console.error('报告生成失败:', error);
+        // console.error(...)
         showNotification('报告生成失败，请重试', 'warning');
     }
 }
@@ -1335,7 +1335,7 @@ async function generatePDFContent(data) {
         return pdf.output('blob');
 
     } catch (error) {
-        console.error('PDF生成错误:', error);
+        // console.error(...)
         // 如果PDF生成失败，提供备用的图片下载
         try {
             const resultElement = document.getElementById('resultContent');
@@ -1350,7 +1350,7 @@ async function generatePDFContent(data) {
                 canvas.toBlob(resolve, 'image/png');
             });
         } catch (imgError) {
-            console.error('图片生成也失败:', imgError);
+            // console.error(...)
             // 最后的备选方案：文本文件
             const content = generateFormattedReport(data);
             return new Blob(['\uFEFF' + content], { 
@@ -1560,7 +1560,7 @@ async function generateImageReport() {
         }, 'image/png');
 
     } catch (error) {
-        console.error('图片生成失败:', error);
+        // console.error(...)
         showNotification('图片生成失败，请重试', 'warning');
     }
 }
@@ -1586,7 +1586,7 @@ async function generateAIAnalysis() {
         
         showNotification('AI智能分析完成！', 'success');
     } catch (error) {
-        console.error('AI分析失败:', error);
+        // console.error(...)
         showNotification('AI分析服务暂时不可用，请稍后重试', 'warning');
     }
 }
@@ -1648,7 +1648,7 @@ async function callDeepSeekAPI(userData, basicAnalysis) {
         const result = await response.json();
         return result.analysis;
     } catch (error) {
-        console.error('DeepSeek API调用失败:', error);
+        // console.error(...)
         // 如果API调用失败，返回模拟的AI分析结果
         return generateMockAIAnalysis(userData);
     }

@@ -584,7 +584,7 @@ function loadSponsors() {
       }
     })
     .catch(error => {
-      console.error('加载赞助者失败:', error);
+      // console.error(...)
     });
 }
 
@@ -627,7 +627,7 @@ function loadSponsorStats() {
       }
     })
     .catch(error => {
-      console.error('加载统计失败:', error);
+      // console.error(...)
     });
 }
 
@@ -698,7 +698,7 @@ document.getElementById('sponsor-form').addEventListener('submit', function(e) {
     }
   })
   .catch(error => {
-    console.error('赞助失败:', error);
+    // console.error(...)
     alert('赞助失败，请重试');
   });
 });

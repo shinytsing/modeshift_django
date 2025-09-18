@@ -965,8 +965,8 @@
             await loadPhotos();
             await loadExistingBindings();
             
-            console.log('页面初始化完成');
-        });
+            // // console.log(...)
+        });  // 调试信息已隐藏
         
         // 设置事件监听器
         function setupEventListeners() {
@@ -1044,7 +1044,7 @@
                     showMessage('加载食物数据失败', 'warning');
                 }
             } catch (error) {
-                console.error('Error loading foods:', error);
+                // console.error(...)
                 showMessage('网络错误，请检查连接', 'warning');
             }
         }
@@ -1063,7 +1063,7 @@
                     showMessage('加载照片数据失败', 'warning');
                 }
             } catch (error) {
-                console.error('Error loading photos:', error);
+                // console.error(...)
                 showMessage('网络错误，请检查连接', 'warning');
             }
         }
@@ -1084,16 +1084,16 @@
                     updateBindingDisplay();
                     updateStats();
                     
-                    console.log(`加载了 ${existingBindings.length} 个绑定关系`);
+                    // // console.log(...)
                 }
             } catch (error) {
-                console.error('Error loading bindings:', error);
+                // console.error(...)
             }
         }
         
         // 渲染食物列表
         function renderFoods(filteredFoods = null) {
-            const foodList = document.getElementById('foodList');
+            const foodList = document.getElementById('foodList');  // 调试信息已隐藏
             const foodsToRender = filteredFoods || foods;
             
             if (foodsToRender.length === 0) {
@@ -1418,7 +1418,7 @@
                     showMessage('网络错误，请重试', 'warning');
                 }
             } catch (error) {
-                console.error('Error removing binding:', error);
+                // console.error(...)
                 showMessage('删除绑定时发生错误', 'warning');
             }
         }
@@ -1624,7 +1624,7 @@
                     showMessage('保存失败，请重试', 'warning');
                 }
             } catch (error) {
-                console.error('Error saving bindings:', error);
+                // console.error(...)
                 showMessage('网络错误，请检查连接', 'warning');
             }
         }
@@ -1915,7 +1915,7 @@
                     
                 } catch (error) {
                     failCount++;
-                    console.error('Upload error:', error);
+                    // console.error(...)
                     showMessage(`上传 ${file.name} 失败: 网络错误`, 'warning');
                 }
             }

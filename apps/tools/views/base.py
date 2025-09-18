@@ -92,31 +92,19 @@ class CachedViewMixin:
         return f"{view_name}_{user_id}_{hash(str(args) + str(sorted(kwargs.items())))}"
 
     def get_cached_response(self, cache_key, response_func, timeout=300):
-        """获取缓存的响应"""
-        response_data = cache.get(cache_key)
-        if response_data is None:
-            response_data = response_func()
-            cache.set(cache_key, response_data, timeout)
-        return response_data
+        """获取缓存的响应 - 注意：不能缓存HttpResponse对象"""
+        # 直接调用响应函数，不缓存HttpResponse对象
+        return response_func()
 
 
 def cache_response(timeout=300, key_func=None):
-    """缓存响应装饰器"""
+    """缓存响应装饰器 - 注意：不能缓存HttpResponse对象"""
 
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if key_func:
-                cache_key = key_func(request, *args, **kwargs)
-            else:
-                cache_key = f"{view_func.__name__}_{request.user.id}_{hash(str(args) + str(sorted(kwargs.items())))}"
-
-            response_data = cache.get(cache_key)
-            if response_data is None:
-                response_data = view_func(request, *args, **kwargs)
-                cache.set(cache_key, response_data, timeout)
-
-            return response_data
+            # 不缓存响应，直接返回，避免HttpResponse序列化错误
+            return view_func(request, *args, **kwargs)
 
         return wrapper
 

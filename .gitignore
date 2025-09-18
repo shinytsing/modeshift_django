@@ -87,3 +87,11 @@ venv*/
 env.production
 .env.backup.*
 .env.*
+
+# 大文件
+*.tar.gz
+*.zip
+*.mp4
+*.wav
+*.flac
+*.mp3

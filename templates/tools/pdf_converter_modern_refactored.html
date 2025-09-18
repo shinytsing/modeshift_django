@@ -810,7 +810,7 @@ function performConversion() {
     }
   })
   .catch(error => {
-    console.error('转换错误:', error);
+    // console.error(...)
     let errorMessage = error.message;
     
     if (error.message.includes('Unexpected token')) {
@@ -973,7 +973,7 @@ function performTextToPdfConversion(textContent) {
     }
   })
   .catch(error => {
-    console.error('转换错误:', error);
+    // console.error(...)
     let errorMessage = error.message;
     
     if (error.message.includes('Unexpected token')) {
@@ -1016,7 +1016,7 @@ function safeClick(elementId) {
   if (element) {
     element.click();
   } else {
-    console.warn(`Element with id '${elementId}' not found`);
+    // // console.warn(...)
   }
 }
 
@@ -1024,8 +1024,8 @@ function safeClick(elementId) {
 function downloadFile(url, filename) {
 
   if (!url) {
-    console.error('下载URL为空');
-    showNotification('下载链接无效', 'error');
+    // console.error(...)
+    showNotification('下载链接无效', 'error');  // 调试信息已隐藏
     return;
   }
   
@@ -1069,7 +1069,7 @@ function downloadFile(url, filename) {
     showNotification(`文件 "${filename}" 下载成功`, 'success');
   })
   .catch(error => {
-    console.error(`下载失败: ${error.message}`);
+    // console.error(...)
 
     const link = document.createElement('a');
     link.href = url;

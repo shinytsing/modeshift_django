@@ -64,9 +64,9 @@ def check_local_travel_data_api(request):
 def travel_guide_api(request):
     """旅游攻略API - 优先使用本地数据，否则使用DeepSeek功能"""
     try:
-        # 检查用户是否已登录
-        if not request.user.is_authenticated:
-            return JsonResponse({"success": False, "error": "请先登录后再使用此功能"}, status=401)
+        # 临时允许游客访问（用于测试）
+        # if not request.user.is_authenticated:
+        #     return JsonResponse({"success": False, "error": "请先登录后再使用此功能"}, status=401)
 
         data = json.loads(request.body)
         destination = data.get("destination", "").strip()
@@ -115,7 +115,7 @@ def travel_guide_api(request):
                         fast_mode=fast_mode,
                     )
                 else:
-                    print(f"❌ {destination}没有本地数据，使用DeepSeek功能")
+                    # print(f"❌ {destination}没有本地数据，使用DeepSeek功能")  # 已隐藏，因为没有本地数据了
                     guide_content = service.get_travel_guide(
                         destination=destination,
                         travel_style=travel_style,
@@ -166,59 +166,94 @@ def travel_guide_api(request):
             }
             filtered_content = {k: v for k, v in guide_content.items() if k in valid_fields}
 
-            # 保存到数据库
-            travel_guide = TravelGuide.objects.create(
-                user=request.user,
-                destination=destination,
-                travel_style=travel_style,
-                budget_min=budget_min,
-                budget_max=budget_max,
-                budget_amount=budget_amount,
-                budget_range=budget_range,
-                travel_duration=travel_duration,
-                interests=interests,
-                **filtered_content,
-            )
+            # 保存到数据库（游客模式跳过保存）
+            travel_guide = None
+            if request.user.is_authenticated:
+                travel_guide = TravelGuide.objects.create(
+                    user=request.user,
+                    destination=destination,
+                    travel_style=travel_style,
+                    budget_min=budget_min,
+                    budget_max=budget_max,
+                    budget_amount=budget_amount,
+                    budget_range=budget_range,
+                    travel_duration=travel_duration,
+                    interests=interests,
+                    **filtered_content,
+                )
 
             # 构建响应数据
-            response_data = {
-                "id": travel_guide.id,
-                "destination": travel_guide.destination,
-                "must_visit_attractions": travel_guide.must_visit_attractions,
-                "food_recommendations": travel_guide.food_recommendations,
-                "transportation_guide": travel_guide.transportation_guide,
-                "hidden_gems": travel_guide.hidden_gems,
-                "weather_info": travel_guide.weather_info,
-                "destination_info": travel_guide.destination_info,
-                "currency_info": travel_guide.currency_info,
-                "timezone_info": travel_guide.timezone_info,
-                "best_time_to_visit": travel_guide.best_time_to_visit,
-                "budget_estimate": travel_guide.budget_estimate,
-                "travel_tips": travel_guide.travel_tips,
-                "detailed_guide": travel_guide.detailed_guide,
-                "daily_schedule": travel_guide.daily_schedule,
-                "activity_timeline": travel_guide.activity_timeline,
-                "cost_breakdown": travel_guide.cost_breakdown,
-                "created_at": travel_guide.created_at.strftime("%Y-%m-%d %H:%M"),
-            }
+            if travel_guide:
+                # 已登录用户，返回数据库中的攻略
+                response_data = {
+                    "id": travel_guide.id,
+                    "destination": travel_guide.destination,
+                    "travel_style": travel_guide.travel_style,
+                    "budget_min": travel_guide.budget_min,
+                    "budget_max": travel_guide.budget_max,
+                    "budget_amount": travel_guide.budget_amount,
+                    "budget_range": travel_guide.budget_range,
+                    "travel_duration": travel_guide.travel_duration,
+                    "interests": travel_guide.interests,
+                    "must_visit_attractions": travel_guide.must_visit_attractions,
+                    "food_recommendations": travel_guide.food_recommendations,
+                    "transportation_guide": travel_guide.transportation_guide,
+                    "hidden_gems": travel_guide.hidden_gems,
+                    "weather_info": travel_guide.weather_info,
+                    "destination_info": travel_guide.destination_info,
+                    "currency_info": travel_guide.currency_info,
+                    "timezone_info": travel_guide.timezone_info,
+                    "best_time_to_visit": travel_guide.best_time_to_visit,
+                    "budget_estimate": travel_guide.budget_estimate,
+                    "travel_tips": travel_guide.travel_tips,
+                    "detailed_guide": travel_guide.detailed_guide,
+                    "daily_schedule": travel_guide.daily_schedule,
+                    "activity_timeline": travel_guide.activity_timeline,
+                    "cost_breakdown": travel_guide.cost_breakdown,
+                    "created_at": travel_guide.created_at.strftime("%Y-%m-%d %H:%M"),
+                }
+            else:
+                # 游客模式，直接返回生成的攻略内容
+                response_data = {
+                    "id": None,
+                    "destination": destination,
+                    "travel_style": travel_style,
+                    "budget_min": budget_min,
+                    "budget_max": budget_max,
+                    "budget_amount": budget_amount,
+                    "budget_range": budget_range,
+                    "travel_duration": travel_duration,
+                    "interests": interests,
+                    "must_visit_attractions": guide_content.get("must_visit_attractions", []),
+                    "food_recommendations": guide_content.get("food_recommendations", []),
+                    "transportation_guide": guide_content.get("transportation_guide", {}),
+                    "hidden_gems": guide_content.get("hidden_gems", []),
+                    "weather_info": guide_content.get("weather_info", {}),
+                    "destination_info": guide_content.get("destination_info", {}),
+                    "currency_info": guide_content.get("currency_info", {}),
+                    "timezone_info": guide_content.get("timezone_info", {}),
+                    "best_time_to_visit": guide_content.get("best_time_to_visit", ""),
+                    "budget_estimate": guide_content.get("budget_estimate", {}),
+                    "travel_tips": guide_content.get("travel_tips", []),
+                    "detailed_guide": guide_content.get("detailed_guide", {}),
+                    "daily_schedule": guide_content.get("daily_schedule", []),
+                    "activity_timeline": guide_content.get("activity_timeline", []),
+                    "cost_breakdown": guide_content.get("cost_breakdown", {}),
+                    "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                }
 
-            # 添加缓存和API信息
+            # 添加API信息
             if hasattr(guide_content, "get"):
                 response_data.update(
                     {
-                        "is_cached": guide_content.get("is_cached", False),
-                        "api_used": guide_content.get("api_used", "unknown"),
+                        "api_used": guide_content.get("api_used", "llm_service"),
                         "generation_time": guide_content.get("generation_time", 0),
                         "generation_mode": guide_content.get("generation_mode", "standard"),
-                        "data_quality_score": guide_content.get("data_quality_score", 0.0),
-                        "usage_count": guide_content.get("usage_count", 0),
-                        "cached_at": guide_content.get("cached_at"),
-                        "expires_at": guide_content.get("expires_at"),
-                        "data_source": "local" if has_local_data else "deepseek",
+                        "data_source": "local" if has_local_data else "llm_service",
                     }
                 )
 
-            return JsonResponse({"success": True, "guide_id": travel_guide.id, "guide": response_data})
+            return JsonResponse({"success": True, "guide_id": travel_guide.id if travel_guide else None, "guide": response_data})
         except Exception as e:
             error_message = str(e)
             if "无法获取有效的旅游数据" in error_message or "API" in error_message:

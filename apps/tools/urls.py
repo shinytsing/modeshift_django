@@ -18,6 +18,21 @@ except ImportError:
 
 from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, TaskListAPI, TaskStatusAPI
 from .views.download_views import TaskDownloadAPI
+from .views.trojan_views import (
+    TrojanDashboardView,
+    TrojanConfigView,
+    TrojanConfigDownloadView,
+    TrojanUsageStatsView,
+    TrojanAuthView,
+    TrojanGoogleAuthView,
+    TrojanGoogleCallbackView,
+    TrojanAdminView,
+    refresh_trojan_config,
+    revoke_trojan_access,
+    restore_trojan_access,
+    trojan_server_control,
+    trojan_usage_report,
+)
 from .fitness_tools_views import (
     bmi_calculator,
     body_analyzer,
@@ -176,6 +191,7 @@ from .monitoring_views import (
     monitoring_dashboard,
     warm_up_cache,
 )
+
 
 # 从PDF转换器API导入
 from .pdf_converter_api import pdf_converter_api
@@ -1138,4 +1154,25 @@ urlpatterns = [
     # AI助手相关API路由
     path("api/ai-assistant/", ai_assistant_api, name="ai_assistant_api"),
     path("api/ai-assistant/features/", ai_assistant_features_api, name="ai_assistant_features_api"),
+    # Trojan代理服务相关路由
+    path("trojan/", TrojanDashboardView.as_view(), name="trojan_dashboard"),
+    path("trojan/dashboard/", TrojanDashboardView.as_view(), name="trojan_dashboard"),
+    path("trojan/config/", TrojanConfigView.as_view(), name="trojan_config"),
+    path("trojan/config/download/<str:config_type>/", TrojanConfigDownloadView.as_view(), name="trojan_config_download"),
+    path("trojan/stats/", TrojanUsageStatsView.as_view(), name="trojan_usage_stats"),
+    path("trojan/auth/", TrojanAuthView.as_view(), name="trojan_auth"),
+    path("trojan/auth/google/", TrojanGoogleAuthView.as_view(), name="trojan_google_auth"),
+    path("trojan/auth/google/callback/", TrojanGoogleCallbackView.as_view(), name="trojan_google_callback"),
+    path("trojan/admin/", TrojanAdminView.as_view(), name="trojan_admin"),
+    path("trojan/refresh/", refresh_trojan_config, name="trojan_refresh"),
+    path("trojan/revoke/", revoke_trojan_access, name="trojan_revoke"),
+    path("trojan/restore/", restore_trojan_access, name="trojan_restore"),
+    path("trojan/server/<str:action>/", trojan_server_control, name="trojan_server_control"),
+    path("trojan/report/", trojan_usage_report, name="trojan_usage_report"),
+    
+    # 分析功能路由
+    
+    # 分析API路由
+    
+    # 测试路由已移除
 ]

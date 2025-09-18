@@ -212,7 +212,7 @@ function showFeedbackDetail(feedbackId) {
             }
         })
         .catch(error => {
-            console.error('获取反馈详情失败:', error);
+            // console.error(...)
             alert('获取反馈详情失败');
         });
 }
@@ -254,7 +254,7 @@ function saveReply(feedbackId) {
         }
     })
     .catch(error => {
-        console.error('保存回复失败:', error);
+        // console.error(...)
         alert('保存失败，请检查网络连接');
     });
 }

@@ -268,7 +268,8 @@ class TrainingPlanEditor {
       Object.values(day.modules).forEach(module => {
         module.forEach(exercise => {
           if (exercise.weight !== undefined && exercise.weight !== '') {
-            userWeights[exercise.name] = exercise.weight;
+            const exerciseName = typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作');
+            userWeights[exerciseName] = exercise.weight;
           }
         });
       });
@@ -288,8 +289,9 @@ class TrainingPlanEditor {
     this.planData.week_schedule.forEach(day => {
       Object.values(day.modules).forEach(module => {
         module.forEach(exercise => {
-          if (userWeights[exercise.name] && !exercise.weight) {
-            exercise.weight = userWeights[exercise.name];
+          const exerciseName = typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作');
+          if (userWeights[exerciseName] && !exercise.weight) {
+            exercise.weight = userWeights[exerciseName];
           }
         });
       });
@@ -374,7 +376,7 @@ class TrainingPlanEditor {
   renderExerciseLibrary() {
     const exerciseLibrary = document.querySelector('.exercise-library .body-parts');
     if (!exerciseLibrary) {
-      console.warn('找不到动作库容器');
+      // console.warn('找不到动作库容器');  // 调试信息已隐藏
       return;
     }
 
@@ -597,7 +599,7 @@ class TrainingPlanEditor {
 
         return true;
       } else {
-        console.warn('未找到周安排按钮元素，将在100ms后重试');
+        // console.warn('未找到周安排按钮元素，将在100ms后重试');  // 调试信息已隐藏
         return false;
       }
     };
@@ -636,16 +638,19 @@ class TrainingPlanEditor {
       
       // 处理API返回的数据结构
       if (data.success && data.templates) {
+        let templates = data.templates;
+        
+        // 如果templates是对象，转换为数组
+        if (typeof templates === 'object' && !Array.isArray(templates)) {
+          templates = Object.keys(templates).map(key => ({
+            id: key,
+            ...templates[key]
+          }));
+        }
+        
         // 根据模板名称查找对应的模板数据
-        const templateMap = {
-          '五分化': 'template_5day_split',
-          '三分化': 'template_3day_split',
-          '推拉腿': 'template_push_pull_legs'
-        };
-
-        const templateKey = templateMap[templateName];
-        if (templateKey && data.templates[templateKey]) {
-          const template = data.templates[templateKey];
+        const template = templates.find(t => t.name === templateName || t.mode === templateName);
+        if (template) {
           // 返回schedule数据，这里包含了完整的模块预设动作
           return template.schedule || template.week_schedule || [];
         }
@@ -947,7 +952,7 @@ class TrainingPlanEditor {
   renderModule(module, exercises) {
     const dropZone = document.querySelector(`[data-module="${module}"] .exercise-drop-zone`);
     if (!dropZone) {
-      console.warn(`找不到模块 ${module} 的放置区域`);
+      // console.warn(`找不到模块 ${module} 的放置区域`);  // 调试信息已隐藏
       return;
     }
 
@@ -1002,7 +1007,7 @@ class TrainingPlanEditor {
           ">
             <i class="fas fa-grip-vertical" style="font-size: 0.8rem; color: #a8a8a8; margin-right: 4px;" title="拖拽排序"></i>
             <i class="fas fa-dumbbell" style="font-size: 0.9rem;"></i>
-            ${exercise.name}
+            ${typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作')}
           </div>
           <div class="exercise-card-controls">
             <button class="card-control-btn" onclick="event.stopPropagation(); editor.removeExercise('${module}', ${index})" title="删除" style="
@@ -1137,7 +1142,8 @@ class TrainingPlanEditor {
     currentDay.modules[module].splice(index, 1);
     this.renderModule(module, currentDay.modules[module]);
     this.renderWeekCards();
-    this.showNotification(`已删除"${exercise.name}"`, 'info');
+    const exerciseName = typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作');
+    this.showNotification(`已删除"${exerciseName}"`, 'info');
   }
 
   updateExerciseParam(module, index, param, value) {
@@ -1278,7 +1284,12 @@ class TrainingPlanEditor {
 
   // 转换服务器数据格式为编辑器格式
   convertServerDataToEditorFormat(serverSchedule) {
-    // 初始化一周7天的数据结构
+    // 如果服务器数据已经是新格式（包含modules字段），直接使用
+    if (serverSchedule && serverSchedule.length > 0 && serverSchedule[0].modules) {
+      return serverSchedule;
+    }
+    
+    // 否则，初始化一周7天的数据结构并转换旧格式
     const weekDays = [
       { weekday: "周一", body_parts: ["胸部"], modules: { warmup: [], main: [], accessory: [], cooldown: [] } },
       { weekday: "周二", body_parts: ["背部"], modules: { warmup: [], main: [], accessory: [], cooldown: [] } },
@@ -1289,7 +1300,7 @@ class TrainingPlanEditor {
       { weekday: "周日", body_parts: ["休息"], modules: { warmup: [], main: [], accessory: [], cooldown: [] } }
     ];
     
-    // 填充服务器数据
+    // 填充服务器数据（旧格式）
     serverSchedule.forEach(dayData => {
       const dayIndex = dayData.day - 1;
       if (dayIndex >= 0 && dayIndex < 7) {
@@ -1305,7 +1316,7 @@ class TrainingPlanEditor {
           dayData.exercises.forEach(exercise => {
             const module = exercise.module || 'main';
             weekDays[dayIndex].modules[module].push({
-              name: exercise.name,
+              name: typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作'),
               sets: exercise.sets?.toString() || '3',
               reps: exercise.reps || '10-12',
               weight: exercise.weight || '',
@@ -1563,7 +1574,7 @@ class TrainingPlanEditor {
             exercises.forEach(exercise => {
               previewHTML += `
                 <div class="exercise-item">
-                  <div class="exercise-name">${exercise.name}</div>
+                  <div class="exercise-name">${typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作')}</div>
                   <div class="exercise-params">
                     ${exercise.sets ? `${exercise.sets}组` : ''}
                     ${exercise.reps ? ` × ${exercise.reps}次` : ''}
@@ -1677,7 +1688,7 @@ class TrainingPlanEditor {
 
     // 确保索引有效
     if (fromIndex < 0 || fromIndex >= exercises.length || toIndex < 0 || toIndex >= exercises.length) {
-      console.warn('无效的拖拽索引:', fromIndex, toIndex, 'exercises.length:', exercises.length);
+      // console.warn('无效的拖拽索引:', fromIndex, toIndex, 'exercises.length:', exercises.length);  // 调试信息已隐藏
       return;
     }
     
@@ -1961,7 +1972,7 @@ function savePlan() {
         Object.keys(day.modules).forEach(moduleKey => {
           day.modules[moduleKey].forEach(exercise => {
             exercises.push({
-              name: exercise.name,
+              name: typeof exercise.name === 'string' ? exercise.name : (exercise.name?.name || exercise.name?.title || '未知动作'),
               sets: parseInt(exercise.sets) || 1,
               reps: exercise.reps || '',
               weight: exercise.weight || '',

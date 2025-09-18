@@ -808,7 +808,7 @@ function connectWebSocket() {
     };
     
     socket.onerror = function(e) {
-        console.error('WebSocket错误:', e);
+        // console.error(...)
         updateConnectionStatus(false);
     };
 }
@@ -965,7 +965,7 @@ function sendImage(input) {
         })
         .catch(error => {
             hideUploadProgress();
-            console.error('图片上传错误:', error);
+            // console.error(...)
             alert('图片上传失败');
         });
     }
@@ -999,7 +999,7 @@ function sendFile(input) {
         })
         .catch(error => {
             hideUploadProgress();
-            console.error('文件上传错误:', error);
+            // console.error(...)
             alert('文件上传失败');
         });
     }
@@ -1033,7 +1033,7 @@ function sendVideo(input) {
         })
         .catch(error => {
             hideUploadProgress();
-            console.error('视频上传错误:', error);
+            // console.error(...)
             alert('视频上传失败');
         });
     }
@@ -1083,7 +1083,7 @@ function startRecording() {
             
         })
         .catch(error => {
-            console.error('无法访问麦克风:', error);
+            // console.error(...)
             alert('无法访问麦克风，请检查权限设置');
         });
 }
@@ -1124,7 +1124,7 @@ function sendVoiceMessage(blob) {
     })
     .catch(error => {
         hideUploadProgress();
-        console.error('语音发送错误:', error);
+        // console.error(...)
         alert('语音发送失败');
     });
 }
@@ -1248,7 +1248,7 @@ function downloadFile(fileUrl, fileName) {
 function playVoice(audioUrl) {
     const audio = new Audio(audioUrl);
     audio.play().catch(error => {
-        console.error('音频播放失败:', error);
+        // console.error(...)
         alert('音频播放失败');
     });
 }

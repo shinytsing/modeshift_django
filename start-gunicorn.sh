@@ -109,6 +109,15 @@ start_gunicorn() {
         return 1
     }
     
+    # 加载环境变量
+    if [ -f ".env" ]; then
+        log "加载环境变量..."
+        export $(grep -v '^#' .env | xargs)
+        success "环境变量加载完成"
+    else
+        warning "未找到.env文件"
+    fi
+    
     # 检查WSGI模块
     python -c "import wsgi" || {
         error "WSGI模块加载失败"

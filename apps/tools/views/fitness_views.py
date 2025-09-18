@@ -374,6 +374,49 @@ def list_training_plans_api(request):
     plans = TrainingPlan.objects.filter(user=request.user).order_by("-updated_at")[:20]
     results = []
     for p in plans:
+        # 转换旧格式数据为前端期望的格式
+        converted_schedule = []
+        if p.week_schedule:
+            for day_data in p.week_schedule:
+                # 检查是否已经是新格式
+                if 'modules' in day_data:
+                    # 已经是新格式，直接使用
+                    converted_day = day_data
+                else:
+                    # 旧格式，需要转换
+                    converted_day = {
+                        'weekday': day_data.get('day', ''),
+                        'body_parts': day_data.get('body_parts', []),
+                        'modules': {
+                            'warmup': [],
+                            'main': [],
+                            'accessory': [],
+                            'cooldown': []
+                        }
+                    }
+                    
+                    # 将exercises转换为main模块中的动作
+                    exercises = day_data.get('exercises', [])
+                    for exercise_name in exercises:
+                        if exercise_name != '休息日':
+                            # 处理exercise_name可能是对象的情况
+                            if isinstance(exercise_name, dict):
+                                name = exercise_name.get('name', exercise_name.get('title', '未知动作'))
+                                sets = exercise_name.get('sets', 3)
+                                reps = exercise_name.get('reps', 10)
+                            else:
+                                name = str(exercise_name)
+                                sets = 3
+                                reps = 10
+                            
+                            converted_day['modules']['main'].append({
+                                'name': name,
+                                'sets': sets,
+                                'reps': reps
+                            })
+                
+                converted_schedule.append(converted_day)
+        
         results.append(
             {
                 "id": p.id,
@@ -381,7 +424,7 @@ def list_training_plans_api(request):
                 "mode": p.mode,
                 "cycle_weeks": p.cycle_weeks,
                 "is_active": p.is_active,
-                "week_schedule": p.week_schedule,
+                "week_schedule": converted_schedule,
                 "created_at": p.created_at.isoformat(),
                 "updated_at": p.updated_at.isoformat(),
             }
@@ -396,6 +439,50 @@ def get_training_plan_api(request, plan_id):
     """获取训练计划详情"""
     try:
         plan = TrainingPlan.objects.get(id=plan_id, user=request.user)
+        
+        # 转换旧格式数据为前端期望的格式
+        converted_schedule = []
+        if plan.week_schedule:
+            for day_data in plan.week_schedule:
+                # 检查是否已经是新格式
+                if 'modules' in day_data:
+                    # 已经是新格式，直接使用
+                    converted_day = day_data
+                else:
+                    # 旧格式，需要转换
+                    converted_day = {
+                        'weekday': day_data.get('day', ''),
+                        'body_parts': day_data.get('body_parts', []),
+                        'modules': {
+                            'warmup': [],
+                            'main': [],
+                            'accessory': [],
+                            'cooldown': []
+                        }
+                    }
+                    
+                    # 将exercises转换为main模块中的动作
+                    exercises = day_data.get('exercises', [])
+                    for exercise_name in exercises:
+                        if exercise_name != '休息日':
+                            # 处理exercise_name可能是对象的情况
+                            if isinstance(exercise_name, dict):
+                                name = exercise_name.get('name', exercise_name.get('title', '未知动作'))
+                                sets = exercise_name.get('sets', 3)
+                                reps = exercise_name.get('reps', 10)
+                            else:
+                                name = str(exercise_name)
+                                sets = 3
+                                reps = 10
+                            
+                            converted_day['modules']['main'].append({
+                                'name': name,
+                                'sets': sets,
+                                'reps': reps
+                            })
+                
+                converted_schedule.append(converted_day)
+        
         return JsonResponse(
             {
                 "success": True,
@@ -404,7 +491,7 @@ def get_training_plan_api(request, plan_id):
                     "name": plan.name,
                     "mode": plan.mode,
                     "cycle_weeks": plan.cycle_weeks,
-                    "week_schedule": plan.week_schedule,
+                    "week_schedule": converted_schedule,
                     "is_active": plan.is_active,
                     "visibility": plan.visibility,
                     "created_at": plan.created_at.isoformat(),
@@ -703,6 +790,49 @@ def get_active_training_plan_api(request):
         if not active_plan:
             return JsonResponse({"success": True, "has_plan": False, "message": "暂无激活的训练计划"})
 
+        # 转换旧格式数据为前端期望的格式
+        converted_schedule = []
+        if active_plan.week_schedule:
+            for day_data in active_plan.week_schedule:
+                # 检查是否已经是新格式
+                if 'modules' in day_data:
+                    # 已经是新格式，直接使用
+                    converted_day = day_data
+                else:
+                    # 旧格式，需要转换
+                    converted_day = {
+                        'weekday': day_data.get('day', ''),
+                        'body_parts': day_data.get('body_parts', []),
+                        'modules': {
+                            'warmup': [],
+                            'main': [],
+                            'accessory': [],
+                            'cooldown': []
+                        }
+                    }
+                    
+                    # 将exercises转换为main模块中的动作
+                    exercises = day_data.get('exercises', [])
+                    for exercise_name in exercises:
+                        if exercise_name != '休息日':
+                            # 处理exercise_name可能是对象的情况
+                            if isinstance(exercise_name, dict):
+                                name = exercise_name.get('name', exercise_name.get('title', '未知动作'))
+                                sets = exercise_name.get('sets', 3)
+                                reps = exercise_name.get('reps', 10)
+                            else:
+                                name = str(exercise_name)
+                                sets = 3
+                                reps = 10
+                            
+                            converted_day['modules']['main'].append({
+                                'name': name,
+                                'sets': sets,
+                                'reps': reps
+                            })
+                
+                converted_schedule.append(converted_day)
+
         return JsonResponse(
             {
                 "success": True,
@@ -712,7 +842,7 @@ def get_active_training_plan_api(request):
                     "name": active_plan.name,
                     "mode": active_plan.mode,
                     "cycle_weeks": active_plan.cycle_weeks,
-                    "week_schedule": active_plan.week_schedule,
+                    "week_schedule": converted_schedule,
                     "updated_at": active_plan.updated_at.isoformat(),
                 },
             }
@@ -777,9 +907,9 @@ def get_training_plan_templates_api(request):
 
         # 将模板转换为数组格式（保持向后兼容）
         templates = []
-        for template_id, template in all_templates.items():
+        for tpl_id, template in all_templates.items():
             template_data = {
-                "id": template_id,
+                "id": tpl_id,
                 "name": template["name"],
                 "description": template["description"],
                 "mode": template["mode"],
@@ -1152,9 +1282,11 @@ def get_training_plan_templates_api(request):
             template_key = template["id"]
             # 重构数据结构，确保前端可以直接使用
             result[template_key] = {
+                "id": template["id"],
                 "name": template["name"],
                 "description": template["description"],
                 "mode": template["mode"],
+                "cycle_weeks": template["cycle_weeks"],
                 "difficulty": template["difficulty"],
                 "target_goals": template["target_goals"],
                 "schedule": template["week_schedule"],  # 注意这里用schedule，与enhanced_training_plan_editor.js兼容
@@ -1194,8 +1326,8 @@ def apply_training_plan_template_api(request):
 
             # 将模板转换为API需要的格式
             templates_dict = {}
-            for template_id, template in all_templates.items():
-                templates_dict[template_id] = {
+            for tpl_id, template in all_templates.items():
+                templates_dict[tpl_id] = {
                     "name": template["name"],
                     "description": template["description"],
                     "mode": template["mode"],

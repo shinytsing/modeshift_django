@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Google Auth 代理测试{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .test-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .test-section h3 {
+        color: #495057;
+        margin-bottom: 15px;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .status-indicator.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-indicator.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-indicator.warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .google-auth-btn {
+        background: #4285f4;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.3s;
+    }
+    
+    .google-auth-btn:hover {
+        background: #3367d6;
+    }
+    
+    .google-auth-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .config-info {
+        background: white;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 14px;
+    }
+    
+    .config-item {
+        margin-bottom: 8px;
+    }
+    
+    .config-item strong {
+        color: #495057;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-content {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <h1>Google Auth 代理测试</h1>
+    
+    <!-- 状态检查 -->
+    <div class="test-section">
+        <h3>🔍 服务状态检查</h3>
+        <p>检查 Google Auth 代理服务的配置和可用性：</p>
+        <div id="google-auth-status" class="status-indicator warning">检查中...</div>
+        <div id="config-details" class="config-info" style="display: none;">
+            <!-- 配置详情将在这里显示 -->
+        </div>
+    </div>
+    
+    <!-- 登录测试 -->
+    <div class="test-section">
+        <h3>🔐 Google 登录测试</h3>
+        <p>测试通过服务器代理进行 Google OAuth 登录：</p>
+        <button id="google-login-btn" class="google-auth-btn" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            使用 Google 登录
+        </button>
+    </div>
+    
+    <!-- 功能说明 -->
+    <div class="test-section">
+        <h3>📋 功能说明</h3>
+        <ul>
+            <li><strong>服务器端代理</strong>：所有 Google OAuth 请求都通过服务器代理，绕过网络限制</li>
+            <li><strong>自动用户创建</strong>：首次登录时自动创建用户账户</li>
+            <li><strong>安全验证</strong>：使用 state 参数防止 CSRF 攻击</li>
+            <li><strong>错误处理</strong>：完善的错误处理和用户提示</li>
+        </ul>
+    </div>
+    
+    <!-- 技术细节 -->
+    <div class="test-section">
+        <h3>🔧 技术实现</h3>
+        <ul>
+            <li><strong>代理服务</strong>：使用 Clash 代理访问 Google API</li>
+            <li><strong>OAuth 流程</strong>：标准的 OAuth 2.0 授权码流程</li>
+            <li><strong>用户信息</strong>：获取用户的邮箱、姓名等基本信息</li>
+            <li><strong>会话管理</strong>：登录后自动创建 Django 会话</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 加载遮罩 -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <div class="loading-text">正在处理...</div>
+    </div>
+</div>
+
+<!-- 隐藏的 CSRF Token -->
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/google_auth_proxy.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 绑定登录按钮
+    const loginBtn = document.getElementById('google-login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            if (googleAuthProxy) {
+                googleAuthProxy.startLogin();
+            }
+        });
+    }
+    
+    // 定期检查状态
+    setInterval(async function() {
+        if (googleAuthProxy) {
+            const status = await googleAuthProxy.checkStatus();
+            if (status.success) {
+                googleAuthProxy.updateUI(status.config);
+                
+                // 更新配置详情
+                const configDetails = document.getElementById('config-details');
+                if (configDetails) {
+                    configDetails.style.display = 'block';
+                    configDetails.innerHTML = `
+                        <div class="config-item"><strong>Client ID:</strong> ${status.config.client_id_configured ? '已配置' : '未配置'}</div>
+                        <div class="config-item"><strong>Client Secret:</strong> ${status.config.client_secret_configured ? '已配置' : '未配置'}</div>
+                        <div class="config-item"><strong>Redirect URI:</strong> ${status.config.redirect_uri}</div>
+                        <div class="config-item"><strong>代理状态:</strong> ${status.config.proxy_working ? '正常' : '异常'}</div>
+                        ${status.config.proxy_error ? `<div class="config-item"><strong>代理错误:</strong> ${status.config.proxy_error}</div>` : ''}
+                    `;
+                }
+            }
+        }
+    }, 5000);
+});
+</script>
+{% endblock %}

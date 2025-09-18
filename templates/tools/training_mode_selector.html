@@ -436,11 +436,11 @@ class TrainingModeSelector {
             if (data.success) {
                 this.trainingModes = data.training_modes;
             } else {
-                console.error('加载训练模式失败:', data.error);
+                // console.error(...)
                 this.showErrorMessage('加载训练模式失败，请刷新页面重试');
             }
         } catch (error) {
-            console.error('网络错误:', error);
+            // console.error(...)
             this.showErrorMessage('网络连接失败，请检查网络后重试');
         }
     }
@@ -528,7 +528,7 @@ class TrainingModeSelector {
                 this.showErrorMessage(data.error || '导入失败，请重试');
             }
         } catch (error) {
-            console.error('导入错误:', error);
+            // console.error(...)
             this.showErrorMessage('网络错误，请检查连接后重试');
         } finally {
             this.showLoadingState(false);

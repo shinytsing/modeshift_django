@@ -258,6 +258,14 @@
             </div>
             {% endfor %}
         </div>
+        
+        <!-- 二维码按钮 -->
+        <div class="share-platforms" style="margin-top: 20px;">
+            <div class="share-btn qrcode" onclick="showQRCode()">
+                <i class="fas fa-qrcode"></i>
+                <span>二维码分享</span>
+            </div>
+        </div>
     </div>
     
     <div class="mobile-install" id="mobileInstall">
@@ -332,8 +340,26 @@ function showQRCode(url = null) {
     const qrUrl = url || '{{ current_url }}';
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrUrl)}`;
     
-    document.getElementById('qrImage').src = qrImageUrl;
-    document.getElementById('qrModal').style.display = 'block';
+    console.log('显示二维码，URL:', qrUrl);
+    console.log('二维码图片URL:', qrImageUrl);
+    
+    const qrImage = document.getElementById('qrImage');
+    const qrModal = document.getElementById('qrModal');
+    
+    if (qrImage && qrModal) {
+        qrImage.src = qrImageUrl;
+        qrImage.onload = function() {
+            console.log('二维码加载成功');
+        };
+        qrImage.onerror = function() {
+            console.log('二维码加载失败，尝试备用方案');
+            // 备用方案：使用不同的二维码服务
+            qrImage.src = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(qrUrl)}`;
+        };
+        qrModal.style.display = 'block';
+    } else {
+        console.error('找不到二维码相关元素');
+    }
 }
 
 // 关闭二维码模态框

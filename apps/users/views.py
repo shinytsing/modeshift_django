@@ -135,7 +135,7 @@ def register(request):
             UserRole.objects.create(user=user, role="user")
             UserStatus.objects.create(user=user, status="active")
             UserMembership.objects.create(user=user, membership_type="free")
-            Profile.objects.create(user=user)
+            # Profile 会通过信号处理器自动创建
 
             # 自动登录用户
             from django.contrib.auth import login
@@ -267,20 +267,14 @@ def user_logout(request):
 
 @login_required
 def profile_view(request):
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
     return render(request, "users/profile.html", {"profile": profile})
 
 
 @login_required
 def profile_edit(request):
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
         form = ProfileEditForm(request.POST, instance=profile)
@@ -1283,7 +1277,7 @@ def user_register_api(request):
         UserRole.objects.create(user=user, role="user")
         UserStatus.objects.create(user=user, status="active")
         UserMembership.objects.create(user=user, membership_type="free")
-        Profile.objects.create(user=user)
+        # Profile 会通过信号处理器自动创建
         
         # 自动登录用户
         from django.contrib.auth import login
@@ -1362,3 +1356,9 @@ def user_profile_api(request):
             
     except Exception as e:
         return JsonResponse({"success": False, "message": f"操作失败: {str(e)}"}, status=500)
+
+
+# Google Auth 代理测试页面
+def google_auth_test_view(request):
+    """Google Auth 代理测试页面"""
+    return render(request, "users/google_auth_test.html")

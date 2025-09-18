@@ -1000,4 +1000,61 @@
   color: #00ffff;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
 }
+
+/* 未完成功能标记样式 */
+.incomplete-feature {
+  position: relative;
+  opacity: 0.8;
+}
+
+.incomplete-feature::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.incomplete-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.incomplete-badge i {
+  font-size: 0.5rem;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.incomplete-feature:hover .incomplete-badge {
+  animation: none;
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(255, 107, 107, 0.6);
+}
 </style>

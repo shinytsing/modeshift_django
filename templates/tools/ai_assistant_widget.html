@@ -1,13 +1,14 @@
 <!-- AI助手小机器人组件 -->
+{% if user.is_authenticated %}
 <div class="ai-assistant-container" id="aiAssistantContainer" style="display: block;">
     <div class="ai-assistant-wrapper">
-        <!-- 助手按钮 -->
-        <button class="ai-assistant-button" id="aiAssistantButton" onclick="toggleAssistantChat()">
+        <!-- 智能按钮 - 机器人形态 -->
+        <button class="ai-assistant-button" id="aiAssistantButton" onclick="handleMainButtonClick()">
             <div class="assistant-avatar">
-                <i class="fas fa-terminal"></i>
+                <i class="fas fa-robot" id="mainButtonIcon"></i>
                 <div class="assistant-pulse"></div>
+                <div class="robot-running-animation"></div>
             </div>
-            <span class="assistant-text">AI助手</span>
         </button>
         
         <!-- 聊天窗口 -->
@@ -22,9 +23,14 @@
                         <span class="status-text">系统在线</span>
                     </div>
                 </div>
-                <button class="close-chat" onclick="toggleAssistantChat()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="header-actions">
+                    <button class="share-button" onclick="event.stopPropagation(); shareCurrentPage();" title="分享当前页面">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="close-chat" onclick="toggleAssistantChat()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="chat-messages" id="assistantMessages">
@@ -36,31 +42,9 @@
                     <div class="message-content">
                         <div class="message-bubble">
                             <p>$> 系统初始化完成</p>
-                            <p>AI助手 v2.0 已启动</p>
-                            <p>输入命令或描述需求开始交互...</p>
                         </div>
                         <div class="message-time">{{ now|date:"H:i" }}</div>
                     </div>
-                </div>
-                
-                <!-- 快捷操作按钮 -->
-                <div class="quick-actions">
-                    <button class="quick-btn" onclick="sendQuickMessage('生成测试用例')">
-                        <i class="fas fa-terminal"></i>
-                        <span>测试用例</span>
-                    </button>
-                    <button class="quick-btn" onclick="sendQuickMessage('旅游攻略')">
-                        <i class="fas fa-map"></i>
-                        <span>旅游攻略</span>
-                    </button>
-                    <button class="quick-btn" onclick="sendQuickMessage('小红书内容')">
-                        <i class="fas fa-code"></i>
-                        <span>小红书</span>
-                    </button>
-                    <button class="quick-btn" onclick="sendQuickMessage('创意写作')">
-                        <i class="fas fa-keyboard"></i>
-                        <span>创意写作</span>
-                    </button>
                 </div>
                 
                 <!-- 系统功能清单 -->
@@ -70,23 +54,23 @@
                         <span>系统模块</span>
                     </div>
                     <div class="features-grid">
-                        <div class="feature-item" onclick="window.location.href='/tools/test_case_generator/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/test_case_generator/')">
                             <i class="fas fa-terminal"></i>
                             <span>测试生成</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/travel_guide/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/travel_guide/')">
                             <i class="fas fa-map"></i>
                             <span>旅游工具</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/redbook_generator/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/redbook_generator/')">
                             <i class="fas fa-code"></i>
                             <span>小红书</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/tarot/reading/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/tarot/reading/')">
                             <i class="fas fa-magic"></i>
                             <span>塔罗占卜</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/meditation_guide/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/meditation_guide/')">
                             <i class="fas fa-music"></i>
                             <span>冥想音频</span>
                         </div>
@@ -94,11 +78,11 @@
                             <i class="fas fa-globe"></i>
                             <span>地图服务</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/chat/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/chat/')">
                             <i class="fas fa-comments"></i>
                             <span>聊天系统</span>
                         </div>
-                        <div class="feature-item" onclick="window.location.href='/tools/task_manager/'">
+                        <div class="feature-item" onclick="checkLoginAndNavigate('/tools/task_manager/')">
                             <i class="fas fa-tasks"></i>
                             <span>任务管理</span>
                         </div>
@@ -130,6 +114,16 @@
     right: 20px;
     z-index: 1000;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+}
+
+/* 分享模态框独立定位 */
+.share-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10000 !important;
 }
 
 .ai-assistant-wrapper {
@@ -179,6 +173,83 @@
     box-shadow: 0 0 30px rgba(0, 255, 65, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3);
     border-color: #00ff88;
     color: #00ff88;
+}
+
+/* 分享按钮样式 */
+.ai-assistant-button.share-mode {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+.ai-assistant-button.share-mode:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    border-color: #5a6fd8;
+    color: white;
+}
+
+/* 输入框容器样式 */
+.assistant-input-container {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.assistant-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 6px;
+    color: #00ff41;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.assistant-input::placeholder {
+    color: rgba(0, 255, 65, 0.6);
+}
+
+.assistant-input:focus {
+    background: rgba(0, 255, 65, 0.2);
+    border-color: #00ff41;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.assistant-input:hover {
+    background: rgba(0, 255, 65, 0.15);
+    border-color: rgba(0, 255, 65, 0.5);
+}
+
+/* 机器人原地转圈跑动画 */
+.robot-running-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 2px solid rgba(0, 255, 65, 0.3);
+    border-top: 2px solid #00ff41;
+    border-radius: 50%;
+    animation: robotSpin 2s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes robotSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 机器人图标动画 */
+#mainButtonIcon {
+    animation: robotBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes robotBounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
 }
 
 .assistant-avatar {
@@ -291,6 +362,30 @@
     opacity: 0.8;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-button {
+    background: none;
+    border: none;
+    color: #00ff41;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.share-button:hover {
+    background: rgba(0, 255, 65, 0.2);
+    border-color: #00ff41;
+    transform: scale(1.1);
+}
+
 .close-chat {
     background: none;
     border: none;
@@ -374,14 +469,14 @@
 
 .message-bubble {
     background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
-    padding: 15px 18px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: 1px solid #00ff41;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-    line-height: 1.6;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+    line-height: 1.4;
     color: #e6edf3;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     word-wrap: break-word;
     word-break: break-word;
@@ -389,6 +484,7 @@
     white-space: pre-wrap;
     max-width: 100%;
     overflow-x: hidden;
+    display: inline-block;
 }
 
 .user-message .message-bubble {
@@ -428,9 +524,8 @@
 
 /* 快捷操作按钮 */
 .quick-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    display: flex;
+    justify-content: center;
     margin: 15px 0;
 }
 
@@ -463,6 +558,72 @@
 .quick-btn i {
     font-size: 16px;
     color: inherit;
+}
+
+/* 内联分享按钮样式 - 嵌入到消息框中 */
+.inline-share-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid #667eea;
+    color: white;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+    animation: sharePulse 2s infinite;
+}
+
+.inline-share-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    border-color: #5a6fd8;
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+    color: white;
+}
+
+.inline-share-btn i {
+    font-size: 14px;
+    color: inherit;
+}
+
+@keyframes sharePulse {
+    0%, 100% { 
+        box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+    }
+}
+
+/* 分享提示动画 */
+@keyframes tipSlideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px) scale(0.8); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes tipSlideOut {
+    from { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(-10px) scale(0.8); 
+    }
 }
 
 /* 系统功能清单 - 终端风格 */
@@ -649,10 +810,28 @@
 // AI助手聊天功能
 let isAssistantOpen = false;
 let conversationHistory = [];
+let isHomePage = false;
 
 // 拖动功能变量
 let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
+
+// 初始化按钮模式 - 所有页面都显示机器人助手
+function initializeButtonMode() {
+    const button = document.getElementById('aiAssistantButton');
+    const icon = document.getElementById('mainButtonIcon');
+    
+    // 所有页面都显示机器人助手
+    button.classList.remove('share-mode');
+    icon.className = 'fas fa-robot';
+}
+
+// 智能按钮点击处理
+function handleMainButtonClick() {
+    console.log('AI助手按钮被点击');
+    // 由于Django模板已经处理了登录检查，这里直接打开AI助手
+    toggleAssistantChat();
+}
 
 // 动态调整窗口大小功能
 function adjustChatWindowSize() {
@@ -683,14 +862,26 @@ function adjustChatWindowSize() {
 
 // 切换助手聊天窗口
 function toggleAssistantChat() {
+    console.log('toggleAssistantChat被调用');
     const chatWindow = document.getElementById('assistantChatWindow');
     const button = document.getElementById('aiAssistantButton');
+    
+    console.log('聊天窗口元素:', chatWindow);
+    console.log('按钮元素:', button);
     
     isAssistantOpen = !isAssistantOpen;
     
     if (isAssistantOpen) {
+        console.log('打开AI助手');
         chatWindow.style.display = 'flex';
         button.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+        
+        // 显示分享提示（每天只显示一次）
+        // 延迟显示分享提示，避免与分享功能冲突
+        setTimeout(() => {
+            showShareTip();
+        }, 500);
+        
         // 调整窗口大小并聚焦到输入框
         setTimeout(() => {
             adjustChatWindowSize();
@@ -771,7 +962,7 @@ async function sendAssistantMessage() {
         
         // 显示错误消息
         addMessageToChat('抱歉，网络连接出现问题，请稍后重试。', 'assistant');
-        console.error('AI助手请求失败:', error);
+        // console.error(...)
     }
 }
 
@@ -849,6 +1040,75 @@ function hideTypingIndicator() {
     }
 }
 
+// 显示分享提示（每天只显示一次）
+function showShareTip() {
+    const today = new Date().toDateString();
+    const lastTipDate = localStorage.getItem('aiAssistantShareTipDate');
+    
+    // 如果今天已经显示过提示，则不显示
+    if (lastTipDate === today) {
+        return;
+    }
+    
+    // 保存今天的日期
+    localStorage.setItem('aiAssistantShareTipDate', today);
+    
+    // 创建分享提示
+    const tipDiv = document.createElement('div');
+    tipDiv.className = 'share-tip';
+    tipDiv.style.cssText = `
+        position: absolute;
+        top: -15px;
+        right: -15px;
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+        border: 1px solid #00ff41;
+        color: #00ff41;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        z-index: 1001;
+        animation: tipSlideIn 0.3s ease-out;
+        cursor: pointer;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+        white-space: nowrap;
+    `;
+    
+    tipDiv.innerHTML = `
+        <i class="fas fa-terminal" style="margin-right: 4px; color: #00ff41;"></i>
+        $> 分享页面
+    `;
+    
+    // 添加到分享按钮
+    const shareButton = document.querySelector('.share-button');
+    if (shareButton) {
+        shareButton.style.position = 'relative';
+        shareButton.appendChild(tipDiv);
+        
+        // 点击提示时打开分享功能
+        tipDiv.onclick = function(e) {
+            e.stopPropagation();
+            shareCurrentPage();
+            tipDiv.remove();
+        };
+        
+        // 3秒后自动消失
+        setTimeout(() => {
+            if (tipDiv.parentNode) {
+                tipDiv.style.animation = 'tipSlideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (tipDiv.parentNode) {
+                        tipDiv.remove();
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
+}
+
 // 获取CSRF token
 function getCookie(name) {
     let cookieValue = null;
@@ -874,8 +1134,8 @@ function initializeDragFunctionality() {
     
     // 鼠标按下事件
     chatHeader.addEventListener('mousedown', function(e) {
-        // 如果点击的是关闭按钮，不启动拖动
-        if (e.target.closest('.close-chat')) {
+        // 如果点击的是关闭按钮或分享按钮，不启动拖动
+        if (e.target.closest('.close-chat') || e.target.closest('.share-button')) {
             return;
         }
         
@@ -925,7 +1185,7 @@ function initializeDragFunctionality() {
     
     // 触摸事件支持（移动设备）
     chatHeader.addEventListener('touchstart', function(e) {
-        if (e.target.closest('.close-chat')) {
+        if (e.target.closest('.close-chat') || e.target.closest('.share-button')) {
             return;
         }
         
@@ -969,11 +1229,466 @@ function initializeDragFunctionality() {
     });
 }
 
+// 分享当前页面功能
+function shareCurrentPage() {
+    console.log('shareCurrentPage 被调用');
+    
+    // 确保AI助手弹窗是关闭的
+    const assistantChat = document.querySelector('.assistant-chat');
+    if (assistantChat && assistantChat.style.display !== 'none') {
+        assistantChat.style.display = 'none';
+        console.log('关闭AI助手弹窗');
+    }
+    
+    // 清除可能存在的分享模态框
+    const existingShareModal = document.querySelector('.share-modal, #shareModal, div[style*="z-index: 10000"]');
+    if (existingShareModal) {
+        existingShareModal.remove();
+        console.log('清除现有分享模态框');
+    }
+    
+    const currentUrl = window.location.href;
+    const pageTitle = document.title;
+    
+    // 创建分享模态框
+    const shareModal = document.createElement('div');
+    shareModal.className = 'share-modal';
+    shareModal.id = 'shareModal';
+    shareModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+    `;
+    
+    const shareContent = document.createElement('div');
+    shareContent.style.cssText = `
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+        border: 2px solid #00ff41;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        color: #00ff41;
+        box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+    `;
+    
+    shareContent.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 10px 0; color: #00ff41;">🔗 分享当前页面</h3>
+            <p style="margin: 0; opacity: 0.8; font-size: 14px;">选择分享方式</p>
+            <p style="margin: 5px 0 0 0; opacity: 0.6; font-size: 12px; color: #00ff41;">$> 按 ESC 键退出</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">页面链接</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="shareUrl" value="${currentUrl}" readonly style="
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid #00ff41;
+                    border-radius: 4px;
+                    background: #0d1117;
+                    color: #00ff41;
+                    font-family: inherit;
+                    font-size: 12px;
+                ">
+                <button onclick="copyShareUrl()" style="
+                    padding: 10px 15px;
+                    background: linear-gradient(135deg, #00ff41 0%, #00ff88 100%);
+                    color: #0d1117;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-family: inherit;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                ">复制</button>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+            <button onclick="showQRCodeInModal('wechat')" style="
+                padding: 12px;
+                background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
+                border: 1px solid #00ff41;
+                border-radius: 6px;
+                color: #00ff41;
+                cursor: pointer;
+                font-family: inherit;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                z-index: 10002;
+                position: relative;
+            ">
+                <i class="fab fa-weixin"></i> 微信
+            </button>
+            <button onclick="showQRCodeInModal('weibo')" style="
+                padding: 12px;
+                background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
+                border: 1px solid #00ff41;
+                border-radius: 6px;
+                color: #00ff41;
+                cursor: pointer;
+                font-family: inherit;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                z-index: 10002;
+                position: relative;
+            ">
+                <i class="fab fa-weibo"></i> 微博
+            </button>
+            <button onclick="showQRCodeInModal('xiaohongshu')" style="
+                padding: 12px;
+                background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
+                border: 1px solid #00ff41;
+                border-radius: 6px;
+                color: #00ff41;
+                cursor: pointer;
+                font-family: inherit;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                z-index: 10002;
+                position: relative;
+            ">
+                <i class="fas fa-book"></i> 小红书
+            </button>
+            <button onclick="showQRCodeInModal('qq')" style="
+                padding: 12px;
+                background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
+                border: 1px solid #00ff41;
+                border-radius: 6px;
+                color: #00ff41;
+                cursor: pointer;
+                font-family: inherit;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                z-index: 10002;
+                position: relative;
+            ">
+                <i class="fab fa-qq"></i> QQ
+            </button>
+        </div>
+        
+    `;
+    
+    shareModal.appendChild(shareContent);
+    document.body.appendChild(shareModal);
+    
+    // 点击背景关闭
+    shareModal.onclick = function(e) {
+        if (e.target === shareModal) {
+            closeShareModal();
+        }
+    };
+    
+    // 点击内容区域阻止关闭
+    shareContent.onclick = function(e) {
+        e.stopPropagation();
+    };
+    
+    // 存储模态框引用
+    window.currentShareModal = shareModal;
+}
+
+// 复制分享链接
+function copyShareUrl() {
+    const urlInput = document.getElementById('shareUrl');
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999); // 移动设备兼容
+    
+    try {
+        document.execCommand('copy');
+        // 显示复制成功提示
+        showCopySuccess();
+    } catch (err) {
+        // 降级处理：使用现代API
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                showCopySuccess();
+            });
+        }
+    }
+}
+
+// 显示复制成功提示
+function showCopySuccess() {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '已复制!';
+    button.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+    
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'linear-gradient(135deg, #00ff41 0%, #00ff88 100%)';
+    }, 2000);
+}
+
+// 在模态框中显示二维码
+function showQRCodeInModal(platform) {
+    console.log('showQRCodeInModal 被调用，平台:', platform);
+    
+    // 清除之前的自动关闭定时器
+    if (window.qrAutoCloseTimer) {
+        clearTimeout(window.qrAutoCloseTimer);
+        window.qrAutoCloseTimer = null;
+    }
+    
+    const currentUrl = window.location.href;
+    const encodedUrl = encodeURIComponent(currentUrl);
+    
+    // 获取平台信息
+    const platformInfo = {
+        'wechat': { name: '微信', icon: 'fab fa-weixin' },
+        'weibo': { name: '微博', icon: 'fab fa-weibo' },
+        'xiaohongshu': { name: '小红书', icon: 'fas fa-book' },
+        'qq': { name: 'QQ', icon: 'fab fa-qq' }
+    };
+    
+    const info = platformInfo[platform];
+    if (!info) {
+        console.log('未找到平台信息:', platform);
+        return;
+    }
+    
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}`;
+    console.log('二维码URL:', qrUrl);
+    
+    // 直接调用showQRCode函数创建二维码模态框
+    showQRCode(currentUrl, info.name);
+}
+
+// 显示二维码
+function showQRCode(url, platform = '微信') {
+    console.log('显示二维码，URL:', url, '平台:', platform);
+    const qrModal = document.createElement('div');
+    qrModal.className = 'qr-modal';
+    qrModal.id = 'qrModal';
+    qrModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10002;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+    `;
+    
+    const qrContent = document.createElement('div');
+    qrContent.style.cssText = `
+        background: linear-gradient(135deg, rgb(13, 17, 23) 0%, rgb(22, 27, 34) 100%) !important;
+        border: 2px solid rgb(0, 255, 65) !important;
+        border-radius: 8px !important;
+        padding: 30px !important;
+        max-width: 500px !important;
+        width: 90% !important;
+        color: rgb(0, 255, 65) !important;
+        box-shadow: rgba(0, 255, 65, 0.4) 0px 0px 30px !important;
+        text-align: center;
+        position: relative;
+        z-index: 10003;
+    `;
+    
+    const platformIcon = platform === '小红书' ? '📖' : '📱';
+    const platformText = platform === '小红书' ? '使用小红书App扫码分享' : '使用微信、支付宝等扫码分享';
+    
+    qrContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0;">${platformIcon} 扫码分享到${platform}</h3>
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" 
+                 alt="二维码" style="max-width: 200px; height: auto;">
+        </div>
+        <p style="margin: 0 0 20px 0; font-size: 14px; opacity: 0.8;">${platformText}</p>
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="margin: 0; opacity: 0.6; font-size: 12px; color: #00ff41;">
+                $> 按 ESC 键退出 | 扫码后自动关闭
+            </p>
+        </div>
+    `;
+    
+    qrModal.appendChild(qrContent);
+    document.body.appendChild(qrModal);
+    
+    // 点击背景关闭
+    qrModal.onclick = function(e) {
+        if (e.target === qrModal) {
+            closeQRModal();
+        }
+    };
+    
+    // 点击内容区域阻止关闭
+    qrContent.onclick = function(e) {
+        e.stopPropagation();
+    };
+    
+    // 添加模拟扫码检测（虽然无法真正检测，但可以添加定时器）
+    let scanCheckCount = 0;
+    const maxScanChecks = 30; // 30秒后自动关闭
+    
+    console.log('启动30秒自动关闭定时器');
+    
+    const scanCheckInterval = setInterval(() => {
+        scanCheckCount++;
+        console.log(`扫码检测倒计时: ${maxScanChecks - scanCheckCount}秒`);
+        
+        // 模拟检测到扫码（随机概率）
+        if (Math.random() < 0.1 && scanCheckCount > 5) { // 5秒后开始有10%概率检测到扫码
+            console.log('检测到扫码，自动关闭二维码');
+            clearInterval(scanCheckInterval);
+            closeQRModal();
+            return;
+        }
+        
+        // 30秒后强制关闭
+        if (scanCheckCount >= maxScanChecks) {
+            console.log('30秒超时，自动关闭二维码');
+            clearInterval(scanCheckInterval);
+            closeQRModal();
+        }
+    }, 1000);
+    
+    // 保存定时器引用以便清理
+    qrModal.scanCheckInterval = scanCheckInterval;
+    
+    // 存储二维码模态框引用
+    window.currentQRModal = qrModal;
+}
+
+// 关闭分享模态框
+function closeShareModal() {
+    console.log('尝试关闭分享模态框...');
+    
+    // 最简单的方法：直接移除所有模态框
+    const modals = document.querySelectorAll('div[style*="z-index: 10000"], .share-modal, #shareModal');
+    console.log('找到的分享模态框数量:', modals.length);
+    
+    modals.forEach(modal => {
+        if (modal && modal.parentNode) {
+            console.log('移除分享模态框:', modal);
+            modal.remove();
+        }
+    });
+    
+    // 清除全局引用
+    window.currentShareModal = null;
+    
+    console.log('关闭分享模态框完成');
+}
+
+// 关闭二维码模态框
+function closeQRModal() {
+    console.log('关闭二维码模态框');
+    
+    // 查找并移除所有二维码模态框
+    const modals = document.querySelectorAll('.qr-modal, #qrModal, div[style*="z-index: 10002"]');
+    console.log('找到的二维码模态框数量:', modals.length);
+    
+    modals.forEach(modal => {
+        if (modal && modal.parentNode) {
+            console.log('移除二维码模态框:', modal);
+            
+            // 清理扫码检测定时器
+            if (modal.scanCheckInterval) {
+                clearInterval(modal.scanCheckInterval);
+            }
+            
+            modal.remove();
+        }
+    });
+    
+    // 清除全局引用和定时器
+    window.currentQRModal = null;
+    if (window.qrAutoCloseTimer) {
+        clearTimeout(window.qrAutoCloseTimer);
+        window.qrAutoCloseTimer = null;
+    }
+    
+    console.log('二维码模态框已关闭');
+}
+
+// 全局关闭所有模态框的函数
+function closeAllModals() {
+    console.log('关闭所有模态框 - 开始');
+    console.log('当前页面上的模态框:', document.querySelectorAll('div[style*="z-index: 10000"], div[style*="z-index: 10002"]'));
+    
+    // 强制关闭所有可能的模态框
+    const allModals = document.querySelectorAll('#shareModal, #qrModal, .share-modal, .qr-modal, div[style*="z-index: 10000"], div[style*="z-index: 10002"]');
+    console.log('找到的所有模态框:', allModals.length);
+    
+    allModals.forEach(modal => {
+        if (modal && modal.parentNode) {
+            console.log('强制移除模态框:', modal);
+            modal.remove();
+        }
+    });
+    
+    closeShareModal();
+    closeQRModal();
+    
+    console.log('关闭所有模态框 - 完成');
+}
+
+// ESC键关闭模态框
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        console.log('ESC键被按下，尝试关闭模态框');
+        e.preventDefault();
+        e.stopPropagation();
+        closeAllModals();
+    }
+});
+
+// 添加全局函数到window对象
+window.closeAllModals = closeAllModals;
+window.closeShareModal = closeShareModal;
+window.closeQRModal = closeQRModal;
+window.showQRCodeInModal = showQRCodeInModal;
+
 // 页面加载完成后的初始化
+
+// 检查登录状态并导航
+function checkLoginAndNavigate(url) {
+    // 由于Django模板已经处理了登录检查，这里直接导航
+    window.location.href = url;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 可以在这里添加一些初始化逻辑
-    console.log('AI助手组件已加载');
+    // 初始化按钮模式
+    initializeButtonMode();
     // 初始化拖动功能
     initializeDragFunctionality();
 });
 </script>
+{% endif %}

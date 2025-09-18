@@ -485,7 +485,7 @@ function loadFeatures() {
             }
         })
         .catch(error => {
-            console.error('加载功能失败:', error);
+            // console.error(...)
             showError('加载功能列表失败');
         })
         .finally(() => {
@@ -586,7 +586,7 @@ function initDefaultFeatures() {
         }
     })
     .catch(error => {
-        console.error('初始化失败:', error);
+        // console.error(...)
         showError('初始化默认功能失败');
     });
 }
@@ -644,7 +644,7 @@ function saveFeature() {
         }
     })
     .catch(error => {
-        console.error('保存失败:', error);
+        // console.error(...)
         showError('保存功能失败');
     });
 }
@@ -679,7 +679,7 @@ function toggleFeature(featureId) {
         }
     })
     .catch(error => {
-        console.error('更新失败:', error);
+        // console.error(...)
         showError('更新功能状态失败');
     });
 }
@@ -726,7 +726,7 @@ function batchUpdateFeatures(action, actionName) {
         }
     })
     .catch(error => {
-        console.error('批量操作失败:', error);
+        // console.error(...)
         showError(`批量${actionName}失败`);
     });
 }

@@ -261,13 +261,13 @@
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (error) {
-                console.log('[AUDIO] 错误音效播放失败:', error);
+                // // console.log(...)
             }
         }
 
         // 测试函数
         function testNormalMessage() {
-            showTerminalMessage('[INFO] 这是一个普通的终端消息', 'info');
+            showTerminalMessage('[INFO] 这是一个普通的终端消息', 'info');  // 调试信息已隐藏
         }
 
         function testErrorAnimation() {

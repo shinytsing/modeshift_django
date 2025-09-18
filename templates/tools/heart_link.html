@@ -694,7 +694,7 @@ async function startHeartLink() {
         }
         
     } catch (error) {
-        console.error('启动心动链接失败:', error);
+        // console.error(...)
         // 提供更友好的错误提示
         let errorMessage = '启动失败，请稍后重试';
         if (error && error.message) {
@@ -745,7 +745,7 @@ async function cancelHeartLink() {
         }
         
     } catch (error) {
-        console.error('取消心动链接失败:', error);
+        // console.error(...)
         // 提供更友好的错误提示
         let errorMessage = '取消失败，请稍后重试';
         if (error && error.message) {
@@ -817,7 +817,7 @@ function startStatusCheck() {
             // 检查响应类型
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
-                console.error('状态检查返回了非JSON格式的响应');
+                // console.error(...)
                 return;
             }
             
@@ -840,10 +840,10 @@ function startStatusCheck() {
 
                 }
             } else {
-                console.error('状态检查失败:', data.error);
+                // console.error(...)
             }
         } catch (error) {
-            console.error('检查状态失败:', error);
+            // console.error(...)
             // 如果连续多次失败，考虑重试
         }
     }, 3000); // 每3秒检查一次
@@ -979,7 +979,7 @@ async function retryMatch() {
         }, 1000);
         
     } catch (error) {
-        console.error('重试匹配失败:', error);
+        // console.error(...)
         resetUI();
     }
 }
@@ -1141,7 +1141,7 @@ async function rejectReconnect() {
             }, 2000);
         }
     } catch (error) {
-        console.error('拒绝重连失败:', error);
+        // console.error(...)
         // 提供更友好的错误提示
         let errorMessage = '网络连接异常，页面即将刷新...';
         if (error && error.message) {
@@ -1184,7 +1184,7 @@ async function checkActiveChatRoom() {
             handleReconnect(matchedUser);
         }
     } catch (error) {
-        console.error('检查活跃聊天室失败:', error);
+        // console.error(...)
     }
 }
 
@@ -1358,7 +1358,7 @@ async function startSecretMatch() {
             contentDiv.innerHTML = '<div class="error-message">' + data.error + '</div>';
         }
     } catch (error) {
-        console.error('秘密匹配失败:', error);
+        // console.error(...)
         contentDiv.innerHTML = '<div class="error-message">匹配失败，请重试</div>';
     }
 }
@@ -1382,7 +1382,7 @@ async function cancelSecretMatch() {
             document.getElementById('secretMatchContent').innerHTML = '<div class="error-message">' + data.error + '</div>';
         }
     } catch (error) {
-        console.error('取消秘密匹配失败:', error);
+        // console.error(...)
         document.getElementById('secretMatchContent').innerHTML = '<div class="error-message">取消失败，请重试</div>';
     }
 }

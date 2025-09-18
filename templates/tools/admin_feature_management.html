@@ -710,7 +710,7 @@ async function toggleFeature(featureId, currentStatus) {
             alert(`${action}功能失败，请稍后重试`);
         }
     } catch (error) {
-        console.error('Error toggling feature:', error);
+        // console.error(...)
         alert(`${action}功能时发生错误`);
     }
 }

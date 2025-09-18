@@ -694,7 +694,7 @@ function createAsyncTask(requirement, prompt) {
         }
     })
     .catch(error => {
-        console.error('创建任务失败:', error);
+        // console.error(...)
         let errorMsg = '创建任务失败，请稍后重试';
         if (error.response) {
             errorMsg = error.response.data.error || `服务器错误 (${error.response.status})`;
@@ -748,7 +748,7 @@ function checkTaskStatus() {
         }
     })
     .catch(error => {
-        console.error('检查任务状态失败:', error);
+        // console.error(...)
     });
 }
 
@@ -835,7 +835,7 @@ function loadTaskList() {
         }).join('');
     })
     .catch(error => {
-        console.error('加载任务列表失败:', error);
+        // console.error(...)
     });
 }
 
@@ -859,7 +859,7 @@ function selectTask(taskId) {
         }
     })
     .catch(error => {
-        console.error('获取任务详情失败:', error);
+        // console.error(...)
     });
 }
 
@@ -874,7 +874,7 @@ document.getElementById('copyBtn').addEventListener('click', function() {
     navigator.clipboard.writeText(testCaseText).then(() => {
         showMessage('内容已复制到剪贴板！', 'success');
     }).catch(err => {
-        console.error('复制失败:', err);
+        // console.error(...)
         showMessage('复制失败，请手动选择复制', 'error');
     });
 });

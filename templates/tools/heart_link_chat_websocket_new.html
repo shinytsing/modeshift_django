@@ -601,8 +601,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 检查roomId是否有效
     if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        console.error('❌ 无效的roomId:', roomId);
-        console.error('无法初始化聊天功能');
+        // console.error(...)
+        // console.error(...)
         return;
     }
 
@@ -653,7 +653,7 @@ function initializeEventListeners() {
         };
 
     } else {
-        console.error('❌ 表情按钮未找到！');
+        // console.error(...)
         setTimeout(() => {
 
             const delayedBtn = document.getElementById('emoji-btn');
@@ -744,7 +744,7 @@ function handleEmojiClick(event) {
 
         }
     } else {
-        console.error('表情选择器未找到');
+        // console.error(...)
     }
 }
 
@@ -752,8 +752,8 @@ function handleEmojiClick(event) {
 function connectWebSocket() {
     // 检查roomId是否有效
     if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        console.error('❌ 无效的roomId:', roomId);
-        console.error('无法建立WebSocket连接');
+        // console.error(...)
+        // console.error(...)
         return;
     }
     
@@ -777,14 +777,14 @@ function connectWebSocket() {
         wsUrl += '?' + params.toString();
     }
     
-    console.log('WebSocket连接URL:', wsUrl);
-    console.log('Session ID:', sessionId);
-    console.log('CSRF Token:', csrfToken);
+    // // console.log(...)
+    // console.log(...)
+    // console.log(...)
 
     try {
-        socket = new WebSocket(wsUrl);
+        socket = new WebSocket(wsUrl);  // 调试信息已隐藏
     } catch (error) {
-        console.error('❌ WebSocket创建失败:', error);
+        // console.error(...)
         return;
     }
     
@@ -812,17 +812,17 @@ function connectWebSocket() {
                 if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== '') {
                     connectWebSocket();
                 } else {
-                    console.error('❌ roomId无效，停止重连尝试');
+                    // console.error(...)
                 }
             }, reconnectDelay);
         } else if (reconnectAttempts >= maxReconnectAttempts) {
-            console.error('重连次数已达上限，请刷新页面');
+            // console.error(...)
             alert('连接已断开，请刷新页面重试');
         }
     };
     
     socket.onerror = function(error) {
-        console.error('WebSocket错误:', error);
+        // console.error(...)
         updateConnectionStatus(false);
     };
 }
@@ -889,7 +889,7 @@ function handleWebSocketMessage(data) {
 function loadInitialMessages() {
     // 检查roomId是否有效
     if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        console.error('❌ 无效的roomId，无法加载消息:', roomId);
+        // console.error(...)
         return;
     }
 
@@ -905,7 +905,7 @@ function loadInitialMessages() {
                 disableChatInput();
             }
         })
-        .catch(error => console.error('Error loading messages:', error));
+        .catch(error => // console.error(...));
 }
 
 // 显示消息
@@ -1031,7 +1031,7 @@ function sendMessage() {
             sendBtn.disabled = false;
         }, 1000);
     } else {
-        console.error('WebSocket未连接');
+        // console.error(...)
         alert('连接已断开，请刷新页面重试');
     }
 }
@@ -1125,7 +1125,7 @@ function sendVideoCallInvite() {
         // 在聊天中显示邀请消息
         showVideoInviteMessage('您', '发起了视频通话邀请', roomId, true);
     } else {
-        console.error('WebSocket连接未建立');
+        // console.error(...)
         alert('连接未建立，无法发送邀请');
     }
 }
@@ -1364,7 +1364,7 @@ function toggleEmojiPicker() {
 
     const picker = document.getElementById('emoji-picker');
     if (!picker) {
-        console.error('❌ 表情选择器未找到');
+        // console.error(...)
         return;
     }
     
@@ -1453,7 +1453,7 @@ function getCookie(name) {
 // function insertEmoji(emoji) {
 //     const input = document.getElementById('chat-input');
 //     if (!input) {
-//         console.error('聊天输入框未找到');
+//         // console.error(...)
 //         return;
 //     }
 //     
@@ -1540,7 +1540,7 @@ function handleImageUpload(event) {
     })
     .catch(error => {
         if (progressDiv) progressDiv.style.display = 'none';
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
     
@@ -1610,7 +1610,7 @@ function handleFileUpload(event) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
     
@@ -1670,7 +1670,7 @@ function startRecording() {
 
         })
         .catch(error => {
-            console.error('录音失败:', error);
+            // console.error(...)
             alert('无法访问麦克风，请检查权限设置');
         });
 }
@@ -1746,7 +1746,7 @@ function uploadAudio(audioBlob) {
     })
     .catch(error => {
         if (progressDiv) progressDiv.style.display = 'none';
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
 }
@@ -1819,7 +1819,7 @@ function markMessagesAsRead() {
             }
         })
         .catch(error => {
-            console.error('API标记已读失败:', error);
+            // console.error(...)
         });
     }
 }
@@ -1863,7 +1863,7 @@ function openImageModal(imageUrl) {
     const modalImage = document.getElementById('modal-image');
     
     if (!modalElement || !modalImage) {
-        console.error('模态框元素未找到');
+        // console.error(...)
         window.open(imageUrl, '_blank');
         return;
     }
@@ -1884,12 +1884,12 @@ function openImageModal(imageUrl) {
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
             } else {
-                console.error('Bootstrap未加载');
+                // console.error(...)
                 modalElement.style.display = 'block';
                 modalElement.classList.add('show');
             }
         } catch (error) {
-            console.error('Bootstrap模态框错误:', error);
+            // console.error(...)
             // 备用方案：直接显示模态框
             modalElement.style.display = 'block';
             modalElement.classList.add('show');
@@ -1897,7 +1897,7 @@ function openImageModal(imageUrl) {
     };
     
     modalImage.onerror = function() {
-        console.error('图片加载失败:', fullImageUrl);
+        // console.error(...)
         alert('图片加载失败，请检查图片链接');
         window.open(fullImageUrl, '_blank');
     };
@@ -1921,7 +1921,7 @@ function closeImageModal() {
                 modalElement.classList.remove('show');
             }
         } catch (error) {
-            console.error('关闭模态框失败:', error);
+            // console.error(...)
             modalElement.style.display = 'none';
             modalElement.classList.remove('show');
         }
@@ -1932,7 +1932,7 @@ function closeImageModal() {
 function downloadImage() {
     const imageUrl = window.currentImageUrl;
     if (!imageUrl) {
-        console.error('没有图片URL');
+        // console.error(...)
         return;
     }
     
@@ -1946,7 +1946,7 @@ function downloadImage() {
         document.body.removeChild(link);
 
     } catch (error) {
-        console.error('下载图片失败:', error);
+        // console.error(...)
         // 备用方案：在新窗口打开
         window.open(imageUrl, '_blank');
     }
@@ -2002,12 +2002,12 @@ function downloadFile(fileUrl, fileName) {
 
             })
             .catch(error => {
-                console.error('下载文件失败:', error);
+                // console.error(...)
                 // 备用方案：直接打开链接
                 window.open(fullFileUrl, '_blank');
             });
     } catch (error) {
-        console.error('创建下载链接失败:', error);
+        // console.error(...)
         // 备用方案：在新窗口打开
         window.open(fullFileUrl, '_blank');
     }
@@ -2060,7 +2060,7 @@ setInterval(() => {
                 // 发送心跳包
                 socket.send(JSON.stringify({ type: 'ping' }));
             } catch (error) {
-                console.error('❌ 心跳包发送失败:', error);
+                // console.error(...)
                 // 如果心跳包发送失败，可能需要重新连接
                 if (error.name === 'InvalidStateError' || error.name === 'NetworkError') {
 
@@ -2073,11 +2073,11 @@ setInterval(() => {
             if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== '') {
                 connectWebSocket();
             } else {
-                console.error('❌ roomId无效，停止重连尝试');
+                // console.error(...)
             }
         }
     } catch (error) {
-        console.error('❌ WebSocket状态检查失败:', error);
+        // console.error(...)
     }
 }, 30000); // 每30秒检查一次
 
@@ -2109,17 +2109,17 @@ document.addEventListener('keydown', function(event) {
 // 全局错误处理
 window.addEventListener('error', function(event) {
     if (event.error && event.error.message && event.error.message.includes('WebSocket')) {
-        console.error('🌐 WebSocket全局错误:', event.error);
-        console.error('错误详情:', event.error.message);
-        console.error('错误堆栈:', event.error.stack);
+        // console.error(...)
+        // console.error(...)
+        // console.error(...)
     }
 });
 
 // 全局未处理的Promise拒绝处理
 window.addEventListener('unhandledrejection', function(event) {
     if (event.reason && event.reason.message && event.reason.message.includes('WebSocket')) {
-        console.error('🌐 WebSocket Promise拒绝:', event.reason);
-        console.error('错误详情:', event.reason.message);
+        // console.error(...)
+        // console.error(...)
     }
 });
 </script>

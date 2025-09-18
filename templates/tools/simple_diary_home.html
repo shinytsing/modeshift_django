@@ -1523,7 +1523,7 @@ function autoSaveContent() {
     })
     .catch(error => {
         isAutoSaving = false;
-        console.error('Auto save error:', error);
+        // console.error(...)
         showMessage('自动保存失败', 'error');
     });
 }
@@ -1569,7 +1569,7 @@ function saveMoodEntry() {
         }
     })
     .catch(error => {
-        console.error('Mood save error:', error);
+        // console.error(...)
         showMessage('保存失败', 'error');
     });
 }
@@ -1614,7 +1614,7 @@ function uploadImage(file) {
         }
     })
     .catch(error => {
-        console.error('Image upload error:', error);
+        // console.error(...)
         showMessage('上传失败', 'error');
     });
 }
@@ -1632,14 +1632,14 @@ function loadTemplates() {
         if (data.success) {
             displayTemplates(data.templates);
         } else {
-            console.error('Failed to load templates:', data.error);
+            // console.error(...)
             showMessage('加载模板失败', 'error');
             // 使用默认模板作为备选
             displayDefaultTemplates();
         }
     })
     .catch(error => {
-        console.error('Load templates error:', error);
+        // console.error(...)
         showMessage('加载模板失败，使用默认模板', 'warning');
         // 使用默认模板作为备选
         displayDefaultTemplates();
@@ -1839,7 +1839,7 @@ function saveTemplateEntry(templateId) {
         }
     })
     .catch(error => {
-        console.error('Template save error:', error);
+        // console.error(...)
         showMessage('保存失败', 'error');
     });
 }
@@ -1885,7 +1885,7 @@ function checkForAchievements() {
         }
     })
     .catch(error => {
-        console.error('Check achievements error:', error);
+        // console.error(...)
     });
 }
 
@@ -2079,7 +2079,7 @@ function loadDiaryList(page = 1) {
         })
         .catch(error => {
             isLoading = false;
-            console.error('Load diary list error:', error);
+            // console.error(...)
             showMessage('加载失败', 'error');
             if (page === 1) {
                 showEmptyState();
@@ -2281,7 +2281,7 @@ function loadCalendarData() {
             }
         })
         .catch(error => {
-            console.error('Load calendar data error:', error);
+            // console.error(...)
             showMessage('加载日历数据失败', 'error');
             renderCalendar(); // 仍然渲染空日历
         });
@@ -2454,7 +2454,7 @@ function loadDateEntries(dateKey) {
             }
         })
         .catch(error => {
-            console.error('Load date entries error:', error);
+            // console.error(...)
             dateEntriesList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">加载失败</p>';
         });
 }

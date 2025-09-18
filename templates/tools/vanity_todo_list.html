@@ -430,7 +430,7 @@ function loadTasks() {
       }
     })
     .catch(error => {
-      console.error('加载任务失败:', error);
+      // console.error(...)
       document.getElementById('tasks-list').innerHTML = '<p style="color: #ff0066;">加载任务失败</p>';
     });
 }
@@ -477,7 +477,7 @@ function loadStats() {
       }
     })
     .catch(error => {
-      console.error('加载统计失败:', error);
+      // console.error(...)
     });
 }
 
@@ -513,7 +513,7 @@ document.getElementById('add-task-form').addEventListener('submit', function(e) 
     }
   })
   .catch(error => {
-    console.error('添加任务失败:', error);
+    // console.error(...)
     alert('添加任务失败');
   });
 });
@@ -539,7 +539,7 @@ function completeTask(taskId) {
     }
   })
   .catch(error => {
-    console.error('完成任务失败:', error);
+    // console.error(...)
     alert('完成任务失败');
   });
 }
@@ -569,7 +569,7 @@ function deleteTask(taskId) {
     }
   })
   .catch(error => {
-    console.error('删除任务失败:', error);
+    // console.error(...)
     alert('删除任务失败');
   });
 }

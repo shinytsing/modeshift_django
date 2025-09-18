@@ -278,7 +278,7 @@ function refreshMonitoring() {
             }
         })
         .catch(error => {
-            console.error('刷新监控数据失败:', error);
+            // console.error(...)
         });
 }
 
@@ -376,7 +376,7 @@ function forceLogout(userId) {
             }
         })
         .catch(error => {
-            console.error('强制登出失败:', error);
+            // console.error(...)
             showNotification('强制登出失败', 'error');
         });
     }

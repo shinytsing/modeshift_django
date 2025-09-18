@@ -38,47 +38,36 @@ def login_required_modal(view_func):
 @require_http_methods(["POST"])
 @login_required_modal
 def deepseek_api(request):
-    """DeepSeek API - 真实实现"""
+    """AI API - 使用统一的LLM服务"""
     try:
         # 解析请求数据
         data = json.loads(request.body)
         message = data.get("message", "")
-        model = data.get("model", "deepseek-chat")
+        model = data.get("model", "hunyuan-lite")  # 默认使用腾讯混元
 
         if not message:
             return JsonResponse({"success": False, "error": "消息内容不能为空"}, status=400)
 
-        # 获取API密钥
-        api_key = getattr(settings, "DEEPSEEK_API_KEY", None)
-        if not api_key:
-            return JsonResponse({"success": False, "error": "DeepSeek API密钥未配置"}, status=500)
-
-        # 构建请求
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-        payload = {"model": model, "messages": [{"role": "user", "content": message}], "max_tokens": 1000, "temperature": 0.7}
-
-        # 发送请求到DeepSeek API
-        response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-        if response.status_code == 200:
-            result = response.json()
-            ai_response = result["choices"][0]["message"]["content"]
-
-            return JsonResponse({"success": True, "response": ai_response, "model": model, "usage": result.get("usage", {})})
-        else:
-            logger.error(f"DeepSeek API请求失败: {response.status_code} - {response.text}")
-            return JsonResponse({"success": False, "error": f"AI服务暂时不可用 (状态码: {response.status_code})"}, status=500)
+        # 使用统一的LLM服务
+        from apps.tools.services.llm_service import get_llm_service
+        llm_service = get_llm_service()
+        
+        try:
+            ai_response = llm_service.generate_content(message)
+            return JsonResponse({
+                "success": True, 
+                "response": ai_response, 
+                "model": model,
+                "provider": llm_service.current_provider.value if llm_service.current_provider else "unknown"
+            })
+        except Exception as llm_error:
+            logger.error(f"LLM服务调用失败: {str(llm_error)}")
+            return JsonResponse({"success": False, "error": "AI服务暂时不可用，请稍后重试"}, status=500)
 
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400)
-    except requests.exceptions.Timeout:
-        return JsonResponse({"success": False, "error": "请求超时，请稍后重试"}, status=408)
-    except requests.exceptions.RequestException as e:
-        logger.error(f"DeepSeek API请求异常: {str(e)}")
-        return JsonResponse({"success": False, "error": f"网络请求失败: {str(e)}"}, status=500)
     except Exception as e:
-        logger.error(f"DeepSeek API处理异常: {str(e)}")
+        logger.error(f"AI API处理异常: {str(e)}")
         return JsonResponse({"success": False, "error": "服务器内部错误"}, status=500)
 
 

@@ -146,24 +146,34 @@
 }
 
 .legend-title {
-  font-weight: 600;
-  color: var(--emo-text);
+  font-weight: 800;
+  color: #161616; /* 提升对比度 */
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.3rem;
-  font-size: 0.8rem;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.95rem; /* 更大字号 */
+  color: #111; /* 更深文字颜色 */
+  font-weight: 700; /* 更粗文字 */
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
+  width: 16px;   /* 放大色点 */
+  height: 16px;
   border-radius: 50%;
+  border: 2px solid #fff; /* 白色描边增强对比 */
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.06); /* 轻微外环阴影 */
+}
+
+/* 图例项文字更清晰 */
+.graph-legend .legend-item span {
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.9);
 }
 
 .node-tooltip {
@@ -335,12 +345,26 @@
 
 .node-label {
   font-family: var(--emo-font);
-  font-size: 11px;
-  font-weight: 500;
-  fill: var(--emo-text);
+  font-size: 13px;
+  font-weight: 700;
+  fill: #111; /* 更高对比度 */
   text-anchor: middle;
   pointer-events: none;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  paint-order: stroke fill;
+  stroke: rgba(255, 255, 255, 0.85); /* 白色描边提高可读性 */
+  stroke-width: 3px;
+}
+
+.edge-label {
+  font-family: var(--emo-font);
+  font-size: 12px;
+  font-weight: 600;
+  fill: #2f2f2f;
+  text-anchor: middle;
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 3px;
 }
 
 @media (max-width: 768px) {
@@ -363,7 +387,7 @@
   }
   
   #graphContainer {
-    height: 400px;
+    height: 420px;
   }
   
   .graph-legend {
@@ -385,6 +409,8 @@
     width: 50px;
     height: 50px;
   }
+  .node-label { font-size: 14px; stroke-width: 3px; }
+  .edge-label { font-size: 12px; stroke-width: 3px; }
 }
 </style>
 {% endblock %}
@@ -419,6 +445,18 @@
     <div class="control-group">
       <button class="control-button" onclick="toggleLabels()">显示/隐藏标签</button>
     </div>
+    <div class="control-group">
+      <label class="control-label">关系筛选</label>
+      <select id="relationshipFilter" class="control-input">
+        <option value="all">全部关系</option>
+        <option value="family">家人</option>
+        <option value="friend">朋友</option>
+        <option value="colleague">同事</option>
+        <option value="mentor">导师</option>
+        <option value="lover">爱人</option>
+        <option value="acquaintance">泛认识</option>
+      </select>
+    </div>
   </div>
 
   <!-- 统计信息 -->
@@ -452,26 +490,30 @@
 
     <!-- 图例 -->
     <div class="graph-legend">
-      <div class="legend-title">重要程度</div>
+      <div class="legend-title">关系类型</div>
       <div class="legend-item">
         <div class="legend-color" style="background: #ff9999;"></div>
-        <span>⭐ 一般</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: #ffcc99;"></div>
-        <span>⭐⭐ 较重要</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: #ffff99;"></div>
-        <span>⭐⭐⭐ 重要</span>
+        <span>👨‍👩‍👧‍👦 家人</span>
       </div>
       <div class="legend-item">
         <div class="legend-color" style="background: #99ff99;"></div>
-        <span>⭐⭐⭐⭐ 很重要</span>
+        <span>👥 朋友</span>
       </div>
       <div class="legend-item">
         <div class="legend-color" style="background: #9999ff;"></div>
-        <span>⭐⭐⭐⭐⭐ 极重要</span>
+        <span>💼 同事</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ffff99;"></div>
+        <span>🎓 导师</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ff66cc;"></div>
+        <span>💕 爱人</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #cccccc;"></div>
+        <span>🤝 泛认识</span>
       </div>
     </div>
 
@@ -504,7 +546,9 @@ let links = null;
 let nodeElements = null;
 let linkElements = null;
 let labelElements = null;
+let edgeLabelElements = null;
 let labelsVisible = true;
+let currentFilter = 'all';
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -526,7 +570,7 @@ async function loadGraphData() {
       showError('加载关系图谱数据失败: ' + data.message);
     }
   } catch (error) {
-    console.error('Error loading graph data:', error);
+    console.error('加载关系图谱数据失败:', error);
     showError('网络错误，请稍后重试');
   }
 }
@@ -584,8 +628,20 @@ function displayGraphData(data) {
     .data(links)
     .enter().append('line')
     .attr('class', 'link')
-    .attr('stroke-width', d => Math.sqrt(d.weight))
+    .attr('stroke-width', d => Math.sqrt(d.weight || 1))
     .attr('stroke', d => d.color || '#999');
+
+  // 创建连线标签
+  edgeLabelElements = g.append('g')
+    .selectAll('text')
+    .data(links)
+    .enter().append('text')
+    .attr('class', 'edge-label')
+    .text(d => d.label || '')
+    .attr('font-size', '10px')
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#666')
+    .style('pointer-events', 'none');
 
   // 创建节点
   nodeElements = g.append('g')
@@ -631,6 +687,12 @@ function ticked() {
       .attr('y1', d => d.source.y)
       .attr('x2', d => d.target.x)
       .attr('y2', d => d.target.y);
+  }
+
+  if (edgeLabelElements) {
+    edgeLabelElements
+      .attr('x', d => (d.source.x + d.target.x) / 2)
+      .attr('y', d => (d.source.y + d.target.y) / 2);
   }
 
   if (nodeElements) {
@@ -775,6 +837,12 @@ function initControls() {
       simulation.alpha(1).restart();
     }
   });
+
+  // 关系筛选
+  document.getElementById('relationshipFilter').addEventListener('change', function() {
+    currentFilter = this.value;
+    filterGraph();
+  });
 }
 
 // 重置模拟
@@ -789,7 +857,140 @@ function toggleLabels() {
   if (labelElements) {
     labelsVisible = !labelsVisible;
     labelElements.style('opacity', labelsVisible ? 1 : 0);
+    if (edgeLabelElements) {
+      edgeLabelElements.style('opacity', labelsVisible ? 1 : 0);
+    }
   }
+}
+
+// 关系筛选功能
+function filterGraph() {
+  if (!graphData) return;
+
+  // 筛选节点和边
+  let filteredNodes = graphData.nodes;
+  let filteredLinks = graphData.edges;
+
+  if (currentFilter !== 'all') {
+    // 筛选节点
+    filteredNodes = graphData.nodes.filter(node => {
+      if (node.id === 'self') return true; // 总是显示自己
+      return node.type === currentFilter;
+    });
+
+    // 筛选边
+    filteredLinks = graphData.edges.filter(link => {
+      if (currentFilter === 'all') return true;
+      return link.type === currentFilter;
+    });
+  }
+
+  // 重新创建图形
+  displayFilteredGraph(filteredNodes, filteredLinks);
+}
+
+// 显示筛选后的图形
+function displayFilteredGraph(filteredNodes, filteredLinks) {
+  const container = document.getElementById('graphContainer');
+  
+  if (!filteredNodes || filteredNodes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-project-diagram"></i>
+        <h3>暂无该类型的关系数据</h3>
+        <p>尝试选择其他关系类型或添加更多人物档案！</p>
+      </div>
+    `;
+    return;
+  }
+
+  // 清空容器
+  container.innerHTML = '';
+
+  // 设置SVG尺寸
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  // 创建SVG
+  svg = d3.select('#graphContainer')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .call(d3.zoom()
+      .scaleExtent([0.3, 3])
+      .on('zoom', function(event) {
+        svg.select('.graph-group').attr('transform', event.transform);
+      }));
+
+  // 创建图形组
+  const g = svg.append('g').attr('class', 'graph-group');
+
+  // 复制数据以避免修改原数据
+  nodes = filteredNodes.map(d => ({...d}));
+  links = filteredLinks.map(d => ({...d}));
+
+  // 创建力导向布局
+  simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => d.size / 2 + 5));
+
+  // 创建连线
+  linkElements = g.append('g')
+    .selectAll('line')
+    .data(links)
+    .enter().append('line')
+    .attr('class', 'link')
+    .attr('stroke-width', d => Math.sqrt(d.weight || 1))
+    .attr('stroke', d => d.color || '#999');
+
+  // 创建连线标签
+  edgeLabelElements = g.append('g')
+    .selectAll('text')
+    .data(links)
+    .enter().append('text')
+    .attr('class', 'edge-label')
+    .text(d => d.label || '')
+    .attr('font-size', '10px')
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#666')
+    .style('pointer-events', 'none');
+
+  // 创建节点
+  nodeElements = g.append('g')
+    .selectAll('circle')
+    .data(nodes)
+    .enter().append('circle')
+    .attr('class', 'node')
+    .attr('r', d => d.size / 2)
+    .attr('fill', d => d.color)
+    .on('click', function(event, d) {
+      showNodeDetails(d);
+    })
+    .on('mouseover', function(event, d) {
+      showTooltip(event, d);
+    })
+    .on('mouseout', function() {
+      hideTooltip();
+    })
+    .call(d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended));
+
+  // 创建标签
+  labelElements = g.append('g')
+    .selectAll('text')
+    .data(nodes)
+    .enter().append('text')
+    .attr('class', 'node-label')
+    .text(d => d.label)
+    .attr('x', 0)
+    .attr('y', 5);
+
+  // 启动模拟
+  simulation.on('tick', ticked);
 }
 
 // 工具函数

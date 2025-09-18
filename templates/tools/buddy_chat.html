@@ -605,7 +605,7 @@ async function loadMembers() {
         // 暂时使用静态数据
         updateMemberCount(1);
     } catch (error) {
-        console.error('加载成员列表失败:', error);
+        // console.error(...)
     }
 }
 
@@ -624,10 +624,10 @@ async function loadMessages() {
         if (result.success) {
             displayMessages(result.messages);
         } else {
-            console.error('加载消息失败:', result.message);
+            // console.error(...)
         }
     } catch (error) {
-        console.error('加载消息失败:', error);
+        // console.error(...)
         showEmptyMessages();
     } finally {
         document.getElementById('loading-messages').style.display = 'none';
@@ -739,7 +739,7 @@ async function sendMessage() {
         }
     } catch (error) {
         alert('发送失败，请重试');
-        console.error('发送消息失败:', error);
+        // console.error(...)
     } finally {
         sendBtn.disabled = false;
     }

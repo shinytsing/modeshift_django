@@ -1000,7 +1000,7 @@ async function switchGlobalThemeWithRefresh(theme) {
     }, 1000); // 1秒后跳转到对应主页面
     
   } catch (error) {
-    console.error('Failed to switch theme:', error);
+    // console.error(...)
     showNotification('主题切换失败: ' + error.message, 'error');
   }
 }
@@ -1061,7 +1061,7 @@ async function switchGlobalTheme(theme) {
     }, 200);
     
   } catch (error) {
-    console.error('Failed to switch theme:', error);
+    // console.error(...)
     showNotification('主题切换失败: ' + error.message, 'error');
   }
 }

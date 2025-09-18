@@ -1118,7 +1118,7 @@ function handleSubmit(e) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('发布失败，请重试');
     })
     .finally(() => {
@@ -1194,7 +1194,7 @@ function autoLocatePublisher() {
                 reverseGeocodeForPublish(coords);
             },
             function(error) {
-                console.error('自动定位失败:', error);
+                // console.error(...)
                 handleLocationErrorForPublish(error);
                 resetAutoLocateButton();
             },
@@ -1205,7 +1205,7 @@ function autoLocatePublisher() {
             }
         );
     } else {
-        console.error('浏览器不支持地理位置');
+        // console.error(...)
         showLocationErrorForPublish('浏览器不支持地理位置功能');
         resetAutoLocateButton();
     }
@@ -1243,14 +1243,14 @@ function reverseGeocodeForPublish(coords) {
             setSelectedLocation(locationInfo);
             showSuccessMessage('自动定位成功！');
         } else {
-            console.error('反向地理编码失败:', data.error);
+            // console.error(...)
             showLocationErrorForPublish('位置解析失败，请手动选择');
         }
         
         resetAutoLocateButton();
     })
     .catch(error => {
-        console.error('反向地理编码请求失败:', error);
+        // console.error(...)
         showLocationErrorForPublish('定位服务暂时不可用');
         resetAutoLocateButton();
     });
@@ -1372,12 +1372,12 @@ function performLocationSearchForPublish(query) {
         if (data.success && data.suggestions) {
             displayLocationSuggestionsForPublish(data.suggestions);
         } else {
-            console.error('位置搜索失败:', data.error);
+            // console.error(...)
             clearLocationSuggestionsForPublish();
         }
     })
     .catch(error => {
-        console.error('位置搜索请求失败:', error);
+        // console.error(...)
         clearLocationSuggestionsForPublish();
     });
 }
@@ -1439,7 +1439,7 @@ function selectLocationSuggestionForPublish(element) {
         }
         
     } catch (error) {
-        console.error('选择位置建议失败:', error);
+        // console.error(...)
     }
 }
 
@@ -1492,7 +1492,7 @@ function getCurrentLocationForPublish() {
                 reverseGeocodeInModal(coords);
             },
             function(error) {
-                console.error('获取当前位置失败:', error);
+                // console.error(...)
                 showErrorMessage('获取当前位置失败，请重试');
                 resetCurrentLocationButton();
             },
@@ -1551,7 +1551,7 @@ function reverseGeocodeInModal(coords) {
         resetCurrentLocationButton();
     })
     .catch(error => {
-        console.error('位置解析失败:', error);
+        // console.error(...)
         showErrorMessage('位置解析失败');
         resetCurrentLocationButton();
     });

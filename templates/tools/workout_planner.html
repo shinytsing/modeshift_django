@@ -919,7 +919,7 @@ class WorkoutPlanner {
             window.open('/tools/fitness/plan-editor/?import=true', '_blank');
             
         } catch (error) {
-            console.error('导入失败:', error);
+            // console.error(...)
             alert('导入失败，请重试');
         }
     }
@@ -1040,7 +1040,7 @@ class WorkoutPlanner {
                 throw new Error('保存失败');
             }
         } catch (error) {
-            console.error('保存失败:', error);
+            // console.error(...)
             alert('保存失败，请重试');
         }
     }

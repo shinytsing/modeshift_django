@@ -1428,7 +1428,7 @@ function initMap() {
         getCurrentLocationForMap();
         
     } catch (error) {
-        console.error('地图初始化失败:', error);
+        // console.error(...)
         updateMapStatus('❌', '地图加载失败');
         showSearchTip('地图加载失败，请刷新页面重试', 'warning');
     }
@@ -1504,7 +1504,7 @@ async function searchLocation() {
             showSearchTip('🔍 搜索建议：\n• 尝试输入完整地名（如：北京大学、清华大学）\n• 包含城市名称（如：北京三里屯、上海外滩）\n• 点击地图直接选择位置\n• 使用下方推荐的地点类型快速搜索', 'info');
         }
     } catch (error) {
-        console.error('搜索失败:', error);
+        // console.error(...)
         searchBtn.textContent = originalText;
         searchBtn.disabled = false;
         showSearchTip('🔧 搜索服务暂时不可用，请直接点击地图选择位置', 'warning');
@@ -1695,7 +1695,7 @@ async function searchLocationSuggestions(query) {
             showSearchTip('💡 未找到相关地点，请尝试其他关键词或点击地图选择位置', 'info');
         }
     } catch (error) {
-        console.error('搜索建议失败:', error);
+        // console.error(...)
         hideSuggestions();
         showSearchTip('🔧 搜索服务暂时不可用，请直接点击地图选择位置', 'warning');
     }
@@ -1790,7 +1790,7 @@ async function searchLocationDropdown(query) {
             showLocationDropdown(); // 显示空的下拉
         }
     } catch (error) {
-        console.error('地点搜索失败:', error);
+        // console.error(...)
         showLocationDropdown(); // 显示空的下拉
     }
 }

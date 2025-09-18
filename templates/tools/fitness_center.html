@@ -10,13 +10,13 @@
 <script src="{% static 'js/training_plan_editor.js' %}?v=20241229-{{ request.GET.t|default:'002' }}"></script>
 <!-- 强制缓存清除和重定向机制 -->
 <script>
-console.log('FitMatrix v20241229-4 - 强制重定向版本');
+// console.log(...)
 
 // 检查URL参数，如果没有nocache参数，说明是首次访问
 var hasNoCache = window.location.search.indexOf('nocache') !== -1;
 
 if (!hasNoCache) {
-  console.log('首次访问，添加nocache参数');
+  // console.log(...)
   var currentUrl = window.location.href;
   var separator = currentUrl.indexOf('?') > -1 ? '&' : '?';
   var timestamp = new Date().getTime();
@@ -27,18 +27,18 @@ if (!hasNoCache) {
     caches.keys().then(function(names) {
       names.forEach(function(name) {
         caches.delete(name);
-        console.log('已清除缓存:', name);
-      });
+        // // console.log(...)
+      });  // 调试信息已隐藏
     }).then(function() {
-      console.log('重定向到:', newUrl);
-      window.location.replace(newUrl);
+      // // console.log(...)
+      window.location.replace(newUrl);  // 调试信息已隐藏
     });
   } else {
-    console.log('重定向到:', newUrl);
-    window.location.replace(newUrl);
+    // // console.log(...)
+    window.location.replace(newUrl);  // 调试信息已隐藏
   }
 } else {
-  console.log('缓存已清除，正常加载');
+  // // console.log(...)
 }
 </script>
 <div class="fitness-container">
@@ -159,7 +159,7 @@ if (!hasNoCache) {
             <i class="fas fa-edit"></i> 编辑计划
           </button>
           <button class="library-plan-btn" onclick="openPlanLibrary()" data-zh="计划库" data-en="Plan Library" style="
-            background: var(--rage-secondary, #2196F3);
+            background: var(--rage-secondary, #2196F3);  // 调试信息已隐藏
             color: white;
             border: none;
             padding: 6px 12px;
@@ -2056,14 +2056,6 @@ if (!hasNoCache) {
   background: var(--rage-success-dark, #218838);
 }
 
-.plan-btn.preview {
-  background: var(--rage-secondary-alt, #6c757d);
-  color: white;
-}
-
-.plan-btn.preview:hover {
-  background: var(--rage-secondary-alt-dark, #545b62);
-}
 
 .plan-btn.delete {
   background: var(--rage-danger, #dc3545);
@@ -2180,7 +2172,7 @@ function initShortcutsHelp() {
   
   // 检查元素是否存在
   if (!helpBtn || !helpPanel || !closeBtn || !overlay) {
-    console.warn('快捷键帮助面板元素未找到，跳过初始化');
+    // console.warn(...)
     return;
   }
   
@@ -2220,11 +2212,11 @@ function renderActivePlan(plan) {
     updatePlanDisplay(plan); 
     return; // 委托成功后直接返回
   } catch (e) { 
-    console.warn('renderActivePlan 兼容委托失败，使用备用实现', e); 
+    // // console.warn(...) 
   }
   
   // 备用实现（保持原有逻辑）
-  const planContainer = document.getElementById('workoutPlan');
+  const planContainer = document.getElementById('workoutPlan');  // 调试信息已隐藏
   if (!planContainer) return;
   
   const planPreview = document.querySelector('.current-plan-preview');
@@ -2311,7 +2303,7 @@ function renderActivePlan(plan) {
                     margin-right: 12px;
                   ">${index + 1}</div>
                   <div class="exercise-name" style="font-weight: bold; color: white; font-size: 16px; line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                    ${exercise.name}
+                    ${typeof exercise === 'string' ? exercise : (exercise.name || '未知动作')}
                   </div>
                 </div>
                 <div class="exercise-details" style="
@@ -2331,7 +2323,7 @@ function renderActivePlan(plan) {
                     color: #2E7D32;
                   ">
                     <i class="fas fa-repeat" style="margin-right: 4px;"></i>
-                    ${exercise.sets || 3}组
+                    ${typeof exercise === 'string' ? 3 : (exercise.sets || 3)}组
                   </span>
                   <span style="
                     background: rgba(33, 150, 243, 0.1);
@@ -2341,7 +2333,7 @@ function renderActivePlan(plan) {
                     color: #1565C0;
                   ">
                     <i class="fas fa-times" style="margin-right: 4px;"></i>
-                    ${exercise.reps || '10-12'}次
+                    ${typeof exercise === 'string' ? '10-12' : (exercise.reps || '10-12')}次
                   </span>
                   ${exercise.weight ? `
                     <span style="
@@ -2540,11 +2532,11 @@ function renderNoPlan() {
     showNoPlanDisplay(); 
     return; // 委托成功后直接返回
   } catch (e) { 
-    console.warn('renderNoPlan 兼容委托失败，使用备用实现', e); 
+    // // console.warn(...) 
   }
   
   // 备用实现（保持原有逻辑）
-  const planContainer = document.getElementById('workoutPlan');
+  const planContainer = document.getElementById('workoutPlan');  // 调试信息已隐藏
   if (!planContainer) return;
   
   const planPreview = document.querySelector('.current-plan-preview');
@@ -2624,7 +2616,7 @@ async function showDayDetails(dayIndex) {
       showNoPlanModal();
     }
   } catch (error) {
-    console.error('获取训练详情失败:', error);
+    // console.error(...)
     alert('获取训练详情失败，请重试');
   }
 }
@@ -2641,7 +2633,7 @@ async function showFullWeekPlan() {
       showNoPlanModal();
     }
   } catch (error) {
-    console.error('获取训练计划失败:', error);
+    // console.error(...)
     alert('获取训练计划失败，请重试');
   }
 }
@@ -2825,7 +2817,7 @@ async function exportTodayPlan() {
     }
     
   } catch (error) {
-    console.error('导出今日计划失败:', error);
+    // console.error(...)
     showNotification('导出失败: ' + error.message, 'error');
   }
 }
@@ -2856,13 +2848,55 @@ async function getTodayPlanData() {
             bodyParts = dayData.type;
           }
           
+          // 获取所有训练动作
+          let allExercises = [];
+          if (dayData.exercises && Array.isArray(dayData.exercises)) {
+            // 旧格式：exercises 数组
+            allExercises = dayData.exercises.map(exercise => ({
+              name: exercise,
+              sets: 3,
+              reps: '10-12',
+              weight: '',
+              module: 'main'
+            }));
+          } else if (dayData.modules) {
+            // 新格式：modules 对象
+            const modules = dayData.modules;
+            const moduleOrder = ['warmup', 'main', 'accessory', 'cooldown'];
+            
+            moduleOrder.forEach(moduleType => {
+              const moduleExercises = modules[moduleType] || [];
+              if (Array.isArray(moduleExercises) && moduleExercises.length > 0) {
+                moduleExercises.forEach(exercise => {
+                  if (typeof exercise === 'string') {
+                    allExercises.push({
+                      name: exercise,
+                      sets: 3,
+                      reps: '10-12',
+                      weight: '',
+                      module: moduleType
+                    });
+                  } else if (exercise && exercise.name) {
+                    allExercises.push({
+                      name: exercise.name,
+                      sets: exercise.sets || 3,
+                      reps: exercise.reps || '10-12',
+                      weight: exercise.weight || '',
+                      module: moduleType
+                    });
+                  }
+                });
+              }
+            });
+          }
+          
           return {
             planName: plan.name || '训练计划',
             planMode: plan.mode || '自定义',
             dayName: currentWeekday,
             bodyParts: bodyParts,
-            exercises: dayData.exercises || [],
-            isRestDay: bodyParts.includes('休息') || (dayData.exercises && dayData.exercises.length === 0)
+            exercises: allExercises,
+            isRestDay: bodyParts.includes('休息') || allExercises.length === 0
           };
         }
       }
@@ -2870,7 +2904,7 @@ async function getTodayPlanData() {
     
     return null;
   } catch (error) {
-    console.error('获取今日计划数据失败:', error);
+    // console.error(...)
     return null;
   }
 }
@@ -2907,10 +2941,10 @@ function createTodayExportContainer(todayPlan) {
         ">
           <div>
             <div style="font-weight: bold; color: #333; font-size: 15px; margin-bottom: 4px;">
-              ${index + 1}. ${exercise.name}
+              ${index + 1}. ${typeof exercise === 'string' ? exercise : (exercise.name || '未知动作')}
             </div>
             <div style="color: #666; font-size: 13px;">
-              ${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次
+              ${typeof exercise === 'string' ? '3' : (exercise.sets || 3)}组 × ${typeof exercise === 'string' ? '10-12' : (exercise.reps || '10-12')}次
               ${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''}
               ${exercise.rest ? ` | 休息${exercise.rest}` : ''}
             </div>
@@ -3038,7 +3072,7 @@ async function exportFullWeekPlan() {
     }
     
   } catch (error) {
-    console.error('导出完整周计划失败:', error);
+    // console.error(...)
     showNotification('导出失败: ' + error.message, 'error');
   }
 }
@@ -3446,8 +3480,8 @@ function showNoPlanModal() {
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
   initShortcutsHelp();
-  try { loadActivePlan(); } catch (e) { console.warn('初始化当前计划失败', e); }
-});
+  try { loadActivePlan(); } catch (e) { // // console.warn(...) }
+});  // 调试信息已隐藏
 
 
 
@@ -3630,7 +3664,7 @@ class CheckInCalendar {
         this.monthlyStats = data.monthly_stats || {};
       }
     } catch (error) {
-      console.error('加载日历数据失败:', error);
+      // console.error(...)
       // 设置默认值
       this.calendarData = {};
       this.streak = { current: 0, longest: 0 };
@@ -4031,7 +4065,7 @@ class CheckInCalendar {
         alert('打卡失败: ' + result.error);
       }
     } catch (error) {
-      console.error('提交打卡失败:', error);
+      // console.error(...)
       alert('打卡失败，请重试');
     }
   }
@@ -4083,7 +4117,7 @@ class CheckInCalendar {
         alert('已成功分享到社区！');
       }
     } catch (error) {
-      console.error('创建社区帖子失败:', error);
+      // console.error(...)
       alert('分享到社区失败，但打卡已保存');
     }
   }
@@ -4108,7 +4142,7 @@ class CheckInCalendar {
         alert('删除失败: ' + result.error);
       }
     } catch (error) {
-      console.error('删除打卡失败:', error);
+      // console.error(...)
       alert('删除失败，请重试');
     }
   }
@@ -4208,11 +4242,11 @@ class CheckInCalendar {
         this.renderPlanLibrary(data.plans || []);
         this.updatePlanStats(data.plans || []);
       } else {
-        console.error('加载计划库失败:', data.error);
+        // console.error(...)
         this.showPlanLibraryError();
       }
     } catch (error) {
-      console.error('加载计划库数据失败:', error);
+      // console.error(...)
       this.showPlanLibraryError();
     }
   }
@@ -4250,9 +4284,6 @@ class CheckInCalendar {
           <div class="plan-actions">
             <button class="plan-btn edit" onclick="editPlan(${plan.id})" title="编辑计划">
               <i class="fas fa-edit"></i>
-            </button>
-            <button class="plan-btn preview" onclick="previewPlanFromLibrary(${plan.id})" title="预览计划">
-              <i class="fas fa-eye"></i>
             </button>
             ${!plan.is_active ? `
               <button class="plan-btn apply" onclick="applyPlan(${plan.id}, '${plan.name}')" title="应用计划">
@@ -4384,7 +4415,7 @@ document.addEventListener('DOMContentLoaded', function() {
       restoreExerciseCompletions();
     }, 1000);
   } catch (error) {
-    console.error('初始化失败:', error);
+    // console.error(...)
   }
 });
 
@@ -4403,7 +4434,7 @@ async function loadActivePlan() {
       showNoPlanDisplay();
     }
   } catch (error) {
-    console.error('加载训练计划失败:', error);
+    // console.error(...)
     showNoPlanDisplay();
   }
 }
@@ -4451,7 +4482,52 @@ function updatePlanDisplay(plan) {
     
     if (todaysPlan) {
 
-      const exerciseCount = todaysPlan.exercises ? todaysPlan.exercises.length : 0;
+      // 计算总动作数量 - 包含所有模块
+      let exerciseCount = 0;
+      let allExercises = [];
+      
+      if (todaysPlan.exercises && Array.isArray(todaysPlan.exercises)) {
+        // 旧格式
+        exerciseCount = todaysPlan.exercises.length;
+        allExercises = todaysPlan.exercises.map(exercise => ({
+          name: exercise,
+          sets: 3,
+          reps: '10-12',
+          weight: '',
+          module: 'main'
+        }));
+      } else if (todaysPlan.modules) {
+        // 新格式 - 合并所有模块
+        const modules = todaysPlan.modules;
+        const moduleOrder = ['warmup', 'main', 'accessory', 'cooldown'];
+        
+        allExercises = [];
+        moduleOrder.forEach(moduleType => {
+          const moduleExercises = modules[moduleType] || [];
+          if (Array.isArray(moduleExercises) && moduleExercises.length > 0) {
+            moduleExercises.forEach(exercise => {
+              if (typeof exercise === 'string') {
+                allExercises.push({
+                  name: exercise,
+                  sets: 3,
+                  reps: '10-12',
+                  weight: '',
+                  module: moduleType
+                });
+              } else if (exercise && exercise.name) {
+                allExercises.push({
+                  name: exercise.name,
+                  sets: exercise.sets || 3,
+                  reps: exercise.reps || '10-12',
+                  weight: exercise.weight || '',
+                  module: moduleType
+                });
+              }
+            });
+          }
+        });
+        exerciseCount = allExercises.length;
+      }
       const dayType = todaysPlan.type || todaysPlan.name || '训练';
 
       // 安全地获取训练部位
@@ -4475,8 +4551,8 @@ function updatePlanDisplay(plan) {
       
       // 生成今天的详细动作列表
       let todaysExercisesList = '';
-      if (todaysPlan.exercises && Array.isArray(todaysPlan.exercises) && todaysPlan.exercises.length > 0) {
-        todaysExercisesList = todaysPlan.exercises.map((exercise, index) => {
+      if (allExercises.length > 0) {
+        todaysExercisesList = allExercises.map((exercise, index) => {
           return `
             <div class="exercise-item" data-exercise-index="${index}" data-day-index="0" style="
               display: flex;
@@ -4507,7 +4583,7 @@ function updatePlanDisplay(plan) {
                     margin-right: 12px;
                   ">${index + 1}</div>
                   <div class="exercise-name" style="font-weight: bold; color: white; font-size: 16px; line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                    ${exercise.name}
+                    ${typeof exercise === 'string' ? exercise : (exercise.name || '未知动作')}
                   </div>
                 </div>
                 <div class="exercise-details" style="
@@ -4527,7 +4603,7 @@ function updatePlanDisplay(plan) {
                     color: #2E7D32;
                   ">
                     <i class="fas fa-repeat" style="margin-right: 4px;"></i>
-                    ${exercise.sets || 3}组
+                    ${typeof exercise === 'string' ? 3 : (exercise.sets || 3)}组
                   </span>
                   <span style="
                     background: rgba(33, 150, 243, 0.1);
@@ -4537,7 +4613,7 @@ function updatePlanDisplay(plan) {
                     color: #1565C0;
                   ">
                     <i class="fas fa-times" style="margin-right: 4px;"></i>
-                    ${exercise.reps || '10-12'}次
+                    ${typeof exercise === 'string' ? '10-12' : (exercise.reps || '10-12')}次
                   </span>
                   ${exercise.weight ? `
                     <span style="
@@ -4756,6 +4832,11 @@ function showNoPlanDisplay() {
   }
 }
 
+// 定义模板变量以防止错误（临时解决方案）
+window.template_5day_split = 'template_5day_split';
+window.template_3day_split = 'template_3day_split';
+window.template_push_pull_legs = 'template_push_pull_legs';
+
 // 训练计划编辑器相关函数
 function openPlanEditor() {
   window.location.href = '/tools/fitness/plan-editor/';
@@ -4775,9 +4856,19 @@ async function editActivePlan() {
       openPlanEditor();
     }
   } catch (error) {
-    console.error('获取激活计划失败:', error);
+    // console.error(...)
     // 出错时也跳转到编辑器
     openPlanEditor();
+  }
+}
+
+// 从预览模态框编辑计划
+function editPlanFromPreview(planId) {
+  if (planId && planId !== 'undefined' && planId !== 'null') {
+    window.location.href = `/tools/fitness/plan-editor/?plan_id=${planId}`;
+  } else {
+    // console.error(...)
+    showNotification('计划ID无效，无法编辑', 'error');
   }
 }
 
@@ -4793,7 +4884,7 @@ async function openPlanLibrary() {
       alert('加载计划库失败: ' + data.error);
     }
   } catch (error) {
-    console.error('加载计划库失败:', error);
+    // console.error(...)
     alert('加载计划库失败，请重试');
   }
 }
@@ -4816,9 +4907,6 @@ function showPlanLibraryModal(plans) {
         <div class="plan-actions">
           <button class="btn-apply" onclick="applyPlan(${plan.id}, '${plan.name}')">
             <i class="fas fa-play"></i> 应用
-          </button>
-          <button class="btn-preview" onclick="previewPlan(${plan.id})">
-            <i class="fas fa-eye"></i> 预览
           </button>
         </div>
       </div>
@@ -4869,11 +4957,11 @@ async function openPlanTemplates() {
 
       showPlanTemplatesModal(templates);
     } else {
-      console.error('API返回错误:', data);
+      // console.error(...)
       alert('加载模板失败: ' + (data.error || '未知错误'));
     }
   } catch (error) {
-    console.error('加载模板失败:', error);
+    // console.error(...)
     alert('加载模板失败: ' + error.message);
   }
 }
@@ -4885,7 +4973,7 @@ function showPlanTemplatesModal(templates) {
   
   // 确保templates是数组
   if (!Array.isArray(templates)) {
-    console.warn('templates不是数组:', templates);
+    // console.warn(...)
     templates = [];
   }
   
@@ -4941,11 +5029,8 @@ function showPlanTemplatesModal(templates) {
           <span><i class="fas fa-target"></i> ${safeTemplate.target_goals.join(', ')}</span>
         </div>
         <div class="template-actions">
-          <button class="btn-apply" onclick="applyTemplate('${safeTemplate.id}', '${safeTemplate.name}')"
+          <button class="btn-apply" onclick="applyTemplate('${safeTemplate.id}', '${safeTemplate.name}')">
             <i class="fas fa-rocket"></i> 立即应用
-          </button>
-          <button class="btn-preview" onclick="previewTemplate('${safeTemplate.id}')">
-            <i class="fas fa-eye"></i> 预览
           </button>
         </div>
       </div>
@@ -5000,7 +5085,7 @@ async function applyPlan(planId, planName) {
       alert('应用计划失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     alert('应用计划失败，请重试');
   }
 }
@@ -5034,7 +5119,7 @@ async function applyTemplate(templateId, templateName) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('响应错误:', errorText);
+      // console.error(...)
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
@@ -5053,114 +5138,13 @@ async function applyTemplate(templateId, templateName) {
       alert('应用模板失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用模板失败:', error);
+    // console.error(...)
     alert('应用模板失败，请重试');
   }
 }
 
-// 预览计划
-async function previewPlan(planId) {
-  try {
-    const response = await fetch(`/tools/api/training_plans/${planId}/`);
-    const data = await response.json();
-    
-    if (data.success) {
-      showPlanPreviewModal(data.plan);
-    } else {
-      alert('加载计划详情失败: ' + data.error);
-    }
-  } catch (error) {
-    console.error('加载计划详情失败:', error);
-    alert('加载计划详情失败，请重试');
-  }
-}
 
-// 预览模板
-async function previewTemplate(templateId) {
-  try {
 
-    const response = await fetch('/tools/api/training_plans/templates/');
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-
-    if (data.success) {
-      let template = null;
-      const templates = data.templates || {};
-      
-      // 处理字典格式的templates
-      if (typeof templates === 'object' && !Array.isArray(templates)) {
-        template = templates[templateId];
-        if (template) {
-          template.id = templateId; // 确保包含id
-        }
-      } else if (Array.isArray(templates)) {
-        // 处理数组格式的templates
-        template = templates.find(t => t.id === templateId);
-      }
-
-      if (template) {
-        showPlanPreviewModal(template);
-      } else {
-        console.error('未找到模板:', templateId, '可用模板:', Object.keys(templates));
-        alert('未找到模板数据');
-      }
-    } else {
-      console.error('API错误:', data.error);
-      alert('获取模板数据失败: ' + (data.error || '未知错误'));
-    }
-  } catch (error) {
-    console.error('预览模板失败:', error);
-    alert('预览模板失败: ' + error.message);
-  }
-}
-
-// 显示计划预览模态框
-function showPlanPreviewModal(plan) {
-  const modal = document.createElement('div');
-  modal.className = 'checkin-modal';
-  
-  const weekScheduleHTML = plan.week_schedule.map((day, index) => {
-    const exerciseCount = day.modules ? 
-      Object.values(day.modules).reduce((sum, module) => sum + (module?.length || 0), 0) : 0;
-    const exerciseText = exerciseCount > 0 ? `${exerciseCount}个动作` : 
-      (day.body_parts.includes('休息') ? '恢复日' : '待添加');
-    
-    return `
-      <div class="preview-day">
-        <span class="day-name">${day.weekday}</span>
-        <span class="day-parts">${day.body_parts.join(' + ')}</span>
-        <span class="day-exercises">${exerciseText}</span>
-      </div>
-    `;
-  }).join('');
-  
-  modal.innerHTML = `
-    <div class="checkin-modal-content" style="max-width: 500px;">
-      <h3><i class="fas fa-eye"></i> 计划预览 - ${plan.name}</h3>
-      <div class="plan-preview-content">
-        <div class="preview-meta">
-          <div><strong>训练模式:</strong> ${plan.mode}</div>
-          <div><strong>训练周期:</strong> ${plan.cycle_weeks}周</div>
-        </div>
-        <div class="preview-schedule">
-          <h4>周安排:</h4>
-          ${weekScheduleHTML}
-        </div>
-      </div>
-      <div class="form-actions" style="justify-content: center; margin-top: 20px;">
-        <button class="btn-cancel">关闭</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  modal.querySelector('.btn-cancel').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-}
 
 // 显示通知消息
 function showNotification(message, type = 'info') {
@@ -5307,17 +5291,6 @@ const additionalStyles = `
   transform: translateY(-1px);
 }
 
-.btn-preview {
-  background: transparent;
-  color: var(--rage-primary, #ff6b35);
-  border: 1px solid var(--rage-primary, #ff6b35);
-}
-
-.btn-preview:hover {
-  background: var(--rage-primary, #ff6b35);
-  color: white;
-  transform: translateY(-1px);
-}
 
 .no-plans-message {
   text-align: center;
@@ -5903,27 +5876,11 @@ async function applyPlan(planId, planName) {
       alert('应用计划失败: ' + data.error);
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     alert('应用计划失败，请重试');
   }
 }
 
-// 预览训练计划
-async function previewPlan(planId) {
-  try {
-    const response = await fetch(`/tools/api/training_plans/${planId}/`);
-    const data = await response.json();
-    
-    if (data.success) {
-      showPlanPreviewModal(data.plan);
-    } else {
-      alert('加载计划详情失败: ' + data.error);
-    }
-  } catch (error) {
-    console.error('加载计划详情失败:', error);
-    alert('加载计划详情失败，请重试');
-  }
-}
 
 // 安全的字符串转小写函数
 function safeToLowerCase(str) {
@@ -5931,7 +5888,7 @@ function safeToLowerCase(str) {
   try {
     return String(str).toLowerCase();
   } catch (error) {
-    console.warn('toLowerCase转换失败:', str, error);
+    // console.warn(...)
     return '';
   }
 }
@@ -5947,7 +5904,7 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target.value = String(e.target.value);
         }
       } catch (error) {
-        console.warn('输入值处理错误:', error);
+        // console.warn(...)
         e.target.value = '';
       }
     }
@@ -5961,7 +5918,7 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target.value = String(e.target.value);
         }
       } catch (error) {
-        console.warn('键盘输入处理错误:', error);
+        // console.warn(...)
         e.target.value = '';
       }
     }
@@ -5983,7 +5940,7 @@ function formatDateTime(dateString) {
       minute: '2-digit'
     });
   } catch (error) {
-    console.error('时间格式化错误:', error);
+    // console.error(...)
     return '未知';
   }
 }
@@ -6002,16 +5959,16 @@ function toggleExerciseDetails(element) {
         chevronIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
       }
     } else {
-      console.warn('未找到.exercise-details元素，可能这一天没有训练内容');
+      // // console.warn(...)
     }
   } catch (error) {
-    console.error('切换动作详情失败:', error);
+    // console.error(...)
   }
 }
 
 // 显示计划预览模态框
 function showPlanPreviewModal(plan) {
-  const modal = document.createElement('div');
+  const modal = document.createElement('div');  // 调试信息已隐藏
   modal.className = 'checkin-modal';
   
   let scheduleHTML = '';
@@ -6114,7 +6071,7 @@ function showPlanPreviewModal(plan) {
         <button class="btn-primary" onclick="applyPlan(${plan.id}, '${plan.name}')">
           <i class="fas fa-play"></i> 应用此计划
         </button>
-        <button class="btn-secondary" onclick="window.location.href='/tools/fitness/plan-editor/?plan_id=${plan.id}'">
+        <button class="btn-secondary" onclick="editPlanFromPreview(${plan.id})">
           <i class="fas fa-edit"></i> 编辑计划
         </button>
         <button class="btn-cancel">关闭</button>
@@ -6189,21 +6146,6 @@ function editPlan(planId) {
   window.open(`/tools/training_plan_editor/?plan_id=${planId}`, '_blank');
 }
 
-async function previewPlanFromLibrary(planId) {
-  try {
-    const response = await fetch(`/tools/api/training_plans/${planId}/`);
-    const data = await response.json();
-    
-    if (data.success) {
-      showPlanPreviewModal(data.plan);
-    } else {
-      showNotification('预览失败: ' + data.error, 'error');
-    }
-  } catch (error) {
-    console.error('预览计划失败:', error);
-    showNotification('预览失败，请重试', 'error');
-  }
-}
 
 // 显示应用计划确认对话框（带详细内容）
 async function showApplyPlanModal(planId, planName) {
@@ -6341,7 +6283,7 @@ async function showApplyPlanModal(planId, planName) {
     });
     
   } catch (error) {
-    console.error('显示应用计划对话框失败:', error);
+    // console.error(...)
     showNotification('显示计划详情失败，请重试', 'error');
   }
 }
@@ -6389,7 +6331,7 @@ async function confirmApplyPlan(planId, planName) {
       showNotification('应用失败: ' + data.error, 'error');
     }
   } catch (error) {
-    console.error('应用计划失败:', error);
+    // console.error(...)
     showNotification('应用失败，请重试', 'error');
   }
 }
@@ -6425,7 +6367,7 @@ async function deletePlan(planId, planName) {
       showNotification('删除失败: ' + data.error, 'error');
     }
   } catch (error) {
-    console.error('删除计划失败:', error);
+    // console.error(...)
     showNotification('删除失败，请重试', 'error');
   }
 }
@@ -6482,10 +6424,48 @@ async function getActivePlanData() {
           
           // 获取详细的动作信息
           let detailedExercises = '待添加';
+          let exerciseCount = 0;
+          
           if (dayData.exercises && Array.isArray(dayData.exercises) && dayData.exercises.length > 0) {
+            // 旧格式：exercises 数组
             detailedExercises = dayData.exercises.map(exercise => {
               return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''})`;
             }).join('\n');
+            exerciseCount = dayData.exercises.length;
+          } else if (dayData.modules) {
+            // 新格式：modules 对象
+            const modules = dayData.modules;
+            const moduleOrder = ['warmup', 'main', 'accessory', 'cooldown'];
+            const moduleNames = {
+              'warmup': '热身',
+              'main': '主训练',
+              'accessory': '辅助',
+              'cooldown': '拉伸'
+            };
+            
+            const exerciseDetails = [];
+            moduleOrder.forEach(moduleType => {
+              const moduleExercises = modules[moduleType] || [];
+              if (Array.isArray(moduleExercises) && moduleExercises.length > 0) {
+                const moduleExerciseText = moduleExercises.map(exercise => {
+                  if (typeof exercise === 'string') {
+                    return `${exercise} (3组 × 10-12次)`;
+                  } else if (exercise && exercise.name) {
+                    return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''})`;
+                  }
+                  return '';
+                }).filter(text => text).join('\n');
+                
+                if (moduleExerciseText) {
+                  exerciseDetails.push(`${moduleNames[moduleType]}:\n${moduleExerciseText}`);
+                  exerciseCount += moduleExercises.length;
+                }
+              }
+            });
+            
+            if (exerciseDetails.length > 0) {
+              detailedExercises = exerciseDetails.join('\n\n');
+            }
           } else if (bodyParts.includes('休息')) {
             detailedExercises = '休息日，好好恢复体力';
           }
@@ -6495,7 +6475,7 @@ async function getActivePlanData() {
             day: dayName,
             bodyParts: bodyParts,
             exercises: detailedExercises,
-            exerciseCount: dayData.exercises ? dayData.exercises.length : 0
+            exerciseCount: exerciseCount
           });
         });
       }
@@ -6564,7 +6544,7 @@ async function getActivePlanData() {
       exportDate: new Date().toLocaleDateString('zh-CN')
     };
   } catch (error) {
-    console.error('获取计划数据失败:', error);
+    // console.error(...)
     return null;
   }
 }

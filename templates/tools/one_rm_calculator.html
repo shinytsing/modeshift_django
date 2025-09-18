@@ -518,7 +518,7 @@ function calculateOneRM(data) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         showError('oneRmResult', '计算过程中出现错误');
     });
 }
@@ -543,7 +543,7 @@ function predictReps(data) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         showError('predictResult', '预测过程中出现错误');
     });
 }

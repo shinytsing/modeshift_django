@@ -169,16 +169,179 @@ class NutritionCoachService:
     def _parse_deepseek_response(self, response: str) -> List[Dict]:
         """解析DeepSeek响应"""
         try:
-            # 尝试提取JSON部分
-            start_idx = response.find("{")
-            end_idx = response.rfind("}") + 1
-            json_str = response[start_idx:end_idx]
-
-            data = json.loads(json_str)
-            return data.get("week_plan", [])
-        except (json.JSONDecodeError, KeyError):
-            # 如果解析失败，返回空计划
+            logger.info("开始解析营养教练响应...")
+            
+            # 尝试解析JSON格式
+            if response.strip().startswith('{') and response.strip().endswith('}'):
+                try:
+                    data = json.loads(response)
+                    week_plan = data.get("week_plan", [])
+                    if week_plan:
+                        logger.info(f"成功解析JSON格式营养计划：{len(week_plan)}天")
+                        return week_plan
+                except json.JSONDecodeError:
+                    logger.warning("JSON解析失败，尝试文本解析")
+            
+            # 尝试文本格式解析
+            parsed_plan = self._parse_text_nutrition_plan(response)
+            if parsed_plan:
+                logger.info(f"成功解析文本格式营养计划：{len(parsed_plan)}天")
+                return parsed_plan
+            
+            # 如果都失败，返回空计划
+            logger.warning("营养计划解析失败，返回空计划")
             return []
+            
+        except Exception as e:
+            logger.error(f"解析营养教练响应失败: {e}")
+            return []
+    
+    def _parse_text_nutrition_plan(self, response: str) -> List[Dict]:
+        """解析文本格式的营养计划"""
+        try:
+            lines = response.split('\n')
+            week_plan = []
+            current_day = None
+            current_meals = []
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # 识别日期
+                if '第' in line and '天' in line:
+                    # 保存前一天的数据
+                    if current_day:
+                        current_day['meals'] = current_meals
+                        week_plan.append(current_day)
+                    
+                    # 开始新的一天
+                    current_day = {
+                        'day': len(week_plan) + 1,
+                        'date': line,
+                        'meals': []
+                    }
+                    current_meals = []
+                
+                # 识别餐次
+                elif any(meal_type in line for meal_type in ['早餐', '午餐', '晚餐', '加餐']):
+                    if current_day:
+                        meal_type = 'breakfast' if '早餐' in line else 'lunch' if '午餐' in line else 'dinner' if '晚餐' in line else 'snack'
+                        current_meals.append({
+                            'meal_type': meal_type,
+                            'meal_name': line,
+                            'foods': [],
+                            'calories': 0,
+                            'macros': {'protein': 0, 'carbs': 0, 'fat': 0}
+                        })
+                
+                # 识别食物
+                elif current_meals and ('·' in line or '•' in line or '-' in line):
+                    food = line.replace('·', '').replace('•', '').replace('-', '').strip()
+                    if food and len(food) > 2:
+                        current_meals[-1]['foods'].append(food)
+            
+            # 保存最后一天的数据
+            if current_day:
+                current_day['meals'] = current_meals
+                week_plan.append(current_day)
+            
+            # 如果解析到的天数不够，补充默认计划
+            if len(week_plan) < 3:
+                week_plan = self._generate_default_week_plan()
+            
+            return week_plan
+            
+        except Exception as e:
+            logger.error(f"解析文本营养计划失败: {e}")
+            return []
+    
+    def _generate_default_week_plan(self) -> List[Dict]:
+        """生成默认的一周营养计划"""
+        return [
+            {
+                'day': 1,
+                'date': '第1天',
+                'meals': [
+                    {
+                        'meal_type': 'breakfast',
+                        'meal_name': '早餐',
+                        'foods': ['燕麦粥', '鸡蛋', '牛奶'],
+                        'calories': 400,
+                        'macros': {'protein': 20, 'carbs': 40, 'fat': 15}
+                    },
+                    {
+                        'meal_type': 'lunch',
+                        'meal_name': '午餐',
+                        'foods': ['鸡胸肉', '糙米饭', '蔬菜沙拉'],
+                        'calories': 500,
+                        'macros': {'protein': 35, 'carbs': 45, 'fat': 12}
+                    },
+                    {
+                        'meal_type': 'dinner',
+                        'meal_name': '晚餐',
+                        'foods': ['三文鱼', '红薯', '西兰花'],
+                        'calories': 450,
+                        'macros': {'protein': 30, 'carbs': 35, 'fat': 18}
+                    }
+                ]
+            },
+            {
+                'day': 2,
+                'date': '第2天',
+                'meals': [
+                    {
+                        'meal_type': 'breakfast',
+                        'meal_name': '早餐',
+                        'foods': ['全麦面包', '牛油果', '酸奶'],
+                        'calories': 380,
+                        'macros': {'protein': 18, 'carbs': 35, 'fat': 20}
+                    },
+                    {
+                        'meal_type': 'lunch',
+                        'meal_name': '午餐',
+                        'foods': ['瘦牛肉', '藜麦', '菠菜'],
+                        'calories': 520,
+                        'macros': {'protein': 40, 'carbs': 40, 'fat': 15}
+                    },
+                    {
+                        'meal_type': 'dinner',
+                        'meal_name': '晚餐',
+                        'foods': ['豆腐', '蔬菜汤', '糙米'],
+                        'calories': 420,
+                        'macros': {'protein': 25, 'carbs': 50, 'fat': 10}
+                    }
+                ]
+            },
+            {
+                'day': 3,
+                'date': '第3天',
+                'meals': [
+                    {
+                        'meal_type': 'breakfast',
+                        'meal_name': '早餐',
+                        'foods': ['鸡蛋饼', '水果', '坚果'],
+                        'calories': 450,
+                        'macros': {'protein': 22, 'carbs': 30, 'fat': 25}
+                    },
+                    {
+                        'meal_type': 'lunch',
+                        'meal_name': '午餐',
+                        'foods': ['烤鸡腿', '土豆', '胡萝卜'],
+                        'calories': 480,
+                        'macros': {'protein': 35, 'carbs': 45, 'fat': 16}
+                    },
+                    {
+                        'meal_type': 'dinner',
+                        'meal_name': '晚餐',
+                        'foods': ['蒸蛋羹', '青菜', '小米粥'],
+                        'calories': 400,
+                        'macros': {'protein': 20, 'carbs': 55, 'fat': 8}
+                    }
+                ]
+            }
+        ]
 
     def _generate_fallback_meal_plan(self, user_data: Dict, calories: float, macros: Dict) -> Dict:
         """生成备用饮食计划"""

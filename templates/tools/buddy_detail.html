@@ -839,7 +839,7 @@ async function loadMembers() {
         // 这里可以调用API获取成员列表
         // 暂时使用占位符
     } catch (error) {
-        console.error('加载成员列表失败:', error);
+        // console.error(...)
     }
 }
 
@@ -848,7 +848,7 @@ async function incrementViewCount() {
     try {
         // 这里可以调用API增加浏览次数
     } catch (error) {
-        console.error('更新浏览次数失败:', error);
+        // console.error(...)
     }
 }
 
@@ -886,7 +886,7 @@ async function joinEvent(eventId) {
         
     } catch (error) {
         showAlert('申请失败，请重试', 'error');
-        console.error('申请失败:', error);
+        // console.error(...)
     }
 }
 

@@ -14,6 +14,7 @@ from django.db import models
 import requests
 
 from ..models.tarot_models import TarotCard, TarotEnergyCalendar, TarotReading, TarotSpread
+from .llm_service import get_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -157,31 +158,98 @@ class TarotService:
     def _call_ai_api(self, prompt):
         """调用AI API"""
         try:
-            # 获取API密钥
-            api_key = getattr(settings, "DEEPSEEK_API_KEY", None)
-            if not api_key:
-                return None
-
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-            payload = {
-                "model": "deepseek-chat",
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 2000,
-                "temperature": 0.7,
-            }
-
-            response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-            if response.status_code == 200:
-                result = response.json()
-                return result["choices"][0]["message"]["content"]
-
-            return None
+            # 使用统一的LLM服务
+            llm_service = get_llm_service()
+            
+            # 构建塔罗牌解读的系统提示词
+            system_prompt = "你是一位资深的塔罗牌解读师，擅长深入分析牌面含义，提供准确而有意义的解读。请按照以下格式输出解读内容：\n\n【整体解读】\n[整体分析内容]\n\n【各位置解读】\n[各位置详细解读]\n\n【建议指导】\n[具体建议和指导]\n\n【注意事项】\n[需要注意的方面]"
+            
+            # 使用LLM服务生成解读内容
+            content = llm_service.generate_content(
+                prompt,
+                system_prompt=system_prompt,
+                max_tokens=2000,
+                temperature=0.7
+            )
+            
+            # 解析并结构化解读内容
+            structured_interpretation = self._parse_interpretation_content(content)
+            return structured_interpretation
 
         except Exception as e:
             logger.error(f"调用AI API失败: {str(e)}")
             return None
+    
+    def _parse_interpretation_content(self, content):
+        """解析塔罗牌解读内容"""
+        try:
+            logger.info("开始解析塔罗牌解读内容...")
+            
+            # 基础结构
+            interpretation = {
+                "overall": "",
+                "positions": [],
+                "advice": "",
+                "notes": "",
+                "raw_content": content
+            }
+            
+            # 按章节解析
+            lines = content.split('\n')
+            current_section = None
+            current_content = []
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # 识别章节标题
+                if line.startswith('【整体解读】') or '整体解读' in line:
+                    current_section = 'overall'
+                    current_content = []
+                elif line.startswith('【各位置解读】') or '各位置解读' in line:
+                    current_section = 'positions'
+                    current_content = []
+                elif line.startswith('【建议指导】') or '建议指导' in line:
+                    current_section = 'advice'
+                    current_content = []
+                elif line.startswith('【注意事项】') or '注意事项' in line:
+                    current_section = 'notes'
+                    current_content = []
+                else:
+                    # 添加内容到当前章节
+                    if current_section:
+                        current_content.append(line)
+            
+                # 保存当前章节内容
+                if current_section == 'overall':
+                    interpretation['overall'] = '\n'.join(current_content)
+                elif current_section == 'positions':
+                    interpretation['positions'] = current_content
+                elif current_section == 'advice':
+                    interpretation['advice'] = '\n'.join(current_content)
+                elif current_section == 'notes':
+                    interpretation['notes'] = '\n'.join(current_content)
+            
+            # 如果没有解析到结构化内容，使用原始内容
+            if not interpretation['overall'] and not interpretation['advice']:
+                interpretation['overall'] = content
+                interpretation['advice'] = "请根据牌面含义，结合自己的实际情况进行思考。"
+                interpretation['notes'] = "塔罗牌只是指引，最终的决定权在您手中。"
+            
+            logger.info(f"成功解析塔罗牌解读：整体解读{len(interpretation['overall'])}字符，建议{len(interpretation['advice'])}字符")
+            return interpretation
+            
+        except Exception as e:
+            logger.error(f"解析塔罗牌解读内容失败: {e}")
+            return {
+                "overall": content,
+                "positions": [],
+                "advice": "请根据牌面含义，结合自己的实际情况进行思考。",
+                "notes": "塔罗牌只是指引，最终的决定权在您手中。",
+                "raw_content": content
+            }
 
     def _generate_default_interpretation(self, spread, drawn_cards, question, reading_type):
         """生成默认解读"""

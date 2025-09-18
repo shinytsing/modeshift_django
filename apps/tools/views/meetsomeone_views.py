@@ -18,6 +18,43 @@ from apps.tools.models.relationship_models import ImportantMoment, Interaction, 
 
 logger = logging.getLogger(__name__)
 
+# ===== 辅助函数 =====
+
+def get_node_color(node_type, importance_level):
+    """根据节点类型和重要程度返回颜色"""
+    color_map = {
+        "self": "#9c27b0",  # 紫色
+        "family": "#ff9999",  # 红色系
+        "friend": "#99ff99",  # 绿色系
+        "colleague": "#9999ff",  # 蓝色系
+        "mentor": "#ffff99",  # 黄色系
+        "lover": "#ff66cc",  # 粉色系（爱人）
+    }
+    
+    base_color = color_map.get(node_type, "#cccccc")
+    
+    # 根据重要程度调整颜色亮度
+    if importance_level >= 4:
+        return base_color
+    elif importance_level >= 3:
+        return base_color.replace("99", "cc")
+    elif importance_level >= 2:
+        return base_color.replace("99", "aa")
+    else:
+        return base_color.replace("99", "88")
+
+def get_edge_color(edge_type):
+    """根据边类型返回颜色"""
+    color_map = {
+        "family": "#ff9999",  # 红色系
+        "friend": "#99ff99",  # 绿色系
+        "colleague": "#9999ff",  # 蓝色系
+        "mentor": "#ffff99",  # 黄色系
+        "lover": "#ff66cc",  # 粉色系（爱人）
+        "acquaintance": "#cccccc",  # 灰色系
+    }
+    return color_map.get(edge_type, "#999999")
+
 # ===== 页面视图函数 =====
 
 
@@ -441,99 +478,136 @@ def create_important_moment_api(request):
 @require_http_methods(["GET"])
 @login_required
 def get_timeline_data_api(request):
-    """获取时间线数据API - 使用真实数据"""
+    """获取时间线数据API - 按十年分组"""
     try:
         user = request.user
         # 获取查询参数
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
-
+        decade = request.GET.get("decade")  # 例如: "2020s", "2010s"
+        
         timeline_items = []
-
-        # 获取互动记录
-        interactions_qs = Interaction.objects.filter(user=user)
-        if start_date:
-            try:
-                from datetime import datetime as dt
-
-                start_dt = dt.strptime(start_date, "%Y-%m-%d").date()
-                interactions_qs = interactions_qs.filter(date__gte=start_dt)
-            except ValueError:
-                pass
-        if end_date:
-            try:
-                from datetime import datetime as dt
-
-                end_dt = dt.strptime(end_date, "%Y-%m-%d").date()
-                interactions_qs = interactions_qs.filter(date__lte=end_dt)
-            except ValueError:
-                pass
-
-        # 添加互动记录到时间线
-        for interaction in interactions_qs.order_by("-date", "-time")[:50]:
-            timeline_items.append(
-                {
-                    "id": f"interaction_{interaction.id}",
-                    "date": interaction.date.isoformat(),
-                    "type": "interaction",
-                    "title": interaction.title,
-                    "description": interaction.content[:200] + ("..." if len(interaction.content) > 200 else ""),
-                    "people": [interaction.person.nickname or interaction.person.name],
-                    "tags": interaction.topics_discussed or [],
-                    "interaction_type": interaction.get_interaction_type_display(),
-                    "location": interaction.location or "",
+        timeline_groups = []
+        
+        # 获取所有互动记录和重要时刻
+        interactions_qs = Interaction.objects.filter(user=user).order_by("-date", "-time")
+        moments_qs = ImportantMoment.objects.filter(user=user).order_by("-date")
+        
+        # 按十年分组数据
+        decade_data = {}
+        
+        # 处理互动记录
+        for interaction in interactions_qs:
+            year = interaction.date.year
+            decade_key = f"{year//10*10}s"  # 例如: 2023 -> "2020s"
+            
+            if decade and decade_key != decade:
+                continue
+                
+            if decade_key not in decade_data:
+                decade_data[decade_key] = {
+                    "decade": decade_key,
+                    "decade_name": f"{year//10*10}年代",
+                    "interactions": [],
+                    "moments": []
                 }
-            )
-
-        # 获取重要时刻
-        moments_qs = ImportantMoment.objects.filter(user=user)
-        if start_date:
-            try:
-                moments_qs = moments_qs.filter(date__gte=start_dt)
-            except Exception:
-                pass
-        if end_date:
-            try:
-                moments_qs = moments_qs.filter(date__lte=end_dt)
-            except Exception:
-                pass
-
-        # 添加重要时刻到时间线
-        for moment in moments_qs.order_by("-date")[:20]:
+            
+            decade_data[decade_key]["interactions"].append({
+                "id": f"interaction_{interaction.id}",
+                "date": interaction.date.isoformat(),
+                "time": interaction.time.strftime("%H:%M") if interaction.time else None,
+                "type": "interaction",
+                "title": interaction.title,
+                "content": interaction.content[:200] + ("..." if len(interaction.content) > 200 else ""),
+                "person": {
+                    "id": interaction.person.id,
+                    "name": interaction.person.name,
+                    "nickname": interaction.person.nickname
+                },
+                "tags": interaction.topics_discussed or [],
+                "interaction_type": interaction.get_interaction_type_display(),
+                "location": interaction.location or "",
+                "mood_emoji": getattr(interaction, 'mood_emoji', None)
+            })
+        
+        # 处理重要时刻
+        for moment in moments_qs:
+            year = moment.date.year
+            decade_key = f"{year//10*10}s"
+            
+            if decade and decade_key != decade:
+                continue
+                
+            if decade_key not in decade_data:
+                decade_data[decade_key] = {
+                    "decade": decade_key,
+                    "decade_name": f"{year//10*10}年代",
+                    "interactions": [],
+                    "moments": []
+                }
+            
             people_names = [moment.person.nickname or moment.person.name]
             # 添加其他参与者
             for participant in moment.other_participants.all():
                 people_names.append(participant.nickname or participant.name)
 
-            timeline_items.append(
-                {
-                    "id": f"moment_{moment.id}",
-                    "date": moment.date.isoformat(),
-                    "type": "moment",
-                    "title": moment.title,
-                    "description": moment.description[:200] + ("..." if len(moment.description) > 200 else ""),
-                    "people": people_names,
-                    "tags": [moment.get_moment_type_display()],
-                    "moment_type": moment.get_moment_type_display(),
-                    "location": moment.location or "",
+            decade_data[decade_key]["moments"].append({
+                "id": f"moment_{moment.id}",
+                "date": moment.date.isoformat(),
+                "type": "moment",
+                "title": moment.title,
+                "content": moment.description[:200] + ("..." if len(moment.description) > 200 else ""),
+                "person": {
+                    "id": moment.person.id,
+                    "name": moment.person.name,
+                    "nickname": moment.person.nickname
+                },
+                "people": people_names,
+                "tags": [moment.get_moment_type_display()],
+                "moment_type": moment.get_moment_type_display(),
+                "location": moment.location or "",
+                "mood_emoji": getattr(moment, 'mood_emoji', None)
+            })
+        
+        # 按年代排序并构建时间线组
+        for decade_key in sorted(decade_data.keys(), reverse=True):
+            decade_info = decade_data[decade_key]
+            
+            # 合并并排序该年代的所有事件
+            all_events = decade_info["interactions"] + decade_info["moments"]
+            all_events.sort(key=lambda x: x["date"], reverse=True)
+            
+            timeline_groups.append({
+                "decade": decade_key,
+                "decade_name": decade_info["decade_name"],
+                "items": all_events,
+                "stats": {
+                    "interactions_count": len(decade_info["interactions"]),
+                    "moments_count": len(decade_info["moments"]),
+                    "total_count": len(all_events)
                 }
-            )
+            })
+        
+        # 计算总统计
+        total_interactions = sum(group["stats"]["interactions_count"] for group in timeline_groups)
+        total_moments = sum(group["stats"]["moments_count"] for group in timeline_groups)
+        total_items = sum(group["stats"]["total_count"] for group in timeline_groups)
+        
+        # 获取可用的年代列表
+        available_decades = sorted(decade_data.keys(), reverse=True)
 
-        # 按日期倒序排列
-        timeline_items.sort(key=lambda x: x["date"], reverse=True)
-
-        logger.info(f"获取时间线数据: 用户 {request.user.id}, 返回 {len(timeline_items)} 条记录")
+        logger.info(f"获取时间线数据: 用户 {request.user.id}, 返回 {len(timeline_groups)} 个年代组")
 
         return JsonResponse(
             {
                 "status": "success",
                 "data": {
-                    "timeline": timeline_items,
+                    "timeline_groups": timeline_groups,
                     "stats": {
-                        "total_items": len(timeline_items),
-                        "interactions_count": len([item for item in timeline_items if item["type"] == "interaction"]),
-                        "moments_count": len([item for item in timeline_items if item["type"] == "moment"]),
+                        "total_items": total_items,
+                        "total_interactions": total_interactions,
+                        "total_moments": total_moments,
+                        "total_decades": len(timeline_groups)
                     },
+                    "available_decades": available_decades
                 },
             }
         )
@@ -557,7 +631,22 @@ def get_graph_data_api(request):
         # 构建节点数据
         nodes = []
         # 添加自己作为中心节点
-        nodes.append({"id": "self", "name": "我", "type": "self", "size": 25, "importance": 5})
+        nodes.append(
+            {
+                "id": "self",
+                "name": "我",
+                "label": "我",
+                "type": "self",
+                "group": "self",
+                "size": 28,
+                "importance": 5,
+                "importance_level": 5,
+                "interaction_count": 0,
+                "relationship_tags": [],
+                "tags": [],
+                "color": get_node_color("self", 5),
+            }
+        )
 
         # 添加其他人物节点
         for profile in profiles:
@@ -568,7 +657,9 @@ def get_graph_data_api(request):
             node_type = "friend"  # 默认类型
             if profile.relationship_tags.exists():
                 main_tag = profile.relationship_tags.first().name
-                if "同事" in main_tag or "合作" in main_tag:
+                if "爱人" in main_tag or "恋人" in main_tag or "伴侣" in main_tag or "配偶" in main_tag:
+                    node_type = "lover"
+                elif "同事" in main_tag or "合作" in main_tag:
                     node_type = "colleague"
                 elif "家人" in main_tag or "亲" in main_tag:
                     node_type = "family"
@@ -584,8 +675,16 @@ def get_graph_data_api(request):
                     "type": node_type,
                     "size": size,
                     "importance": profile.importance_level,
+                    "importance_level": profile.importance_level,  # 前端期望的字段名
                     "interaction_count": profile.interaction_count,
                     "relationship_tags": [tag.name for tag in profile.relationship_tags.all()],
+                    "tags": [tag.name for tag in profile.relationship_tags.all()],  # 前端期望的字段名
+                    "occupation": getattr(profile, 'occupation', None),
+                    "age_display": getattr(profile, 'age_display', None),
+                    "last_interaction_date": getattr(profile, 'last_interaction_date', None),
+                    "group": node_type,  # 添加分组信息
+                    "label": profile.nickname or profile.name,  # 添加标签信息
+                    "color": get_node_color(node_type, profile.importance_level),  # 添加颜色信息
                 }
             )
 
@@ -599,7 +698,9 @@ def get_graph_data_api(request):
             edge_type = "friend"
             if profile.relationship_tags.exists():
                 main_tag = profile.relationship_tags.first().name
-                if "同事" in main_tag:
+                if "爱人" in main_tag or "恋人" in main_tag or "伴侣" in main_tag or "配偶" in main_tag:
+                    edge_type = "lover"
+                elif "同事" in main_tag:
                     edge_type = "colleague"
                 elif "家人" in main_tag:
                     edge_type = "family"
@@ -611,8 +712,11 @@ def get_graph_data_api(request):
                     "source": "self",
                     "target": profile.id,
                     "strength": connection_strength,
+                    "weight": connection_strength,  # 前端期望的字段名
                     "type": edge_type,
+                    "label": edge_type,  # 关系标签（在前端连线处显示）
                     "interaction_count": profile.interaction_count,
+                    "color": get_edge_color(edge_type),  # 添加颜色信息
                 }
             )
 
@@ -627,6 +731,7 @@ def get_graph_data_api(request):
                             "target": mutual_friend.id,
                             "strength": 3.0,  # 较弱的连接
                             "type": "acquaintance",
+                            "label": "认识",
                             "interaction_count": 0,
                         }
                     )
@@ -652,6 +757,12 @@ def get_graph_data_api(request):
                 "most_connected": (
                     (most_connected_profile.nickname or most_connected_profile.name) if most_connected_profile else "无"
                 ),
+            },
+            "stats": {  # 前端期望的字段名
+                "total_nodes": len(nodes),
+                "total_edges": len(edges),
+                "total_groups": len(set(node["type"] for node in nodes)),
+                "avg_importance": round(avg_importance, 1),
             },
         }
 

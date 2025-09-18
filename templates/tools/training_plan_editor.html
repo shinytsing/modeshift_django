@@ -1609,13 +1609,13 @@
 <script>
 // 页面加载完成后显示页面
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('页面加载完成');
-    const container = document.querySelector('.plan-editor-container');
+    // // console.log(...)
+    const container = document.querySelector('.plan-editor-container');  // 调试信息已隐藏
     if (container) {
-        console.log('找到容器，设置透明度为1');
+        // console.log(...)
         container.style.opacity = '1';
     } else {
-        console.error('未找到容器元素');
+        // console.error(...)
     }
 });
 
@@ -1953,5 +1953,8 @@ function closeAddExerciseModal() {
   }
 }
 </script>
+
+<!-- 引入训练计划编辑器JavaScript文件 -->
+<script src="{% static 'js/training_plan_editor.js' %}"></script>
 
 {% endblock %}

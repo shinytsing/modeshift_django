@@ -1058,7 +1058,7 @@ function getLocationInfo() {
             showLocationInfo(userLocation);
             return; // 用户已手动设置位置，不再自动定位
         } catch (e) {
-            console.error('解析用户设置的位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -1094,20 +1094,20 @@ function getLocationInfo() {
                         };
                         showLocationInfo(userLocation);
                         localStorage.setItem('user_location', JSON.stringify(userLocation));
-                        console.log('GPS定位成功:', userLocation);
+                        // // console.log(...)
                     } else {
                         // GPS定位失败，使用IP定位
-                        getIPLocation();
+                        getIPLocation();  // 调试信息已隐藏
                     }
                 })
                 .catch(error => {
-                    console.error('反向地理编码失败:', error);
+                    // console.error(...)
                     // GPS定位失败，使用IP定位
                     getIPLocation();
                 });
             },
             function(error) {
-                console.error('GPS定位失败:', error);
+                // console.error(...)
                 // GPS定位失败，使用IP定位
                 getIPLocation();
             },
@@ -1137,7 +1137,7 @@ function getIPLocation() {
                 return;
             }
         } catch (e) {
-            console.error('解析缓存位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -1152,12 +1152,12 @@ function getIPLocation() {
                 };
                 showLocationInfo(userLocation);
                 localStorage.setItem('user_location', JSON.stringify(userLocation));
-                console.log('IP定位成功:', userLocation);
+                // // console.log(...)
             }
         })
         .catch(error => {
-            console.error('获取IP位置信息失败:', error);
-        });
+            // console.error(...)
+        });  // 调试信息已隐藏
 }
 
 // 重新定位用户位置
@@ -1212,13 +1212,13 @@ function reLocateUser() {
                     }
                 })
                 .catch(error => {
-                    console.error('反向地理编码失败:', error);
+                    // console.error(...)
                     // 如果反向地理编码失败，使用IP定位
                     getLocationInfo();
                 });
             },
             function(error) {
-                console.error('GPS定位失败:', error);
+                // console.error(...)
                 // GPS定位失败，使用IP定位
                 getLocationInfo();
             },
@@ -1255,14 +1255,7 @@ function showLocationInfo(location) {
         locationDisplay.style.display = 'block';
         
         // 在控制台输出详细位置信息用于调试
-        console.log('当前位置信息:', {
-            city: location.city,
-            region: location.region,
-            address: location.address,
-            lat: location.lat,
-            lon: location.lon,
-            source: location.source
-        });
+        // console.log(...)
     } else {
         locationDisplay.style.display = 'none';
     }
@@ -1316,7 +1309,7 @@ function saveLocation() {
             }
         })
         .catch(error => {
-            console.error('位置更新失败:', error);
+            // console.error(...)
             // 使用默认位置信息
             userLocation = {
                 city: city,
@@ -1405,7 +1398,7 @@ function loadItems(page = 1) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            // console.error(...)
             document.getElementById('items-container').innerHTML = 
                 '<div class="no-items"><h3>网络错误</h3><p>请检查网络连接后重试</p></div>';
         });
@@ -1584,7 +1577,7 @@ function initializeLocation() {
             updateLocationDisplay(userLocation);
             return; // 用户已手动设置位置，不再自动定位
         } catch (e) {
-            console.error('解析用户设置的位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -1596,7 +1589,7 @@ function initializeLocation() {
             updateLocationDisplay(userLocation);
             return;
         } catch (e) {
-            console.error('解析自动定位的位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -1628,7 +1621,7 @@ function requestUserLocation() {
             },
             // 错误回调
             function(error) {
-                console.error('获取位置失败:', error);
+                // console.error(...)
                 handleLocationError(error);
             },
             // 选项
@@ -1639,7 +1632,7 @@ function requestUserLocation() {
             }
         );
     } else {
-        console.error('浏览器不支持地理位置');
+        // console.error(...)
         showLocationInput('浏览器不支持地理位置，请手动输入');
     }
 }
@@ -1675,12 +1668,12 @@ function getLocationDetails(coords) {
             saveLocationToStorage(locationInfo);
             updateLocationDisplay(locationInfo);
         } else {
-            console.error('地址解析失败:', data.error);
+            // console.error(...)
             showLocationInput('位置解析失败，请手动输入');
         }
     })
     .catch(error => {
-        console.error('地址解析请求失败:', error);
+        // console.error(...)
         showLocationInput('位置服务不可用，请手动输入');
     });
 }
@@ -1818,7 +1811,7 @@ function geocodeCity(cityName, locationInfo) {
         loadItems(1);
     })
     .catch(error => {
-        console.error('城市编码失败:', error);
+        // console.error(...)
         
         // 即使编码失败，也保存位置信息
         saveLocationToStorage(locationInfo);
@@ -1838,7 +1831,7 @@ function saveLocationToStorage(location) {
         // 同时发送到服务器保存（如果用户已登录）
         saveLocationToServer(location);
     } catch (e) {
-        console.error('保存位置到本地存储失败:', e);
+        // console.error(...)
     }
 }
 
@@ -1861,7 +1854,7 @@ function saveLocationToServer(location) {
         }
     })
     .catch(error => {
-        console.error('保存位置到服务器请求失败:', error);
+        // console.error(...)
     });
 }
 
@@ -2002,7 +1995,7 @@ function searchLocationOnMap(query) {
             }
         })
         .catch(error => {
-            console.error('位置搜索失败:', error);
+            // console.error(...)
             showCitySuggestions();
         });
 }
@@ -2029,7 +2022,7 @@ function displaySuggestions(suggestions) {
 
 // 从地图选择位置
 function selectLocationFromMap(name, address, lat, lon, event) {
-    console.log('selectLocationFromMap called:', { name, address, lat, lon, event });
+    // console.log(...)
     
     selectedLocation = {
         name: name,
@@ -2052,28 +2045,28 @@ function selectLocationFromMap(name, address, lat, lon, event) {
     
     // 高亮选中的项目
     const items = document.querySelectorAll('.suggestion-item');
-    console.log('Found suggestion items:', items.length);
-    items.forEach(item => item.classList.remove('selected'));
+    // // console.log(...)
+    items.forEach(item => item.classList.remove('selected'));  // 调试信息已隐藏
     
     // 如果传入了event对象，使用它来找到对应的元素
     if (event && event.target) {
-        console.log('Using event.target:', event.target);
-        const targetItem = event.target.closest('.suggestion-item');
-        console.log('Found target item:', targetItem);
+        // // console.log(...)
+        const targetItem = event.target.closest('.suggestion-item');  // 调试信息已隐藏
+        // // console.log(...)
         if (targetItem) {
-            targetItem.classList.add('selected');
-            console.log('Added selected class to:', targetItem);
+            targetItem.classList.add('selected');  // 调试信息已隐藏
+            // // console.log(...)
         }
     } else {
         // 如果没有event对象，通过内容匹配找到对应的元素
         const targetItem = Array.from(items).find(item => {
-            const nameElement = item.querySelector('.suggestion-name');
+            const nameElement = item.querySelector('.suggestion-name');  // 调试信息已隐藏
             return nameElement && nameElement.textContent === name;
         });
-        console.log('Found target item by name:', targetItem);
+        // // console.log(...)
         if (targetItem) {
-            targetItem.classList.add('selected');
-            console.log('Added selected class to:', targetItem);
+            targetItem.classList.add('selected');  // 调试信息已隐藏
+            // console.log(...)
         }
     }
 }
@@ -2101,7 +2094,7 @@ function getCurrentLocationForMap() {
                         }
                     })
                     .catch(error => {
-                        console.error('反向地理编码失败:', error);
+                        // console.error(...)
                         // 使用坐标作为位置
                         selectLocationFromMap(
                             '当前位置',

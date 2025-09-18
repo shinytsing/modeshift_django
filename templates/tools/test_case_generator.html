@@ -908,7 +908,7 @@
             }
             })
             .catch(error => {
-                console.error('创建任务失败:', error);
+                // console.error(...)
                 let errorMsg = '创建任务失败，请稍后重试';
                 if (error.response) {
                     errorMsg = error.response.data.error || `服务器错误 (${error.response.status})`;
@@ -960,7 +960,7 @@
                 }
             })
             .catch(error => {
-                console.error('检查任务状态失败:', error);
+                // console.error(...)
             });
         }
 
@@ -1030,7 +1030,7 @@
             navigator.clipboard.writeText(testCaseText).then(() => {
                 showMessage('内容已复制到剪贴板！', 'success');
             }).catch(err => {
-                console.error('复制失败:', err);
+                // console.error(...)
                 showMessage('复制失败，请手动选择复制', 'error');
             });
         }
@@ -1262,13 +1262,13 @@
                         body: JSON.stringify(notificationData)
                     }).then(response => {
                         if (response.ok) {
-                            console.log('通知已发送到聊天系统');
+                            // // console.log(...)
                         }
                     }).catch(error => {
-                        console.error('发送通知到聊天系统失败:', error);
-                    });
+                        // console.error(...)
+                    });  // 调试信息已隐藏
                 } catch (error) {
-                    console.error('通知系统错误:', error);
+                    // console.error(...)
                 }
             }
         }
@@ -1290,14 +1290,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('系统通知已发送');
+                    // // console.log(...)
                 } else {
-                    console.error('发送系统通知失败:', data.error);
+                    // console.error(...)
                 }
             })
             .catch(error => {
-                console.error('发送系统通知时出错:', error);
-            });
+                // console.error(...)
+            });  // 调试信息已隐藏
         }
 
         function getCookie(name) {

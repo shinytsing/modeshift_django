@@ -307,12 +307,12 @@ function connectWebSocket() {
         };
         
         ws.onerror = function(error) {
-            console.error('WebSocket错误:', error);
+            // console.error(...)
             updateConnectionStatus('disconnected', '连接错误');
         };
         
     } catch (error) {
-        console.error('连接WebSocket失败:', error);
+        // console.error(...)
         updateConnectionStatus('disconnected', '连接失败');
     }
 }
@@ -409,7 +409,7 @@ function loadHistoryMessages() {
             }
         })
         .catch(error => {
-            console.error('加载历史消息失败:', error);
+            // console.error(...)
         });
 }
 

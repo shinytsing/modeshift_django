@@ -46,11 +46,8 @@ class TravelGuide(models.Model):
     is_favorite = models.BooleanField(default=False, verbose_name="是否收藏")
     is_exported = models.BooleanField(default=False, verbose_name="是否已导出")
 
-    # 缓存相关
-    is_cached = models.BooleanField(default=False, verbose_name="是否缓存数据")
-    cache_source = models.CharField(max_length=50, blank=True, null=True, verbose_name="缓存来源")
-    cache_expires_at = models.DateTimeField(blank=True, null=True, verbose_name="缓存过期时间")
-    api_used = models.CharField(max_length=50, default="deepseek", verbose_name="使用的API")
+    # API信息
+    api_used = models.CharField(max_length=50, default="llm_service", verbose_name="使用的API")
     generation_mode = models.CharField(max_length=20, default="standard", verbose_name="生成模式")
 
     class Meta:
@@ -70,87 +67,8 @@ class TravelGuide(models.Model):
     def get_hidden_gems_count(self):
         return len(self.hidden_gems)
 
-    def is_cache_valid(self):
-        """检查缓存是否有效"""
-        if not self.is_cached or not self.cache_expires_at:
-            return False
-        return timezone.now() < self.cache_expires_at
-
-    def get_cache_status(self):
-        """获取缓存状态"""
-        if not self.is_cached:
-            return "not_cached"
-        if self.is_cache_valid():
-            return "valid"
-        return "expired"
 
 
-class TravelGuideCache(models.Model):
-    """旅游攻略缓存模型"""
-
-    CACHE_SOURCE_CHOICES = [
-        ("standard_api", "标准API生成"),
-        ("fast_api", "快速API生成"),
-        ("cached_data", "缓存数据"),
-        ("fallback_data", "备用数据"),
-    ]
-
-    API_SOURCE_CHOICES = [
-        ("deepseek", "DeepSeek API"),
-        ("openai", "OpenAI API"),
-        ("claude", "Claude API"),
-        ("gemini", "Gemini API"),
-        ("free_api_1", "免费API 1"),
-        ("free_api_2", "免费API 2"),
-        ("free_api_3", "免费API 3"),
-        ("fallback", "备用数据"),
-    ]
-
-    # 缓存键（用于查找相同条件的攻略）
-    destination = models.CharField(max_length=200, verbose_name="目的地")
-    travel_style = models.CharField(max_length=50, verbose_name="旅行风格")
-    budget_min = models.IntegerField(default=3000, verbose_name="最低预算(元)")
-    budget_max = models.IntegerField(default=8000, verbose_name="最高预算(元)")
-    budget_amount = models.IntegerField(default=5000, verbose_name="预算金额(元)")
-    budget_range = models.CharField(max_length=50, verbose_name="预算范围")
-    travel_duration = models.CharField(max_length=50, verbose_name="旅行时长")
-    interests_hash = models.CharField(max_length=64, verbose_name="兴趣标签哈希")
-
-    # 缓存数据
-    guide_data = models.JSONField(verbose_name="攻略数据")
-    api_used = models.CharField(max_length=50, choices=API_SOURCE_CHOICES, verbose_name="使用的API")
-    cache_source = models.CharField(max_length=50, choices=CACHE_SOURCE_CHOICES, verbose_name="缓存来源")
-
-    # 缓存元数据
-    generation_time = models.FloatField(verbose_name="生成时间(秒)")
-    data_quality_score = models.FloatField(default=0.0, verbose_name="数据质量评分")
-    usage_count = models.IntegerField(default=0, verbose_name="使用次数")
-
-    # 时间戳
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-    expires_at = models.DateTimeField(verbose_name="过期时间")
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "旅游攻略缓存"
-        verbose_name_plural = "旅游攻略缓存"
-        unique_together = ["destination", "travel_style", "budget_range", "travel_duration", "interests_hash"]
-
-    def __str__(self):
-        return f"{self.destination} - {self.travel_style} - {self.budget_range}"
-
-    def is_expired(self):
-        """检查缓存是否过期"""
-        return timezone.now() > self.expires_at
-
-    def increment_usage(self):
-        """增加使用次数"""
-        self.usage_count += 1
-        self.save(update_fields=["usage_count"])
-
-    def get_cache_key(self):
-        """生成缓存键"""
-        return f"travel_guide_{self.destination}_{self.travel_style}_{self.budget_range}_{self.travel_duration}_{self.interests_hash}"
 
 
 class TravelReview(models.Model):

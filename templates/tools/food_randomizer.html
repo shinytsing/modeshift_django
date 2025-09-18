@@ -1668,7 +1668,7 @@ async function startRandomization() {
         if (data.success && data.recommendation) {
             // 验证数据结构
             if (!data.recommendation.food) {
-                console.error('API返回的数据中缺少food字段:', data.recommendation);
+                // console.error(...)
                 alert('服务器返回的数据格式错误，请重试');
                 resetUI();
                 return;
@@ -1682,12 +1682,12 @@ async function startRandomization() {
                 showResult(data.recommendation.food, data.recommendation.alternatives || []);
             }, 3000);
         } else {
-            console.error('API调用失败:', data);
+            // console.error(...)
             alert('随机选择失败: ' + (data.error || '未知错误'));
             resetUI();
         }
     } catch (error) {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
         resetUI();
     }
@@ -1719,7 +1719,7 @@ async function startPureRandomization() {
         if (data.success && data.recommendation) {
             // 验证数据结构
             if (!data.recommendation.food) {
-                console.error('Pure Random API返回的数据中缺少food字段:', data.recommendation);
+                // console.error(...)
                 alert('服务器返回的数据格式错误，请重试');
                 resetUI();
                 return;
@@ -1733,12 +1733,12 @@ async function startPureRandomization() {
                 showResult(data.recommendation.food, data.recommendation.alternatives || []);
             }, 3000);
         } else {
-            console.error('Pure Random API调用失败:', data);
+            // console.error(...)
             alert('纯随机选择失败: ' + (data.error || '未知错误'));
             resetUI();
         }
     } catch (error) {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
         resetUI();
     }
@@ -1747,7 +1747,7 @@ async function startPureRandomization() {
 function showResult(selectedFood, alternativeFoods) {
     // 添加错误检查
     if (!selectedFood) {
-        console.error('showResult: selectedFood is undefined or null');
+        // console.error(...)
         alert('获取食物数据失败，请重试');
         resetUI();
         return;
@@ -1983,7 +1983,7 @@ async function submitRating() {
             alert('评分提交失败: ' + data.error);
         }
     } catch (error) {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     }
 }

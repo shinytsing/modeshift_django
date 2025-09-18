@@ -753,7 +753,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emojiBtn.style.cursor = 'pointer';
 
     } else {
-        console.error('Emoji button not found!');
+        // console.error(...)
     }
     
     // 初始化发送按钮功能
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.addEventListener('click', handleSendClick);
 
     } else {
-        console.error('Send button not found!');
+        // console.error(...)
     }
 });
 
@@ -814,10 +814,10 @@ function loadMessages() {
                 showRoomEndedMessage();
                 disableChatInput();
             } else {
-                console.error('加载消息失败:', data.error);
+                // console.error(...)
             }
         })
-        .catch(error => console.error('Error loading messages:', error));
+        .catch(error => // console.error(...));
 }
 
 function displayMessages(messages) {
@@ -977,7 +977,7 @@ function sendMessage() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     })
     .finally(() => {
@@ -1057,7 +1057,7 @@ function updateOnlineStatus(status) {
             room_id: roomId
         })
     })
-    .catch(error => console.error('Error updating status:', error));
+    .catch(error => // console.error(...));
 }
 
 function markMessagesAsRead() {
@@ -1080,7 +1080,7 @@ function markMessagesAsRead() {
             }, 500);
         }
     })
-    .catch(error => console.error('Error marking messages as read:', error));
+    .catch(error => // console.error(...));
 }
 
 function showRoomEndedMessage() {
@@ -1202,7 +1202,7 @@ function handleImageUpload(event) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
     
@@ -1241,7 +1241,7 @@ function handleFileUpload(event) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
     
@@ -1289,7 +1289,7 @@ function startRecording() {
             recordingTimer = setInterval(updateRecordingTimer, 1000);
         })
         .catch(error => {
-            console.error('Error accessing microphone:', error);
+            // console.error(...)
             alert('无法访问麦克风');
         });
 }
@@ -1340,7 +1340,7 @@ function sendAudioMessage(audioBlob) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
 }
@@ -1369,7 +1369,7 @@ function deleteMessage(messageId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('网络错误，请重试');
     });
 }

@@ -106,7 +106,6 @@ from .tarot_models import TarotCard, TarotCommunity, TarotCommunityComment, Taro
 from .travel_models import (
     TravelCity,
     TravelGuide,
-    TravelGuideCache,
     TravelGuideUsage,
     TravelPost,
     TravelPostComment,

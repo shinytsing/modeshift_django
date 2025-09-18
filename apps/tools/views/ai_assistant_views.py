@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
 def ai_assistant_api(request):
     """AI助手API - 处理用户消息并返回AI回复"""
     try:

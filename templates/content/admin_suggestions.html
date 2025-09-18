@@ -1172,7 +1172,7 @@ function refreshSuggestions() {
             }
         })
         .catch(error => {
-            console.error('刷新建议列表失败:', error);
+            // console.error(...)
             showNotification('刷新失败，请检查网络连接', 'error');
         });
 }
@@ -1348,7 +1348,7 @@ function batchChangeStatus(newStatus) {
         }
     })
     .catch(error => {
-        console.error('批量状态更改失败:', error);
+        // console.error(...)
         showNotification('❌ 批量状态更改失败，请检查网络连接', 'error');
     });
 }
@@ -1400,7 +1400,7 @@ function quickStatusChange(suggestionId) {
             }
         })
         .catch(error => {
-            console.error('获取建议信息失败:', error);
+            // console.error(...)
             showNotification('获取建议信息失败', 'error');
         });
 }
@@ -1434,7 +1434,7 @@ function saveQuickStatus() {
         }
     })
     .catch(error => {
-        console.error('状态更改失败:', error);
+        // console.error(...)
         showNotification('状态更改失败', 'error');
     });
 }
@@ -1642,7 +1642,7 @@ function showSuggestionDetail(suggestionId) {
             }
         })
         .catch(error => {
-            console.error('获取建议详情失败:', error);
+            // console.error(...)
             alert('获取建议详情失败');
         });
 }
@@ -1673,7 +1673,7 @@ function quickReply(suggestionId) {
             }
         })
         .catch(error => {
-            console.error('获取建议信息失败:', error);
+            // console.error(...)
             alert('获取建议信息失败');
         });
 }
@@ -1715,7 +1715,7 @@ function saveQuickReply() {
         }
     })
     .catch(error => {
-        console.error('保存回复失败:', error);
+        // console.error(...)
         showNotification('保存失败', 'error');
     });
 }
@@ -1757,7 +1757,7 @@ function saveDetailReply() {
         }
     })
     .catch(error => {
-        console.error('保存回复失败:', error);
+        // console.error(...)
         showNotification('保存失败', 'error');
     });
 }
@@ -1828,7 +1828,7 @@ function manageUser(userId) {
             }
         })
         .catch(error => {
-            console.error('获取用户信息失败:', error);
+            // console.error(...)
             showNotification('获取用户信息失败', 'error');
         });
 }
@@ -1860,7 +1860,7 @@ function changeUserStatus(userId) {
             }
         })
         .catch(error => {
-            console.error('更改用户状态失败:', error);
+            // console.error(...)
             showNotification('更改失败', 'error');
         });
     }
@@ -1892,7 +1892,7 @@ function changeUserMembership(userId) {
             }
         })
         .catch(error => {
-            console.error('更改用户会员失败:', error);
+            // console.error(...)
             showNotification('更改失败', 'error');
         });
     }
@@ -1924,7 +1924,7 @@ function changeUserRole(userId) {
             }
         })
         .catch(error => {
-            console.error('更改用户角色失败:', error);
+            // console.error(...)
             showNotification('更改失败', 'error');
         });
     }

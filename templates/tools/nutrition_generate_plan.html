@@ -386,7 +386,7 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('生成失败，请重试');
         loadingSpinner.style.display = 'none';
         btn.style.display = 'block';

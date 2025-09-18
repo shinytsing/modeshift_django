@@ -235,10 +235,10 @@ async function recordModeClick(mode) {
     if (data.success) {
 
     } else {
-      console.error('模式点击记录失败:', data.error);
+      // console.error(...)
     }
   } catch (error) {
-    console.error('记录模式点击时出错:', error);
+    // console.error(...)
   }
 }
 
@@ -339,11 +339,11 @@ async function getUserPreferredMode() {
     if (data.success) {
       return data.preferred_mode;
     } else {
-      console.error('获取用户偏好模式失败:', data.error);
+      // console.error(...)
       return 'work'; // 默认极客模式
     }
   } catch (error) {
-    console.error('获取用户偏好模式时出错:', error);
+    // console.error(...)
     return 'work'; // 默认极客模式
   }
 }
@@ -407,7 +407,7 @@ async function autoSelectPreferredMode() {
       }
     }
   } catch (error) {
-    console.error('检查模式统计时出错:', error);
+    // console.error(...)
   }
 }
 

@@ -324,7 +324,7 @@ async function loadActiveChatRooms() {
         }
         
     } catch (error) {
-        console.error('加载聊天室信息失败:', error);
+        // console.error(...)
         showError(error.message);
     } finally {
         loadingEl.style.display = 'none';
@@ -428,7 +428,7 @@ async function leaveRoom(roomId) {
         // 目前只是刷新页面
         loadActiveChatRooms();
     } catch (error) {
-        console.error('离开聊天室失败:', error);
+        // console.error(...)
         alert('离开聊天室失败: ' + error.message);
     }
 }

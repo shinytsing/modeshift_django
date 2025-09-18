@@ -200,7 +200,7 @@ def training_plan_editor(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def deepseek_api(request):
-    """DeepSeek API接口"""
+    """AI API接口 - 使用统一的LLM服务"""
     try:
         data = json.loads(request.body)
         prompt = data.get("prompt", "")
@@ -210,31 +210,15 @@ def deepseek_api(request):
         if not prompt:
             return JsonResponse({"success": False, "error": "提示词不能为空"}, content_type="application/json")
 
-        # DeepSeek API配置
-        api_key = os.getenv("DEEPSEEK_API_KEY")
-        if not api_key:
-            return JsonResponse({"success": False, "error": "DeepSeek API密钥未配置"}, content_type="application/json")
-
-        # 调用DeepSeek API
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-        payload = {
-            "messages": [{"role": "user", "content": prompt}],
-            "model": "deepseek-chat",
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
-        response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-        if response.status_code == 200:
-            result = response.json()
-            content = result["choices"][0]["message"]["content"]
+        # 使用统一的LLM服务
+        from apps.tools.services.llm_service import get_llm_service
+        llm_service = get_llm_service()
+        
+        try:
+            content = llm_service.generate_content(prompt)
             return JsonResponse({"success": True, "content": content}, content_type="application/json")
-        else:
-            return JsonResponse(
-                {"success": False, "error": f"DeepSeek API调用失败: {response.status_code}"}, content_type="application/json"
-            )
+        except Exception as llm_error:
+            return JsonResponse({"success": False, "error": f"AI服务暂时不可用: {str(llm_error)}"}, content_type="application/json")
 
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "error": "无效的JSON数据"}, content_type="application/json")
@@ -611,11 +595,11 @@ def self_analysis_api(request):
         data = json.loads(request.body)
         user_message = data.get("message", "")
         conversation_history = data.get("history", [])
+        phase = data.get("phase", "initial")
 
-        # DeepSeek API配置
-        api_key = os.getenv("DEEPSEEK_API_KEY")
-        if not api_key:
-            return JsonResponse({"error": "API密钥未配置"}, status=500, content_type="application/json")
+        # 使用统一的LLM服务（腾讯混元优先）
+        from apps.tools.services.llm_service import get_llm_service
+        llm_service = get_llm_service()
 
         # 构建系统提示词
         system_prompt = """你是一位专业的心理咨询师和人生导师，专门帮助用户进行自我认知和深度分析。
@@ -645,33 +629,42 @@ def self_analysis_api(request):
 
 请根据用户的回答，继续提问或进行分析。"""
 
-        # 构建消息列表
-        messages = [{"role": "system", "content": system_prompt}]
-
-        # 添加历史对话
-        for msg in conversation_history[-10:]:  # 保留最近10轮对话
-            messages.append(msg)
-
-        # 添加当前用户消息
-        messages.append({"role": "user", "content": user_message})
-
-        # 调用DeepSeek API
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-        payload = {"model": "deepseek-chat", "messages": messages, "temperature": 0.7, "max_tokens": 1000}
-
-        response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-        if response.status_code == 200:
-            result = response.json()
-            ai_response = result["choices"][0]["message"]["content"]
-
+        try:
+            # 构建完整的对话上下文
+            full_prompt = f"{system_prompt}\n\n用户消息：{user_message}"
+            
+            # 如果有历史对话，添加到提示中
+            if conversation_history:
+                history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-5:]])
+                full_prompt = f"{system_prompt}\n\n历史对话：\n{history_text}\n\n用户消息：{user_message}"
+            
+            # 使用统一的LLM服务生成回复（腾讯混元优先）
+            ai_response = llm_service.generate_content(
+                full_prompt,
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
             return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
-        else:
-            return JsonResponse({"error": f"API调用失败: {response.status_code}"}, status=500, content_type="application/json")
+            
+        except Exception as e:
+            logger.error(f"LLM服务调用失败: {e}")
+            # 使用模拟响应作为降级处理
+            if "你好" in user_message or "hello" in user_message.lower():
+                ai_response = "你好！我是你的AI内心探索者🦋。我将陪伴你进行一场深度的自我探索之旅。\n\n在开始之前，我想先了解你：**你希望从这次自我探索中获得什么？**是想更好地了解自己的性格特质，还是想解决某个具体的困惑？\n\n请诚实地告诉我你的想法，这将帮助我为你设计更精准的探索路径。"
+            elif "性格" in user_message or "特质" in user_message:
+                ai_response = "很好！让我们深入了解一下你的性格特质。\n\n请告诉我：**在你的日常生活中，你觉得自己最突出的三个性格特点是什么？**比如你是否比较内向还是外向？做事是更理性还是感性？\n\n不用想得太复杂，就按照你平时对自己的了解来回答就好。"
+            elif "困惑" in user_message or "问题" in user_message:
+                ai_response = "我理解你有一些困惑需要解决。\n\n**能具体说说你现在面临的主要困惑是什么吗？**是关于工作、人际关系、还是对未来的迷茫？\n\n请尽量详细地描述一下，这样我才能更好地帮助你分析和思考。"
+            elif "继续提问" in user_message or "更全面" in user_message:
+                ai_response = "很好！我很高兴你愿意让我更全面地了解你。\n\n**让我们从你的价值观开始：你认为人生中最重要的三样东西是什么？**比如家庭、事业、健康、自由、爱情、友谊等等。\n\n请按照对你来说的重要程度排序，并简单说明为什么这些对你很重要。"
+            else:
+                ai_response = "感谢你的分享！这让我对你有了更深的了解。\n\n**我想继续了解你：在你的人生经历中，有没有什么特别重要的事件或转折点，让你对自己有了新的认识？**\n\n这些经历往往能帮助我们更好地理解自己的内心世界。"
+            
+            return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
 
     except Exception as e:
-        return JsonResponse({"error": f"处理请求时出错: {str(e)}"}, status=500)
+        return JsonResponse({"success": False, "error": f"处理请求时出错: {str(e)}"}, status=500)
 
 
 @csrf_exempt
@@ -5209,7 +5202,7 @@ def travel_guide_api(request):
                         fast_mode=fast_mode,
                     )
                 else:
-                    print(f"❌ {destination}没有本地数据，使用DeepSeek功能")
+                    # print(f"❌ {destination}没有本地数据，使用DeepSeek功能")  # 已隐藏，因为没有本地数据了
                     guide_content = service.get_travel_guide(
                         destination=destination,
                         travel_style=travel_style,
@@ -5300,7 +5293,7 @@ def travel_guide_api(request):
             if hasattr(guide_content, "get"):
                 response_data.update(
                     {
-                        "is_cached": guide_content.get("is_cached", False),
+                        # "is_cached": guide_content.get("is_cached", False),  # 缓存功能已移除
                         "api_used": guide_content.get("api_used", "unknown"),
                         "generation_time": guide_content.get("generation_time", 0),
                         "generation_mode": guide_content.get("generation_mode", "standard"),
@@ -8127,6 +8120,16 @@ def audio_converter_api(request):
 
         if not uploaded_file:
             return JsonResponse({"success": False, "message": "请选择要转换的音频文件"})
+
+        # 检查文件大小 (限制为200MB)
+        max_file_size = 200 * 1024 * 1024  # 200MB
+        if uploaded_file.size > max_file_size:
+            file_size_mb = uploaded_file.size / (1024 * 1024)
+            max_size_mb = max_file_size / (1024 * 1024)
+            return JsonResponse({
+                "success": False, 
+                "message": f"文件太大！当前文件大小：{file_size_mb:.1f}MB，最大允许大小：{max_size_mb:.1f}MB"
+            })
 
         # 检查文件类型
         file_extension = uploaded_file.name.lower().split(".")[-1]

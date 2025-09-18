@@ -134,7 +134,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "用户角色",
                 "verbose_name_plural": "用户角色",
-                "db_table": "apps.users_userrole",
+                "db_table": "apps_users_userrole",
             },
         ),
         migrations.CreateModel(

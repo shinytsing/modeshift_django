@@ -1435,7 +1435,7 @@ async function switchGlobalThemeWithRefresh(theme) {
     }, 800); // 延迟800ms让用户看到成功提示
     
   } catch (error) {
-    console.error('主题切换失败:', error);
+    // console.error(...)
     showMessage('主题切换失败: ' + error.message, 'error');
   }
 }
@@ -1490,7 +1490,7 @@ async function switchGlobalThemeFallback(theme) {
     showMessage(`已切换到${themeNames[theme]}模式`, 'success');
     
   } catch (error) {
-    console.error('备用主题切换失败:', error);
+    // console.error(...)
     throw error;
   }
 }
@@ -1971,7 +1971,7 @@ document.getElementById('saveDiary').addEventListener('click', async function() 
       showMessage(data.error || '保存失败', 'error');
     }
   } catch (error) {
-    console.error('保存失败:', error);
+    // console.error(...)
     showMessage('保存失败，请重试', 'error');
   }
 });

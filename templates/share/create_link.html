@@ -276,7 +276,7 @@ document.getElementById('createLinkForm').addEventListener('submit', function(e)
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         showError('网络错误，请重试');
     })
     .finally(() => {

@@ -16,6 +16,12 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# 导入LLM服务
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from .llm_service import get_llm_service
+
 
 class RealDataTravelService:
     """真实数据旅游服务 - 使用DeepSeek API获取真实数据"""
@@ -33,11 +39,8 @@ class RealDataTravelService:
         # 配置优化的超时时间
         self.session.timeout = (5, 30)  # (连接超时, 读取超时) - 减少等待时间
 
-        # DeepSeek API配置
-        self.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
-        if not self.deepseek_api_key:
-            raise ValueError("DEEPSEEK_API_KEY environment variable is required")
-        self.deepseek_base_url = "https://api.deepseek.com/v1"
+        # 使用统一的LLM服务
+        self.llm_service = get_llm_service()
 
         # 免费API配置
         self.free_apis = {
@@ -213,52 +216,41 @@ class RealDataTravelService:
             logger.error(f"❌ 快速旅游攻略生成失败: {e}")
             return self._generate_fallback_guide(destination, travel_style, budget_range, travel_duration, interests)
 
-    def _call_deepseek_api(self, prompt: str, max_tokens: int = 8000) -> str:  # 增加token数量到8000
-        """调用DeepSeek API，带重试机制"""
+    def _call_llm_api(self, prompt: str, max_tokens: int = 8000) -> str:  # 增加token数量到8000
+        """调用LLM服务，带重试机制"""
         import time
 
         for attempt in range(self.max_retries):
             try:
-                url = f"{self.deepseek_base_url}/chat/completions"
-                headers = {"Authorization": f"Bearer {self.deepseek_api_key}", "Content-Type": "application/json"}
-
-                data = {
-                    "model": "deepseek-chat",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": max_tokens,
-                    "temperature": 0.7,
-                }
-
-                logger.info(f"🔄 DeepSeek API调用尝试 {attempt + 1}/{self.max_retries}")
-                response = self.session.post(url, headers=headers, json=data)
-
-                if response.status_code == 200:
-                    result = response.json()
-                    logger.info("✅ DeepSeek API调用成功")
-                    return result["choices"][0]["message"]["content"]
+                logger.info(f"🔄 LLM服务调用尝试 {attempt + 1}/{self.max_retries}")
+                
+                # 使用LLM服务生成内容
+                content = self.llm_service.generate_content(
+                    prompt,
+                    system_prompt="你是一个专业的旅游攻略生成助手，请生成详细、实用的旅游攻略。",
+                    max_tokens=max_tokens,
+                    temperature=0.7
+                )
+                
+                if content:
+                    logger.info("✅ LLM服务调用成功")
+                    return content
                 else:
-                    logger.warning(f"⚠️ DeepSeek API调用失败: {response.status_code} - {response.text}")
+                    logger.warning(f"⚠️ LLM服务返回空内容")
                     if attempt < self.max_retries - 1:
                         time.sleep(self.retry_delay * (attempt + 1))
                         continue
                     else:
                         return ""
 
-            except requests.exceptions.Timeout:
-                logger.warning(f"⏰ DeepSeek API调用超时 (尝试 {attempt + 1}/{self.max_retries})")
+            except Exception as e:
+                logger.warning(f"⚠️ LLM服务调用失败: {e}")
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay * (attempt + 1))
                     continue
                 else:
-                    logger.error("❌ DeepSeek API调用最终超时")
+                    logger.error("❌ LLM服务调用最终失败")
                     return ""
-
-            except requests.exceptions.ConnectionError as e:
-                logger.warning(f"🔌 DeepSeek API连接错误 (尝试 {attempt + 1}/{self.max_retries}): {e}")
-                if attempt < self.max_retries - 1:
-                    time.sleep(self.retry_delay * (attempt + 1))
-                    continue
-                else:
                     logger.error("❌ DeepSeek API连接最终失败")
                     return ""
 
@@ -318,7 +310,7 @@ class RealDataTravelService:
 
 只返回JSON格式，不要其他内容。确保JSON格式正确，可以被解析。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=3000)
+            response = self._call_llm_api(prompt, max_tokens=3000)
 
             if response:
                 # 尝试解析JSON
@@ -422,7 +414,7 @@ class RealDataTravelService:
 
 只返回JSON格式，不要其他内容。确保JSON格式正确，可以被解析。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=3000)
+            response = self._call_llm_api(prompt, max_tokens=3000)
 
             if response:
                 try:
@@ -521,7 +513,7 @@ class RealDataTravelService:
 
 只返回JSON格式，不要其他内容。确保JSON格式正确，可以被解析。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=2500)
+            response = self._call_llm_api(prompt, max_tokens=2500)
 
             if response:
                 try:
@@ -576,7 +568,7 @@ class RealDataTravelService:
 
 只返回JSON格式，不要其他内容。确保JSON格式正确，可以被解析。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=2000)
+            response = self._call_llm_api(prompt, max_tokens=2000)
 
             if response:
                 try:
@@ -626,7 +618,7 @@ class RealDataTravelService:
 
 请确保返回的是有效的JSON格式，不要包含任何解释文字。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=1000)
+            response = self._call_llm_api(prompt, max_tokens=1000)
 
             if response:
                 # 清理响应文本，移除可能的非JSON内容
@@ -701,7 +693,7 @@ class RealDataTravelService:
 
 请确保返回的是有效的JSON格式，不要包含任何解释文字。"""
 
-            response = self._call_deepseek_api(prompt, max_tokens=800)
+            response = self._call_llm_api(prompt, max_tokens=800)
 
             if response:
                 # 清理响应文本，移除可能的非JSON内容
@@ -954,7 +946,7 @@ class RealDataTravelService:
 
 请确保所有信息都基于提供的真实数据，内容要极其详细实用，便于游客参考。每个部分都要有具体的建议和实用的信息。"""
 
-            return self._call_deepseek_api(prompt, max_tokens=4000)  # 增加token数量
+            return self._call_llm_api(prompt, max_tokens=4000)  # 增加token数量
 
         except Exception as e:
             logger.error(f"生成完整攻略失败: {e}")

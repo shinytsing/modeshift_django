@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器分析仪表盘 - 管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .growth-positive {
+            color: #27ae60;
+        }
+        
+        .growth-negative {
+            color: #e74c3c;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background-color: #27ae60;
+        }
+        
+        .status-warning {
+            background-color: #f39c12;
+        }
+        
+        .status-error {
+            background-color: #e74c3c;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: #2c3e50 !important;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .sidebar .nav-link {
+            color: white;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-custom {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-2 sidebar">
+                <div class="text-center mb-4">
+                    <h4 class="text-white">服务器分析</h4>
+                    <small class="text-white-50">管理员仪表盘</small>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="overview">
+                        <i class="bi bi-speedometer2 me-2"></i>概览
+                    </a>
+                    <a class="nav-link" href="#" data-section="realtime">
+                        <i class="bi bi-activity me-2"></i>实时监控
+                    </a>
+                    <a class="nav-link" href="#" data-section="users">
+                        <i class="bi bi-people me-2"></i>用户分析
+                    </a>
+                    <a class="nav-link" href="#" data-section="api">
+                        <i class="bi bi-gear me-2"></i>API分析
+                    </a>
+                    <a class="nav-link" href="#" data-section="system">
+                        <i class="bi bi-server me-2"></i>系统监控
+                    </a>
+                    <a class="nav-link" href="#" data-section="errors">
+                        <i class="bi bi-exclamation-triangle me-2"></i>错误分析
+                    </a>
+                    <a class="nav-link" href="#" data-section="reports">
+                        <i class="bi bi-file-earmark-text me-2"></i>报告
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- 主内容区 -->
+            <div class="col-md-10 main-content">
+                <!-- 页面标题 -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 id="page-title">服务器分析概览</h2>
+                    <div>
+                        <button class="btn btn-outline-primary btn-custom" onclick="refreshData()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>刷新数据
+                        </button>
+                        <button class="btn btn-primary btn-custom" onclick="exportData()">
+                            <i class="bi bi-download me-2"></i>导出数据
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 消息区域 -->
+                <div id="message-area"></div>
+                
+                <!-- 加载指示器 -->
+                <div class="loading-spinner" id="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在加载数据...</p>
+                </div>
+                
+                <!-- 概览页面 -->
+                <div id="overview-section" class="content-section">
+                    <!-- 关键指标卡片 -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="metric-card text-center">
+                                <div class="metric-value" id="total-users">-</div>
+                                <div class="metric-label">总用户数</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card text-center">
+                                <div class="metric-value" id="active-users">-</div>
+                                <div class="metric-label">今日活跃用户</div>
+                                <small id="active-users-growth" class="growth-positive"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card text-center">
+                                <div class="metric-value" id="api-calls">-</div>
+                                <div class="metric-label">今日API调用</div>
+                                <small id="api-calls-growth" class="growth-positive"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card text-center">
+                                <div class="metric-value" id="page-views">-</div>
+                                <div class="metric-label">今日页面浏览</div>
+                                <small id="page-views-growth" class="growth-positive"></small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 图表区域 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>API调用趋势</h5>
+                                <canvas id="api-trend-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>活跃用户趋势</h5>
+                                <canvas id="user-trend-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>响应时间分布</h5>
+                                <canvas id="response-time-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>状态码分布</h5>
+                                <canvas id="status-code-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 实时监控页面 -->
+                <div id="realtime-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>CPU使用率</h6>
+                                <div class="metric-value" id="cpu-percent">-</div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" id="cpu-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>内存使用率</h6>
+                                <div class="metric-value" id="memory-percent">-</div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" id="memory-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <h6>磁盘使用率</h6>
+                                <div class="metric-value" id="disk-percent">-</div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" id="disk-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>系统负载</h5>
+                                <canvas id="system-load-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>网络流量</h5>
+                                <canvas id="network-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户分析页面 -->
+                <div id="users-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="chart-container">
+                                <h5>用户活动类型分布</h5>
+                                <canvas id="user-activity-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>活动类型</th>
+                                            <th>IP地址</th>
+                                            <th>端点</th>
+                                            <th>状态码</th>
+                                            <th>时间</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-activity-table">
+                                        <!-- 动态填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API分析页面 -->
+                <div id="api-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>端点</th>
+                                            <th>方法</th>
+                                            <th>调用次数</th>
+                                            <th>平均响应时间</th>
+                                            <th>错误率</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="api-stats-table">
+                                        <!-- 动态填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统监控页面 -->
+                <div id="system-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>数据库连接</h5>
+                                <canvas id="db-connections-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <h5>数据库大小</h5>
+                                <div id="db-size-info" class="text-center">
+                                    <div class="metric-value" id="db-size">-</div>
+                                    <div class="metric-label">数据库大小</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 错误分析页面 -->
+                <div id="errors-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>错误类型</th>
+                                            <th>严重程度</th>
+                                            <th>消息</th>
+                                            <th>用户</th>
+                                            <th>IP地址</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="errors-table">
+                                        <!-- 动态填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 报告页面 -->
+                <div id="reports-section" class="content-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>报告类型</th>
+                                            <th>标题</th>
+                                            <th>时间范围</th>
+                                            <th>创建人</th>
+                                            <th>创建时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reports-table">
+                                        <!-- 动态填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // 全局变量
+        let charts = {};
+        let refreshInterval;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            setupEventListeners();
+            loadDashboardData();
+            
+            // 设置自动刷新
+            refreshInterval = setInterval(loadDashboardData, 30000); // 30秒刷新一次
+        });
+        
+        // 初始化仪表盘
+        function initializeDashboard() {
+            // 初始化图表
+            initializeCharts();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 侧边栏导航
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // 更新活动状态
+                    document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+        
+        // 显示指定部分
+        function showSection(sectionName) {
+            // 隐藏所有部分
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // 显示指定部分
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // 更新页面标题
+            const titles = {
+                'overview': '服务器分析概览',
+                'realtime': '实时监控',
+                'users': '用户分析',
+                'api': 'API分析',
+                'system': '系统监控',
+                'errors': '错误分析',
+                'reports': '分析报告'
+            };
+            document.getElementById('page-title').textContent = titles[sectionName] || '服务器分析';
+            
+            // 加载对应数据
+            loadSectionData(sectionName);
+        }
+        
+        // 加载仪表盘数据
+        async function loadDashboardData() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('/api/analytics/dashboard/', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('获取数据失败');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateDashboardData(result.data);
+                    showMessage('数据更新成功', 'success');
+                } else {
+                    throw new Error(result.error || '未知错误');
+                }
+                
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                showMessage('加载数据失败: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 更新仪表盘数据
+        function updateDashboardData(data) {
+            // 更新概览指标
+            if (data.overview) {
+                const overview = data.overview.today;
+                const growth = data.overview.growth_rates;
+                
+                document.getElementById('total-users').textContent = overview.total_users || 0;
+                document.getElementById('active-users').textContent = overview.active_users || 0;
+                document.getElementById('api-calls').textContent = overview.api_calls || 0;
+                document.getElementById('page-views').textContent = overview.page_views || 0;
+                
+                // 更新增长率
+                updateGrowthRate('active-users-growth', growth.active_users);
+                updateGrowthRate('api-calls-growth', growth.api_calls);
+                updateGrowthRate('page-views-growth', growth.page_views);
+            }
+            
+            // 更新图表
+            if (data.hourly_trends) {
+                updateTrendCharts(data.hourly_trends);
+            }
+            
+            if (data.api_usage) {
+                updateApiCharts(data.api_usage);
+            }
+            
+            if (data.system_metrics) {
+                updateSystemMetrics(data.system_metrics);
+            }
+        }
+        
+        // 更新增长率显示
+        function updateGrowthRate(elementId, rate) {
+            const element = document.getElementById(elementId);
+            if (element && rate !== undefined) {
+                element.textContent = `${rate > 0 ? '+' : ''}${rate}%`;
+                element.className = rate >= 0 ? 'growth-positive' : 'growth-negative';
+            }
+        }
+        
+        // 更新趋势图表
+        function updateTrendCharts(trends) {
+            // API调用趋势
+            if (charts['api-trend-chart'] && trends.api_calls) {
+                charts['api-trend-chart'].data.labels = trends.api_calls.map(item => `${item.hour}:00`);
+                charts['api-trend-chart'].data.datasets[0].data = trends.api_calls.map(item => item.count);
+                charts['api-trend-chart'].update();
+            }
+            
+            // 活跃用户趋势
+            if (charts['user-trend-chart'] && trends.active_users) {
+                charts['user-trend-chart'].data.labels = trends.active_users.map(item => `${item.hour}:00`);
+                charts['user-trend-chart'].data.datasets[0].data = trends.active_users.map(item => item.count);
+                charts['user-trend-chart'].update();
+            }
+        }
+        
+        // 更新API图表
+        function updateApiCharts(apiUsage) {
+            // 响应时间分布
+            if (charts['response-time-chart'] && apiUsage.response_time_distribution) {
+                charts['response-time-chart'].data.labels = apiUsage.response_time_distribution.map(item => item.range);
+                charts['response-time-chart'].data.datasets[0].data = apiUsage.response_time_distribution.map(item => item.count);
+                charts['response-time-chart'].update();
+            }
+            
+            // 状态码分布
+            if (charts['status-code-chart'] && apiUsage.status_codes) {
+                charts['status-code-chart'].data.labels = apiUsage.status_codes.map(item => item.status_code);
+                charts['status-code-chart'].data.datasets[0].data = apiUsage.status_codes.map(item => item.count);
+                charts['status-code-chart'].update();
+            }
+        }
+        
+        // 更新系统指标
+        function updateSystemMetrics(systemMetrics) {
+            if (systemMetrics.cpu) {
+                document.getElementById('cpu-percent').textContent = systemMetrics.cpu.percent.toFixed(1) + '%';
+                document.getElementById('cpu-progress').style.width = systemMetrics.cpu.percent + '%';
+            }
+            
+            if (systemMetrics.memory) {
+                document.getElementById('memory-percent').textContent = systemMetrics.memory.percent.toFixed(1) + '%';
+                document.getElementById('memory-progress').style.width = systemMetrics.memory.percent + '%';
+            }
+            
+            if (systemMetrics.disk) {
+                document.getElementById('disk-percent').textContent = systemMetrics.disk.percent.toFixed(1) + '%';
+                document.getElementById('disk-progress').style.width = systemMetrics.disk.percent + '%';
+            }
+        }
+        
+        // 加载部分数据
+        async function loadSectionData(sectionName) {
+            // 根据部分名称加载相应数据
+            switch (sectionName) {
+                case 'realtime':
+                    await loadRealTimeData();
+                    break;
+                case 'users':
+                    await loadUserData();
+                    break;
+                case 'api':
+                    await loadApiData();
+                    break;
+                case 'system':
+                    await loadSystemData();
+                    break;
+                case 'errors':
+                    await loadErrorData();
+                    break;
+                case 'reports':
+                    await loadReportData();
+                    break;
+            }
+        }
+        
+        // 加载实时数据
+        async function loadRealTimeData() {
+            try {
+                const response = await fetch('/api/analytics/realtime/', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        updateSystemMetrics(result.data.system_metrics);
+                    }
+                }
+            } catch (error) {
+                console.error('加载实时数据失败:', error);
+            }
+        }
+        
+        // 加载用户数据
+        async function loadUserData() {
+            // 实现用户数据加载逻辑
+            console.log('加载用户数据');
+        }
+        
+        // 加载API数据
+        async function loadApiData() {
+            // 实现API数据加载逻辑
+            console.log('加载API数据');
+        }
+        
+        // 加载系统数据
+        async function loadSystemData() {
+            // 实现系统数据加载逻辑
+            console.log('加载系统数据');
+        }
+        
+        // 加载错误数据
+        async function loadErrorData() {
+            // 实现错误数据加载逻辑
+            console.log('加载错误数据');
+        }
+        
+        // 加载报告数据
+        async function loadReportData() {
+            // 实现报告数据加载逻辑
+            console.log('加载报告数据');
+        }
+        
+        // 初始化图表
+        function initializeCharts() {
+            // API趋势图表
+            charts['api-trend-chart'] = new Chart(document.getElementById('api-trend-chart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'API调用次数',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 用户趋势图表
+            charts['user-trend-chart'] = new Chart(document.getElementById('user-trend-chart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '活跃用户数',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 响应时间分布图表
+            charts['response-time-chart'] = new Chart(document.getElementById('response-time-chart'), {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+            
+            // 状态码分布图表
+            charts['status-code-chart'] = new Chart(document.getElementById('status-code-chart'), {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '请求次数',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 刷新数据
+        function refreshData() {
+            loadDashboardData();
+        }
+        
+        // 导出数据
+        function exportData() {
+            // 实现数据导出逻辑
+            showMessage('导出功能开发中...', 'info');
+        }
+        
+        // 显示加载状态
+        function showLoading(show) {
+            const spinner = document.getElementById('loading-spinner');
+            if (spinner) {
+                spinner.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('message-area');
+            const messageClass = type === 'error' ? 'error-message' : 
+                                type === 'success' ? 'success-message' : 'info-message';
+            
+            messageArea.innerHTML = `<div class="${messageClass}" style="display: block;">${message}</div>`;
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 3000);
+        }
+        
+        // 获取CSRF令牌
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

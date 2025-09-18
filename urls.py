@@ -94,10 +94,15 @@ urlpatterns = [
     path("version-history/", version_history_view, name="version_history"),
     path("help/", help_page_view, name="help_page"),
     path("admin/", admin.site.urls),
+    # Trojan代理服务重定向（兼容性）
+    path("trojan/", RedirectView.as_view(url="/tools/trojan/", permanent=False)),
+    path("trojan/<path:path>", RedirectView.as_view(url="/tools/trojan/%(path)s", permanent=False)),
     # 工具主页面路由
     # 工具子路由（包含测试用例生成器等）
     path("tools/", include("apps.tools.urls", namespace="tools")),
     path("users/", include("apps.users.urls", namespace="users")),
+    # Google OAuth 直接路径（避免 /users/ 前缀）
+    path("auth/google/", include("apps.users.google_auth_urls", namespace="auth")),
     path("content/", include("apps.content.urls", namespace="content")),
     path("share/", include("apps.share.urls", namespace="share")),
     # allauth URLs

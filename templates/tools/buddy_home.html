@@ -852,7 +852,7 @@ function getLocationInfo() {
             showLocationInfo(userLocation);
             return; // 用户已手动设置位置，不再自动定位
         } catch (e) {
-            console.error('解析用户设置的位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -888,20 +888,20 @@ function getLocationInfo() {
                         };
                         showLocationInfo(userLocation);
                         localStorage.setItem('user_location', JSON.stringify(userLocation));
-                        console.log('GPS定位成功:', userLocation);
+                        // // console.log(...)
                     } else {
                         // GPS定位失败，使用IP定位
-                        getIPLocation();
+                        getIPLocation();  // 调试信息已隐藏
                     }
                 })
                 .catch(error => {
-                    console.error('反向地理编码失败:', error);
+                    // console.error(...)
                     // GPS定位失败，使用IP定位
                     getIPLocation();
                 });
             },
             function(error) {
-                console.error('GPS定位失败:', error);
+                // console.error(...)
                 // GPS定位失败，使用IP定位
                 getIPLocation();
             },
@@ -931,7 +931,7 @@ function getIPLocation() {
                 return;
             }
         } catch (e) {
-            console.error('解析缓存位置数据失败:', e);
+            // console.error(...)
         }
     }
     
@@ -946,12 +946,12 @@ function getIPLocation() {
                 };
                 showLocationInfo(userLocation);
                 localStorage.setItem('user_location', JSON.stringify(userLocation));
-                console.log('IP定位成功:', userLocation);
+                // // console.log(...)
             }
         })
         .catch(error => {
-            console.error('获取IP位置信息失败:', error);
-        });
+            // console.error(...)
+        });  // 调试信息已隐藏
 }
 
 // 显示位置信息
@@ -975,14 +975,7 @@ function showLocationInfo(location) {
         locationDisplay.style.display = 'block';
         
         // 在控制台输出详细位置信息用于调试
-        console.log('当前位置信息:', {
-            city: location.city,
-            region: location.region,
-            address: location.address,
-            lat: location.lat,
-            lon: location.lon,
-            source: location.source
-        });
+        // console.log(...)
     } else {
         locationDisplay.style.display = 'none';
     }
@@ -1041,13 +1034,13 @@ function reLocateUser() {
                     }
                 })
                 .catch(error => {
-                    console.error('反向地理编码失败:', error);
+                    // console.error(...)
                     // 如果反向地理编码失败，使用IP定位
                     getLocationInfo();
                 });
             },
             function(error) {
-                console.error('GPS定位失败:', error);
+                // console.error(...)
                 // GPS定位失败，使用IP定位
                 getLocationInfo();
             },
@@ -1112,7 +1105,7 @@ function saveLocation() {
             }
         })
         .catch(error => {
-            console.error('位置更新失败:', error);
+            // console.error(...)
             // 使用默认位置信息
             userLocation = {
                 city: city,
@@ -1172,7 +1165,7 @@ function loadEvents(page = 1) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            // console.error(...)
             document.getElementById('events-container').innerHTML = 
                 '<div class="no-events"><h3>网络错误</h3><p>请检查网络连接后重试</p></div>';
         });
@@ -1222,12 +1215,12 @@ function searchEvents() {
                 const totalCount = data.pagination.total;
                 showSearchResultTip(searchTerm, resultsCount, totalCount);
             } else {
-                console.error('搜索失败:', data.error);
+                // console.error(...)
                 showErrorMessage('搜索失败: ' + (data.error || '未知错误'));
             }
         })
         .catch(error => {
-            console.error('搜索请求失败:', error);
+            // console.error(...)
             searchBtn.textContent = originalText;
             searchBtn.disabled = false;
             showErrorMessage('搜索请求失败，请重试');
@@ -1300,7 +1293,7 @@ function displayEvents(events) {
     
     // 检查events是否存在且为数组
     if (!events || !Array.isArray(events)) {
-        console.error('displayEvents: events参数无效', events);
+        // console.error(...)
         container.innerHTML = `
             <div class="no-events error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -1408,7 +1401,7 @@ function joinEvent(eventId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        // console.error(...)
         alert('申请失败，请重试');
     });
 }

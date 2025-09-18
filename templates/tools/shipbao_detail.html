@@ -1087,16 +1087,16 @@ function initializeFavoriteButton() {
         // 如果是卖家，不显示收藏按钮是正常的
         const isSeller = {{ item.seller.id|default:"null" }} === {{ user.id|default:"null" }};
         if (!isSeller) {
-            console.warn('初始化时未找到收藏按钮');
+            // // console.warn(...)
             // 延迟一段时间再尝试
             setTimeout(() => {
-                const retryBtn = document.querySelector('.favorite-btn');
+                const retryBtn = document.querySelector('.favorite-btn');  // 调试信息已隐藏
                 if (retryBtn) {
                     updateFavoriteButton(isFavorited);
                 } else {
-                    console.warn('重试后仍未找到收藏按钮');
+                    // // console.warn(...)
                 }
-            }, 500);
+            }, 500);  // 调试信息已隐藏
         }
     }
 }
@@ -1112,7 +1112,7 @@ function initializeTransactionButton() {
     
     const itemId = ITEM_ID;
     if (!itemId) {
-        console.error('商品ID无效');
+        // console.error(...)
         return;
     }
 
@@ -1134,7 +1134,7 @@ function initializeTransactionButton() {
         }
     })
     .catch(error => {
-        console.error('检查交易状态失败:', error);
+        // console.error(...)
         // 如果检查失败，保持默认状态
     });
 }
@@ -1144,7 +1144,7 @@ function updateTransactionButton(hasTransaction, transactionStatus = null) {
 
     const transactionBtn = document.querySelector('.transaction-btn');
     if (!transactionBtn) {
-        console.error('未找到交易按钮');
+        // console.error(...)
         return;
     }
     
@@ -1185,28 +1185,28 @@ function getLocationInfo() {
             }
         })
         .catch(error => {
-            console.error('获取位置信息失败:', error);
+            // console.error(...)
         });
 }
 
 // 自动获取用户位置信息（进入详情页时自动调用）
 function autoGetUserLocation() {
-    console.log('自动获取用户位置信息...');
+    // // console.log(...)
     
     // 检查是否已经有位置信息
-    const savedLocation = localStorage.getItem('user_location');
+    const savedLocation = localStorage.getItem('user_location');  // 调试信息已隐藏
     if (savedLocation) {
         try {
             const location = JSON.parse(savedLocation);
             // 如果位置信息是最近5分钟内获取的，直接使用
             if (location.timestamp && (Date.now() - location.timestamp) < 300000) {
-                console.log('使用缓存的位置信息:', location);
+                // console.log(...)
                 userLocation = location;
                 updateLocationDisplay(userLocation);
                 return;
             }
         } catch (e) {
-            console.error('解析缓存位置信息失败:', e);
+            // console.error(...)
         }
     }
     
@@ -1220,7 +1220,7 @@ function autoGetUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                console.log('GPS定位成功:', position.coords);
+                // console.log(...)
                 const coords = {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude
@@ -1230,7 +1230,7 @@ function autoGetUserLocation() {
                 reverseGeocodeWithAmap(coords);
             },
             function(error) {
-                console.error('GPS定位失败:', error);
+                // console.error(...)
                 // GPS失败，使用IP定位
                 getIPLocationFallback();
             },
@@ -1241,14 +1241,14 @@ function autoGetUserLocation() {
             }
         );
     } else {
-        console.log('浏览器不支持GPS定位，使用IP定位');
-        getIPLocationFallback();
+        // // console.log(...)
+        getIPLocationFallback();  // 调试信息已隐藏
     }
 }
 
 // IP定位备用方案
 function getIPLocationFallback() {
-    console.log('使用IP定位...');
+    // console.log(...)
     
     fetch('/tools/api/location/')
         .then(response => response.json())
@@ -1263,14 +1263,14 @@ function getIPLocationFallback() {
                 userLocation = locationInfo;
                 updateLocationDisplay(userLocation);
                 localStorage.setItem('user_location', JSON.stringify(userLocation));
-                console.log('IP定位成功:', locationInfo);
+                // // console.log(...)
             } else {
-                console.error('IP定位失败:', data.error);
-                showLocationError('位置获取失败，请手动选择位置');
+                // console.error(...)
+                showLocationError('位置获取失败，请手动选择位置');  // 调试信息已隐藏
             }
         })
         .catch(error => {
-            console.error('IP定位请求失败:', error);
+            // console.error(...)
             showLocationError('位置服务不可用，请手动选择位置');
         });
 }
@@ -1394,7 +1394,7 @@ function searchLocation(query) {
             }
         })
         .catch(error => {
-            console.error('搜索位置失败:', error);
+            // console.error(...)
             generateFallbackSuggestions(query, suggestionsContainer);
         });
 }
@@ -1479,7 +1479,7 @@ function initAMap() {
         window.currentMap = map;
         
     } catch (error) {
-        console.error('地图初始化失败:', error);
+        // console.error(...)
         showSimpleMap();
     }
 }
@@ -1653,7 +1653,7 @@ function contactSeller() {
         }
     })
     .catch(error => {
-        console.error('联系卖家失败:', error);
+        // console.error(...)
         showErrorMessage('联系卖家失败，请稍后重试');
     });
 }
@@ -1697,7 +1697,7 @@ function toggleWantItem() {
         }
     })
     .catch(error => {
-        console.error('想要商品失败:', error);
+        // console.error(...)
         showErrorMessage('操作失败，请稍后重试');
     });
 }
@@ -1920,7 +1920,7 @@ function submitOffer() {
         }
     })
     .catch(error => {
-        console.error('发起交易失败:', error);
+        // console.error(...)
         showErrorMessage('发起交易失败，请稍后重试');
     });
 }
@@ -1981,7 +1981,7 @@ function createTransactionAndChat(userId, itemId) {
         }
     })
     .catch(error => {
-        console.error('创建联系失败:', error);
+        // console.error(...)
         showErrorMessage('创建联系失败，请稍后重试');
     });
 }
@@ -2008,7 +2008,7 @@ function toggleFavorite() {
     const itemId = ITEM_ID;
 
     if (!itemId) {
-        console.error('商品ID无效');
+        // console.error(...)
         showErrorMessage('商品ID无效');
         return;
     }
@@ -2019,7 +2019,7 @@ function toggleFavorite() {
         // 如果是卖家，不显示收藏按钮是正常的
         const isSeller = {{ item.seller.id|default:"null" }} === {{ user.id|default:"null" }};
         if (!isSeller) {
-            console.error('收藏按钮未找到');
+            // console.error(...)
             showErrorMessage('收藏按钮未找到');
         }
         return;
@@ -2062,7 +2062,7 @@ function toggleFavorite() {
 
             updateFavoriteButton(data.is_favorited);
         } else {
-            console.error('API调用失败:', data.error);
+            // console.error(...)
             
             // 特殊处理：如果错误是"已经收藏过"，说明实际状态是已收藏
             if (data.error && data.error.includes('已经收藏过')) {
@@ -2085,7 +2085,7 @@ function toggleFavorite() {
         }
     })
     .catch(error => {
-        console.error('请求出错:', error);
+        // console.error(...)
         showErrorMessage('操作失败，请稍后重试');
         // 恢复原始状态
 
@@ -2118,7 +2118,7 @@ function updateFavoriteButton(isFavorited) {
 
 
     } else {
-        console.error('updateFavoriteButton: 未找到收藏按钮');
+        // console.error(...)
     }
 }
 
@@ -2170,7 +2170,7 @@ function toggleProductStatus() {
         }
     })
     .catch(error => {
-        console.error('下架商品失败:', error);
+        // console.error(...)
         showErrorMessage('下架商品失败，请稍后重试');
     });
 }
@@ -2210,7 +2210,7 @@ function markAsSold() {
         }
     })
     .catch(error => {
-        console.error('标记为已售失败:', error);
+        // console.error(...)
         showErrorMessage('标记为已售失败，请稍后重试');
     });
 }
@@ -2406,7 +2406,7 @@ function initWebSocket() {
         };
         
         ws.onerror = function(error) {
-            console.error('WebSocket连接错误:', error);
+            // console.error(...)
         };
         
         // 保存WebSocket实例
@@ -2434,7 +2434,7 @@ async function checkQueueStatus() {
             return await response.json();
         }
     } catch (error) {
-        console.error('检查队列状态失败:', error);
+        // console.error(...)
     }
     
     return null;
@@ -2592,7 +2592,7 @@ function autoLocateUser() {
             },
             // 错误回调
             function(error) {
-                console.error('自动定位失败:', error);
+                // console.error(...)
                 handleLocationError(error);
                 resetAutoLocateButton();
             },
@@ -2604,7 +2604,7 @@ function autoLocateUser() {
             }
         );
     } else {
-        console.error('浏览器不支持地理位置');
+        // console.error(...)
         showLocationError('浏览器不支持地理位置功能');
         resetAutoLocateButton();
     }
@@ -2642,16 +2642,16 @@ function reverseGeocodeWithAmap(coords) {
             saveUserLocation(locationInfo);
             updateLocationDisplay(locationInfo);
             showSuccessMessage('自动定位成功！');
-            console.log('自动定位成功:', locationInfo);
+            // // console.log(...)
         } else {
-            console.error('反向地理编码失败:', data.error);
-            showLocationError('位置解析失败，请手动选择');
+            // console.error(...)
+            showLocationError('位置解析失败，请手动选择');  // 调试信息已隐藏
         }
         
         resetAutoLocateButton();
     })
     .catch(error => {
-        console.error('反向地理编码请求失败:', error);
+        // console.error(...)
         showLocationError('定位服务暂时不可用');
         resetAutoLocateButton();
     });
@@ -2736,12 +2736,12 @@ function performLocationSearch(query) {
         if (data.success && data.suggestions) {
             displayLocationSuggestions(data.suggestions);
         } else {
-            console.error('位置搜索失败:', data.error);
+            // console.error(...)
             clearLocationSuggestions();
         }
     })
     .catch(error => {
-        console.error('位置搜索请求失败:', error);
+        // console.error(...)
         clearLocationSuggestions();
     });
 }
@@ -2791,7 +2791,7 @@ function selectLocationSuggestion(element) {
         clearLocationSuggestions();
         
     } catch (error) {
-        console.error('选择位置建议失败:', error);
+        // console.error(...)
     }
 }
 
@@ -2887,7 +2887,7 @@ function geocodeLocation(locationInfo) {
         showSuccessMessage('位置设置成功！');
     })
     .catch(error => {
-        console.error('地理编码失败:', error);
+        // console.error(...)
         
         // 即使编码失败，也保存位置
         saveUserLocation(locationInfo);
@@ -2923,7 +2923,7 @@ function saveUserLocation(location) {
         localStorage.setItem('user_location', JSON.stringify(location));
 
     } catch (error) {
-        console.error('保存位置到本地存储失败:', error);
+        // console.error(...)
     }
     
     // 发送到服务器
@@ -2944,7 +2944,7 @@ function saveUserLocation(location) {
         }
     })
     .catch(error => {
-        console.error('保存位置到服务器失败:', error);
+        // console.error(...)
     });
 }
 

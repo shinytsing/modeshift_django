@@ -69,6 +69,8 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       GOOGLE_CSE_ID: ${GOOGLE_CSE_ID}
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      TENCENT_SECRET_ID: ${TENCENT_SECRET_ID}
+      TENCENT_SECRET_KEY: ${TENCENT_SECRET_KEY}
       
       # 邮件配置
       EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
@@ -82,6 +84,10 @@ services:
       
       # 允许的主机
       ALLOWED_HOSTS: 47.103.143.152,shenyiqing.xin,www.shenyiqing.xin,localhost,127.0.0.1,0.0.0.0
+      
+      # 性能优化
+      DJANGO_CACHE_BACKEND: django.core.cache.backends.redis.RedisCache
+      DJANGO_CACHE_LOCATION: redis://:${REDIS_PASSWORD:-redis123}@redis:6379/1
     volumes:
       - media_data:/app/media
       - static_data:/app/staticfiles
@@ -102,6 +108,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # Nginx反向代理
   nginx:

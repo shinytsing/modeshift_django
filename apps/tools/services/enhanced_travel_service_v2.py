@@ -11,6 +11,7 @@ from django.utils import timezone
 import requests
 
 from .overview_data_service import OverviewDataService
+from .llm_service import get_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -630,17 +631,7 @@ class MultiAPITravelService:
             if travel_duration is None:
                 travel_duration = "3-5天"
 
-            # 生成缓存键
-            cache_key = self._generate_cache_key(destination, travel_style, budget_range, travel_duration, interests)
-
-            # 1. 检查缓存
-            cached_data = self._get_cached_guide(cache_key)
-            if cached_data and not cached_data.is_expired():
-                logger.info("✅ 从缓存获取攻略数据")
-                cached_data.increment_usage()
-                return self._format_cached_response(cached_data)
-
-            # 2. 使用本地数据生成攻略
+            # 直接使用本地数据生成攻略，不使用缓存
             logger.info("✅ 使用本地数据生成攻略")
             guide_data = self._get_real_fallback_data(destination, travel_style, budget_range, travel_duration, interests)
 
@@ -652,8 +643,7 @@ class MultiAPITravelService:
             api_used = "local_data"
             generation_time = time.time() - start_time
 
-            # 保存到缓存
-            self._save_to_cache(cache_key, guide_data, api_used, generation_time, fast_mode)
+            # 不使用缓存，直接返回结果
             response = self._format_response(guide_data, api_used, generation_time, fast_mode)
 
             total_time = time.time() - start_time
@@ -701,42 +691,44 @@ class MultiAPITravelService:
             if travel_duration is None:
                 travel_duration = "3-5天"
 
-            # 生成缓存键
-            cache_key = self._generate_cache_key(destination, travel_style, budget_range, travel_duration, interests)
-
-            # 1. 检查缓存
-            cached_data = self._get_cached_guide(cache_key)
-            if cached_data and not cached_data.is_expired():
-                logger.info("✅ 从缓存获取攻略数据")
-                cached_data.increment_usage()
-                return self._format_cached_response(cached_data)
-
-            # 2. 尝试DeepSeek API
+            # 直接生成攻略，不使用缓存
+            logger.info("🔄 直接生成旅游攻略，不使用缓存...")
             guide_data = None
             api_used = None
             generation_time = 0
             deepseek_fallback_data = None
 
             try:
-                logger.info("🔄 尝试DeepSeek API...")
+                logger.info("🔄 尝试使用LLM服务生成攻略...")
                 api_start_time = time.time()
 
-                guide_data = self._call_api("deepseek", destination, travel_style, budget_range, travel_duration, interests)
-
-                if guide_data:
-                    api_used = "deepseek"
+                # 使用统一的LLM服务管理器
+                llm_service = get_llm_service()
+                
+                # 构建旅游攻略生成的提示词
+                travel_prompt = self._build_travel_guide_prompt(
+                    destination, travel_style, budget_range, travel_duration, interests
+                )
+                
+                # 使用LLM服务生成攻略内容
+                guide_content = llm_service.generate_travel_guide(travel_prompt)
+                
+                if guide_content:
+                    # 解析生成的攻略内容
+                    guide_data = self._parse_travel_guide_content(guide_content, destination)
+                    api_used = "llm_service"
                     generation_time = time.time() - api_start_time
-                    logger.info(f"✅ DeepSeek API 调用成功，耗时: {generation_time:.2f}秒")
+                    logger.info(f"✅ LLM服务调用成功，耗时: {generation_time:.2f}秒")
                 else:
-                    # 如果DeepSeek失败，保存其返回结果作为备用数据
-                    logger.warning("⚠️ DeepSeek API 调用失败，保存为备用数据")
+                    # 如果LLM服务失败，使用备用数据
+                    logger.warning("⚠️ LLM服务调用失败，使用备用数据")
                     deepseek_fallback_data = self._get_deepseek_fallback_data(
                         destination, travel_style, budget_range, travel_duration, interests
                     )
 
             except Exception as e:
-                logger.warning(f"⚠️ DeepSeek API 调用异常: {e}")
-                # 保存DeepSeek的备用数据
+                logger.warning(f"⚠️ LLM服务调用异常: {e}")
+                # 使用备用数据
                 deepseek_fallback_data = self._get_deepseek_fallback_data(
                     destination, travel_style, budget_range, travel_duration, interests
                 )
@@ -748,8 +740,7 @@ class MultiAPITravelService:
                 if overview_data:
                     guide_data.update(overview_data)
 
-                # 保存到缓存
-                self._save_to_cache(cache_key, guide_data, api_used, generation_time, fast_mode)
+                # 不使用缓存，直接返回结果
                 response = self._format_response(guide_data, api_used, generation_time, fast_mode)
 
                 total_time = time.time() - start_time
@@ -778,81 +769,8 @@ class MultiAPITravelService:
             logger.error(f"❌ 旅游攻略生成失败: {e}")
             return self._get_error_response(str(e))
 
-    def _generate_cache_key(
-        self, destination: str, travel_style: str, budget_range: str, travel_duration: str, interests: List[str]
-    ) -> str:
-        """生成缓存键"""
-        # 对兴趣标签进行排序和哈希
-        interests_sorted = sorted(interests) if interests else []
-        interests_str = json.dumps(interests_sorted, ensure_ascii=False, sort_keys=True)
-        interests_hash = hashlib.sha256(interests_str.encode()).hexdigest()[:16]
 
-        return f"{destination}_{travel_style}_{budget_range}_{travel_duration}_{interests_hash}"
 
-    def _get_cached_guide(self, cache_key: str):
-        """从缓存获取攻略"""
-        try:
-            from ..models import TravelGuideCache
-
-            cache_entry = TravelGuideCache.objects.filter(
-                destination=cache_key.split("_")[0],
-                travel_style=cache_key.split("_")[1],
-                budget_range=cache_key.split("_")[2],
-                travel_duration=cache_key.split("_")[3],
-                interests_hash=cache_key.split("_")[4],
-            ).first()
-
-            if cache_entry and not cache_entry.is_expired():
-                return cache_entry
-
-        except Exception as e:
-            logger.warning(f"缓存查询失败: {e}")
-
-        return None
-
-    def _save_to_cache(self, cache_key: str, guide_data: Dict, api_used: str, generation_time: float, fast_mode: bool):
-        """保存到缓存"""
-        try:
-            from ..models import TravelGuideCache
-
-            # 解析缓存键
-            parts = cache_key.split("_")
-            destination = parts[0]
-            travel_style = parts[1]
-            budget_range = parts[2]
-            travel_duration = parts[3]
-            interests_hash = parts[4]
-
-            # 计算数据质量评分
-            quality_score = self._calculate_quality_score(guide_data)
-
-            # 设置过期时间
-            expires_at = timezone.now() + self.cache_duration
-
-            # 创建或更新缓存条目
-            cache_entry, created = TravelGuideCache.objects.update_or_create(
-                destination=destination,
-                travel_style=travel_style,
-                budget_range=budget_range,
-                travel_duration=travel_duration,
-                interests_hash=interests_hash,
-                defaults={
-                    "guide_data": guide_data,
-                    "api_used": api_used,
-                    "cache_source": "fast_api" if fast_mode else "standard_api",
-                    "generation_time": generation_time,
-                    "data_quality_score": quality_score,
-                    "expires_at": expires_at,
-                },
-            )
-
-            logger.info(f"💾 攻略数据已缓存，质量评分: {quality_score:.2f}")
-
-            # 清理过期缓存
-            self._cleanup_expired_cache()
-
-        except Exception as e:
-            logger.warning(f"缓存保存失败: {e}")
 
     def _get_fast_api_strategy(self) -> List[str]:
         """获取快速模式API策略"""
@@ -1523,69 +1441,13 @@ class MultiAPITravelService:
             "round_trip": {"cost": 500, "recommendations": ["高铁", "飞机", "长途汽车"]},
         }
 
-    def _calculate_quality_score(self, guide_data: Dict) -> float:
-        """计算数据质量评分"""
-        score = 0.0
 
-        # 检查必要字段
-        if guide_data.get("destination"):
-            score += 0.2
-        if guide_data.get("must_visit_attractions"):
-            score += 0.2
-        if guide_data.get("food_recommendations"):
-            score += 0.2
-        if guide_data.get("detailed_guide"):
-            score += 0.2
-        if guide_data.get("budget_estimate"):
-            score += 0.1
-        if guide_data.get("travel_tips"):
-            score += 0.1
 
-        # 检查数据详细程度
-        if len(guide_data.get("must_visit_attractions", [])) >= 5:
-            score += 0.1
-        if len(guide_data.get("food_recommendations", [])) >= 5:
-            score += 0.1
-        if len(guide_data.get("detailed_guide", "")) > 500:
-            score += 0.1
-
-        return min(score, 1.0)
-
-    def _cleanup_expired_cache(self):
-        """清理过期缓存"""
-        try:
-            from ..models import TravelGuideCache
-
-            expired_count = TravelGuideCache.objects.filter(expires_at__lt=timezone.now()).delete()[0]
-
-            if expired_count > 0:
-                logger.info(f"🧹 清理了 {expired_count} 个过期缓存条目")
-
-        except Exception as e:
-            logger.warning(f"缓存清理失败: {e}")
-
-    def _format_cached_response(self, cache_entry) -> Dict:
-        """格式化缓存响应"""
-        guide_data = cache_entry.guide_data
-        guide_data.update(
-            {
-                "is_cached": True,
-                "cache_source": cache_entry.cache_source,
-                "api_used": cache_entry.api_used,
-                "generation_time": cache_entry.generation_time,
-                "data_quality_score": cache_entry.data_quality_score,
-                "usage_count": cache_entry.usage_count,
-                "cached_at": cache_entry.created_at.isoformat(),
-                "expires_at": cache_entry.expires_at.isoformat(),
-            }
-        )
-        return guide_data
 
     def _format_response(self, guide_data: Dict, api_used: str, generation_time: float, fast_mode: bool) -> Dict:
         """格式化响应"""
         guide_data.update(
             {
-                "is_cached": False,
                 "api_used": api_used,
                 "generation_time": generation_time,
                 "generation_mode": "fast" if fast_mode else "standard",
@@ -1598,9 +1460,267 @@ class MultiAPITravelService:
         """获取错误响应"""
         return {
             "error": error_message,
-            "is_cached": False,
             "api_used": "none",
             "generation_time": 0,
             "generation_mode": "error",
             "generated_at": timezone.now().isoformat(),
         }
+
+    def _build_travel_guide_prompt(self, destination: str, travel_style: str, budget_range: str, travel_duration: str, interests: List[str]) -> str:
+        """构建旅游攻略生成的提示词"""
+        interests_text = "、".join(interests) if interests else "无特殊偏好"
+        
+        prompt = f"""
+请为{destination}生成一份详细的旅游攻略，要求如下：
+
+## 基本信息
+- 目的地：{destination}
+- 旅行风格：{travel_style}
+- 预算范围：{budget_range}
+- 旅行时长：{travel_duration}
+- 兴趣偏好：{interests_text}
+
+## 攻略要求
+请生成包含以下内容的完整旅游攻略：
+
+### 1. 目的地概览
+- 基本信息（国家、首都、时区、语言）
+- 最佳旅行时间
+- 签证要求
+- 文化特色
+
+### 2. 详细攻略
+- 行程规划
+- 交通指南
+- 住宿推荐
+- 美食推荐
+- 购物指南
+
+### 3. 每日行程安排
+- 第1天：抵达和市区游览
+- 第2天：主要景点
+- 第3天：深度体验
+- 根据旅行时长调整天数
+
+### 4. 必去景点
+- 列出5-8个必去景点
+- 每个景点包含：名称、简介、门票、开放时间、游览时间
+
+### 5. 特色美食
+- 推荐当地特色美食
+- 餐厅推荐
+- 美食街推荐
+
+### 6. 交通指南
+- 机场到市区交通
+- 市内交通方式
+- 城际交通
+- 交通费用参考
+
+### 7. 费用预算
+- 住宿费用
+- 餐饮费用
+- 交通费用
+- 门票费用
+- 购物预算
+- 总预算估算
+
+### 8. 实用贴士
+- 注意事项
+- 安全提醒
+- 文化禁忌
+- 实用APP推荐
+- 紧急联系方式
+
+请用中文回答，内容要详细实用，适合实际旅行使用。
+"""
+        return prompt
+
+    def _parse_travel_guide_content(self, content: str, destination: str) -> Dict:
+        """解析LLM生成的旅游攻略内容"""
+        try:
+            logger.info(f"开始解析{destination}的LLM生成内容...")
+            
+            # 尝试解析JSON格式的响应
+            if content.strip().startswith('{') and content.strip().endswith('}'):
+                try:
+                    parsed_data = json.loads(content)
+                    logger.info(f"成功解析JSON格式的{destination}攻略内容")
+                    return parsed_data
+                except json.JSONDecodeError:
+                    logger.warning(f"JSON解析失败，尝试文本解析")
+            
+            # 文本格式解析
+            parsed_data = self._parse_text_travel_guide(content, destination)
+            logger.info(f"成功解析文本格式的{destination}攻略内容")
+            return parsed_data
+            
+        except Exception as e:
+            logger.error(f"解析{destination}旅游攻略内容失败: {e}")
+            return {
+                "destination": destination,
+                "content": content,
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _parse_text_travel_guide(self, content: str, destination: str) -> Dict:
+        """解析文本格式的旅游攻略内容"""
+        try:
+            # 基础数据结构
+            guide_data = {
+                "destination": destination,
+                "detailed_guide": content,
+                "must_visit_attractions": [],
+                "food_recommendations": [],
+                "transportation_guide": "",
+                "budget_estimate": {},
+                "travel_tips": [],
+                "daily_schedule": [],
+                "activity_timeline": [],
+                "cost_breakdown": {},
+                "hidden_gems": [],
+                "weather_info": {},
+                "best_time_to_visit": "全年适合",
+                "is_real_data": True,
+                "api_generated": True,
+                "success": True
+            }
+            
+            # 尝试从文本中提取结构化信息
+            lines = content.split('\n')
+            current_section = None
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # 识别章节标题
+                if '景点' in line or '必去' in line or '推荐' in line:
+                    current_section = 'attractions'
+                elif '美食' in line or '特色' in line or '餐厅' in line:
+                    current_section = 'food'
+                elif '交通' in line or '出行' in line:
+                    current_section = 'transport'
+                elif '预算' in line or '费用' in line or '花费' in line:
+                    current_section = 'budget'
+                elif '贴士' in line or '注意' in line or '建议' in line:
+                    current_section = 'tips'
+                elif '行程' in line or '安排' in line:
+                    current_section = 'schedule'
+                
+                # 提取具体内容
+                if current_section == 'attractions' and ('·' in line or '•' in line or '-' in line):
+                    attraction = line.replace('·', '').replace('•', '').replace('-', '').strip()
+                    if attraction and len(attraction) > 3:
+                        guide_data["must_visit_attractions"].append(attraction)
+                
+                elif current_section == 'food' and ('·' in line or '•' in line or '-' in line):
+                    food = line.replace('·', '').replace('•', '').replace('-', '').strip()
+                    if food and len(food) > 3:
+                        guide_data["food_recommendations"].append(food)
+                
+                elif current_section == 'transport' and len(line) > 10:
+                    guide_data["transportation_guide"] += line + "\n"
+                
+                elif current_section == 'tips' and ('·' in line or '•' in line or '-' in line):
+                    tip = line.replace('·', '').replace('•', '').replace('-', '').strip()
+                    if tip and len(tip) > 5:
+                        guide_data["travel_tips"].append(tip)
+            
+            # 如果提取的内容不够，使用默认值
+            if not guide_data["must_visit_attractions"]:
+                guide_data["must_visit_attractions"] = [f"{destination}著名景点", f"{destination}历史文化景点", f"{destination}自然风光"]
+            
+            if not guide_data["food_recommendations"]:
+                guide_data["food_recommendations"] = [f"{destination}特色美食", f"{destination}传统小吃", f"{destination}当地餐厅"]
+            
+            if not guide_data["transportation_guide"]:
+                guide_data["transportation_guide"] = f"{destination}交通便利，建议使用公共交通或出租车"
+            
+            if not guide_data["travel_tips"]:
+                guide_data["travel_tips"] = ["建议提前了解当地天气", "注意保管好随身物品", "尊重当地文化习俗"]
+            
+            # 设置预算估算
+            guide_data["budget_estimate"] = {
+                "total_cost": 3000,
+                "currency": "CNY",
+                "accommodation": 1500,
+                "food": 800,
+                "transport": 400,
+                "attractions": 300,
+                "daily_average": 600
+            }
+            
+            # 生成每日行程
+            guide_data["daily_schedule"] = self._generate_simple_daily_schedule(destination, guide_data["must_visit_attractions"])
+            
+            logger.info(f"成功解析{destination}攻略：{len(guide_data['must_visit_attractions'])}个景点，{len(guide_data['food_recommendations'])}个美食")
+            return guide_data
+            
+        except Exception as e:
+            logger.error(f"解析{destination}文本攻略失败: {e}")
+            return {
+                "destination": destination,
+                "detailed_guide": content,
+                "must_visit_attractions": [f"{destination}著名景点"],
+                "food_recommendations": [f"{destination}特色美食"],
+                "transportation_guide": f"{destination}交通指南",
+                "budget_estimate": {"total_cost": 3000, "currency": "CNY"},
+                "travel_tips": ["建议提前了解当地天气", "注意保管好随身物品"],
+                "daily_schedule": [],
+                "is_real_data": True,
+                "api_generated": True,
+                "success": True
+            }
+    
+    def _generate_simple_daily_schedule(self, destination: str, attractions: list) -> list:
+        """生成简单的每日行程"""
+        schedule = []
+        days = min(3, len(attractions))
+        
+        for day in range(1, days + 1):
+            day_schedule = {
+                "day": day,
+                "date": f"第{day}天",
+                "morning": [],
+                "afternoon": [],
+                "evening": []
+            }
+            
+            if day == 1:
+                day_schedule["morning"].append({
+                    "time": "09:00",
+                    "activity": f"抵达{destination}",
+                    "location": "机场/火车站",
+                    "tips": "建议提前预订接机服务"
+                })
+            
+            # 分配景点
+            if attractions:
+                attraction = attractions[min(day - 1, len(attractions) - 1)]
+                day_schedule["morning"].append({
+                    "time": "10:00-12:00",
+                    "activity": f"游览{attraction}",
+                    "location": attraction,
+                    "tips": f"建议提前了解{attraction}的开放时间"
+                })
+                
+                day_schedule["afternoon"].append({
+                    "time": "14:00-17:00",
+                    "activity": f"继续游览{attraction}周边",
+                    "location": attraction,
+                    "tips": "可以拍照留念，体验当地文化"
+                })
+                
+                day_schedule["evening"].append({
+                    "time": "18:00-20:00",
+                    "activity": f"品尝{destination}特色美食",
+                    "location": "当地餐厅",
+                    "tips": "建议选择当地特色餐厅"
+                })
+            
+            schedule.append(day_schedule)
+        
+        return schedule

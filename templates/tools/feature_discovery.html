@@ -215,11 +215,11 @@ class FeatureDiscoveryPage {
                 this.renderFeatures(data.features);
                 this.renderPagination(data);
             } else {
-                console.error('加载功能失败:', data.error);
+                // console.error(...)
                 this.showEmptyState('加载失败，请稍后重试');
             }
         } catch (error) {
-            console.error('请求失败:', error);
+            // console.error(...)
             this.showEmptyState('网络错误，请检查连接');
         } finally {
             this.showLoading(false);

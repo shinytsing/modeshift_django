@@ -17,6 +17,7 @@ from django.views.decorators.http import require_http_methods
 import requests
 
 from ..services.ip_location_service import IPLocationService
+from ..services.llm_service import get_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -130,28 +131,16 @@ def self_analysis_api(request):
             """
 
             # 调用DeepSeek API进行分析
-            api_key = os.getenv("DEEPSEEK_API_KEY")
-            if not api_key:
-                return JsonResponse({"success": False, "error": "分析服务暂时不可用"})
+            # 使用统一的LLM服务
+            llm_service = get_llm_service()
+            
+            # 生成小红书内容
+            content = llm_service.generate_redbook_content(prompt)
 
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-            payload = {
-                "messages": [{"role": "user", "content": prompt}],
-                "model": "deepseek-chat",
-                "max_tokens": 1000,
-                "temperature": 0.7,
-            }
-
-            response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-            if response.status_code == 200:
-                result = response.json()
-                analysis = result["choices"][0]["message"]["content"]
-
-                return JsonResponse({"success": True, "analysis": analysis, "timestamp": timezone.now().isoformat()})
+            if content:
+                return JsonResponse({"success": True, "analysis": content, "timestamp": timezone.now().isoformat()})
             else:
-                return JsonResponse({"success": False, "error": "分析服务暂时不可用，请稍后重试"})
+                return JsonResponse({"success": False, "error": "内容生成失败"})
 
         except Exception as e:
             return JsonResponse({"success": False, "error": f"分析失败: {str(e)}"})
@@ -191,25 +180,21 @@ def storyboard_api(request):
 
 请根据用户的描述，创作一个独特而治愈的故事。"""
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"请根据以下描述创作一个治愈故事：{prompt}"},
-        ]
+        # 使用统一的LLM服务
+        llm_service = get_llm_service()
+        
+        # 生成治愈故事
+        story = llm_service.generate_content(
+            f"请根据以下描述创作一个治愈故事：{prompt}", 
+            system_prompt=system_prompt, 
+            temperature=0.8, 
+            max_tokens=1000
+        )
 
-        # 调用DeepSeek API
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-        payload = {"model": "deepseek-chat", "messages": messages, "temperature": 0.8, "max_tokens": 1000}
-
-        response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
-
-        if response.status_code == 200:
-            result = response.json()
-            story = result["choices"][0]["message"]["content"]
-
+        if story:
             return JsonResponse({"success": True, "story": story}, content_type="application/json")
-        elif response.status_code == 402:
-            # API余额不足时返回示例故事
+        else:
+            # AI服务失败时返回示例故事
             fallback_stories = [
                 f"基于您的描述「{prompt}」，让我为您创作一个治愈的故事：\n\n在一个安静的午后，小雨轻敲着窗台。李明坐在咖啡店的角落，手中捧着一杯温热的拿铁，思考着生活的意义。\n\n突然，一只小猫从雨中跑进了咖啡店，浑身湿漉漉的。店员想要赶走它，但李明轻声说道：「让它留下来吧，或许它也需要一个温暖的地方。」\n\n小猫似乎听懂了什么，安静地卧在李明脚边。此刻，李明意识到，生活中最美好的时光，往往来自于这些不期而遇的温柔瞬间。\n\n有时候，我们不需要寻找答案，只需要学会在当下找到属于自己的宁静与温暖。",
                 f"关于「{prompt}」的故事：\n\n夕阳西下时，老师傅在工作室里专注地雕刻着一块木头。每一刀都小心翼翼，每一划都充满敬意。\n\n年轻的学徒好奇地问：「师傅，为什么您对待每一块木头都如此认真？」\n\n老师傅停下手中的工作，温和地说：「因为每一块木头都有它的故事，我只是帮它找到最美的表达方式。」\n\n学徒恍然大悟，原来匠心不在于技巧的高超，而在于对每一件事物的尊重与热爱。\n\n生活也是如此，当我们用心对待每一个平凡的日子，就会发现其中蕴含的无限可能。",
@@ -217,15 +202,12 @@ def storyboard_api(request):
             ]
 
             import random
-
             story = random.choice(fallback_stories)
 
             return JsonResponse(
                 {"success": True, "story": story, "fallback": True, "message": "AI服务暂时不可用，为您提供了精选的治愈故事"},
                 content_type="application/json",
             )
-        else:
-            return JsonResponse({"error": f"API调用失败: {response.status_code}"}, status=500, content_type="application/json")
 
     except Exception as e:
         return JsonResponse({"error": f"处理请求时出错: {str(e)}"}, status=500)
@@ -318,54 +300,144 @@ def parse_ai_response(ai_content):
     """
     解析AI回复内容并结构化
     """
-    # 尝试将AI回复分段处理
-    sections = []
-    current_section = {"title": "AI智能分析", "content": ""}
+    try:
+        logger.info("开始解析AI分析内容...")
+        
+        # 尝试将AI回复分段处理
+        sections = []
+        current_section = {"title": "AI智能分析", "content": ""}
 
-    lines = ai_content.split("\n")
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+        lines = ai_content.split("\n")
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
 
-        # 检测标题行（包含数字、特殊符号等）
-        if any(
-            marker in line
-            for marker in [
-                "一、",
-                "二、",
-                "三、",
-                "四、",
-                "五、",
-                "六、",
-                "七、",
-                "1.",
-                "2.",
-                "3.",
-                "4.",
-                "5.",
-                "6.",
-                "7.",
-                "##",
-                "**",
-            ]
-        ):
-            if current_section["content"]:
-                sections.append(current_section)
-            current_section = {"title": line, "content": ""}
-        else:
-            if current_section["content"]:
-                current_section["content"] += "\n"
-            current_section["content"] += line
+            # 检测标题行（包含数字、特殊符号等）
+            if any(
+                marker in line
+                for marker in [
+                    "一、", "二、", "三、", "四、", "五、", "六、", "七、", "八、", "九、", "十、",
+                    "1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "10.",
+                    "##", "**", "###", "####",
+                    "【", "】", "（", "）",
+                    "分析：", "总结：", "建议：", "结论：", "要点：", "重点：",
+                    "优势：", "劣势：", "机会：", "威胁：", "风险：", "挑战：",
+                    "原因：", "影响：", "解决方案：", "改进建议：", "注意事项："
+                ]
+            ):
+                if current_section["content"]:
+                    sections.append(current_section)
+                current_section = {"title": line, "content": ""}
+            else:
+                if current_section["content"]:
+                    current_section["content"] += "\n"
+                current_section["content"] += line
 
-    # 添加最后一个section
-    if current_section["content"]:
-        sections.append(current_section)
+        # 添加最后一个section
+        if current_section["content"]:
+            sections.append(current_section)
 
-    # 如果没有找到明确的分段，返回整体内容
-    if not sections:
-        sections = [{"title": "🧠 AI深度分析", "content": ai_content}]
+        # 如果没有找到明确的分段，尝试智能分段
+        if not sections or len(sections) == 1:
+            sections = _intelligent_parse_content(ai_content)
 
-    return {"title": "AI智能深度分析", "sections": sections}
+        # 确保至少有一个section
+        if not sections:
+            sections = [{"title": "🧠 AI深度分析", "content": ai_content}]
+
+        logger.info(f"成功解析AI分析内容：{len(sections)}个章节")
+        return {"title": "AI智能深度分析", "sections": sections}
+        
+    except Exception as e:
+        logger.error(f"解析AI分析内容失败: {e}")
+        return {"title": "AI智能深度分析", "sections": [{"title": "🧠 AI深度分析", "content": ai_content}]}
+
+
+def _intelligent_parse_content(content):
+    """
+    智能解析内容，尝试识别关键信息点
+    """
+    try:
+        sections = []
+        lines = content.split("\n")
+        current_section = {"title": "核心分析", "content": ""}
+        
+        # 关键词映射
+        keyword_mapping = {
+            "优势": "优势分析",
+            "劣势": "劣势分析", 
+            "机会": "机会分析",
+            "威胁": "威胁分析",
+            "风险": "风险评估",
+            "挑战": "挑战分析",
+            "原因": "原因分析",
+            "影响": "影响分析",
+            "建议": "改进建议",
+            "方案": "解决方案",
+            "总结": "总结",
+            "结论": "结论"
+        }
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # 检查是否包含关键词
+            found_keyword = None
+            for keyword, title in keyword_mapping.items():
+                if keyword in line:
+                    found_keyword = title
+                    break
+            
+            if found_keyword:
+                # 保存当前section
+                if current_section["content"]:
+                    sections.append(current_section)
+                # 开始新的section
+                current_section = {"title": f"📋 {found_keyword}", "content": line + "\n"}
+            else:
+                # 添加到当前section
+                if current_section["content"]:
+                    current_section["content"] += "\n"
+                current_section["content"] += line
+        
+        # 添加最后一个section
+        if current_section["content"]:
+            sections.append(current_section)
+        
+        # 如果还是没有分段，按段落长度分段
+        if len(sections) <= 1:
+            sections = _paragraph_based_parse(content)
+        
+        return sections
+        
+    except Exception as e:
+        logger.error(f"智能解析内容失败: {e}")
+        return [{"title": "🧠 AI深度分析", "content": content}]
+
+
+def _paragraph_based_parse(content):
+    """
+    基于段落长度进行分段
+    """
+    try:
+        paragraphs = content.split('\n\n')
+        sections = []
+        
+        for i, paragraph in enumerate(paragraphs):
+            if paragraph.strip():
+                title = f"📝 分析要点 {i+1}" if len(paragraphs) > 1 else "🧠 AI深度分析"
+                sections.append({
+                    "title": title,
+                    "content": paragraph.strip()
+                })
+        
+        return sections if sections else [{"title": "🧠 AI深度分析", "content": content}]
+        
+    except Exception as e:
+        logger.error(f"段落解析失败: {e}")
+        return [{"title": "🧠 AI深度分析", "content": content}]
 
 
