@@ -507,6 +507,91 @@
     color: #8a9ba8;
     line-height: 1.4;
 }
+
+/* 自动代理配置样式 */
+.proxy-config-status {
+    background: rgba(26, 31, 46, 0.8);
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.config-status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 255, 231, 0.1);
+}
+
+.config-status-item:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.status-label {
+    color: #8a9ba8;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-value {
+    color: #00ffe7;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-value.success {
+    color: #00ff41;
+}
+
+.status-value.error {
+    color: #ff4444;
+}
+
+.status-value.warning {
+    color: #ffaa00;
+}
+
+.proxy-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.proxy-instructions {
+    background: rgba(0, 255, 231, 0.05);
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.proxy-instructions h4 {
+    color: #00ffe7;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.proxy-instructions ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #e6e6e6;
+}
+
+.proxy-instructions li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 {% endblock %}
 
@@ -601,6 +686,52 @@
             </div>
         </div>
 
+        <!-- 自动代理配置 -->
+        <div class="clash-card" style="grid-column: span 2;">
+            <h3 class="clash-card-title">
+                <i class="fas fa-network-wired"></i>
+                自动代理配置
+            </h3>
+            <p>启动服务后自动配置系统代理，让您直接访问外网</p>
+            <div class="proxy-config-status" id="proxyConfigStatus">
+                <div class="config-status-item">
+                    <span class="status-label">系统代理状态:</span>
+                    <span class="status-value" id="systemProxyStatus">检测中...</span>
+                </div>
+                <div class="config-status-item">
+                    <span class="status-label">代理端口:</span>
+                    <span class="status-value" id="proxyPortStatus">-</span>
+                </div>
+                <div class="config-status-item">
+                    <span class="status-label">访问测试:</span>
+                    <span class="status-value" id="accessTestStatus">-</span>
+                </div>
+            </div>
+            <div class="proxy-actions">
+                <button class="clash-btn success" onclick="configureSystemProxy()" id="configProxyBtn">
+                    <i class="fas fa-cog"></i>
+                    配置系统代理
+                </button>
+                <button class="clash-btn secondary" onclick="testProxyAccess()" id="testAccessBtn">
+                    <i class="fas fa-globe"></i>
+                    测试外网访问
+                </button>
+                <button class="clash-btn danger" onclick="disableSystemProxy()" id="disableProxyBtn">
+                    <i class="fas fa-ban"></i>
+                    禁用代理
+                </button>
+            </div>
+            <div class="proxy-instructions" id="proxyInstructions" style="display: none;">
+                <h4>📋 使用说明</h4>
+                <ol>
+                    <li>点击"启动服务"启动Clash代理</li>
+                    <li>点击"配置系统代理"自动设置系统代理</li>
+                    <li>现在可以直接访问外网网站了！</li>
+                    <li>使用完毕后点击"禁用代理"恢复正常网络</li>
+                </ol>
+            </div>
+        </div>
+
         <!-- 自动安装 -->
         <div class="clash-card">
             <h3 class="clash-card-title">
@@ -691,6 +822,7 @@ function updateStatusDisplay() {
     const statusText = document.getElementById('statusText');
     const clashStatusEl = document.getElementById('clashStatus');
     const clashUptimeEl = document.getElementById('clashUptime');
+    const proxyConfigTip = document.getElementById('proxyConfigTip');
     
     if (clashStatus.is_running) {
         statusIndicator.className = 'status-indicator running';
@@ -718,6 +850,9 @@ function updateStatusDisplay() {
         document.getElementById('stopBtn').disabled = true;
         document.getElementById('restartBtn').disabled = true;
     }
+    
+    // 更新代理配置状态显示
+    updateProxyStatusDisplay();
 }
 
 // 格式化运行时间
@@ -1135,6 +1270,179 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// 系统代理配置功能
+async function configureSystemProxy() {
+    const configBtn = document.getElementById('configProxyBtn');
+    
+    if (!clashStatus || !clashStatus.is_running) {
+        log('❌ Clash服务未运行，请先启动服务', 'error');
+        return;
+    }
+    
+    try {
+        configBtn.innerHTML = '<div class="loading"></div> 配置中...';
+        configBtn.disabled = true;
+        
+        log('🔧 正在配置系统代理...');
+        
+        const response = await fetch('/tools/api/clash/configure-proxy/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            log('✅ 系统代理配置成功！', 'success');
+            log('🌐 现在可以直接访问外网了', 'success');
+            updateProxyConfigStatus(data);
+            showProxyInstructions();
+        } else {
+            throw new Error(data.error || '代理配置失败');
+        }
+        
+    } catch (error) {
+        log(`❌ 代理配置失败: ${error.message}`, 'error');
+    } finally {
+        configBtn.innerHTML = '<i class="fas fa-cog"></i> 配置系统代理';
+        configBtn.disabled = false;
+    }
+}
+
+async function testProxyAccess() {
+    const testBtn = document.getElementById('testAccessBtn');
+    
+    try {
+        testBtn.innerHTML = '<div class="loading"></div> 测试中...';
+        testBtn.disabled = true;
+        
+        log('🌐 正在测试外网访问...');
+        
+        const response = await fetch('/tools/api/clash/test-external-access/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            log('✅ 外网访问测试成功！', 'success');
+            log(`📍 当前IP: ${data.ip}`, 'info');
+            log(`🌍 访问地址: ${data.url}`, 'info');
+            log(`🔧 使用端口: ${data.proxy_port}`, 'info');
+            updateAccessTestStatus('success', `${data.ip} (端口: ${data.proxy_port})`);
+        } else {
+            throw new Error(data.error || '外网访问测试失败');
+        }
+        
+    } catch (error) {
+        log(`❌ 外网访问测试失败: ${error.message}`, 'error');
+        updateAccessTestStatus('error', error.message);
+    } finally {
+        testBtn.innerHTML = '<i class="fas fa-globe"></i> 测试外网访问';
+        testBtn.disabled = false;
+    }
+}
+
+async function disableSystemProxy() {
+    const disableBtn = document.getElementById('disableProxyBtn');
+    
+    try {
+        disableBtn.innerHTML = '<div class="loading"></div> 禁用中...';
+        disableBtn.disabled = true;
+        
+        log('🔧 正在禁用系统代理...');
+        
+        const response = await fetch('/tools/api/clash/disable-proxy/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            log('✅ 系统代理已禁用', 'success');
+            log('🔄 网络已恢复正常', 'success');
+            updateProxyConfigStatus(data);
+            hideProxyInstructions();
+        } else {
+            throw new Error(data.error || '代理禁用失败');
+        }
+        
+    } catch (error) {
+        log(`❌ 代理禁用失败: ${error.message}`, 'error');
+    } finally {
+        disableBtn.innerHTML = '<i class="fas fa-ban"></i> 禁用代理';
+        disableBtn.disabled = false;
+    }
+}
+
+function updateProxyConfigStatus(data) {
+    const systemProxyStatus = document.getElementById('systemProxyStatus');
+    const proxyPortStatus = document.getElementById('proxyPortStatus');
+    
+    if (data.proxy_configured) {
+        systemProxyStatus.textContent = '已配置';
+        systemProxyStatus.className = 'status-value success';
+        proxyPortStatus.textContent = `${data.http_port || '7890'}`;
+        proxyPortStatus.className = 'status-value success';
+    } else {
+        systemProxyStatus.textContent = '未配置';
+        systemProxyStatus.className = 'status-value error';
+        proxyPortStatus.textContent = '-';
+        proxyPortStatus.className = 'status-value';
+    }
+}
+
+function updateAccessTestStatus(status, message) {
+    const accessTestStatus = document.getElementById('accessTestStatus');
+    
+    if (status === 'success') {
+        accessTestStatus.textContent = `✅ ${message}`;
+        accessTestStatus.className = 'status-value success';
+    } else {
+        accessTestStatus.textContent = `❌ ${message}`;
+        accessTestStatus.className = 'status-value error';
+    }
+}
+
+function showProxyInstructions() {
+    const instructions = document.getElementById('proxyInstructions');
+    instructions.style.display = 'block';
+}
+
+function hideProxyInstructions() {
+    const instructions = document.getElementById('proxyInstructions');
+    instructions.style.display = 'none';
+}
+
+function updateProxyStatusDisplay() {
+    if (!clashStatus) return;
+    
+    const proxyPortStatus = document.getElementById('proxyPortStatus');
+    const systemProxyStatus = document.getElementById('systemProxyStatus');
+    
+    // 更新代理端口显示
+    if (clashStatus.is_running) {
+        proxyPortStatus.textContent = clashStatus.http_port || '7890';
+        systemProxyStatus.textContent = '服务运行中';
+        systemProxyStatus.className = 'status-value success';
+    } else {
+        proxyPortStatus.textContent = '-';
+        systemProxyStatus.textContent = '服务未运行';
+        systemProxyStatus.className = 'status-value error';
+    }
 }
 
 // 页面卸载时清理
