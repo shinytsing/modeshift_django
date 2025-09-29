@@ -6,6 +6,21 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
+from asgiref.sync import sync_to_async
+
+# 检查Django版本并导入正确的异步上下文检测函数
+try:
+    from django.utils.asyncio import is_async_context
+except ImportError:
+    # Django 4.2.18可能没有这个函数，使用替代方案
+    def is_async_context():
+        import asyncio
+        try:
+            # 检查是否有当前运行的事件循环
+            loop = asyncio.get_running_loop()
+            return loop is not None
+        except RuntimeError:
+            return False
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +41,21 @@ class UserActivityMiddleware(MiddlewareMixin):
 
         request.client_ip = ip
 
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                # 在异步上下文中跳过用户认证检查
+                return
+        except Exception:
+            # 如果检测异步上下文失败，继续执行
+            pass
+
         # 记录页面访问
         if request.user.is_authenticated and not request.path.startswith("/static/"):
-            self.log_page_view(request, ip)
+            try:
+                self.log_page_view(request, ip)
+            except Exception as e:
+                logger.debug(f"Page view logging skipped: {e}")
 
     def process_response(self, request, response):
         # 计算响应时间
@@ -37,13 +64,25 @@ class UserActivityMiddleware(MiddlewareMixin):
         else:
             response_time = 0
 
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                # 在异步上下文中跳过API访问记录
+                return response
+        except Exception:
+            # 如果检测异步上下文失败，继续执行
+            pass
+
         # 记录API访问
         if (
             request.path.startswith("/api/")
             or request.path.startswith("/content/api/")
             or request.path.startswith("/users/api/")
         ):
-            self.log_api_access(request, response, response_time)
+            try:
+                self.log_api_access(request, response, response_time)
+            except Exception as e:
+                logger.debug(f"API access logging skipped: {e}")
 
         return response
 
@@ -133,36 +172,59 @@ class UserSessionMiddleware(MiddlewareMixin):
     """用户会话监控中间件"""
 
     def process_request(self, request):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return
+        except Exception:
+            pass
+            
         if request.user.is_authenticated:
-            # 检查是否有活跃会话
-            from .models import UserSessionStats
+            try:
+                # 检查是否有活跃会话
+                from .models import UserSessionStats
 
-            active_session = UserSessionStats.objects.filter(user=request.user, is_active=True).first()
+                active_session = UserSessionStats.objects.filter(user=request.user, is_active=True).first()
 
-            if not active_session:
-                # 创建新会话
-                UserSessionStats.objects.create(
-                    user=request.user,
-                    session_start=timezone.now(),
-                    ip_address=request.client_ip,
-                    user_agent=request.META.get("HTTP_USER_AGENT", ""),
-                    is_active=True,
-                )
+                if not active_session:
+                    # 创建新会话
+                    UserSessionStats.objects.create(
+                        user=request.user,
+                        session_start=timezone.now(),
+                        ip_address=getattr(request, 'client_ip', ''),
+                        user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                        is_active=True,
+                    )
+            except Exception as e:
+                logger.debug(f"Session creation skipped: {e}")
 
     def process_response(self, request, response):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return response
+        except Exception:
+            pass
+            
         if request.user.is_authenticated:
-            # 更新会话活跃时间
-            from .models import UserSessionStats
+            try:
+                # 更新会话活跃时间
+                from .models import UserSessionStats
 
-            active_session = UserSessionStats.objects.filter(user=request.user, is_active=True).first()
+                active_session = UserSessionStats.objects.filter(user=request.user, is_active=True).first()
 
-            if active_session:
-                # 如果超过30分钟没有活动，标记为非活跃
-                if timezone.now() - active_session.session_start > timedelta(minutes=30):
-                    active_session.is_active = False
-                    active_session.session_end = timezone.now()
-                    active_session.duration = int((active_session.session_end - active_session.session_start).total_seconds())
-                    active_session.save()
+                if active_session:
+                    # 如果超过30分钟没有活动，标记为非活跃
+                    if timezone.now() - active_session.session_start > timedelta(minutes=30):
+                        active_session.is_active = False
+                        active_session.session_end = timezone.now()
+                        active_session.duration = int((active_session.session_end - active_session.session_start).total_seconds())
+                        try:
+                            active_session.save()
+                        except Exception as e:
+                            logger.debug(f"Session save skipped in async context: {e}")
+            except Exception as e:
+                logger.debug(f"Session update skipped: {e}")
 
         return response
 
@@ -171,26 +233,54 @@ class SessionExtensionMiddleware(MiddlewareMixin):
     """Session延长中间件 - 每次用户活动时延长session过期时间"""
 
     def process_request(self, request):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return
+        except Exception:
+            pass
+        
         if request.user.is_authenticated and hasattr(request, "session"):
-            # 获取当前session
-            session = request.session
+            try:
+                # 获取当前session
+                session = request.session
 
-            # 检查session是否即将过期（比如还有7天过期）
-            if session.get_expiry_age() < 60 * 60 * 24 * 7:  # 7天
-                # 延长session过期时间到30天
-                session.set_expiry(60 * 60 * 24 * 30)  # 30天
-                session.save()
+                # 检查session是否即将过期（比如还有7天过期）
+                if session.get_expiry_age() < 60 * 60 * 24 * 7:  # 7天
+                    # 延长session过期时间到30天
+                    session.set_expiry(60 * 60 * 24 * 30)  # 30天
+                    try:
+                        session.save()
+                    except Exception as e:
+                        # 如果是在异步上下文中，忽略session保存错误
+                        logger.debug(f"Session save skipped in async context: {e}")
 
-                # 同时更新cookie的过期时间
-                if hasattr(request, "session"):
-                    request.session.modified = True
+                    # 同时更新cookie的过期时间
+                    if hasattr(request, "session"):
+                        request.session.modified = True
+            except Exception as e:
+                logger.debug(f"Session extension skipped: {e}")
 
     def process_response(self, request, response):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return response
+        except Exception:
+            pass
+            
         if request.user.is_authenticated and hasattr(request, "session"):
-            # 确保session被保存
-            if request.session.modified:
-                request.session.save()
-
+            try:
+                # 确保session被保存 - 使用异步安全的方式
+                if request.session.modified:
+                    try:
+                        request.session.save()
+                    except Exception as e:
+                        # 如果是在异步上下文中，忽略session保存错误
+                        logger.debug(f"Session save skipped in async context: {e}")
+            except Exception as e:
+                logger.debug(f"Session save skipped: {e}")
+        
         return response
 
 
@@ -198,6 +288,13 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
     """会话持久化中间件 - 确保服务器重启时登录态保存"""
 
     def process_request(self, request):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return
+        except Exception:
+            pass
+            
         # 如果用户未登录但有会话cookie，尝试恢复会话
         from django.contrib.auth.models import AnonymousUser
 
@@ -222,7 +319,10 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
 
                                 # 更新会话数据
                                 request.session.update(session_data)
-                                request.session.save()
+                                try:
+                                    request.session.save()
+                                except Exception as e:
+                                    logger.debug(f"Session save skipped in async context: {e}")
 
                                 logger.info(f"会话已恢复: {session_key} -> 用户 {user.username}")
 
@@ -236,6 +336,13 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
                 logger.error(f"会话恢复失败: {e}")
 
     def process_response(self, request, response):
+        # 检查是否在异步上下文中
+        try:
+            if is_async_context():
+                return response
+        except Exception:
+            pass
+            
         # 如果用户已登录，确保会话数据持久化
         from django.contrib.auth.models import AnonymousUser
 

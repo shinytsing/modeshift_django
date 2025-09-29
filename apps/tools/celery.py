@@ -37,6 +37,11 @@ app.conf.beat_schedule = {
         "task": "apps.tools.tasks.check_chat_room_activity",
         "schedule": crontab(minute="*/15"),  # 每15分钟执行一次
     },
+    # 每天早上8点运行社交媒体爬虫任务
+    "run-social-media-crawler": {
+        "task": "apps.tools.tasks.run_social_media_crawler",
+        "schedule": crontab(hour=8, minute=0),  # 每天早上8点执行
+    },
 }
 
 # 任务路由配置

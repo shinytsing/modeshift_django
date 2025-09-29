@@ -45,3 +45,5 @@ urlpatterns = [
     # Google Auth 测试页面
     path("google-auth-test/", views.google_auth_test_view, name="google_auth_test"),
 ]
+
+# Google GSI 一键登录

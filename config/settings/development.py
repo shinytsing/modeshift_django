@@ -10,18 +10,11 @@ DEBUG = True
 # 允许的主机 - 开发环境支持局域网访问
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "192.168.0.118", "172.16.0.1", "0.0.0.0", "*"]
 
-# 数据库配置 - 开发环境使用PostgreSQL（与生产环境完全一致）
+# 数据库配置 - 临时使用SQLite解决权限问题
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "qatoolbox_local"),
-        "USER": os.environ.get("DB_USER", "gaojie"),  # macOS当前用户
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),  # 本地无密码
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-        "OPTIONS": {
-            "sslmode": "prefer",
-        },
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 

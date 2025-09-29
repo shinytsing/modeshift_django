@@ -22,6 +22,15 @@
     
     <!-- 修复悬浮函数未定义的问题 -->
     <script>
+        // 安全的DOM移除函数
+        function safeRemoveChild(element) {
+            if (element && element.parentNode && element.parentNode.contains(element)) {
+                element.parentNode.removeChild(element);
+                return true;
+            }
+            return false;
+        }
+        
         // 设置下拉菜单的悬浮功能
         let globalSettingsDropdownTimer = null;
         let globalMenuDropdownTimer = null;
@@ -114,9 +123,7 @@
             const settingsModal = document.getElementById('settingsModal');
             if (settingsModal) {
                 settingsModal.style.display = 'none';
-                if (settingsModal.parentNode) {
-                    settingsModal.parentNode.removeChild(settingsModal);
-                }
+                safeRemoveChild(settingsModal);
             }
         }
         
@@ -125,9 +132,7 @@
             const menuModal = document.getElementById('menuModal');
             if (menuModal) {
                 menuModal.style.display = 'none';
-                if (menuModal.parentNode) {
-                    menuModal.parentNode.removeChild(menuModal);
-                }
+                safeRemoveChild(menuModal);
             }
         }
         

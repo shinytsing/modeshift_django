@@ -101,6 +101,11 @@ app.conf.update(
             "task": "apps.tools.tasks.update_user_online_status",
             "schedule": crontab(minute="*/5"),
         },
+        # 社交媒体爬虫任务 - 每天早上8点运行
+        "run-social-media-crawler-daily-at-8am": {
+            "task": "apps.tools.tasks.run_social_media_crawler",
+            "schedule": crontab(hour=8, minute=0),
+        },
     },
     # 工作进程设置
     worker_concurrency=4,

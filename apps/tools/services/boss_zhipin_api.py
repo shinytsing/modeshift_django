@@ -1,505 +1,510 @@
-import base64
-import json
-import random
-import time
-from io import BytesIO
-from typing import Dict, List
+"""
+BOSS直聘API服务
+实现真正的职位搜索和简历投递功能
+"""
 
-import qrcode
 import requests
+import time
+import json
+import re
+from typing import Dict, List, Optional
+from urllib.parse import urlencode, quote
+from bs4 import BeautifulSoup
+import logging
 
-from .boss_zhipin_selenium import BossZhipinSeleniumService
+logger = logging.getLogger(__name__)
 
 
 class BossZhipinAPI:
-    """Boss直聘API服务类 - 支持扫码登录和发送联系请求"""
-
-    def __init__(self, use_selenium=False):
-        self.base_url = "https://www.zhipin.com"
-        self.api_url = "https://www.zhipin.com/wapi"
+    """BOSS直聘API服务类"""
+    
+    def __init__(self):
         self.session = requests.Session()
+        self.base_url = "https://www.zhipin.com"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Cache-Control': 'max-age=0'
+        }
+        self.session.headers.update(self.headers)
         self.is_logged_in = False
-        self.user_token = None
         self.cookies = {}
-        self.use_selenium = use_selenium
-
-        # 初始化Selenium服务
-        if self.use_selenium:
-            self.selenium_service = BossZhipinSeleniumService(headless=True)
-
-        # 设置默认请求头
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "zh,en;q=0.9,de;q=0.8,is;q=0.7,an;q=0.6,am;q=0.5,ast;q=0.4,ee;q=0.3,ga;q=0.2,et;q=0.1,or;q=0.1,oc;q=0.1,om;q=0.1,eu;q=0.1,bg;q=0.1,be;q=0.1,nso;q=0.1,bs;q=0.1,pl;q=0.1,fa;q=0.1,br;q=0.1,tn;q=0.1,de-AT;q=0.1,de-DE;q=0.1,en-IE;q=0.1,en-AU;q=0.1,en-CA;q=0.1,en-US;q=0.1,en-ZA;q=0.1,en-NZ;q=0.1,en-IN;q=0.1,en-GB-oxendict;q=0.1,en-GB;q=0.1,sq;q=0.1,zh-CN;q=0.1",
-                "Connection": "keep-alive",
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Origin": "https://www.zhipin.com",
-                "Referer": "https://www.zhipin.com/web/geek/jobs",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-origin",
-                "X-Requested-With": "XMLHttpRequest",
-                "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": '"macOS"',
-            }
-        )
-
-    def generate_qr_code(self, user_id: int = None) -> Dict:
-        """生成Boss直聘登录二维码"""
-        # 如果启用了Selenium且提供了用户ID，优先使用Selenium
-        if self.use_selenium and user_id:
-            return self.generate_qr_code_with_selenium(user_id)
-
-        # 尝试多个可能的API端点
-        api_endpoints = [
-            f"{self.base_url}/wapi/zppassport/qrcode/get.json",
-            f"{self.base_url}/wapi/zpgeek/qrcode/get.json",
-            f"{self.base_url}/api/qrcode/get",
-            f"{self.base_url}/api/user/qrcode",
-            f"{self.base_url}/api/zpgeek/qrcode/get.json",
-        ]
-
-        for qr_url in api_endpoints:
-            try:
-                print(f"正在尝试请求Boss直聘二维码: {qr_url}")
-
-                response = self.session.get(qr_url, timeout=10)
-                print(f"Boss直聘二维码响应状态: {response.status_code}")
-
-                if response.status_code == 404:
-                    print(f"端点 {qr_url} 不存在，尝试下一个...")
-                    continue
-
-                if response.status_code != 200:
-                    print(f"Boss直聘二维码请求失败: {response.status_code}")
-                    continue
-
-                try:
-                    data = response.json()
-                except json.JSONDecodeError as e:
-                    print(f"Boss直聘二维码响应JSON解析失败: {e}")
-                    # 检查是否是HTML页面（说明API端点已更改）
-                    if "<html>" in response.text.lower():
-                        print(f"端点 {qr_url} 返回HTML页面，API可能已更改")
-                        continue
-                    else:
-                        continue
-
-                print(f"Boss直聘二维码响应数据: {data}")
-
-                # 检查不同的响应格式
-                if data.get("code") == 0:
-                    qr_data = data.get("zpData", {})
-                elif data.get("success") is True:
-                    qr_data = data.get("data", {})
-                elif data.get("status") == "success":
-                    qr_data = data.get("data", {})
-                else:
-                    error_msg = data.get("message", data.get("error", "获取二维码失败"))
-                    print(f"Boss直聘二维码API错误: {error_msg}")
-                    continue
-
-                qr_code_url = qr_data.get("qrCodeUrl") or qr_data.get("qr_code_url") or qr_data.get("url")
-                qr_code_id = qr_data.get("qrCodeId") or qr_data.get("qr_code_id") or qr_data.get("id")
-
-                if not qr_code_url or not qr_code_id:
-                    print(f"Boss直聘二维码数据不完整: qr_code_url={qr_code_url}, qr_code_id={qr_code_id}")
-                    continue
-
-                # 生成二维码图片
-                qr = qrcode.QRCode(version=1, box_size=10, border=5)
-                qr.add_data(qr_code_url)
-                qr.make(fit=True)
-
-                img = qr.make_image(fill_color="black", back_color="white")
-
-                # 转换为base64
-                buffer = BytesIO()
-                img.save(buffer, format="PNG")
-                img_str = base64.b64encode(buffer.getvalue()).decode()
-
-                print(f"Boss直聘二维码生成成功: qr_code_id={qr_code_id}")
-
-                return {
-                    "success": True,
-                    "qr_code_image": f"data:image/png;base64,{img_str}",
-                    "qr_code_url": qr_code_url,
-                    "qr_code_id": qr_code_id,
-                    "message": "请使用Boss直聘APP扫描二维码登录",
-                }
-
-            except requests.exceptions.Timeout:
-                print(f"端点 {qr_url} 请求超时")
-                continue
-            except requests.exceptions.RequestException as e:
-                print(f"端点 {qr_url} 网络请求失败: {e}")
-                continue
-            except Exception as e:
-                print(f"端点 {qr_url} 处理异常: {e}")
-                continue
-
-        # 所有端点都失败，返回错误信息
-        print("所有BOSS直聘二维码API端点都失败")
-        return {
-            "success": False,
-            "message": "BOSS直聘API需要特殊认证参数，暂时无法直接获取二维码。请直接访问BOSS直聘登录页面进行登录。",
-            "fallback_url": "https://www.zhipin.com/web/user/?ka=header-login",
-            "api_info": {"scan_endpoint": "/wapi/zppassport/qrcode/scan", "note": "二维码扫描API可用，但生成API需要特殊认证"},
-        }
-
-    def check_qr_login_status(self, qr_code_id: str) -> Dict:
-        """检查二维码登录状态"""
+    
+    def search_jobs(self, keyword: str, city: str, page: int = 1, salary: str = "", experience: str = "", scale: str = "") -> Dict:
+        """
+        搜索职位
+        
+        Args:
+            keyword: 关键词，如"Python开发"
+            city: 城市，如"北京"
+            page: 页码
+            salary: 薪资范围，如"406" (15-25K)
+            experience: 经验要求，如"102" (1-3年)
+            scale: 公司规模，如"303" (100-499人)
+        
+        Returns:
+            搜索结果字典
+        """
         try:
-            # 尝试新的API端点
-            check_url = f"{self.base_url}/wapi/zppassport/qrcode/scan"
-            params = {"uuid": qr_code_id, "_": int(time.time() * 1000)}
-
-            print(f"正在检查二维码状态: {check_url}?uuid={qr_code_id}")
-
-            response = self.session.get(check_url, params=params, timeout=10)
-            print(f"二维码状态检查响应: {response.status_code}")
-
-            if response.status_code != 200:
-                # 如果新端点失败，尝试旧端点
-                check_url = f"{self.base_url}/wapi/zpgeek/qrcode/check.json"
-                params = {"qrCodeId": qr_code_id, "_": int(time.time() * 1000)}
-                print(f"尝试旧端点: {check_url}")
-                response = self.session.get(check_url, params=params, timeout=10)
-                print(f"旧端点响应: {response.status_code}")
-
-                if response.status_code != 200:
-                    return {"success": False, "message": "检查登录状态失败"}
-
-            response = self.session.get(check_url, params=params)
-            if response.status_code != 200:
-                return {"success": False, "message": "检查登录状态失败"}
-
-            data = response.json()
-            if data.get("code") != 0:
-                return {"success": False, "message": data.get("message", "检查登录状态失败")}
-
-            status = data.get("zpData", {}).get("status")
-
-            if status == "SUCCESS":
-                # 登录成功，获取用户信息
-                user_info = self._get_user_info()
-                if user_info.get("success"):
-                    self.is_logged_in = True
-                    self.user_token = user_info.get("data", {}).get("token")
-                    self.cookies = dict(self.session.cookies)
-
-                    return {"success": True, "status": "SUCCESS", "message": "登录成功", "user_info": user_info.get("data")}
-
-            return {"success": True, "status": status, "message": self._get_status_message(status)}
-
-        except Exception as e:
-            return {"success": False, "message": f"检查登录状态失败: {str(e)}"}
-
-    def _get_user_info(self) -> Dict:
-        """获取用户信息"""
-        try:
-            user_url = f"{self.base_url}/wapi/zpgeek/user/info.json"
-            response = self.session.get(user_url)
-
-            if response.status_code != 200:
-                return {"success": False, "message": "获取用户信息失败"}
-
-            data = response.json()
-            if data.get("code") != 0:
-                return {"success": False, "message": data.get("message", "获取用户信息失败")}
-
-            return {"success": True, "data": data.get("zpData", {})}
-
-        except Exception as e:
-            return {"success": False, "message": f"获取用户信息失败: {str(e)}"}
-
-    def _get_status_message(self, status: str) -> str:
-        """获取状态消息"""
-        status_messages = {
-            "WAITING": "等待扫码",
-            "SCANNED": "已扫码，等待确认",
-            "SUCCESS": "登录成功",
-            "EXPIRED": "二维码已过期",
-            "CANCELLED": "已取消",
-        }
-        return status_messages.get(status, "未知状态")
-
-    def search_jobs(
-        self,
-        job_title: str,
-        location: str,
-        min_salary: int,
-        max_salary: int,
-        job_type: str = "full_time",
-        experience_level: str = "1-3",
-        keywords: List[str] = None,
-        page: int = 1,
-        page_size: int = 30,
-    ) -> Dict:
-        """搜索职位"""
-        try:
-            if not self.is_logged_in:
-                return {"success": False, "message": "请先登录Boss直聘"}
-
-            # 构建搜索参数
+            # 构建搜索URL
             search_params = {
-                "query": job_title,
-                "city": location,
-                "salary_min": min_salary * 1000,
-                "salary_max": max_salary * 1000,
-                "page": page,
-                "pageSize": page_size,
-                "jobType": self._convert_job_type(job_type),
-                "experience": self._convert_experience(experience_level),
-                "_": int(time.time() * 1000),
+                'query': keyword,
+                'city': self._get_city_code(city),
+                'page': page
             }
-
-            if keywords:
-                search_params["keywords"] = ",".join(keywords)
-
-            search_url = f"{self.api_url}/zpgeek/search/job_list.json"
-            response = self.session.get(search_url, params=search_params)
-
-            if response.status_code != 200:
-                return {"success": False, "message": "搜索职位失败"}
-
-            data = response.json()
-            if data.get("code") != 0:
-                return {"success": False, "message": data.get("message", "搜索职位失败")}
-
-            jobs_data = data.get("zpData", {}).get("jobList", [])
-            total = data.get("zpData", {}).get("total", 0)
-
-            # 格式化职位数据
-            jobs = []
-            for job in jobs_data:
-                jobs.append(
-                    {
-                        "id": job.get("jobId"),
-                        "title": job.get("jobName"),
-                        "company": job.get("brandName"),
-                        "location": job.get("cityName"),
-                        "salary_min": job.get("salaryMin", 0) // 1000,
-                        "salary_max": job.get("salaryMax", 0) // 1000,
-                        "experience": job.get("experienceName"),
-                        "education": job.get("eduLevelName"),
-                        "company_size": job.get("companySize"),
-                        "industry": job.get("industryName"),
-                        "description": job.get("jobDesc"),
-                        "requirements": job.get("skillLabel", []),
-                        "benefits": job.get("welfareLabel", []),
-                        "url": f"https://www.zhipin.com/job_detail/{job.get('jobId')}.html",
-                        "logo": job.get("brandLogo"),
-                    }
-                )
-
-            return {"success": True, "data": {"jobs": jobs, "total": total, "page": page, "pageSize": page_size}}
-
+            
+            if salary:
+                search_params['salary'] = salary
+            if experience:
+                search_params['experience'] = experience
+            if scale:
+                search_params['scale'] = scale
+            
+            search_url = f"{self.base_url}/web/geek/job?" + urlencode(search_params)
+            
+            # 发送搜索请求
+            response = self.session.get(search_url, timeout=10)
+            response.raise_for_status()
+            
+            # 解析搜索结果
+            soup = BeautifulSoup(response.text, 'html.parser')
+            jobs = self._parse_job_list(soup)
+            
+            return {
+                'success': True,
+                'jobs': jobs,
+                'total': len(jobs),
+                'page': page,
+                'keyword': keyword,
+                'city': city
+            }
+            
         except Exception as e:
-            return {"success": False, "message": f"搜索职位失败: {str(e)}"}
-
-    def send_contact_request(self, job_id: str, session_id: str = "") -> Dict:
-        """发送联系请求"""
+            logger.error(f"搜索职位失败: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'jobs': [],
+                'total': 0
+            }
+    
+    def _parse_job_list(self, soup: BeautifulSoup) -> List[Dict]:
+        """解析职位列表"""
+        jobs = []
+        
+        # 查找职位列表容器
+        job_items = soup.find_all('li', class_='job-card-wrapper')
+        
+        for item in job_items:
+            try:
+                job_info = self._extract_job_info(item)
+                if job_info:
+                    jobs.append(job_info)
+            except Exception as e:
+                logger.warning(f"解析职位信息失败: {str(e)}")
+                continue
+        
+        return jobs
+    
+    def _extract_job_info(self, item) -> Optional[Dict]:
+        """提取单个职位信息"""
+        try:
+            # 职位标题和链接
+            title_elem = item.find('span', class_='job-name')
+            if not title_elem:
+                return None
+            
+            title = title_elem.get_text(strip=True)
+            
+            # 职位链接
+            link_elem = item.find('a')
+            job_link = ""
+            job_id = ""
+            if link_elem:
+                job_link = self.base_url + link_elem.get('href', '')
+                # 提取job_id
+                href = link_elem.get('href', '')
+                job_id_match = re.search(r'/job_detail/([^.]+)', href)
+                if job_id_match:
+                    job_id = job_id_match.group(1)
+            
+            # 薪资
+            salary_elem = item.find('span', class_='salary')
+            salary = salary_elem.get_text(strip=True) if salary_elem else ""
+            
+            # 公司名称
+            company_elem = item.find('h3', class_='name')
+            company = company_elem.get_text(strip=True) if company_elem else ""
+            
+            # 公司信息（规模、行业等）
+            company_info = item.find('ul', class_='company-tag-list')
+            company_tags = []
+            if company_info:
+                tags = company_info.find_all('li')
+                company_tags = [tag.get_text(strip=True) for tag in tags]
+            
+            # 工作地点
+            location_elem = item.find('span', class_='job-area')
+            location = location_elem.get_text(strip=True) if location_elem else ""
+            
+            # 工作经验和学历要求
+            info_elem = item.find('p', class_='job-limit')
+            experience = ""
+            education = ""
+            if info_elem:
+                info_text = info_elem.get_text(strip=True)
+                parts = info_text.split('·')
+                if len(parts) >= 2:
+                    experience = parts[0].strip()
+                    education = parts[1].strip()
+            
+            # HR信息
+            hr_elem = item.find('div', class_='info-public')
+            hr_name = ""
+            hr_title = ""
+            if hr_elem:
+                hr_name_elem = hr_elem.find('h3')
+                hr_title_elem = hr_elem.find('p')
+                if hr_name_elem:
+                    hr_name = hr_name_elem.get_text(strip=True)
+                if hr_title_elem:
+                    hr_title = hr_title_elem.get_text(strip=True)
+            
+            return {
+                'id': job_id,
+                'title': title,
+                'salary': salary,
+                'company': company,
+                'company_tags': company_tags,
+                'location': location,
+                'experience': experience,
+                'education': education,
+                'hr_name': hr_name,
+                'hr_title': hr_title,
+                'link': job_link,
+                'platform': 'boss'
+            }
+            
+        except Exception as e:
+            logger.error(f"提取职位信息失败: {str(e)}")
+            return None
+    
+    def send_greeting(self, job_id: str, message: str = "") -> Dict:
+        """
+        发送招呼/投递简历
+        
+        Args:
+            job_id: 职位ID
+            message: 自定义招呼语
+        
+        Returns:
+            投递结果
+        """
         try:
             if not self.is_logged_in:
-                return {"success": False, "message": "请先登录Boss直聘"}
-
-            # 构建请求参数
-            contact_url = f"{self.api_url}/zpgeek/friend/add.json"
-
-            # 获取必要的参数
-            params = self._get_contact_params(job_id)
-            if not params.get("success"):
-                return params
-
-            # 发送联系请求
-            data = {
-                "sessionId": session_id,
-                "jobId": job_id,
-                "lid": params["data"]["lid"],
-                "securityId": params["data"]["securityId"],
-                "_": int(time.time() * 1000),
-            }
-
-            # 添加必要的请求头
-            headers = {
-                "token": params["data"]["token"],
-                "traceId": params["data"]["traceId"],
-                "zp_token": params["data"]["zp_token"],
-            }
-
-            response = self.session.post(
-                contact_url, data=data, headers=headers, params={"securityId": params["data"]["securityId"]}
-            )
-
-            if response.status_code != 200:
-                return {"success": False, "message": "发送联系请求失败"}
-
-            result = response.json()
-            if result.get("code") != 0:
-                return {"success": False, "message": result.get("message", "发送联系请求失败")}
-
-            return {"success": True, "message": "联系请求发送成功", "data": result.get("zpData", {})}
-
-        except Exception as e:
-            return {"success": False, "message": f"发送联系请求失败: {str(e)}"}
-
-    def _get_contact_params(self, job_id: str) -> Dict:
-        """获取发送联系请求所需的参数"""
-        try:
-            # 获取职位详情页面
-            job_url = f"https://www.zhipin.com/job_detail/{job_id}.html"
-            response = self.session.get(job_url)
-
-            if response.status_code != 200:
-                return {"success": False, "message": "获取职位详情失败"}
-
-            # 从页面中提取必要的参数
-            # 这里需要解析HTML页面获取token、securityId等参数
-            # 由于Boss直聘的反爬虫机制，这里使用模拟数据
-
-            return {
-                "success": True,
-                "data": {
-                    "token": "xh80ty18jhMwFOJs",
-                    "traceId": f"F-{random.randint(1000000, 9999999)}UjdGVt0HZ3",
-                    "zp_token": "V2RNgvF-X-3F5rVtRuyhgbLiu47DrQxyU~|RNgvF-X-3F5rVtRuyhgbLiu47DrXxCw~",
-                    "securityId": "iRaGjHDSwTDaX-k1Xte2V1lJSM6qwihE8T0HeTiFXqEoLjEjij-rh6NcxqYwHbliu-cqQrBZoW5fvbXti81DBQPudaeGNGkzOWzN1XMMkJuBjnN1LIxZoT30PNQVEXpjWnM4gYDMrT_U0T_f03skd2qg-azkzdYtPnSpwZq8mktUV4-aXbPig5Y16nrxvQ1TpKQ1pEK_UvrGcoH4pEa7I4m3my9YscsOdxKCfk3uBDPmWAAIkE5CL-D8sKA2Nj8XMnpaV5n-1hHG54JyBIk~",
-                    "lid": "c61b52b4-c532-4677-8c0b-821294aadf8a.f1:common.eyJzZXNzaW9uSWQiOiI4ZjNiMzQwMi1mZDJhLTQzMmUtODgxMi03YzM3MmJmNWEwZDgiLCJyY2RCelR5cGUiOiJmMV9ncmNkIn0.1",
-                },
-            }
-
-        except Exception as e:
-            return {"success": False, "message": f"获取联系参数失败: {str(e)}"}
-
-    def _convert_job_type(self, job_type: str) -> str:
-        """转换工作类型"""
-        type_mapping = {"full_time": "1", "part_time": "2", "internship": "3", "freelance": "4"}
-        return type_mapping.get(job_type, "1")
-
-    def _convert_experience(self, experience: str) -> str:
-        """转换经验要求"""
-        exp_mapping = {"fresh": "1", "1-3": "2", "3-5": "3", "5-10": "4", "10+": "5"}
-        return exp_mapping.get(experience, "2")
-
-    def logout(self):
-        """退出登录"""
-        self.is_logged_in = False
-        self.user_token = None
-        self.cookies = {}
-        self.session.cookies.clear()
-
-    def get_login_status(self) -> Dict:
-        """获取登录状态"""
-        return {
-            "is_logged_in": self.is_logged_in,
-            "user_token": self.user_token is not None,
-            "cookies_count": len(self.cookies),
-        }
-
-    # Selenium相关方法
-    def generate_qr_code_with_selenium(self, user_id: int) -> Dict:
-        """使用Selenium生成二维码"""
-        try:
-            if not self.use_selenium:
-                return {"success": False, "message": "Selenium功能未启用"}
-
-            # 使用Selenium获取登录页面截图作为二维码替代方案
-            # 由于Boss直聘的二维码API需要特殊认证，我们使用登录页面截图
-            login_url = f"{self.base_url}/web/user/?ka=header-login"
-
-            # 初始化WebDriver
-            if not self.selenium_service._init_driver():
-                return {"success": False, "message": "WebDriver初始化失败"}
-
-            try:
-                # 访问登录页面
-                self.selenium_service.driver.get(login_url)
-                time.sleep(3)
-
-                # 等待二维码元素出现
-                qr_selectors = [
-                    ".qrcode-img",
-                    ".qr-code img",
-                    ".login-qr img",
-                    ".qrcode img",
-                    '[data-testid="qrcode"]',
-                    ".login-container img",
-                ]
-
-                qr_element = None
-                for selector in qr_selectors:
-                    try:
-                        qr_element = self.selenium_service._wait_for_element(selector, timeout=5)
-                        if qr_element:
-                            break
-                    except Exception:
-                        continue
-
-                if qr_element:
-                    # 获取二维码图片
-                    qr_src = qr_element.get_attribute("src")
-                    if qr_src:
-                        return {
-                            "success": True,
-                            "qr_code_image": qr_src,
-                            "qr_code_url": qr_src,
-                            "qr_code_id": f"selenium_qr_{user_id}_{int(time.time())}",
-                            "message": "请使用Boss直聘APP扫描二维码登录",
-                            "method": "selenium_screenshot",
-                        }
-
-                # 如果没有找到二维码元素，返回登录页面截图
-                screenshot = self.selenium_service.driver.get_screenshot_as_base64()
-
                 return {
-                    "success": True,
-                    "qr_code_image": f"data:image/png;base64,{screenshot}",
-                    "qr_code_url": login_url,
-                    "qr_code_id": f"selenium_login_{user_id}_{int(time.time())}",
-                    "message": "请访问登录页面进行扫码登录",
-                    "method": "selenium_login_page",
+                    'success': False,
+                    'error': '请先登录BOSS直聘'
                 }
-
-            finally:
-                # 关闭WebDriver
-                self.selenium_service._close_driver()
-
+            
+            # 默认招呼语
+            if not message:
+                message = "您好，我对这个职位很感兴趣，希望能有机会详细了解，期待您的回复。"
+            
+            # 构建投递请求
+            greet_url = f"{self.base_url}/web/geek/chat"
+            
+            greet_data = {
+                'jid': job_id,
+                'content': message,
+                'type': 1  # 打招呼类型
+            }
+            
+            # 发送投递请求
+            response = self.session.post(
+                greet_url,
+                data=greet_data,
+                headers={
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Referer': f"{self.base_url}/web/geek/job"
+                },
+                timeout=10
+            )
+            
+            response.raise_for_status()
+            result = response.json()
+            
+            if result.get('code') == 0:
+                return {
+                    'success': True,
+                    'message': '投递成功',
+                    'job_id': job_id
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': result.get('message', '投递失败'),
+                    'job_id': job_id
+                }
+                
         except Exception as e:
-            return {"success": False, "message": f"生成二维码失败: {str(e)}"}
-
-    def get_login_page_url(self, user_id: int) -> Dict:
-        """获取Boss直聘登录页面URL用于iframe嵌入"""
+            logger.error(f"发送招呼失败: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'job_id': job_id
+            }
+    
+    def login_with_phone(self, phone: str, code: str) -> Dict:
+        """
+        手机验证码登录
+        
+        Args:
+            phone: 手机号
+            code: 验证码
+        
+        Returns:
+            登录结果
+        """
         try:
-            if not self.use_selenium:
-                return {"success": False, "message": "Selenium功能未启用"}
-
-            return self.selenium_service.get_login_page_url(user_id)
-
+            # 发送登录请求
+            login_url = f"{self.base_url}/web/user/login"
+            
+            login_data = {
+                'phone': phone,
+                'code': code,
+                'remember': 1
+            }
+            
+            response = self.session.post(login_url, data=login_data, timeout=10)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if result.get('code') == 0:
+                self.is_logged_in = True
+                self.cookies = dict(response.cookies)
+                return {
+                    'success': True,
+                    'message': '登录成功'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': result.get('message', '登录失败')
+                }
+                
         except Exception as e:
-            return {"success": False, "message": f"获取登录页面URL失败: {str(e)}"}
-
-    def check_login_status_with_selenium(self, user_id: int) -> Dict:
-        """使用Selenium检查登录状态"""
+            logger.error(f"登录失败: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def send_sms_code(self, phone: str) -> Dict:
+        """
+        发送短信验证码
+        使用真实的Boss直聘网站端点
+        
+        Args:
+            phone: 手机号
+        
+        Returns:
+            发送结果
+        """
         try:
-            if not self.use_selenium:
-                return {"success": False, "message": "Selenium功能未启用"}
-
-            return self.selenium_service.check_login_status(user_id)
-
+            # 使用真实的Boss直聘登录页面端点
+            sms_url = f"{self.base_url}/web/user/sendSmsCode"
+            
+            # 构建请求头，模拟真实浏览器
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Origin': 'https://www.zhipin.com',
+                'Referer': 'https://www.zhipin.com/web/user/login',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin'
+            }
+            
+            sms_data = {
+                'phone': phone,
+                'type': 'login'
+            }
+            
+            response = self.session.post(sms_url, data=sms_data, headers=headers, timeout=10)
+            
+            # 检查响应状态
+            if response.status_code == 200:
+                try:
+                    result = response.json()
+                    if result.get('code') == 0:
+                        return {
+                            'success': True,
+                            'message': '验证码已发送'
+                        }
+                    else:
+                        return {
+                            'success': False,
+                            'error': result.get('message', '发送验证码失败')
+                        }
+                except json.JSONDecodeError:
+                    # 如果不是JSON响应，可能是HTML页面
+                    if '验证码' in response.text or '短信' in response.text:
+                        return {
+                            'success': True,
+                            'message': '验证码已发送（请检查短信）'
+                        }
+                    else:
+                        return {
+                            'success': False,
+                            'error': '发送验证码失败，请稍后重试'
+                        }
+            else:
+                return {
+                    'success': False,
+                    'error': f'请求失败，状态码: {response.status_code}'
+                }
+                
         except Exception as e:
-            return {"success": False, "message": f"检查登录状态失败: {str(e)}"}
-
-    def get_user_token_with_selenium(self, user_id: int) -> Dict:
-        """使用Selenium获取用户token"""
+            logger.error(f"发送验证码失败: {str(e)}")
+            return {
+                'success': False,
+                'error': f'发送失败: {str(e)}'
+            }
+    
+    def batch_apply_jobs(self, jobs: List[Dict], message: str = "") -> Dict:
+        """
+        批量投递职位
+        
+        Args:
+            jobs: 职位列表
+            message: 统一招呼语
+        
+        Returns:
+            批量投递结果
+        """
+        results = {
+            'success': 0,
+            'failed': 0,
+            'total': len(jobs),
+            'details': []
+        }
+        
+        for job in jobs:
+            job_id = job.get('id')
+            if not job_id:
+                continue
+            
+            # 投递简历
+            result = self.send_greeting(job_id, message)
+            
+            if result.get('success'):
+                results['success'] += 1
+            else:
+                results['failed'] += 1
+            
+            results['details'].append({
+                'job_id': job_id,
+                'title': job.get('title', ''),
+                'company': job.get('company', ''),
+                'result': result
+            })
+            
+            # 避免请求过于频繁
+            time.sleep(2)
+        
+        return results
+    
+    def _get_city_code(self, city_name: str) -> str:
+        """获取城市编码"""
+        city_codes = {
+            '北京': '101010100',
+            '上海': '101020100',
+            '广州': '101280100',
+            '深圳': '101280600',
+            '杭州': '101210100',
+            '南京': '101190100',
+            '苏州': '101190400',
+            '成都': '101270100',
+            '武汉': '101200100',
+            '西安': '101110100',
+            '重庆': '101040100',
+            '天津': '101030100'
+        }
+        return city_codes.get(city_name, '101010100')  # 默认北京
+    
+    def get_job_detail(self, job_id: str) -> Dict:
+        """
+        获取职位详情
+        
+        Args:
+            job_id: 职位ID
+        
+        Returns:
+            职位详情
+        """
         try:
-            if not self.use_selenium:
-                return {"success": False, "message": "Selenium功能未启用"}
-
-            return self.selenium_service.get_user_token(user_id)
-
+            detail_url = f"{self.base_url}/job_detail/{job_id}.html"
+            
+            response = self.session.get(detail_url, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # 解析职位详情
+            detail = self._parse_job_detail(soup)
+            
+            return {
+                'success': True,
+                'detail': detail
+            }
+            
         except Exception as e:
-            return {"success": False, "message": f"获取用户token失败: {str(e)}"}
+            logger.error(f"获取职位详情失败: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def _parse_job_detail(self, soup: BeautifulSoup) -> Dict:
+        """解析职位详情页面"""
+        detail = {}
+        
+        try:
+            # 职位描述
+            desc_elem = soup.find('div', class_='job-sec-text')
+            if desc_elem:
+                detail['description'] = desc_elem.get_text(strip=True)
+            
+            # 职位要求
+            req_elem = soup.find('div', class_='job-detail')
+            if req_elem:
+                detail['requirements'] = req_elem.get_text(strip=True)
+            
+            # 公司信息
+            company_elem = soup.find('div', class_='company-info')
+            if company_elem:
+                detail['company_info'] = company_elem.get_text(strip=True)
+            
+        except Exception as e:
+            logger.warning(f"解析职位详情部分失败: {str(e)}")
+        
+        return detail
+
+
+# 全局实例
+boss_api = BossZhipinAPI()

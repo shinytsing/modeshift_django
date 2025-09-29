@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-import numpy as np
+import numpy as np  # 暂时注释掉，避免启动问题
 
 
 class GuitarTrainingSystem:
@@ -703,7 +703,7 @@ def analyze_audio(file_path):
         import warnings
 
         import librosa
-        import numpy as np
+        import numpy as np  # 暂时注释掉，避免启动问题
 
         warnings.filterwarnings("ignore")
 
@@ -771,7 +771,7 @@ def basic_audio_analysis(file_path):
     import struct
     import wave
 
-    import numpy as np
+    import numpy as np  # 暂时注释掉，避免启动问题
 
     try:
         with wave.open(file_path, "rb") as wav_file:

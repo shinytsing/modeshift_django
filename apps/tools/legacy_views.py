@@ -882,7 +882,7 @@ def add_social_subscription_api(request):
         target_user_id = data.get("target_user_id")
         target_user_name = data.get("target_user_name", target_user_id)
         subscription_types = data.get("subscription_types", [])
-        check_frequency = data.get("check_frequency", 15)
+        # 移除check_frequency，现在统一在每天早上8点执行
 
         if not platform or not target_user_id:
             return JsonResponse({"success": False, "error": "平台和用户ID不能为空"}, status=400, content_type="application/json")
@@ -895,7 +895,13 @@ def add_social_subscription_api(request):
         ).first()
 
         if existing:
-            return JsonResponse({"success": False, "error": "该用户已订阅"}, status=400, content_type="application/json")
+            return JsonResponse({
+                "success": False, 
+                "error": f"该用户已订阅！请先删除现有订阅后再添加。\n"
+                        f"平台: {platform}\n"
+                        f"用户: {target_user_name}\n"
+                        f"订阅ID: {existing.id}"
+            }, status=400, content_type="application/json")
 
         # 创建新订阅
         subscription = SocialMediaSubscription.objects.create(
@@ -904,7 +910,6 @@ def add_social_subscription_api(request):
             target_user_id=target_user_id,
             target_user_name=target_user_name,
             subscription_types=subscription_types,
-            check_frequency=check_frequency,
         )
 
         return JsonResponse(
@@ -916,7 +921,7 @@ def add_social_subscription_api(request):
                     "target_user_id": subscription.target_user_id,
                     "target_user_name": subscription.target_user_name,
                     "subscription_types": subscription.subscription_types,
-                    "check_frequency": subscription.check_frequency,
+                    "schedule": "每天8:00执行",
                     "status": subscription.status,
                     "created_at": subscription.created_at.isoformat(),
                 },
@@ -946,7 +951,7 @@ def get_subscriptions_api(request):
                     "target_user_id": sub.target_user_id,
                     "target_user_name": sub.target_user_name,
                     "subscription_types": sub.subscription_types,
-                    "check_frequency": sub.check_frequency,
+                    "schedule": "每天8:00执行",
                     "status": sub.status,
                     "last_check": sub.last_check.isoformat() if sub.last_check else None,
                     "avatar_url": sub.avatar_url,
@@ -6094,7 +6099,6 @@ def generate_travel_guide_with_deepseek(
                 print("⚠️ AI服务未配置，跳过AI增强功能")
                 return None
             else:
-                print(f"❌ 大模型服务配置错误: {api_key_error}")
                 return None
         except requests.exceptions.HTTPError as http_error:
             if http_error.response.status_code == 401:
@@ -8560,8 +8564,6 @@ def decrypt_ncm_file(ncm_path):
             # 移除PKCS7填充
             key_data = unpad(key_data)
 
-            print(f"解密后的密钥数据长度: {len(key_data)}")
-            print(f"解密后的密钥数据前32字节: {key_data[:32].hex()}")
 
             # 从解密后的密钥数据中提取实际的密钥
             try:
@@ -8582,9 +8584,7 @@ def decrypt_ncm_file(ncm_path):
                         key_info = json.loads(key_json_data.decode("utf-8", errors="ignore"))
                         if "key" in key_info and isinstance(key_info["key"], list):
                             rc4_key = bytes(key_info["key"])
-                            print(f"方法1成功：从JSON提取到密钥，长度: {len(rc4_key)}")
                         else:
-                            print("JSON中没有找到有效的key字段")
                             rc4_key = None
                     except (json.JSONDecodeError, UnicodeDecodeError) as e:
                         print(f"JSON解析失败: {e}")
@@ -8596,7 +8596,6 @@ def decrypt_ncm_file(ncm_path):
                     prefix_pos = key_data.find(netease_prefix)
                     if prefix_pos != -1:
                         rc4_key = key_data[prefix_pos + len(netease_prefix) :]
-                        print(f"方法2成功：跳过前缀提取密钥，长度: {len(rc4_key)}")
 
                 # 方法3：查找RC4密钥标识
                 if not rc4_key:
@@ -8604,18 +8603,15 @@ def decrypt_ncm_file(ncm_path):
                     for i in range(len(key_data) - 16):
                         if key_data[i : i + 4] == b"RC4K" or key_data[i : i + 4] == b"KEY_":
                             rc4_key = key_data[i + 4 : i + 132]  # 假设RC4密钥长度为128字节
-                            print(f"方法3成功：找到RC4密钥标识，长度: {len(rc4_key)}")
                             break
 
                 # 方法4：使用固定偏移（跳过前17字节）
                 if not rc4_key and len(key_data) > 17:
                     rc4_key = key_data[17:]
-                    print(f"方法4成功：固定偏移提取密钥，长度: {len(rc4_key)}")
 
                 # 方法5：使用整个密钥数据
                 if not rc4_key:
                     rc4_key = key_data
-                    print(f"方法5：使用整个密钥数据，长度: {len(rc4_key)}")
 
                 # 确保密钥不为空且长度合理
                 if not rc4_key or len(rc4_key) == 0:
@@ -8686,7 +8682,6 @@ def decrypt_ncm_file(ncm_path):
             if not rc4_key:
                 raise Exception("RC4密钥为空，无法解密音频数据")
 
-            print(f"开始解密音频数据，密钥长度: {len(rc4_key)}")
             print(f"解密输出路径: {decrypted_path}")
 
             # 生成RC4密钥流（KSA - Key Scheduling Algorithm）
@@ -8819,29 +8814,22 @@ def decrypt_ncm_file_fallback(ncm_path):
 
             # 读取密钥长度
             key_length = struct.unpack("<I", f.read(4))[0]
-            print(f"🔑 密钥长度: {key_length}")
 
             # 读取密钥数据
             key_data = f.read(key_length)
-            print(f"🔑 原始密钥数据长度: {len(key_data)}")
-            print(f"🔑 原始密钥数据前32字节: {key_data[:32].hex()}")
 
             # XOR 0x64
             key_data_xor = bytes([byte ^ 0x64 for byte in key_data])
-            print(f"🔑 XOR 0x64后: {key_data_xor[:32].hex()}")
 
             # AES解密
             core_key = b"hzHRAmso5kInbaxW"
             cipher = Cipher(algorithms.AES(core_key), modes.ECB(), backend=default_backend())
             decryptor = cipher.decryptor()
             decrypted_key = decryptor.update(key_data_xor) + decryptor.finalize()
-            print(f"🔑 AES解密后: {decrypted_key[:32].hex()}")
 
             # 移除PKCS7填充
             while decrypted_key and decrypted_key[-1] == 0:
                 decrypted_key = decrypted_key[:-1]
-            print(f"🔑 移除填充后: {decrypted_key[:32].hex()}")
-            print(f"🔑 解密后密钥长度: {len(decrypted_key)}")
 
             # 尝试解析JSON
             try:
@@ -8852,10 +8840,8 @@ def decrypt_ncm_file_fallback(ncm_path):
                     if json_end != -1:
                         key_json_data = key_json_data[: json_end + 1]
                         key_info = json.loads(key_json_data.decode("utf-8"))
-                        print(f"🔑 JSON解析成功: {key_info}")
                         if "key" in key_info:
                             rc4_key = bytes(key_info["key"])
-                            print(f"🔑 从JSON提取RC4密钥: {rc4_key[:32].hex()}")
                         else:
                             raise Exception("JSON中没有key字段")
                     else:
@@ -8869,11 +8855,9 @@ def decrypt_ncm_file_fallback(ncm_path):
                 prefix_pos = decrypted_key.find(netease_prefix)
                 if prefix_pos != -1:
                     rc4_key = decrypted_key[prefix_pos + len(netease_prefix) :]
-                    print(f"🔑 跳过前缀提取RC4密钥: {rc4_key[:32].hex()}")
                 else:
                     raise Exception("无法提取RC4密钥")
 
-            print(f"🔑 最终RC4密钥长度: {len(rc4_key)}")
 
             # 读取元数据长度
             meta_length = struct.unpack("<I", f.read(4))[0]
@@ -10809,3 +10793,32 @@ def check_video_room_status_api(request, room_id):
     except Exception as e:
         logger.error(f"检查视频聊天室状态失败: {str(e)}")
         return JsonResponse({"success": False, "error": f"检查状态失败: {str(e)}", "status": "error"}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def delete_subscription_api(request):
+    """删除订阅API"""
+    try:
+        data = json.loads(request.body)
+        subscription_id = data.get("subscription_id")
+
+        if not subscription_id:
+            return JsonResponse({"success": False, "error": "订阅ID不能为空"}, status=400, content_type="application/json")
+
+        from apps.tools.models import SocialMediaSubscription
+
+        try:
+            subscription = SocialMediaSubscription.objects.get(id=subscription_id, user=request.user)
+        except SocialMediaSubscription.DoesNotExist:
+            return JsonResponse({"success": False, "error": "订阅不存在"}, status=404, content_type="application/json")
+
+        subscription.delete()
+
+        return JsonResponse({"success": True, "message": "订阅删除成功"}, content_type="application/json")
+
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400, content_type="application/json")
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500, content_type="application/json")

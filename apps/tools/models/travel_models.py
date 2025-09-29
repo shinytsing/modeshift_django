@@ -49,6 +49,9 @@ class TravelGuide(models.Model):
     # API信息
     api_used = models.CharField(max_length=50, default="llm_service", verbose_name="使用的API")
     generation_mode = models.CharField(max_length=20, default="standard", verbose_name="生成模式")
+    
+    # 缓存相关
+    is_cached = models.BooleanField(default=False, null=True, blank=True, verbose_name="是否缓存数据")
 
     class Meta:
         ordering = ["-created_at"]

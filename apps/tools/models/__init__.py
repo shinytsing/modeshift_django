@@ -115,6 +115,9 @@ from .travel_models import (
     UserGeneratedTravelGuide,
 )
 
+# Cookie 管理模型
+from .user_cookie import UserCookie, CookieSession
+
 # 船宝二手交易模型从shipbao_models导入（暂时注释，避免与legacy_models冲突）
 # from .shipbao_models import (
 #     ShipBaoItem, ShipBaoItemImage, ShipBaoFavorite, ShipBaoInquiry,
@@ -255,4 +258,7 @@ __all__ = [
     "JobSearchStatistics",
     # PDF转换模型
     "PDFConversionRecord",
+    # Cookie 管理模型
+    "UserCookie",
+    "CookieSession",
 ]

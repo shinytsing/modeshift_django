@@ -12,14 +12,14 @@ from django.utils import timezone
 from apps.tools.models import SocialMediaSubscription
 
 from .notification_service import NotificationService
-from .xiaohongshu_crawler import XiaohongshuCrawler
+from .real_crawler import RealSocialMediaCrawler
 
 
 class SocialMediaScheduler:
     """社交媒体爬虫任务调度器"""
 
     def __init__(self):
-        self.crawler = XiaohongshuCrawler()
+        self.crawler = RealSocialMediaCrawler()
         self.notification_service = NotificationService()
 
     def run_crawler_task(self):
@@ -27,7 +27,7 @@ class SocialMediaScheduler:
         print(f"开始运行社交媒体爬虫任务 - {timezone.now()}")
 
         # 获取所有活跃的订阅
-        active_subscriptions = SocialMediaSubscription.objects.filter(status="active", is_active=True)
+        active_subscriptions = SocialMediaSubscription.objects.filter(status="active")
 
         total_updates = 0
 

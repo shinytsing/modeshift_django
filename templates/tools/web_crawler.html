@@ -9,6 +9,10 @@
     <div class="subscription-header">
         <h1><i class="fas fa-rss"></i> 社交媒体订阅</h1>
         <p class="subscription-subtitle">🚀 智能监控，实时获取关注内容</p>
+        <div class="crawler-schedule-notice">
+            <i class="fas fa-info-circle"></i>
+            <span>所有爬虫任务统一在每天早上8:00自动执行，无需手动设置频率</span>
+        </div>
     </div>
 
     <div class="subscription-content">
@@ -57,7 +61,6 @@
                             <option value="netease">网易云音乐</option>
                             <option value="weibo">微博</option>
                             <option value="bilibili">B站</option>
-                            <option value="zhihu">知乎</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -65,13 +68,11 @@
                         <input type="text" id="targetUser" placeholder="输入用户ID或用户名" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label for="checkFrequency">检查频率</label>
-                        <select id="checkFrequency" class="form-input">
-                            <option value="5">5分钟</option>
-                            <option value="15" selected>15分钟</option>
-                            <option value="30">30分钟</option>
-                            <option value="60">1小时</option>
-                        </select>
+                        <label for="crawlerSchedule">爬虫执行时间</label>
+                        <div class="schedule-info">
+                            <i class="fas fa-clock"></i>
+                            <span>每天早上8:00自动执行所有爬虫任务</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -193,6 +194,27 @@ body {
     font-size: 1.2rem;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.crawler-schedule-notice {
+    margin-top: 20px;
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.crawler-schedule-notice i {
+    color: #ffd700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
 }
 
 .subscription-content {
@@ -322,6 +344,24 @@ body {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.schedule-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.schedule-info i {
+    color: #667eea;
+    font-size: 1.1rem;
 }
 
 .subscription-types {
@@ -1004,10 +1044,14 @@ function setActiveFilter(filter) {
 function addSubscription() {
     const platform = document.getElementById('platform').value;
     const targetUser = document.getElementById('targetUser').value;
-    const checkFrequency = document.getElementById('checkFrequency').value;
     
-    if (!platform || !targetUser) {
-        showToast('请填写完整的订阅信息', 'error');
+    if (!platform) {
+        showToast('请选择社交媒体平台', 'error');
+        return;
+    }
+    
+    if (!targetUser) {
+        showToast('请输入用户ID或用户名', 'error');
         return;
     }
     
@@ -1017,7 +1061,7 @@ function addSubscription() {
     });
     
     if (subscriptionTypes.length === 0) {
-        showToast('请至少选择一个订阅类型', 'error');
+        showToast('请至少选择一个订阅类型（如：新动态、新粉丝等）', 'error');
         return;
     }
     
@@ -1025,8 +1069,7 @@ function addSubscription() {
         platform: platform,
         target_user_id: targetUser,
         target_user_name: targetUser,
-        subscription_types: subscriptionTypes,
-        check_frequency: parseInt(checkFrequency)
+        subscription_types: subscriptionTypes
     };
     
     fetch('/tools/api/social_subscription/add/', {
@@ -1040,17 +1083,17 @@ function addSubscription() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('订阅添加成功！', 'success');
+            showToast(data.message || '订阅添加成功！', 'success');
             resetForm();
             loadSubscriptions();
             loadStats();
         } else {
-            showToast(data.error || '添加订阅失败', 'error');
+            showToast(data.message || data.error || '添加订阅失败', 'error');
         }
     })
     .catch(error => {
-        // console.error(...)
-        showToast('网络错误，请重试', 'error');
+        console.error('添加订阅失败:', error);
+        showToast('网络连接失败，请检查网络后重试', 'error');
     });
 }
 
@@ -1058,7 +1101,6 @@ function addSubscription() {
 function resetForm() {
     document.getElementById('platform').value = '';
     document.getElementById('targetUser').value = '';
-    document.getElementById('checkFrequency').value = '15';
     document.querySelectorAll('.subscription-types input[type="checkbox"]').forEach(checkbox => {
         checkbox.checked = false;
     });
@@ -1099,7 +1141,7 @@ function renderSubscriptions() {
                 <div class="subscription-details">
                     <div class="subscription-detail">
                         <i class="fas fa-clock"></i>
-                        ${sub.check_frequency}分钟
+                        每天8:00执行
                     </div>
                     <div class="subscription-detail">
                         <i class="fas fa-list"></i>
@@ -1142,16 +1184,16 @@ function toggleSubscription(id, currentStatus) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(`订阅已${newStatus === 'active' ? '启用' : '暂停'}`, 'success');
+            showToast(data.message || `订阅已${newStatus === 'active' ? '启用' : '暂停'}`, 'success');
             loadSubscriptions();
             loadStats();
         } else {
-            showToast(data.error || '操作失败', 'error');
+            showToast(data.message || data.error || '操作失败', 'error');
         }
     })
     .catch(error => {
-        // console.error(...)
-        showToast('网络错误，请重试', 'error');
+        console.error('切换订阅状态失败:', error);
+        showToast('网络连接失败，请检查网络后重试', 'error');
     });
 }
 
@@ -1175,16 +1217,16 @@ function deleteSubscription(id) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('订阅已删除', 'success');
+            showToast(data.message || '订阅已删除', 'success');
             loadSubscriptions();
             loadStats();
         } else {
-            showToast(data.error || '删除失败', 'error');
+            showToast(data.message || data.error || '删除失败', 'error');
         }
     })
     .catch(error => {
-        // console.error(...)
-        showToast('网络错误，请重试', 'error');
+        console.error('删除订阅失败:', error);
+        showToast('网络连接失败，请检查网络后重试', 'error');
     });
 }
 
@@ -1199,7 +1241,8 @@ function loadNotifications() {
         }
     })
     .catch(error => {
-        // console.error(...)
+        console.error('加载通知失败:', error);
+        showToast('加载通知失败，请刷新页面重试', 'error');
     });
 }
 
@@ -1269,7 +1312,8 @@ function markAsRead(id) {
         }
     })
     .catch(error => {
-        // console.error(...)
+        console.error('标记通知为已读失败:', error);
+        showToast('标记失败，请重试', 'error');
     });
 }
 
@@ -1288,13 +1332,16 @@ function markAllAsRead() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('所有通知已标记为已读', 'success');
+            showToast(data.message || '所有通知已标记为已读', 'success');
             loadNotifications();
             loadStats();
+        } else {
+            showToast(data.message || data.error || '标记失败', 'error');
         }
     })
     .catch(error => {
-        // console.error(...)
+        console.error('标记所有通知为已读失败:', error);
+        showToast('标记失败，请重试', 'error');
     });
 }
 
@@ -1310,7 +1357,8 @@ function loadStats() {
         }
     })
     .catch(error => {
-        // console.error(...)
+        console.error('加载统计数据失败:', error);
+        showToast('加载统计数据失败，请刷新页面重试', 'error');
     });
 }
 

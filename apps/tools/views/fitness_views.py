@@ -1349,7 +1349,6 @@ def apply_training_plan_template_api(request):
             template["id"] = template_id  # 确保包含id
             print(f"找到模板: {template['name']}")
         else:
-            print(f"未找到模板: {template_id}, 可用模板: {list(templates_dict.keys())}")
             return JsonResponse({"success": False, "error": f"模板不存在: {template_id}"}, status=404)
 
         # 创建新的训练计划

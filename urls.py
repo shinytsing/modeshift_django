@@ -25,7 +25,7 @@ from django.shortcuts import render
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from apps.tools.views.health_views import DetailedHealthCheckView, HealthCheckView
+# from apps.tools.views.health_views import DetailedHealthCheckView, HealthCheckView
 from views import (
     custom_static_serve,
     help_page_view,
@@ -80,8 +80,8 @@ def health_check_view(request):
 
 
 urlpatterns = [
-    path("health/", HealthCheckView.as_view(), name="health_check"),
-    path("health/detailed/", DetailedHealthCheckView.as_view(), name="detailed_health_check"),
+    path("health/", health_check_view, name="health_check"),
+    # path("health/detailed/", DetailedHealthCheckView.as_view(), name="detailed_health_check"),
     path("", home_view, name="home"),
     path("welcome/", welcome_view, name="welcome"),
     path("theme-demo/", theme_demo_view, name="theme_demo"),

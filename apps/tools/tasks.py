@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from celery import shared_task
 
-from .fitness_nutrition_models import DietPlan, Meal, MealLog, NutritionReminder
+from .models.legacy_models import DietPlan, Meal, MealLog, NutritionReminder
 from .models import ChatRoom, UserOnlineStatus
 
 logger = logging.getLogger(__name__)
@@ -139,3 +139,19 @@ def update_plan_progress():
     """更新计划进度"""
     # 这里可以添加计划进度更新的逻辑
     # 比如根据用户的实际完成情况调整计划
+
+
+@shared_task
+def run_social_media_crawler():
+    """运行社交媒体爬虫任务"""
+    try:
+        from apps.tools.services.social_media.scheduler import SocialMediaScheduler
+        
+        scheduler = SocialMediaScheduler()
+        total_updates = scheduler.run_crawler_task()
+        
+        logger.info(f"社交媒体爬虫任务完成，共发现 {total_updates} 个更新")
+        return total_updates
+    except Exception as e:
+        logger.error(f"社交媒体爬虫任务执行失败: {e}")
+        return 0

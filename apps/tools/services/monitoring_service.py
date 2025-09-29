@@ -311,6 +311,20 @@ class PerformanceMonitoringMiddleware:
         self.monitor = PerformanceMonitor()
 
     def __call__(self, request):
+        # 检查是否在异步上下文中
+        try:
+            import asyncio
+            loop = asyncio.get_running_loop()
+            if loop is not None:
+                # 在异步上下文中跳过性能监控
+                return self.get_response(request)
+        except RuntimeError:
+            # 没有运行的事件循环，继续执行
+            pass
+        except Exception:
+            # 其他异常，继续执行
+            pass
+
         # 开始监控
         self.monitor.start_monitoring(request)
 

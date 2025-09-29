@@ -128,7 +128,6 @@ class ProgressiveCaptchaService:
 
             if not correct_answer:
                 # 添加调试信息
-                print(f"验证码过期: captcha_id={captcha_id}, cache_key={cache_key}")
                 return {"success": False, "message": "验证码已过期，请重新获取", "need_refresh": True}
 
             # 添加调试信息

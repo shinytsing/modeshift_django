@@ -1234,6 +1234,11 @@ def user_login_api(request):
         
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            # 确保request有session属性
+            if not hasattr(request, 'session'):
+                from django.contrib.sessions.backends.db import SessionStore
+                request.session = SessionStore()
+            
             login(request, user)
             return JsonResponse({
                 "success": True, 

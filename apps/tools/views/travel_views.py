@@ -163,6 +163,7 @@ def travel_guide_api(request):
                 "daily_schedule",
                 "activity_timeline",
                 "cost_breakdown",
+                "is_cached",
             }
             filtered_content = {k: v for k, v in guide_content.items() if k in valid_fields}
 

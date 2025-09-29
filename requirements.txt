@@ -28,3 +28,5 @@ djangorestframework==3.14.0
 django-crispy-forms==2.1
 channels==4.0.0
 daphne==4.0.0
+PyYAML>=6.0
+selenium>=4.0.0

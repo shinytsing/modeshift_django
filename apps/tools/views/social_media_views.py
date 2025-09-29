@@ -53,7 +53,13 @@ def add_social_subscription_api(request):
         ).first()
 
         if existing_subscription:
-            return error_response("该订阅已存在", status=400)
+            return error_response(
+                f"该用户已订阅！请先删除现有订阅后再添加。\n"
+                f"平台: {data['platform']}\n"
+                f"用户: {data['target_user_name']}\n"
+                f"订阅ID: {existing_subscription.id}",
+                status=400
+            )
 
         # 创建订阅
         subscription = SocialMediaSubscription.objects.create(
@@ -62,7 +68,6 @@ def add_social_subscription_api(request):
             target_user_id=data["target_user_id"],
             target_user_name=data["target_user_name"],
             subscription_types=data.get("subscription_types", ["newPosts"]),
-            check_frequency=data.get("check_frequency", 30),
             status="active",
             # 使用模型中存在的字段
             # last_check 字段会自动设置为当前时间（auto_now=True）
@@ -148,7 +153,7 @@ def update_subscription_api(request):
         subscription = get_object_or_404(SocialMediaSubscription, id=data["subscription_id"], user=user)
 
         # 更新字段 - 只更新模型中存在的字段
-        update_fields = ["subscription_types", "check_frequency", "status"]
+        update_fields = ["subscription_types", "status"]
 
         for field in update_fields:
             if field in data:
@@ -441,7 +446,12 @@ class SocialMediaAPIView(BaseView, CachedViewMixin, PaginationMixin, SearchMixin
             ).first()
 
             if existing_subscription:
-                return self.error_response("该订阅已存在")
+                return self.error_response(
+                    f"该用户已订阅！请先删除现有订阅后再添加。\n"
+                    f"平台: {data['platform']}\n"
+                    f"用户: {data['target_user_name']}\n"
+                    f"订阅ID: {existing_subscription.id}"
+                )
 
             # 创建订阅
             subscription = SocialMediaSubscription.objects.create(
@@ -450,17 +460,8 @@ class SocialMediaAPIView(BaseView, CachedViewMixin, PaginationMixin, SearchMixin
                 target_user_id=data["target_user_id"],
                 target_user_name=data["target_user_name"],
                 subscription_types=data.get("subscription_types", ["newPosts"]),
-                check_frequency=data.get("check_frequency", 30),
                 status="active",
-                last_check_time=timezone.now(),
-                next_check_time=timezone.now() + timedelta(minutes=data.get("check_frequency", 30)),
-                notification_enabled=data.get("notification_enabled", True),
-                email_notification=data.get("email_notification", False),
-                custom_keywords=data.get("custom_keywords", []),
-                exclude_keywords=data.get("exclude_keywords", []),
-                max_posts_per_check=data.get("max_posts_per_check", 10),
-                auto_archive_old_posts=data.get("auto_archive_old_posts", True),
-                archive_after_days=data.get("archive_after_days", 30),
+                # last_check 字段会自动设置为当前时间（auto_now=True）
             )
 
             # 清除相关缓存

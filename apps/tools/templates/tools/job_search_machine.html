@@ -375,7 +375,7 @@ async function checkLoginStatus() {
         const statusText = document.getElementById('loginStatusText');
         statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在检查登录状态...';
         
-        const response = await fetch('/tools/api/boss/check_login_selenium/');
+        const response = await fetch('{% url "tools:check_boss_login_status_selenium_api" %}');
         const result = await response.json();
         
         if (result.success) {

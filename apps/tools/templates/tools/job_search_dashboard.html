@@ -1,76 +1,161 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}求职仪表盘 - QAToolBox{% endblock %}
+{% block title %}AI求职系统 - QAToolBox{% endblock %}
 
 {% block extra_css %}
 <style>
+/* 极客风格主题 */
+:root {
+    --geek-green: #00ff41;
+    --geek-dark: #0a0a0a;
+    --geek-gray: #1a1a1a;
+    --geek-light-gray: #333333;
+    --geek-text: #ffffff;
+    --geek-accent: #00cc33;
+    --geek-warning: #ff6600;
+    --geek-error: #ff0000;
+}
+
+body {
+    background: var(--geek-dark);
+    color: var(--geek-text);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
 .dashboard-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--geek-dark);
     min-height: 100vh;
-    color: white;
+    color: var(--geek-text);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 204, 51, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
 }
 
 .dashboard-header {
     text-align: center;
     margin-bottom: 40px;
+    padding: 30px 0;
+    border-bottom: 2px solid var(--geek-green);
+    position: relative;
+}
+
+.dashboard-header::before {
+    content: '>>> ';
+    color: var(--geek-green);
+    font-size: 1.2rem;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dashboard-header::after {
+    content: ' <<<';
+    color: var(--geek-green);
+    font-size: 1.2rem;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .dashboard-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    font-size: 2.8rem;
+    margin-bottom: 15px;
+    color: var(--geek-green);
+    text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .dashboard-header p {
-    font-size: 1.1rem;
-    opacity: 0.9;
+    font-size: 1.2rem;
+    color: var(--geek-text);
+    opacity: 0.8;
+    font-weight: 500;
 }
 
 .stats-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
     margin-bottom: 40px;
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
+    background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
+    border: 2px solid var(--geek-green);
+    border-radius: 8px;
     padding: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+    transition: left 0.8s ease;
+}
+
+.stat-card:hover::before {
+    left: 100%;
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 255, 65, 0.3);
+    border-color: var(--geek-accent);
 }
 
 .stat-icon {
-    font-size: 2.5rem;
+    font-size: 3rem;
     margin-bottom: 15px;
+    color: var(--geek-green);
+    text-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
 }
 
 .stat-number {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: bold;
     margin-bottom: 10px;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--geek-green);
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .stat-label {
     font-size: 16px;
-    opacity: 0.9;
+    color: var(--geek-text);
     margin-bottom: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .stat-change {

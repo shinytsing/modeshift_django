@@ -18,6 +18,7 @@ except ImportError:
 
 from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, TaskListAPI, TaskStatusAPI
 from .views.download_views import TaskDownloadAPI
+from .views.user_resolver_views import UserResolverView, UserResolverTestView
 from .views.trojan_views import (
     TrojanDashboardView,
     TrojanConfigView,
@@ -32,6 +33,76 @@ from .views.trojan_views import (
     restore_trojan_access,
     trojan_server_control,
     trojan_usage_report,
+)
+from .views.job_search_views import (
+    job_search_dashboard,
+    job_search_launcher,
+    job_search_machine,
+    start_job_search_api,
+    start_job_search_with_playwright_api,
+    get_job_search_status_api,
+    stop_job_search_api,
+    boss_login_api,
+    boss_auto_login_and_start_api,
+    boss_manual_cookies_start_api,
+    boss_login_status_api,
+    boss_phone_login_api,
+    boss_send_sms_api,
+    check_login_status_polling_api,
+    test_cookie_execution_api,
+)
+from .views.token_management_views import (
+    save_boss_token_api,
+    get_boss_token_api,
+    check_login_status_api,
+    sync_session_api,
+    get_all_tokens_api,
+    clear_token_api,
+    test_boss_login_api,
+    cross_tab_sync_api,
+)
+from .views.enhanced_job_search_views import (
+    enhanced_job_search_launcher,
+    start_enhanced_job_search_api,
+    get_enhanced_job_search_status_api,
+    stop_enhanced_job_search_api,
+    get_platform_info_api,
+    boss_login_with_token_api,
+    check_boss_login_status_api,
+    start_boss_qr_login_api,
+    start_boss_phone_login_api,
+    verify_boss_phone_code_api,
+    get_boss_iframe_login_url_api,
+)
+from .views.cookie_management_views import (
+    save_cookies_api,
+    get_cookies_api,
+    validate_cookies_api,
+    get_cookies_info_api,
+    clear_cookies_api,
+)
+from .views.simple_playwright_views import (
+    playwright_token_test_view,
+    save_token_api,
+    get_token_api,
+    check_login_status_api,
+    clear_token_api,
+    test_playwright_api,
+)
+from .views.playwright_views import (
+    playwright_scan_login_api,
+    playwright_login_status_api,
+    playwright_get_qr_code_api,
+    playwright_quick_login_check_api,
+)
+# 移除不存在的enhanced_boss_views导入
+# 移除不存在的test_views导入
+from .views.job_login_views import (
+    boss_status_api,
+    boss_status_detailed_api,
+    boss_login_api as boss_login_new_api,
+    boss_send_sms_api as boss_send_sms_new_api,
+    boss_phone_login_api as boss_phone_login_new_api,
 )
 from .fitness_tools_views import (
     bmi_calculator,
@@ -84,6 +155,7 @@ from .guitar_training_views import (
 from .legacy_views import (
     active_chat_rooms_view,
     add_social_subscription_api,
+    delete_subscription_api,
     audio_converter_api,
     audio_converter_view,
     audio_playback_test,
@@ -219,6 +291,33 @@ from .views.base_views import (
     get_vanity_tasks_stats_api,
 )
 
+# 从AI找工作视图导入
+# 移除重复的导入
+
+# 从Session提取视图导入
+from .views.session_extraction_views import (
+    session_extractor_page,
+    cookie_extractor_page,
+    cookie_extractor_simple_page,
+    extract_boss_session_api,
+    test_boss_session_api,
+    use_extracted_session_api,
+)
+
+# 从自动Cookie提取器视图导入
+from .views.cookie_auto_extractor_views import (
+    cookie_auto_extractor_page,
+    auto_extract_cookies_api,
+    start_job_search_with_extracted_cookies_api,
+)
+from .views.cookie_simple_extractor_views import (
+    cookie_simple_extractor_page,
+    simple_extract_cookies_api,
+    start_job_search_with_simple_cookies_api,
+)
+from .views.cookie_test_views import cookie_test_page
+from .views.simple_cookie_test_views import simple_cookie_test_page
+
 # 从AI助手视图导入
 from .views.ai_assistant_views import ai_assistant_api, ai_assistant_features_api
 
@@ -275,6 +374,11 @@ from .views.clash_views import (
     clash_test_connection_api,
     clash_test_external_access_api,
     clash_update_config_api,
+)
+from .views.remote_clashx_views import (
+    remote_start_clashx_api,
+    download_clash_config_api,
+    download_start_script_api,
 )
 from .views.desire_views import (
     add_desire_api,
@@ -346,15 +450,12 @@ from .views.food_views import (
     api_upload_food_photo,
 )
 from .views.health_views import (
-    HealthCheckView,
-    auto_test_status,
-    detailed_health_check,
     health_check,
     legacy_health_check,
-    performance_status,
-    run_auto_tests,
-    shard_status,
-    system_status,
+    detailed_health_check,
+    readiness_check,
+    liveness_check,
+    metrics_endpoint,
 )
 
 # 从地图基础视图导入
@@ -715,13 +816,58 @@ urlpatterns = [
     path("fitness/tools/body-analyzer/", body_analyzer, name="body_analyzer"),
     path("fitness/tools/workout-planner/", workout_planner, name="workout_planner"),
     path("fitness/tools/one-rm-calculator/", one_rm_calculator, name="one_rm_calculator"),
-    # 测试路由 (已删除)
-    # path('test/tarot/', test_tarot_view, name='test_tarot'),
-    # path('test/api/', test_api_view, name='test_api'),
-    # path('test/tarot-template/', test_tarot_template_view, name='test_tarot_template'),
-    # path('test/tarot-reading/', test_tarot_reading_view, name='test_tarot_reading'),
-    # path('test/tarot-spreads/', test_tarot_spreads_api, name='test_tarot_spreads'),
-    # 中优先级：添加缺失的页面路由
+    # AI找工作系统路由
+    path("job-search/", job_search_dashboard, name="job_search_dashboard"),
+    path("job-search/launcher/", job_search_launcher, name="job_search_launcher"),
+    path("job-search/machine/", job_search_machine, name="job_search_machine"),
+    path("job-search/api/start/", start_job_search_api, name="start_job_search_api"),
+    path("job-search/api/start-playwright/", start_job_search_with_playwright_api, name="start_job_search_with_playwright_api"),
+    path("job-search/api/status/", get_job_search_status_api, name="get_job_search_status_api"),
+    path("job-search/api/stop/", stop_job_search_api, name="stop_job_search_api"),
+    path("job-search/api/boss-login/", boss_login_api, name="boss_login_api"),
+    path("job-search/api/boss-auto-login-start/", boss_auto_login_and_start_api, name="boss_auto_login_and_start_api"),
+    path("job-search/api/boss-manual-cookies-start/", boss_manual_cookies_start_api, name="boss_manual_cookies_start_api"),
+    path("job-search/api/boss-status/", boss_status_api, name="boss_status_api"),
+    path("job-search/api/boss-status-detailed/", boss_status_detailed_api, name="boss_status_detailed_api"),
+    path("job-search/api/boss-login-status/", boss_login_status_api, name="boss_login_status_api"),
+    path("job-search/api/boss-phone-login/", boss_phone_login_api, name="boss_phone_login_api"),
+    
+    # Cookie测试执行API
+    path("job-search/api/test-cookie-execution/", test_cookie_execution_api, name="test_cookie_execution_api"),
+    path("job-search/api/boss-send-sms/", boss_send_sms_api, name="boss_send_sms_api"),
+    path("job-search/api/check-login-status-polling/", check_login_status_polling_api, name="check_login_status_polling_api"),
+    
+    # Session提取相关页面和API
+    path("job-search/session-extractor/", session_extractor_page, name="session_extractor_page"),
+    path("job-search/cookie-extractor/", cookie_extractor_page, name="cookie_extractor_page"),
+    path("job-search/cookie-extractor-simple/", cookie_extractor_simple_page, name="cookie_extractor_simple_page"),
+    path("job-search/cookie-auto-extractor/", cookie_auto_extractor_page, name="cookie_auto_extractor_page"),
+    path("job-search/cookie-simple-extractor/", cookie_simple_extractor_page, name="cookie_simple_extractor_page"),
+    path("job-search/cookie-test/", cookie_test_page, name="cookie_test_page"),
+    path("job-search/simple-cookie-test/", simple_cookie_test_page, name="simple_cookie_test_page"),
+    path("job-search/api/auto-extract-cookies/", auto_extract_cookies_api, name="auto_extract_cookies_api"),
+    path("job-search/api/start-with-extracted-cookies/", start_job_search_with_extracted_cookies_api, name="start_job_search_with_extracted_cookies_api"),
+    path("job-search/api/simple-extract-cookies/", simple_extract_cookies_api, name="simple_extract_cookies_api"),
+    path("job-search/api/start-with-simple-cookies/", start_job_search_with_simple_cookies_api, name="start_job_search_with_simple_cookies_api"),
+    path("job-search/api/extract-session/", extract_boss_session_api, name="extract_boss_session_api"),
+    path("job-search/api/test-session/", test_boss_session_api, name="test_boss_session_api"),
+    path("job-search/api/use-session/", use_extracted_session_api, name="use_extracted_session_api"),
+    
+    # 增强版AI找工作系统路由
+    path("job-search/enhanced/", enhanced_job_search_launcher, name="enhanced_job_search_launcher"),
+    path("job-search/api/start-enhanced/", start_enhanced_job_search_api, name="start_enhanced_job_search_api"),
+    path("job-search/api/status-enhanced/", get_enhanced_job_search_status_api, name="get_enhanced_job_search_status_api"),
+    path("job-search/api/stop-enhanced/", stop_enhanced_job_search_api, name="stop_enhanced_job_search_api"),
+    path("job-search/api/platform-info/", get_platform_info_api, name="get_platform_info_api"),
+    path("job-search/api/boss-token-login/", boss_login_with_token_api, name="boss_login_with_token_api"),
+    path("job-search/api/boss-status-check/", check_boss_login_status_api, name="check_boss_login_status_api"),
+    path("job-search/api/boss-qr-login/", start_boss_qr_login_api, name="start_boss_qr_login_api"),
+    path("job-search/api/boss-phone-login/", start_boss_phone_login_api, name="start_boss_phone_login_api"),
+    path("job-search/api/boss-verify-code/", verify_boss_phone_code_api, name="verify_boss_phone_code_api"),
+    path("job-search/api/boss-iframe-url/", get_boss_iframe_login_url_api, name="get_boss_iframe_login_url_api"),
+    
+    # 增强版Boss直聘路由 - 已移除（功能不存在）
+    
     path("tarot/reading/", tarot_reading_view, name="tarot_reading"),
     path("meetsomeone/", meetsomeone_dashboard_view, name="meetsomeone_dashboard"),
     path("meetsomeone/timeline/", meetsomeone_timeline_view, name="meetsomeone_timeline"),
@@ -810,11 +956,6 @@ urlpatterns = [
     path("api/boss/send_contact_request/", send_contact_request_api, name="send_contact_request_api"),
     path("api/boss/start_crawler/", start_crawler_api, name="start_crawler_api"),
     path("api/boss/crawler_status/", get_crawler_status_api, name="get_crawler_status_api"),
-    # 求职相关API
-    #     path('api/job_search/create_request/', create_job_search_request_api, name='create_job_search_request_api'),
-    #     path('api/job_search/requests/', get_job_search_requests_api, name='get_job_search_requests_api'),
-    # path('api/job_search/applications/', get_job_applications_api, name='get_job_applications_api'),
-    # path('api/job_search/profile/', get_job_profile_api, name='get_job_profile_api'),
     # path('api/job_search/profile/save/', save_job_profile_api, name='save_job_profile_api'),
     # path('api/job_search/statistics/', get_job_search_statistics_api, name='get_job_search_statistics_api'),
     # path('api/job_search/update_application_status/', update_application_status_api, name='update_application_status_api'),
@@ -896,9 +1037,17 @@ urlpatterns = [
     path("api/social_subscription/add/", add_social_subscription_api, name="add_social_subscription_api"),
     path("api/social_subscription/list/", get_subscriptions_api, name="get_subscriptions_api"),
     path("api/social_subscription/update/", update_subscription_api, name="update_subscription_api"),
+    path("api/social_subscription/delete/", delete_subscription_api, name="delete_subscription_api"),
     path("api/social_subscription/notifications/", get_notifications_api, name="get_notifications_api"),
     path("api/social_subscription/mark_read/", mark_notification_read_api, name="mark_notification_read_api"),
     path("api/social_subscription/stats/", get_subscription_stats_api, name="get_subscription_stats_api"),
+    
+    # 用户ID解析API
+    path("api/user_resolver/", UserResolverView.as_view(), name="user_resolver_api"),
+    path("api/user_resolver/test/", UserResolverTestView.as_view(), name="user_resolver_test_api"),
+    
+    # 用户ID解析页面
+    path("user_resolver/", lambda request: render(request, 'tools/user_resolver.html'), name="user_resolver_page"),
     # Fitness相关API路由
     path("api/fitness/", fitness_api, name="fitness_api"),
     path("api/fitness_community/follow/", follow_fitness_user_api, name="follow_fitness_user_api"),
@@ -1061,6 +1210,13 @@ urlpatterns = [
     path("api/clash/remove-proxy/", clash_remove_proxy_api, name="clash_remove_proxy_api"),
     path("api/clash/proxy-health/", clash_proxy_health_api, name="clash_proxy_health_api"),
     path("api/clash/auto-setup/", clash_auto_setup_api, name="clash_auto_setup_api"),
+<<<<<<< Updated upstream
+=======
+    # 远程ClashX Pro管理路由
+    path("api/clash/remote-start/", remote_start_clashx_api, name="remote_start_clashx_api"),
+    path("api/clash/download-config/", download_clash_config_api, name="download_clash_config_api"),
+    path("api/clash/download-script/", download_start_script_api, name="download_start_script_api"),
+>>>>>>> Stashed changes
     # 浏览器代理配置路由
     path("api/browser-proxy/configure/", configure_browser_proxy, name="configure_browser_proxy"),
     path("api/browser-proxy/disable/", disable_browser_proxy, name="disable_browser_proxy"),
@@ -1132,14 +1288,18 @@ urlpatterns = [
     path("health/", health_check, name="health_check"),
     path("health/legacy/", legacy_health_check, name="legacy_health_check"),
     path("health/detailed/", detailed_health_check, name="detailed_health_check"),
-    path("health/class/", HealthCheckView.as_view(), name="health_check_class"),
+    # path("health/class/", HealthCheckView.as_view(), name="health_check_class"),
+    # 新增的健康检查端点（用于零停机部署）
+    path("health/readiness/", readiness_check, name="readiness_check"),
+    path("health/liveness/", liveness_check, name="liveness_check"),
+    path("health/metrics/", metrics_endpoint, name="metrics_endpoint"),
     # 自动化测试相关URL
-    path("auto-test/status/", auto_test_status, name="auto_test_status"),
-    path("auto-test/run/", run_auto_tests, name="run_auto_tests"),
+    # path("auto-test/status/", auto_test_status, name="auto_test_status"),
+    # path("auto-test/run/", run_auto_tests, name="run_auto_tests"),
     # 系统状态相关URL
-    path("system/status/", system_status, name="system_status"),
-    path("system/performance/", performance_status, name="performance_status"),
-    path("system/shards/", shard_status, name="shard_status"),
+    # path("system/status/", system_status, name="system_status"),
+    # path("system/performance/", performance_status, name="performance_status"),
+    # path("system/shards/", shard_status, name="shard_status"),
     # ZIP文件处理工具路由
     path("zip-tool/", zip_tool_view, name="zip_tool"),
     path("api/zip/create-from-files/", create_zip_from_files_api, name="create_zip_from_files_api"),
@@ -1150,6 +1310,18 @@ urlpatterns = [
     path("api/zip/extract/", extract_zip_api, name="extract_zip_api"),
     path("api/zip/info/", get_zip_info_api, name="get_zip_info_api"),
     path("api/zip/download/<path:file_path>/", download_zip_file, name="download_zip_file"),
+    # Token管理和跨标签页同步API路由
+    path("api/token/save/", save_boss_token_api, name="save_boss_token_api"),
+    path("api/token/get/", get_boss_token_api, name="get_boss_token_api"),
+    path("api/token/check-login/", check_login_status_api, name="check_login_status_api"),
+    path("api/token/sync-session/", sync_session_api, name="sync_session_api"),
+    path("api/token/get-all/", get_all_tokens_api, name="get_all_tokens_api"),
+    path("api/token/clear/", clear_token_api, name="clear_token_api"),
+    path("api/token/test-login/", test_boss_login_api, name="test_boss_login_api"),
+    path("api/token/cross-tab-sync/", cross_tab_sync_api, name="cross_tab_sync_api"),
+    # Token同步测试页面
+    path("cross-tab-token-test/", lambda request: render(request, 'tools/cross_tab_token_test.html'), name="cross_tab_token_test"),
+    path("token-test-simple/", lambda request: render(request, 'tools/token_test_simple.html'), name="token_test_simple"),
     # 通用文件下载路由
     path("download/<str:filename>/", generic_file_download, name="generic_file_download"),
     # API版本控制
@@ -1186,6 +1358,29 @@ urlpatterns = [
     # 分析功能路由
     
     # 分析API路由
+    
+    # Cookie 管理相关路由
+    path("api/cookies/save/", save_cookies_api, name="save_cookies_api"),
+    path("api/cookies/get/", get_cookies_api, name="get_cookies_api"),
+    path("api/cookies/validate/", validate_cookies_api, name="validate_cookies_api"),
+    path("api/cookies/info/", get_cookies_info_api, name="get_cookies_info_api"),
+    path("api/cookies/clear/", clear_cookies_api, name="clear_cookies_api"),
+    
+    # Playwright Token管理API路由（简化版）
+    path("api/playwright/save-token/", save_token_api, name="save_token_api"),
+    path("api/playwright/get-token/", get_token_api, name="get_token_api"),
+    path("api/playwright/check-login/", check_login_status_api, name="check_login_status_api"),
+    path("api/playwright/clear-token/", clear_token_api, name="clear_token_api"),
+    path("api/playwright/test/", test_playwright_api, name="test_playwright_api"),
+    
+    # 增强版Playwright API路由
+    path("api/playwright/scan-login/", playwright_scan_login_api, name="playwright_scan_login_api"),
+    path("api/playwright/login-status/", playwright_login_status_api, name="playwright_login_status_api"),
+    path("api/playwright/get-qr-code/", playwright_get_qr_code_api, name="playwright_get_qr_code_api"),
+    path("api/playwright/quick-check/", playwright_quick_login_check_api, name="playwright_quick_login_check_api"),
+    
+    # Playwright Token测试页面
+    path("playwright-token-test/", playwright_token_test_view, name="playwright_token_test"),
     
     # 测试路由已移除
 ]

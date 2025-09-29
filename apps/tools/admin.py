@@ -13,8 +13,8 @@ try:
 
     @admin.register(SocialMediaSubscription)
     class SocialMediaSubscriptionAdmin(admin.ModelAdmin):
-        list_display = ("user", "platform", "target_user_name", "status", "check_frequency", "last_check", "created_at")
-        list_filter = ("platform", "status", "check_frequency", "created_at")
+        list_display = ("user", "platform", "target_user_name", "status", "last_check", "created_at")
+        list_filter = ("platform", "status", "created_at")
         search_fields = ("user__username", "target_user_name", "target_user_id")
         readonly_fields = ("last_check", "last_change", "created_at", "updated_at")
         list_editable = ("status",)

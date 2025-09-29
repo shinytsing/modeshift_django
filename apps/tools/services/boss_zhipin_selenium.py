@@ -23,7 +23,7 @@ class BossZhipinSeleniumService:
         self.proxy = proxy
         self.base_url = "https://www.zhipin.com"
         self.driver = None
-        self.wait_timeout = 10
+        self.wait_timeout = 3  # 减少超时时间从10秒到3秒
 
     def _init_driver(self) -> bool:
         """初始化WebDriver"""
@@ -131,7 +131,7 @@ class BossZhipinSeleniumService:
             return {"success": False, "message": f"获取登录页面URL失败: {str(e)}"}
 
     def check_login_status(self, user_id: int) -> Dict:
-        """检查登录状态 - 通过检查用户相关元素"""
+        """检查登录状态 - 通过检查用户相关元素和提取token"""
         try:
             # 初始化WebDriver
             if not self._init_driver():
@@ -145,19 +145,64 @@ class BossZhipinSeleniumService:
                 self.driver.get(main_url)
                 time.sleep(3)
 
-                # 检查登录状态
-                login_indicators = [".user-info", ".user-avatar", ".user-name", ".header-user", ".user-menu"]
+                # 首先尝试提取token
+                token_info = self._extract_token_from_browser()
+                
+                # 检查登录状态 - 使用更少的登录指示器，减少超时
+                login_indicators = [
+                    ".user-info", ".user-avatar", ".user-name", 
+                    ".geek-info", ".geek-name", ".geek-avatar"
+                ]
 
                 is_logged_in = False
-                for indicator in login_indicators:
-                    try:
-                        element = self._wait_for_element(indicator, timeout=2)
-                        if element:
-                            logger.info(f"找到登录指示器: {indicator}")
+                found_indicator = None
+                
+                # 如果找到了token，说明已登录
+                if token_info.get('token'):
+                    is_logged_in = True
+                    found_indicator = "token_found"
+                    logger.info(f"通过token检测到登录状态: {token_info['token'][:20]}...")
+                else:
+                    # 尝试通过页面元素检测（减少检测数量）
+                    for indicator in login_indicators:
+                        try:
+                            element = self._wait_for_element(indicator, timeout=1)  # 减少到1秒
+                            if element:
+                                logger.info(f"找到登录指示器: {indicator}")
+                                is_logged_in = True
+                                found_indicator = indicator
+                                break
+                        except Exception:
+                            continue
+
+                    # 如果没找到明显的登录指示器，检查页面内容
+                    if not is_logged_in:
+                        # 检查页面是否包含登录相关的内容
+                        page_source = self.driver.page_source.lower()
+                        login_keywords = ['登录', 'login', '注册', 'register', '手机号', '验证码']
+                        logout_keywords = ['退出', 'logout', '登出']
+                        
+                        # 如果页面包含退出相关关键词，说明已登录
+                        if any(keyword in page_source for keyword in logout_keywords):
                             is_logged_in = True
-                            break
-                    except Exception:
-                        continue
+                            found_indicator = "logout_keywords"
+                            logger.info("通过退出关键词检测到登录状态")
+                        # 如果页面不包含登录相关关键词，也可能已登录
+                        elif not any(keyword in page_source for keyword in login_keywords):
+                            # 检查URL是否包含用户相关路径
+                            current_url = self.driver.current_url
+                            if any(path in current_url for path in ['/user/', '/profile/', '/geek/', '/my/']):
+                                is_logged_in = True
+                                found_indicator = "user_url"
+                                logger.info("通过用户URL检测到登录状态")
+                        
+                        # 如果通过其他方式检测到登录，再次尝试提取token
+                        if is_logged_in and not token_info.get('token'):
+                            logger.info("通过其他方式检测到登录，重新尝试提取token")
+                            token_info = self._extract_token_from_browser()
+                            if token_info.get('token'):
+                                found_indicator = "token_found_retry"
+                                logger.info(f"重新提取到token: {token_info['token'][:20]}...")
 
                 # 获取页面信息
                 page_title = self.driver.title
@@ -168,14 +213,22 @@ class BossZhipinSeleniumService:
                 if is_logged_in:
                     try:
                         # 尝试获取用户名
-                        username_element = self._wait_for_element(".user-name", timeout=2)
-                        if username_element:
-                            user_info["username"] = username_element.text
+                        username_selectors = [".user-name", ".geek-name", ".profile-name", "[class*='name']"]
+                        for selector in username_selectors:
+                            username_element = self._wait_for_element(selector, timeout=2)
+                            if username_element and username_element.text.strip():
+                                user_info["username"] = username_element.text.strip()
+                                break
 
                         # 尝试获取头像
-                        avatar_element = self._wait_for_element(".user-avatar img", timeout=2)
-                        if avatar_element:
-                            user_info["avatar"] = avatar_element.get_attribute("src")
+                        avatar_selectors = [".user-avatar img", ".geek-avatar img", ".profile-avatar img", "[class*='avatar'] img"]
+                        for selector in avatar_selectors:
+                            avatar_element = self._wait_for_element(selector, timeout=2)
+                            if avatar_element:
+                                avatar_src = avatar_element.get_attribute("src")
+                                if avatar_src and "default" not in avatar_src.lower():
+                                    user_info["avatar"] = avatar_src
+                                    break
 
                     except Exception as e:
                         logger.warning(f"获取用户信息失败: {str(e)}")
@@ -187,9 +240,12 @@ class BossZhipinSeleniumService:
                     "page_title": page_title,
                     "current_url": current_url,
                     "user_info": user_info,
+                    "found_indicator": found_indicator,
+                    "token_info": token_info,
                     "message": "已登录" if is_logged_in else "未登录",
                 }
 
+                logger.info(f"登录状态检查完成: {result}")
                 return result
 
             finally:
@@ -199,6 +255,76 @@ class BossZhipinSeleniumService:
         except Exception as e:
             logger.error(f"检查登录状态失败: {str(e)}")
             return {"success": False, "message": f"检查登录状态失败: {str(e)}"}
+    
+    def _extract_token_from_browser(self) -> Dict:
+        """从浏览器中提取token信息"""
+        try:
+            token_info = {}
+            
+            # 尝试从localStorage获取token
+            try:
+                local_storage = self.driver.execute_script("return window.localStorage;")
+                for key, value in local_storage.items():
+                    if any(token_key in key.lower() for token_key in ['token', 'auth', 'access', 'jwt']):
+                        token_info['localStorage'] = {key: value}
+                        if not token_info.get('token'):
+                            token_info['token'] = value
+                        logger.info(f"从localStorage找到token: {key}")
+            except Exception as e:
+                logger.warning(f"获取localStorage失败: {str(e)}")
+            
+            # 尝试从sessionStorage获取token
+            try:
+                session_storage = self.driver.execute_script("return window.sessionStorage;")
+                for key, value in session_storage.items():
+                    if any(token_key in key.lower() for token_key in ['token', 'auth', 'access', 'jwt']):
+                        token_info['sessionStorage'] = {key: value}
+                        if not token_info.get('token'):
+                            token_info['token'] = value
+                        logger.info(f"从sessionStorage找到token: {key}")
+            except Exception as e:
+                logger.warning(f"获取sessionStorage失败: {str(e)}")
+            
+            # 尝试从cookies获取token
+            try:
+                cookies = self.driver.get_cookies()
+                for cookie in cookies:
+                    if any(token_key in cookie['name'].lower() for token_key in ['token', 'auth', 'access', 'jwt', 'stoken']):
+                        token_info['cookies'] = {cookie['name']: cookie['value']}
+                        if not token_info.get('token'):
+                            token_info['token'] = cookie['value']
+                        logger.info(f"从cookies找到token: {cookie['name']}")
+            except Exception as e:
+                logger.warning(f"获取cookies失败: {str(e)}")
+            
+            # 尝试从页面中查找token（通过JavaScript变量）
+            try:
+                js_tokens = self.driver.execute_script("""
+                    var tokens = {};
+                    // 检查常见的token变量名
+                    var tokenVars = ['token', 'accessToken', 'authToken', 'jwt', 'userToken', 'auth_token'];
+                    for (var i = 0; i < tokenVars.length; i++) {
+                        var varName = tokenVars[i];
+                        if (window[varName]) {
+                            tokens[varName] = window[varName];
+                        }
+                    }
+                    return tokens;
+                """)
+                if js_tokens:
+                    token_info['js_variables'] = js_tokens
+                    if not token_info.get('token'):
+                        # 取第一个找到的token
+                        token_info['token'] = list(js_tokens.values())[0]
+                    logger.info(f"从JavaScript变量找到token: {list(js_tokens.keys())}")
+            except Exception as e:
+                logger.warning(f"获取JavaScript变量失败: {str(e)}")
+            
+            return token_info
+            
+        except Exception as e:
+            logger.error(f"提取token失败: {str(e)}")
+            return {}
 
     def get_user_token(self, user_id: int) -> Dict:
         """获取用户登录后的token/cookie信息"""

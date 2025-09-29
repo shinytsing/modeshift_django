@@ -17,6 +17,97 @@
   overflow: hidden;
 }
 
+/* 背景切换功能 */
+.background-selector {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 200px;
+}
+
+.bg-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.bg-btn:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.bg-btn.active {
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.bg-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+/* 各种美景背景 - 使用实际图片 */
+.travel-container.aurora-borealis-5599375_1280-jpg {
+  background: linear-gradient(135deg, rgba(0, 20, 40, 0.7) 0%, rgba(0, 40, 80, 0.6) 100%),
+              url('/static/scense/aurora-borealis-5599375_1280.jpg') center/cover;
+}
+
+.travel-container.beach-418742_1280-jpg {
+  background: linear-gradient(135deg, rgba(255, 200, 150, 0.7) 0%, rgba(255, 220, 180, 0.6) 100%),
+              url('/static/scense/beach-418742_1280.jpg') center/cover;
+}
+
+.travel-container.bridge-192982_1280-jpg {
+  background: linear-gradient(135deg, rgba(100, 150, 200, 0.7) 0%, rgba(150, 200, 255, 0.6) 100%),
+              url('/static/scense/bridge-192982_1280.jpg') center/cover;
+}
+
+.travel-container.lake-192990_1280-jpg {
+  background: linear-gradient(135deg, rgba(50, 100, 150, 0.7) 0%, rgba(100, 150, 200, 0.6) 100%),
+              url('/static/scense/lake-192990_1280.jpg') center/cover;
+}
+
+.travel-container.lake-6295829_1280-jpg {
+  background: linear-gradient(135deg, rgba(80, 120, 160, 0.7) 0%, rgba(120, 160, 200, 0.6) 100%),
+              url('/static/scense/lake-6295829_1280.jpg') center/cover;
+}
+
+.travel-container.lighthouse-168132_1280-jpg {
+  background: linear-gradient(135deg, rgba(200, 150, 100, 0.7) 0%, rgba(255, 200, 150, 0.6) 100%),
+              url('/static/scense/lighthouse-168132_1280.jpg') center/cover;
+}
+
+.travel-container.mountains-100367_1280-jpg {
+  background: linear-gradient(135deg, rgba(150, 100, 50, 0.7) 0%, rgba(200, 150, 100, 0.6) 100%),
+              url('/static/scense/mountains-100367_1280.jpg') center/cover;
+}
+
+.travel-container.mountains-3048299_1280-jpg {
+  background: linear-gradient(135deg, rgba(100, 120, 140, 0.7) 0%, rgba(150, 170, 190, 0.6) 100%),
+              url('/static/scense/mountains-3048299_1280.jpg') center/cover;
+}
+
+.travel-container.star-trails-5718301_1280-jpg {
+  background: linear-gradient(135deg, rgba(20, 20, 60, 0.8) 0%, rgba(40, 40, 80, 0.7) 100%),
+              url('/static/scense/star-trails-5718301_1280.jpg') center/cover;
+}
+
 /* 现代化动态背景效果 */
 .travel-container::before {
   content: '';
@@ -59,49 +150,29 @@
 }
 
 .travel-subtitle {
-  font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3);
+  font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: subtitleGlow 3s ease-in-out infinite alternate;
 }
 
-/* 新增：功能特性展示 */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-  justify-items: center;
+@keyframes subtitleGlow {
+  0% {
+    text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    text-shadow: 0 4px 25px rgba(255, 255, 255, 0.5);
+  }
 }
 
-.feature-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.feature-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.feature-title {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.feature-desc {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
 
 /* 好心人攻略相关样式 */
 .guides-actions {
@@ -374,19 +445,37 @@
 }
 
 .travel-subtitle {
-  font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3);
+  font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: subtitleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes subtitleGlow {
+  0% {
+    text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    text-shadow: 0 4px 25px rgba(255, 255, 255, 0.5);
+  }
 }
 
 .travel-form {
-  background: rgba(26, 26, 46, 0.8);
-  backdrop-filter: blur(20px);
+  background: rgba(26, 26, 46, 0.3);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
   padding: 2rem;
   margin-bottom: 2rem;
-  border: 1px solid rgba(233, 69, 96, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(233, 69, 96, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .form-group {
@@ -2500,44 +2589,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="travel-container">
+<!-- 背景切换器 -->
+<div class="background-selector">
+  <div class="bg-btn aurora" data-bg="aurora-borealis-5599375_1280.jpg" title="极光"></div>
+  <div class="bg-btn beach" data-bg="beach-418742_1280.jpg" title="海滩"></div>
+  <div class="bg-btn bridge" data-bg="bridge-192982_1280.jpg" title="桥梁"></div>
+  <div class="bg-btn lake1" data-bg="lake-192990_1280.jpg" title="湖泊"></div>
+  <div class="bg-btn lake2" data-bg="lake-6295829_1280.jpg" title="山湖"></div>
+  <div class="bg-btn lighthouse" data-bg="lighthouse-168132_1280.jpg" title="灯塔"></div>
+  <div class="bg-btn mountains1" data-bg="mountains-100367_1280.jpg" title="山峰"></div>
+  <div class="bg-btn mountains2" data-bg="mountains-3048299_1280.jpg" title="雪山"></div>
+  <div class="bg-btn stars" data-bg="star-trails-5718301_1280.jpg" title="星空"></div>
+  <div class="bg-btn default" data-bg="default" title="默认背景"></div>
+</div>
+
+<div class="travel-container default" id="travelContainer">
   <div class="travel-header">
     <h1 class="travel-title">WanderAI 智能旅游攻略</h1>
-    <p class="travel-subtitle">基于8个免费API的全面旅游攻略生成器 - 景点、天气、汇率、文化信息一网打尽</p>
+    <p class="travel-subtitle">和最爱的人看最美的景</p>
     
-    <!-- 功能特性展示 -->
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🌍</div>
-        <div class="feature-title">目的地信息</div>
-        <div class="feature-desc">国家、首都、时区、语言</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌤️</div>
-        <div class="feature-title">实时天气</div>
-        <div class="feature-desc">温度、天气状况、湿度</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">💱</div>
-        <div class="feature-title">汇率信息</div>
-        <div class="feature-desc">主要货币汇率</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🏛️</div>
-        <div class="feature-title">景点详情</div>
-        <div class="feature-desc">分类景点、详细描述</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🏮</div>
-        <div class="feature-title">文化信息</div>
-        <div class="feature-desc">语言、货币、习俗</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">💡</div>
-        <div class="feature-title">实用贴士</div>
-        <div class="feature-desc">根据目的地的实用建议</div>
-      </div>
-    </div>
   </div>
 
   <!-- 导航按钮 -->
@@ -2918,8 +2988,117 @@
 let currentGuide = null;
 let selectedInterests = [];
 
+// 背景切换功能
+let autoRotateInterval = null;
+let currentBgIndex = 0;
+const backgroundImages = [
+  'aurora-borealis-5599375_1280.jpg',
+  'beach-418742_1280.jpg',
+  'bridge-192982_1280.jpg',
+  'lake-192990_1280.jpg',
+  'lake-6295829_1280.jpg',
+  'lighthouse-168132_1280.jpg',
+  'mountains-100367_1280.jpg',
+  'mountains-3048299_1280.jpg',
+  'star-trails-5718301_1280.jpg'
+];
+
+function switchBackground(bgType) {
+  const container = document.getElementById('travelContainer');
+  const bgButtons = document.querySelectorAll('.bg-btn');
+  
+  // 移除所有按钮的激活状态
+  bgButtons.forEach(b => b.classList.remove('active'));
+  
+  // 激活对应按钮
+  const targetBtn = document.querySelector(`[data-bg="${bgType}"]`);
+  if (targetBtn) {
+    targetBtn.classList.add('active');
+  }
+  
+  // 移除所有背景类
+  container.classList.remove('aurora-borealis-5599375_1280-jpg', 'beach-418742_1280-jpg', 
+                            'bridge-192982_1280-jpg', 'lake-192990_1280-jpg', 'lake-6295829_1280-jpg',
+                            'lighthouse-168132_1280-jpg', 'mountains-100367_1280-jpg', 
+                            'mountains-3048299_1280-jpg', 'star-trails-5718301_1280-jpg', 'default');
+  
+  // 添加新的背景类
+  if (bgType !== 'default') {
+    // 将文件名转换为CSS类名（将.替换为-）
+    const className = bgType.replace('.', '-');
+    container.classList.add(className);
+  }
+  
+  // 保存用户选择到localStorage
+  localStorage.setItem('travelBackground', bgType);
+}
+
+function startAutoRotate() {
+  // 停止现有的自动轮换
+  if (autoRotateInterval) {
+    clearInterval(autoRotateInterval);
+  }
+  
+  // 开始自动轮换，每5秒切换一次
+  autoRotateInterval = setInterval(() => {
+    currentBgIndex = (currentBgIndex + 1) % backgroundImages.length;
+    switchBackground(backgroundImages[currentBgIndex]);
+  }, 5000);
+}
+
+function stopAutoRotate() {
+  if (autoRotateInterval) {
+    clearInterval(autoRotateInterval);
+    autoRotateInterval = null;
+  }
+}
+
+function initBackgroundSwitcher() {
+  const bgButtons = document.querySelectorAll('.bg-btn');
+  
+  // 设置默认背景按钮为激活状态
+  const defaultBtn = document.querySelector('.bg-btn.default');
+  if (defaultBtn) {
+    defaultBtn.classList.add('active');
+  }
+  
+  bgButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const bgType = this.dataset.bg;
+      
+      // 停止自动轮换
+      stopAutoRotate();
+      
+      // 切换背景
+      switchBackground(bgType);
+      
+      // 如果选择的是图片背景，重新开始自动轮换
+      if (bgType !== 'default' && backgroundImages.includes(bgType)) {
+        currentBgIndex = backgroundImages.indexOf(bgType);
+        startAutoRotate();
+      }
+    });
+  });
+  
+  // 从localStorage恢复用户选择
+  const savedBg = localStorage.getItem('travelBackground');
+  if (savedBg) {
+    switchBackground(savedBg);
+    if (savedBg !== 'default' && backgroundImages.includes(savedBg)) {
+      currentBgIndex = backgroundImages.indexOf(savedBg);
+      startAutoRotate();
+    }
+  } else {
+    // 如果没有保存的选择，开始自动轮换
+    startAutoRotate();
+  }
+}
+
 // 兴趣标签选择
 document.addEventListener('DOMContentLoaded', function() {
+  // 初始化背景切换器
+  initBackgroundSwitcher();
+  
   // 初始化预算校验
   setupBudgetValidation();
   

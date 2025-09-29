@@ -96,14 +96,16 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",  # allauth账户中间件
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # allauth中间件
-    "allauth.account.middleware.AccountMiddleware",
-    # 会话持久化中间件 - 暂时禁用，避免Redis依赖问题
-    # 'apps.users.middleware.SessionPersistenceMiddleware',
-    "apps.users.middleware.SessionExtensionMiddleware",  # Session延长中间件
-    # 性能监控中间件（已优化）
+    # 临时禁用自定义中间件进行调试
+    # "apps.users.middleware_allauth_fix.FixedAccountMiddleware",  # 使用修复版本的allauth中间件
+    # "apps.users.middleware.SessionExtensionMiddleware",  # Session延长中间件
+    # "apps.users.middleware_async_safe.AsyncSafeSessionMiddleware",  # 异步安全Session中间件
+    # "apps.users.middleware_async_safe.TokenPersistenceMiddleware",  # Token持久化中间件
+    # "apps.users.middleware_async_safe.CrossTabSessionMiddleware",  # 跨标签页Session同步中间件
+    # "apps.users.middleware_async_safe.LoginStateMiddleware",  # 登录状态中间件
     "apps.tools.services.monitoring_service.PerformanceMonitoringMiddleware",
 ]
 
@@ -208,6 +210,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "src/static",
+    BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -229,7 +232,7 @@ LOGOUT_REDIRECT_URL = "/"
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天（1个月）
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True  # 每次请求都保存session，延长过期时间
+SESSION_SAVE_EVERY_REQUEST = False  # 禁用每次请求都保存session，避免异步上下文错误
 SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -450,3 +453,6 @@ SITE_ID = 1
 
 # 站点URL配置 - 用于Google OAuth回调
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
+
+# 自定义适配器配置
+SOCIALACCOUNT_ADAPTER = "apps.users.adapters.CustomSocialAccountAdapter"

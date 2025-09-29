@@ -852,28 +852,28 @@ function deactivateHappinessMode() {
     // 清理所有幸福效果元素
     const particles = document.querySelectorAll('.happiness-particle');
     particles.forEach(particle => {
-        if (particle.parentNode) {
+        if (particle.parentNode && particle.parentNode.contains(particle)) {
             particle.parentNode.removeChild(particle);
         }
     });
     
     const rainbows = document.querySelectorAll('.rainbow-effect');
     rainbows.forEach(rainbow => {
-        if (rainbow.parentNode) {
+        if (rainbow.parentNode && rainbow.parentNode.contains(rainbow)) {
             rainbow.parentNode.removeChild(rainbow);
         }
     });
     
     const hearts = document.querySelectorAll('.falling-heart');
     hearts.forEach(heart => {
-        if (heart.parentNode) {
+        if (heart.parentNode && heart.parentNode.contains(heart)) {
             heart.parentNode.removeChild(heart);
         }
     });
     
     const messages = document.querySelectorAll('.happiness-message');
     messages.forEach(message => {
-        if (message.parentNode) {
+        if (message.parentNode && message.parentNode.contains(message)) {
             message.parentNode.removeChild(message);
         }
     });

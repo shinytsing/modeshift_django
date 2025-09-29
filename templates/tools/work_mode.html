@@ -512,6 +512,14 @@
       <h3 class="training-title">文件压缩工具</h3>
       <p class="training-description">多文件打包、目录压缩、单文件压缩，支持多种压缩格式</p>
     </div>
+
+    <div class="training-card" onclick="window.location.href='{% url 'tools:job_search_launcher' %}'">
+      <div class="training-icon">
+        <i class="fas fa-rocket"></i>
+      </div>
+      <h3 class="training-title">AI一键投递系统</h3>
+      <p class="training-description">基于get_jobs项目，智能简历投递，支持BOSS直聘、猎聘、拉勾等主流平台</p>
+    </div>
   </div>
 </div>
 
@@ -647,7 +655,7 @@ function createGlitchParticle() {
   
   // 动画结束后移除粒子
   setTimeout(() => {
-    if (particle.parentNode) {
+    if (particle.parentNode && particle.parentNode.contains(particle)) {
       particle.parentNode.removeChild(particle);
     }
   }, 2000);
@@ -679,7 +687,7 @@ function showCyberpunkMessage() {
   document.body.appendChild(message);
   
   setTimeout(() => {
-    if (message.parentNode) {
+    if (message.parentNode && message.parentNode.contains(message)) {
       message.parentNode.removeChild(message);
     }
   }, 3000);

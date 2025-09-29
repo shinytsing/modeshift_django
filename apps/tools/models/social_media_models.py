@@ -13,7 +13,6 @@ class SocialMediaSubscription(models.Model):
         ("netease", "网易云音乐"),
         ("weibo", "微博"),
         ("bilibili", "B站"),
-        ("zhihu", "知乎"),
     ]
 
     SUBSCRIPTION_TYPE_CHOICES = [
@@ -31,12 +30,7 @@ class SocialMediaSubscription(models.Model):
         "profileChanges": "用户资料信息的变化，如头像、昵称、简介等",
     }
 
-    FREQUENCY_CHOICES = [
-        (5, "5分钟"),
-        (15, "15分钟"),
-        (30, "30分钟"),
-        (60, "1小时"),
-    ]
+    # 移除频率选择，统一在每天早上8点执行
 
     STATUS_CHOICES = [
         ("active", "活跃"),
@@ -49,7 +43,6 @@ class SocialMediaSubscription(models.Model):
     target_user_id = models.CharField(max_length=100, verbose_name="目标用户ID", db_index=True)
     target_user_name = models.CharField(max_length=200, verbose_name="目标用户名")
     subscription_types = models.JSONField(default=list, verbose_name="订阅类型")
-    check_frequency = models.IntegerField(choices=FREQUENCY_CHOICES, default=15, verbose_name="检查频率")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active", verbose_name="状态", db_index=True)
     last_check = models.DateTimeField(auto_now=True, verbose_name="最后检查时间", db_index=True)
     last_change = models.DateTimeField(null=True, blank=True, verbose_name="最后变化时间")
@@ -65,7 +58,7 @@ class SocialMediaSubscription(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
         unique_together = ["user", "platform", "target_user_id"]
         ordering = ["-created_at"]
         verbose_name = "社交媒体订阅"
@@ -102,10 +95,10 @@ class SocialMediaSubscription(models.Model):
         return result
 
     def needs_check(self):
-        """检查是否需要检查更新"""
-        from datetime import timedelta
-
-        return timezone.now() - self.last_check > timedelta(minutes=self.check_frequency)
+        """检查是否需要检查更新 - 现在统一在每天早上8点执行"""
+        # 由于现在统一在每天早上8点执行，这个方法主要用于标记
+        # 实际检查由定时任务统一处理
+        return True
 
     @classmethod
     def get_user_subscription_stats(cls, user):
@@ -170,7 +163,7 @@ class SocialMediaNotification(models.Model):
     profile_changes = models.JSONField(blank=True, default=dict, null=True, verbose_name="资料变化详情")
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
         ordering = ["-created_at"]
         verbose_name = "社交媒体通知"
         verbose_name_plural = "社交媒体通知"
@@ -229,7 +222,7 @@ class SocialMediaPlatformConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
         verbose_name = "平台配置"
         verbose_name_plural = "平台配置"
 
@@ -252,7 +245,7 @@ class DouyinVideoAnalysis(models.Model):
     analyzed_at = models.DateTimeField(default=timezone.now, verbose_name="分析时间")
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
         ordering = ["-analyzed_at"]
         verbose_name = "抖音视频分析"
         verbose_name_plural = "抖音视频分析"
@@ -280,7 +273,7 @@ class DouyinVideo(models.Model):
     crawled_at = models.DateTimeField(default=timezone.now, verbose_name="爬取时间")
 
     class Meta:
-        app_label = "apps.tools"
+        app_label = "tools"
         ordering = ["-created_time"]
         verbose_name = "抖音视频"
         verbose_name_plural = "抖音视频"

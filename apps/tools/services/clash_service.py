@@ -52,6 +52,7 @@ class ClashEmbeddedService:
         """查找Clash可执行文件或检测ClashX Pro/Clash Verge Rev"""
         # 首先检查是否有独立的clash二进制文件
         possible_paths = [
+            "/root/go/bin/clash",
             "/usr/local/bin/clash",
             "/usr/bin/clash",
             "/opt/homebrew/bin/clash",
