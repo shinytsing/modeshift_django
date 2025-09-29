@@ -267,13 +267,19 @@ SimpleProxyToggle.app/
 ProxySwitch.app/
 ProxyToggle.app/
 
-# 证书和密钥文件
+# 证书和密钥文件（SSL/TLS证书和私钥）
 ssl_certs/
+trojan_server/
 *.pem
 *.key
 *.crt
 *.p12
 *.pfx
+*.cer
+*.der
+*.jks
+*.keystore
+*.truststore
 
 # 数据库文件
 *.sqlite3
