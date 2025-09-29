@@ -49,7 +49,7 @@ class ClashEmbeddedService:
         self.clash_binary_path = self.find_clash_binary()
 
     def find_clash_binary(self) -> Optional[str]:
-        """查找Clash可执行文件或检测ClashX Pro"""
+        """查找Clash可执行文件或检测ClashX Pro/Clash Verge Rev"""
         # 首先检查是否有独立的clash二进制文件
         possible_paths = [
             "/usr/local/bin/clash",
@@ -67,6 +67,10 @@ class ClashEmbeddedService:
         if self.is_clashx_running():
             return "clashx_pro"  # 特殊标识表示使用ClashX Pro
 
+        # 检查Clash Verge Rev是否在运行
+        if self.is_clash_verge_running():
+            return "clash_verge_rev"  # 特殊标识表示使用Clash Verge Rev
+
         return None
 
     def is_clashx_running(self) -> bool:
@@ -75,6 +79,17 @@ class ClashEmbeddedService:
             import subprocess
 
             result = subprocess.run(["pgrep", "-f", "ClashX Pro"], capture_output=True, text=True)
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def is_clash_verge_running(self) -> bool:
+        """检查Clash Verge Rev是否在运行"""
+        try:
+            import subprocess
+
+            # 检查Clash Verge Rev服务进程
+            result = subprocess.run(["pgrep", "-f", "clash-verge"], capture_output=True, text=True)
             return result.returncode == 0
         except Exception:
             return False
@@ -164,6 +179,16 @@ class ClashEmbeddedService:
                 return True, "ClashX Pro正在运行，服务已就绪"
             else:
                 return False, "ClashX Pro未运行，请先启动ClashX Pro"
+
+        # 如果检测到Clash Verge Rev，直接返回成功
+        if self.clash_binary_path == "clash_verge_rev":
+            if self.is_clash_verge_running():
+                self.is_running = True
+                self.start_time = time.time()
+                logger.info("检测到Clash Verge Rev正在运行，服务已就绪")
+                return True, "Clash Verge Rev正在运行，服务已就绪"
+            else:
+                return False, "Clash Verge Rev未运行，请先启动Clash Verge Rev"
 
         try:
             # 启动独立的Clash进程
@@ -260,6 +285,17 @@ class ClashEmbeddedService:
         # 重新检查ClashX Pro状态
         if self.clash_binary_path == "clashx_pro":
             self.is_running = self.is_clashx_running()
+        
+        # 重新检查Clash Verge Rev状态
+        if self.clash_binary_path == "clash_verge_rev":
+            self.is_running = self.is_clash_verge_running()
+
+        # 确定服务类型
+        service_type = "Standalone Clash"
+        if self.clash_binary_path == "clashx_pro":
+            service_type = "ClashX Pro"
+        elif self.clash_binary_path == "clash_verge_rev":
+            service_type = "Clash Verge Rev"
 
         status = {
             "is_running": self.is_running,
@@ -271,7 +307,7 @@ class ClashEmbeddedService:
             "config_path": str(self.clash_config_path),
             "binary_path": self.clash_binary_path,
             "has_binary": self.clash_binary_path is not None,
-            "service_type": "ClashX Pro" if self.clash_binary_path == "clashx_pro" else "Standalone Clash",
+            "service_type": service_type,
         }
 
         if self.start_time:

@@ -205,6 +205,7 @@ from .proxy_view import proxy_dashboard  # 主页面
 from .proxy_view import proxy_list_api  # 辅助功能: 代理列表
 from .proxy_view import setup_proxy_api  # 核心功能2: 一键代理设置
 from .proxy_view import web_proxy_api  # 新功能: Web代理浏览
+from .proxy_view import web_proxy_browse_api, proxy_browse_view  # 内嵌代理浏览
 
 # 从成就相关视图导入
 from .views.achievement_views import achievements_api, get_fitness_achievements_api, share_achievement_api
@@ -257,9 +258,13 @@ from .views.checkin_views import checkin_add_api, checkin_delete_api, checkin_de
 # 导入Clash内嵌代理系统视图
 from .views.clash_views import (
     clash_add_proxy_api,
+    clash_auto_setup_api,
     clash_config_api,
+    clash_configure_proxy_api,
     clash_dashboard,
+    clash_disable_proxy_api,
     clash_install_api,
+    clash_proxy_health_api,
     clash_proxy_info_api,
     clash_remove_proxy_api,
     clash_restart_api,
@@ -268,6 +273,7 @@ from .views.clash_views import (
     clash_stop_api,
     clash_switch_proxy_api,
     clash_test_connection_api,
+    clash_test_external_access_api,
     clash_update_config_api,
 )
 from .views.desire_views import (
@@ -1034,6 +1040,8 @@ urlpatterns = [
     path("api/proxy/download-clash/", download_clash_config_api, name="download_clash_config_api"),  # 新功能: 下载Clash配置
     path("api/proxy/download-v2ray/", download_v2ray_config_api, name="download_v2ray_config_api"),  # 新功能: 下载V2Ray配置
     path("api/proxy/web-browse/", web_proxy_api, name="web_proxy_api"),  # 新功能: Web代理浏览
+    path("api/proxy/browse/", web_proxy_browse_api, name="web_proxy_browse_api"),  # 内嵌代理浏览API
+    path("proxy/browse/", proxy_browse_view, name="proxy_browse_view"),  # 代理浏览页面
     # Clash内嵌代理系统路由
     path("clash-dashboard/", clash_dashboard, name="clash_dashboard"),
     path("api/clash/status/", clash_status_api, name="clash_status_api"),
@@ -1046,8 +1054,13 @@ urlpatterns = [
     path("api/clash/install/", clash_install_api, name="clash_install_api"),
     path("api/clash/config/", clash_config_api, name="clash_config_api"),
     path("api/clash/update-config/", clash_update_config_api, name="clash_update_config_api"),
+    path("api/clash/configure-proxy/", clash_configure_proxy_api, name="clash_configure_proxy_api"),
+    path("api/clash/test-external-access/", clash_test_external_access_api, name="clash_test_external_access_api"),
+    path("api/clash/disable-proxy/", clash_disable_proxy_api, name="clash_disable_proxy_api"),
     path("api/clash/add-proxy/", clash_add_proxy_api, name="clash_add_proxy_api"),
     path("api/clash/remove-proxy/", clash_remove_proxy_api, name="clash_remove_proxy_api"),
+    path("api/clash/proxy-health/", clash_proxy_health_api, name="clash_proxy_health_api"),
+    path("api/clash/auto-setup/", clash_auto_setup_api, name="clash_auto_setup_api"),
     # 浏览器代理配置路由
     path("api/browser-proxy/configure/", configure_browser_proxy, name="configure_browser_proxy"),
     path("api/browser-proxy/disable/", disable_browser_proxy, name="disable_browser_proxy"),

@@ -4,7 +4,7 @@ import time
 from typing import Dict
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -888,3 +888,157 @@ def web_proxy_api(request):
 # 3. 专业代理列表管理
 # 4. 安全访问链接创建
 # ============================================================================
+
+
+# 内嵌代理浏览API - 专门为Clash Dashboard设计
+@csrf_exempt
+@require_http_methods(["POST"])
+def web_proxy_browse_api(request):
+    """内嵌代理浏览API - 返回代理URL供iframe使用"""
+    try:
+        data = json.loads(request.body)
+        target_url = data.get("url", "")
+
+        if not target_url:
+            return JsonResponse({"success": False, "error": "请提供目标URL"})
+
+        # 确保URL格式正确
+        if not target_url.startswith(("http://", "https://")):
+            target_url = "https://" + target_url
+
+        # 检查Clash服务状态
+        from .services.clash_service import clash_service
+        clash_status = clash_service.get_status()
+        
+        if not clash_status.get("is_running"):
+            return JsonResponse({"success": False, "error": "Clash服务未运行，请先启动服务"})
+
+        # 生成代理URL - 使用Django的代理功能
+        # 这里我们创建一个代理URL，让前端通过iframe访问
+        proxy_url = f"/tools/proxy/browse/?url={target_url}"
+        
+        logger.info(f"🌐 创建内嵌代理URL: {proxy_url} -> {target_url}")
+        
+        return JsonResponse({
+            "success": True,
+            "proxy_url": proxy_url,
+            "original_url": target_url,
+            "clash_status": clash_status.get("service_type", "Unknown")
+        })
+
+    except Exception as e:
+        logger.error(f"内嵌代理浏览API错误: {str(e)}")
+        return JsonResponse({"success": False, "error": f"代理服务暂时不可用: {str(e)}"})
+
+
+# 代理浏览页面 - 实际处理代理请求
+@csrf_exempt
+def proxy_browse_view(request):
+    """代理浏览页面 - 处理实际的代理请求"""
+    try:
+        target_url = request.GET.get("url", "")
+        
+        if not target_url:
+            return HttpResponse("请提供目标URL", status=400)
+        
+        # 检查Clash服务状态
+        from .services.clash_service import clash_service
+        clash_status = clash_service.get_status()
+        
+        if not clash_status.get("is_running"):
+            return HttpResponse("Clash服务未运行", status=503)
+        
+        # 使用Clash代理配置
+        clash_http_port = clash_status.get("http_port", 7890)
+        clash_socks_port = clash_status.get("socks_port", 7891)
+        
+        # 检查Clash Verge Rev的实际端口配置
+        # Clash Verge Rev可能使用不同的端口配置
+        proxies = None
+        
+        # 尝试不同的端口配置
+        possible_ports = [clash_http_port, 7890, 7891, 8080, 1080]
+        
+        for port in possible_ports:
+            try:
+                test_proxies = {
+                    "http": f"http://127.0.0.1:{port}",
+                    "https": f"http://127.0.0.1:{port}"
+                }
+                
+                # 测试代理是否可用
+                test_response = requests.get(
+                    "http://httpbin.org/get", 
+                    proxies=test_proxies, 
+                    timeout=5,
+                    verify=True
+                )
+                
+                if test_response.status_code == 200:
+                    proxies = test_proxies
+                    logger.info(f"✅ 找到可用的Clash代理端口: {port}")
+                    break
+                    
+            except Exception as e:
+                logger.debug(f"端口 {port} 不可用: {e}")
+                continue
+        
+        # 如果没有找到可用的代理，尝试直接连接
+        if not proxies:
+            logger.warning("未找到可用的Clash代理，尝试直接连接")
+            proxies = None
+            
+            # 如果是Clash Verge Rev，提供特殊提示
+            if clash_status.get("service_type") == "Clash Verge Rev":
+                logger.info("检测到Clash Verge Rev，但未找到代理端口")
+                logger.info("请确保Clash Verge Rev应用程序正在运行并已配置代理")
+        
+        # 设置请求头
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+        }
+        
+        # 发送请求
+        response = requests.get(target_url, proxies=proxies, headers=headers, timeout=30, verify=True, allow_redirects=True)
+        
+        if response.status_code == 200:
+            # 获取内容
+            content = response.text
+            
+            # 处理HTML内容，修复相对路径
+            import re
+            from urllib.parse import urlparse
+            
+            parsed_url = urlparse(target_url)
+            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            
+            # 修复相对路径
+            content = re.sub(r'href="/', f'href="{base_url}/', content)
+            content = re.sub(r'src="/', f'src="{base_url}/', content)
+            content = re.sub(r"href='/", f"href='{base_url}/", content)
+            content = re.sub(r"src='/", f"src='{base_url}/", content)
+            
+            # 移除X-Frame-Options相关的meta标签
+            content = re.sub(r'<meta[^>]*http-equiv=["\']?X-Frame-Options["\']?[^>]*>', "", content, flags=re.IGNORECASE)
+            content = re.sub(r'<meta[^>]*http-equiv=["\']?Content-Security-Policy["\']?[^>]*>', "", content, flags=re.IGNORECASE)
+            
+            # 创建响应
+            django_response = HttpResponse(content, content_type=response.headers.get('content-type', 'text/html'))
+            
+            # 设置响应头
+            django_response['X-Frame-Options'] = 'ALLOWALL'
+            django_response['Content-Security-Policy'] = "frame-ancestors 'self' *"
+            
+            return django_response
+        else:
+            return HttpResponse(f"代理请求失败: {response.status_code}", status=response.status_code)
+            
+    except Exception as e:
+        logger.error(f"代理浏览页面错误: {str(e)}")
+        return HttpResponse(f"代理服务错误: {str(e)}", status=500)
