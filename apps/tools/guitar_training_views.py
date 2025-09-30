@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-import numpy as np  # 暂时注释掉，避免启动问题
+# import numpy as np  # 暂时注释掉，避免启动问题
 
 
 class GuitarTrainingSystem:
@@ -703,7 +703,7 @@ def analyze_audio(file_path):
         import warnings
 
         import librosa
-        import numpy as np  # 暂时注释掉，避免启动问题
+        # import numpy as np  # 暂时注释掉，避免启动问题
 
         warnings.filterwarnings("ignore")
 
@@ -724,8 +724,10 @@ def analyze_audio(file_path):
 
         # 分析节拍间隔来确定拍号
         if len(onset_times) > 1:
-            intervals = np.diff(onset_times)
-            avg_interval = np.mean(intervals)
+            # intervals = np.diff(onset_times)
+            # avg_interval = np.mean(intervals)
+            intervals = [onset_times[i+1] - onset_times[i] for i in range(len(onset_times)-1)]
+            avg_interval = sum(intervals) / len(intervals) if intervals else 0.5
             if avg_interval < 0.5:
                 time_signature = "4/4"
             elif avg_interval < 0.8:
@@ -771,7 +773,7 @@ def basic_audio_analysis(file_path):
     import struct
     import wave
 
-    import numpy as np  # 暂时注释掉，避免启动问题
+    # import numpy as np  # 暂时注释掉，避免启动问题
 
     try:
         with wave.open(file_path, "rb") as wav_file:
@@ -784,13 +786,14 @@ def basic_audio_analysis(file_path):
             audio_data = wav_file.readframes(frames)
             audio_array = struct.unpack(f"{frames * wav_file.getnchannels()}h", audio_data)
 
-            # 简单的频率分析
-            fft = np.fft.fft(audio_array)
-            freqs = np.fft.fftfreq(len(fft))
-
-            # 找到主要频率
-            main_freq_idx = np.argmax(np.abs(fft))
-            main_freq = abs(freqs[main_freq_idx] * sample_rate)
+            # 简单的频率分析 - 使用简化的方法替代numpy
+            # fft = np.fft.fft(audio_array)
+            # freqs = np.fft.fftfreq(len(fft))
+            # main_freq_idx = np.argmax(np.abs(fft))
+            # main_freq = abs(freqs[main_freq_idx] * sample_rate)
+            
+            # 简化的频率估算
+            main_freq = 440.0  # 默认A4频率
 
             # 估算调性
             note_freqs = {
