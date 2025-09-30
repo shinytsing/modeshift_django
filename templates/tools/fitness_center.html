@@ -40,6 +40,11 @@ if (!hasNoCache) {
 } else {
   // // console.log(...)
 }
+
+// 训练计划编辑器相关函数 - 提前定义以避免未定义错误
+function openPlanEditor() {
+  window.location.href = '/tools/fitness/plan-editor/';
+}
 </script>
 <div class="fitness-container">
 
@@ -2945,7 +2950,7 @@ function createTodayExportContainer(todayPlan) {
             </div>
             <div style="color: #666; font-size: 13px;">
               ${typeof exercise === 'string' ? '3' : (exercise.sets || 3)}组 × ${typeof exercise === 'string' ? '10-12' : (exercise.reps || '10-12')}次
-              ${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''}
+              ${exercise.weight ? ' @ ' + exercise.weight + (exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆')) ? '' : 'kg') : ''}
               ${exercise.rest ? ` | 休息${exercise.rest}` : ''}
             </div>
           </div>
@@ -3132,7 +3137,7 @@ function createFullWeekExportContainer(planData) {
             <div style="color: #666; font-size: 14px; background: white; padding: 6px 12px; border-radius: 4px; border: 1px solid #eee;">
               ${day.bodyParts}
             </div>
-            ${day.exerciseCount > 0 ? `<div style="margin-left: 15px; color: #888; font-size: 12px; background: rgba(76, 175, 80, 0.1); padding: 3px 8px; border-radius: 12px;">${day.exerciseCount}个动作</div>` : ''}
+            ${day.exerciseCount > 0 ? '<div style="margin-left: 15px; color: #888; font-size: 12px; background: rgba(76, 175, 80, 0.1); padding: 3px 8px; border-radius: 12px;">' + day.exerciseCount + '个动作</div>' : ''}
           </div>
           <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
             <div style="font-weight: bold; color: #333; font-size: 14px; margin-bottom: 10px;">🏋️ 训练详情</div>
@@ -3394,9 +3399,9 @@ function showDayDetailsModal(dayData, dayNumber) {
                   <div class="exercise-item-detail">
                     <div class="exercise-name">${exercise.name || '未知动作'}</div>
                     <div class="exercise-params">
-                      ${exercise.sets ? `${exercise.sets}组` : ''}
-                      ${exercise.reps ? ` × ${exercise.reps}次` : ''}
-                      ${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''}
+                      ${exercise.sets ? exercise.sets + '组' : ''}
+                      ${exercise.reps ? ' × ' + exercise.reps + '次' : ''}
+                      ${exercise.weight ? ' @ ' + exercise.weight + (exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆')) ? '' : 'kg') : ''}
                       ${exercise.rest ? ` (休息${exercise.rest})` : ''}
                     </div>
                   </div>
@@ -3480,7 +3485,7 @@ function showNoPlanModal() {
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
   initShortcutsHelp();
-  try { loadActivePlan(); } catch (e) { // // console.warn(...) }
+  try { loadActivePlan(); } catch (e) { console.warn('Failed to load active plan:', e); }
 });  // 调试信息已隐藏
 
 
@@ -4837,10 +4842,7 @@ window.template_5day_split = 'template_5day_split';
 window.template_3day_split = 'template_3day_split';
 window.template_push_pull_legs = 'template_push_pull_legs';
 
-// 训练计划编辑器相关函数
-function openPlanEditor() {
-  window.location.href = '/tools/fitness/plan-editor/';
-}
+// 训练计划编辑器相关函数 - 已移动到文件顶部
 
 // 编辑当前激活的训练计划
 async function editActivePlan() {
@@ -4867,7 +4869,7 @@ function editPlanFromPreview(planId) {
   if (planId && planId !== 'undefined' && planId !== 'null') {
     window.location.href = `/tools/fitness/plan-editor/?plan_id=${planId}`;
   } else {
-    // console.error(...)
+    console.error('计划ID无效:', planId);
     showNotification('计划ID无效，无法编辑', 'error');
   }
 }
@@ -6009,7 +6011,7 @@ function showPlanPreviewModal(plan) {
                 <div class="exercise-list">
                   ${exercises.map(ex => `
                     <div style="font-size: 0.8rem; color: #999; margin: 2px 0;">
-                      • ${ex.name} ${ex.sets ? `${ex.sets}组` : ''} ${ex.reps ? `×${ex.reps}` : ''}
+                      • ${ex.name} ${ex.sets ? ex.sets + '组' : ''} ${ex.reps ? '×' + ex.reps : ''}
                     </div>
                   `).join('')}
                 </div>
@@ -6032,11 +6034,11 @@ function showPlanPreviewModal(plan) {
           <div class="day-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <strong>${dayName}</strong>
-              ${bodyParts ? `<div style="color: #a8a8a8; font-size: 0.8rem; margin-top: 2px;">${Array.isArray(bodyParts) ? bodyParts.join(' + ') : bodyParts}</div>` : ''}
+              ${bodyParts ? '<div style="color: #a8a8a8; font-size: 0.8rem; margin-top: 2px;">' + (Array.isArray(bodyParts) ? bodyParts.join(' + ') : bodyParts) + '</div>' : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="color: #a8a8a8; font-size: 0.9rem;">
-                ${isRestDay ? '休息日' : `${exerciseCount}个动作`}
+                ${isRestDay ? '休息日' : exerciseCount + '个动作'}
               </span>
               ${exerciseCount > 0 ? '<i class="fas fa-chevron-down" style="color: #999; font-size: 0.8rem; transition: transform 0.3s ease;"></i>' : ''}
             </div>
@@ -6429,7 +6431,7 @@ async function getActivePlanData() {
           if (dayData.exercises && Array.isArray(dayData.exercises) && dayData.exercises.length > 0) {
             // 旧格式：exercises 数组
             detailedExercises = dayData.exercises.map(exercise => {
-              return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''})`;
+              return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ' @ ' + exercise.weight + (exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆')) ? '' : 'kg') : ''})`;
             }).join('\n');
             exerciseCount = dayData.exercises.length;
           } else if (dayData.modules) {
@@ -6451,7 +6453,7 @@ async function getActivePlanData() {
                   if (typeof exercise === 'string') {
                     return `${exercise} (3组 × 10-12次)`;
                   } else if (exercise && exercise.name) {
-                    return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ` @ ${exercise.weight}${(exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆'))) ? '' : 'kg'}` : ''})`;
+                    return `${exercise.name} (${exercise.sets || 3}组 × ${exercise.reps || '10-12'}次${exercise.weight ? ' @ ' + exercise.weight + (exercise.weight && (exercise.weight.toString().includes('kg') || /^(自重|空杆)$/.test(exercise.weight.toString()) || exercise.weight.toString().includes('杆')) ? '' : 'kg') : ''})`;
                   }
                   return '';
                 }).filter(text => text).join('\n');
@@ -6615,7 +6617,7 @@ function generateWeeklyPlanHTML(weeklyPlan) {
               <div style="display: flex; align-items: center; margin-bottom: 10px;">
                 <div style="font-weight: bold; color: #4CAF50; font-size: 16px; margin-right: 15px;">${day.day}</div>
                 <div style="color: #666; font-size: 14px; background: white; padding: 4px 8px; border-radius: 4px;">${day.bodyParts}</div>
-                ${day.exerciseCount > 0 ? `<div style="margin-left: 10px; color: #888; font-size: 12px;">${day.exerciseCount}个动作</div>` : ''}
+                ${day.exerciseCount > 0 ? '<div style="margin-left: 10px; color: #888; font-size: 12px;">' + day.exerciseCount + '个动作</div>' : ''}
               </div>
               <div style="color: #333; font-size: 13px; line-height: 1.5; margin-left: 0;">
                 ${formattedExercises}

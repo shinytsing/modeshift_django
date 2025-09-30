@@ -1210,13 +1210,10 @@ urlpatterns = [
     path("api/clash/remove-proxy/", clash_remove_proxy_api, name="clash_remove_proxy_api"),
     path("api/clash/proxy-health/", clash_proxy_health_api, name="clash_proxy_health_api"),
     path("api/clash/auto-setup/", clash_auto_setup_api, name="clash_auto_setup_api"),
-<<<<<<< Updated upstream
-=======
     # 远程ClashX Pro管理路由
     path("api/clash/remote-start/", remote_start_clashx_api, name="remote_start_clashx_api"),
     path("api/clash/download-config/", download_clash_config_api, name="download_clash_config_api"),
     path("api/clash/download-script/", download_start_script_api, name="download_start_script_api"),
->>>>>>> Stashed changes
     # 浏览器代理配置路由
     path("api/browser-proxy/configure/", configure_browser_proxy, name="configure_browser_proxy"),
     path("api/browser-proxy/disable/", disable_browser_proxy, name="disable_browser_proxy"),
