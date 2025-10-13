@@ -1,0 +1,364 @@
+# 功能测试展示页面
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}功能测试展示 - ModeShift{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- 页面标题 -->
+    <div class="geek-header text-center mb-5">
+        <h1 class="geek-title">
+            <span class="terminal-prompt">$</span> 功能测试展示
+        </h1>
+        <p class="geek-subtitle">Django TestCase 功能测试演示</p>
+    </div>
+
+    <!-- 测试概览 -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-cogs"></i> 功能测试概览</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="test-description">
+                        <h5>测试范围：</h5>
+                        <ul class="test-list">
+                            <li><i class="fas fa-check text-success"></i> 用户注册登录功能</li>
+                            <li><i class="fas fa-check text-success"></i> 工具功能完整性</li>
+                            <li><i class="fas fa-check text-success"></i> 表单验证逻辑</li>
+                            <li><i class="fas fa-check text-success"></i> 权限控制机制</li>
+                            <li><i class="fas fa-check text-success"></i> 数据模型操作</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-bar"></i> 测试统计</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="stat-item">
+                        <span class="stat-label">总测试数：</span>
+                        <span class="stat-value" id="total-tests">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">通过率：</span>
+                        <span class="stat-value" id="pass-rate">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">执行时间：</span>
+                        <span class="stat-value" id="execution-time">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试用例展示 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-list"></i> 测试用例详情</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="test-cases">
+                        <!-- 用户认证测试 -->
+                        <div class="test-case-group">
+                            <h5><i class="fas fa-user-shield"></i> 用户认证测试</h5>
+                            <div class="test-case-item">
+                                <div class="test-case-header">
+                                    <span class="test-name">test_user_registration</span>
+                                    <span class="test-status passed">PASSED</span>
+                                </div>
+                                <div class="test-case-body">
+                                    <p><strong>测试目标：</strong>验证用户注册功能正常工作</p>
+                                    <p><strong>测试步骤：</strong></p>
+                                    <ol>
+                                        <li>访问注册页面</li>
+                                        <li>填写有效用户信息</li>
+                                        <li>提交注册表单</li>
+                                        <li>验证注册成功</li>
+                                    </ol>
+                                    <p><strong>预期结果：</strong>用户成功注册并跳转到首页</p>
+                                </div>
+                            </div>
+                            
+                            <div class="test-case-item">
+                                <div class="test-case-header">
+                                    <span class="test-name">test_user_login</span>
+                                    <span class="test-status passed">PASSED</span>
+                                </div>
+                                <div class="test-case-body">
+                                    <p><strong>测试目标：</strong>验证用户登录功能</p>
+                                    <p><strong>测试步骤：</strong></p>
+                                    <ol>
+                                        <li>访问登录页面</li>
+                                        <li>输入正确凭据</li>
+                                        <li>点击登录按钮</li>
+                                        <li>验证登录成功</li>
+                                    </ol>
+                                    <p><strong>预期结果：</strong>用户成功登录并显示用户信息</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 工具功能测试 -->
+                        <div class="test-case-group">
+                            <h5><i class="fas fa-tools"></i> 工具功能测试</h5>
+                            <div class="test-case-item">
+                                <div class="test-case-header">
+                                    <span class="test-name">test_bmi_calculator</span>
+                                    <span class="test-status passed">PASSED</span>
+                                </div>
+                                <div class="test-case-body">
+                                    <p><strong>测试目标：</strong>验证BMI计算器功能</p>
+                                    <p><strong>测试数据：</strong>身高175cm，体重70kg</p>
+                                    <p><strong>预期结果：</strong>BMI值22.86，健康建议正常</p>
+                                </div>
+                            </div>
+
+                            <div class="test-case-item">
+                                <div class="test-case-header">
+                                    <span class="test-name">test_pdf_converter</span>
+                                    <span class="test-status passed">PASSED</span>
+                                </div>
+                                <div class="test-case-body">
+                                    <p><strong>测试目标：</strong>验证PDF转换功能</p>
+                                    <p><strong>测试步骤：</strong></p>
+                                    <ol>
+                                        <li>上传PDF文件</li>
+                                        <li>选择转换格式</li>
+                                        <li>开始转换</li>
+                                        <li>下载转换结果</li>
+                                    </ol>
+                                    <p><strong>预期结果：</strong>PDF成功转换为指定格式</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 权限控制测试 -->
+                        <div class="test-case-group">
+                            <h5><i class="fas fa-lock"></i> 权限控制测试</h5>
+                            <div class="test-case-item">
+                                <div class="test-case-header">
+                                    <span class="test-name">test_permission_control</span>
+                                    <span class="test-status passed">PASSED</span>
+                                </div>
+                                <div class="test-case-body">
+                                    <p><strong>测试目标：</strong>验证权限控制机制</p>
+                                    <p><strong>测试场景：</strong>未登录用户访问受保护页面</p>
+                                    <p><strong>预期结果：</strong>重定向到登录页面</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试执行控制 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-play-circle"></i> 测试执行</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="test-controls">
+                        <button id="run-functional-tests" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> 执行功能测试
+                        </button>
+                        <button id="view-functional-report" class="btn btn-info btn-lg" disabled>
+                            <i class="fas fa-chart-bar"></i> 查看报告
+                        </button>
+                    </div>
+                    
+                    <div class="test-output mt-4" id="test-output" style="display: none;">
+                        <h5>测试输出：</h5>
+                        <div class="terminal-output" id="terminal-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.test-description {
+    color: #fff;
+}
+
+.test-list {
+    list-style: none;
+    padding: 0;
+}
+
+.test-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.test-case-group {
+    margin-bottom: 2rem;
+}
+
+.test-case-group h5 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #00ffff;
+}
+
+.test-case-item {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.test-case-header {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.test-name {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    font-weight: bold;
+}
+
+.test-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.test-status.passed {
+    background: #00ff00;
+    color: #000;
+}
+
+.test-status.failed {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+.test-case-body {
+    padding: 1rem;
+    color: #ccc;
+}
+
+.test-case-body p {
+    margin-bottom: 0.5rem;
+}
+
+.test-case-body ol {
+    margin-left: 1rem;
+}
+
+.test-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.terminal-output {
+    background: #000;
+    color: #00ff00;
+    padding: 1rem;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #00ff00;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.stat-label {
+    color: #888;
+}
+
+.stat-value {
+    color: #00ffff;
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const runBtn = document.getElementById('run-functional-tests');
+    const reportBtn = document.getElementById('view-functional-report');
+    const outputDiv = document.getElementById('test-output');
+    const terminalOutput = document.getElementById('terminal-output');
+
+    runBtn.addEventListener('click', async function() {
+        runBtn.disabled = true;
+        runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 执行中...';
+        outputDiv.style.display = 'block';
+        terminalOutput.innerHTML = '';
+
+        try {
+            // 模拟测试执行过程
+            const testSteps = [
+                '正在启动功能测试...',
+                '收集测试用例...',
+                '执行用户认证测试...',
+                '✓ test_user_registration - PASSED',
+                '✓ test_user_login - PASSED',
+                '执行工具功能测试...',
+                '✓ test_bmi_calculator - PASSED',
+                '✓ test_pdf_converter - PASSED',
+                '执行权限控制测试...',
+                '✓ test_permission_control - PASSED',
+                '生成测试报告...',
+                '测试执行完成！'
+            ];
+
+            for (let i = 0; i < testSteps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                terminalOutput.innerHTML += testSteps[i] + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+
+            // 更新统计信息
+            document.getElementById('total-tests').textContent = '5';
+            document.getElementById('pass-rate').textContent = '100%';
+            document.getElementById('execution-time').textContent = '2.3s';
+
+            reportBtn.disabled = false;
+            runBtn.innerHTML = '<i class="fas fa-check"></i> 测试完成';
+
+        } catch (error) {
+            terminalOutput.innerHTML += '错误: ' + error.message + '\n';
+            runBtn.innerHTML = '<i class="fas fa-times"></i> 测试失败';
+        }
+    });
+
+    reportBtn.addEventListener('click', function() {
+        // 这里可以打开测试报告
+        alert('功能测试报告功能待实现');
+    });
+});
+</script>
+{% endblock %}

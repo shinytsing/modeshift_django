@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍪 Cookie提取测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .result {
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .cookie-item {
+            margin: 5px 0;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .cookie-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .cookie-value {
+            color: #666;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 3px;
+            border-left: 3px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Cookie提取测试页面</h1>
+        
+        <div class="alert alert-warning">
+            <strong>测试说明：</strong> 这个页面用于测试从浏览器中提取cookies的功能。请确保您已经登录了Boss直聘。
+        </div>
+        
+        <div class="test-section">
+            <h3>步骤1：测试当前页面cookies</h3>
+            <p>点击下面的按钮来获取当前页面的cookies：</p>
+            <button class="btn" onclick="testCurrentPageCookies()">🔍 获取当前页面Cookies</button>
+            <div id="currentPageResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>步骤2：测试Boss直聘cookies</h3>
+            <p>如果您已经在Boss直聘登录，可以测试提取Boss直聘的cookies：</p>
+            <button class="btn" onclick="testBossCookies()">🎯 测试Boss直聘Cookies</button>
+            <div id="bossCookiesResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>步骤3：手动输入cookies测试</h3>
+            <p>您也可以手动输入cookies来测试解析功能：</p>
+            <textarea id="manualCookies" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px;" placeholder="请粘贴cookies内容，支持多种格式：
+__a	20936101.1758901166..1758901166.51.1.51.51	.zhipin.com
+__c	1758901166	.zhipin.com
+__g	-	.zhipin.com
+
+或者：
+__a=20936101.1758901166..1758901166.51.1.51.51; __c=1758901166; __g=-;"></textarea>
+            <br><br>
+            <button class="btn" onclick="testManualCookies()">🔧 解析手动输入的Cookies</button>
+            <div id="manualCookiesResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>步骤4：保存cookies到数据库</h3>
+            <p>如果cookies解析成功，可以保存到数据库：</p>
+            <button class="btn btn-success" onclick="saveCookiesToDatabase()" id="saveBtn" disabled>💾 保存Cookies到数据库</button>
+            <div id="saveResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>步骤5：使用保存的cookies测试投递</h3>
+            <p>如果cookies已保存，可以测试投递功能：</p>
+            <button class="btn btn-success" onclick="testJobSearch()" id="testJobBtn" disabled>🚀 测试投递功能</button>
+            <div id="jobSearchResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div id="status" class="alert" style="display: none;"></div>
+    </div>
+
+    <script>
+        let extractedCookies = {};
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'alert alert-' + type;
+            statusDiv.style.display = 'block';
+        }
+        
+        function testCurrentPageCookies() {
+            const resultDiv = document.getElementById('currentPageResult');
+            const cookies = document.cookie;
+            
+            let result = '当前页面的Cookies:\n\n';
+            if (cookies) {
+                const cookieArray = cookies.split(';');
+                cookieArray.forEach(cookie => {
+                    const parts = cookie.trim().split('=');
+                    if (parts.length >= 2) {
+                        result += `🍪 ${parts[0]}: ${parts.slice(1).join('=')}\n`;
+                    }
+                });
+                result += `\n总共找到 ${cookieArray.length} 个cookies`;
+            } else {
+                result += '❌ 未找到任何cookies';
+            }
+            
+            resultDiv.textContent = result;
+            resultDiv.style.display = 'block';
+            
+            showStatus('✅ 当前页面cookies提取完成', 'success');
+        }
+        
+        async function testBossCookies() {
+            const resultDiv = document.getElementById('bossCookiesResult');
+            resultDiv.textContent = '正在测试Boss直聘cookies...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                // 尝试通过iframe获取Boss直聘cookies
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = 'https://www.zhipin.com';
+                document.body.appendChild(iframe);
+                
+                setTimeout(() => {
+                    try {
+                        const iframeCookies = iframe.contentDocument?.cookie || '';
+                        let result = 'Boss直聘Cookies测试结果:\n\n';
+                        
+                        if (iframeCookies) {
+                            const cookieArray = iframeCookies.split(';');
+                            cookieArray.forEach(cookie => {
+                                const parts = cookie.trim().split('=');
+                                if (parts.length >= 2) {
+                                    result += `🍪 ${parts[0]}: ${parts.slice(1).join('=')}\n`;
+                                }
+                            });
+                            result += `\n总共找到 ${cookieArray.length} 个Boss直聘cookies`;
+                        } else {
+                            result += '❌ 无法获取Boss直聘cookies（可能是跨域限制）\n';
+                            result += '💡 建议使用手动输入方式';
+                        }
+                        
+                        resultDiv.textContent = result;
+                        document.body.removeChild(iframe);
+                        showStatus('✅ Boss直聘cookies测试完成', 'success');
+                    } catch (e) {
+                        resultDiv.textContent = '❌ 无法获取Boss直聘cookies（跨域限制）\n💡 请使用手动输入方式';
+                        document.body.removeChild(iframe);
+                        showStatus('⚠️ Boss直聘cookies测试失败（跨域限制）', 'warning');
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                resultDiv.textContent = '❌ 测试失败: ' + error.message;
+                showStatus('❌ Boss直聘cookies测试失败', 'danger');
+            }
+        }
+        
+        async function testManualCookies() {
+            const cookiesText = document.getElementById('manualCookies').value.trim();
+            if (!cookiesText) {
+                showStatus('❌ 请输入cookies内容', 'danger');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('manualCookiesResult');
+            resultDiv.textContent = '正在解析cookies...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/tools/job-search/api/simple-extract-cookies/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        cookies_text: cookiesText
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        extractedCookies = result.cookies;
+                        
+                        let resultText = `✅ 成功解析到 ${result.count} 个Boss直聘cookies:\n\n`;
+                        
+                        if (result.cookies_detail) {
+                            result.cookies_detail.forEach(cookie => {
+                                resultText += `🍪 ${cookie.name}\n`;
+                                resultText += `   值: ${cookie.value.substring(0, 100)}${cookie.value.length > 100 ? '...' : ''}\n`;
+                                resultText += `   域名: ${cookie.domain}\n`;
+                                resultText += `   路径: ${cookie.path}\n`;
+                                resultText += `   安全: ${cookie.secure ? '是' : '否'}\n\n`;
+                            });
+                        }
+                        
+                        resultDiv.textContent = resultText;
+                        document.getElementById('saveBtn').disabled = false;
+                        
+                        showStatus('✅ Cookies解析成功！', 'success');
+                    } else {
+                        resultDiv.textContent = '❌ 解析失败: ' + result.error;
+                        showStatus('❌ Cookies解析失败: ' + result.error, 'danger');
+                    }
+                } else {
+                    resultDiv.textContent = '❌ 请求失败: ' + response.status;
+                    showStatus('❌ 请求失败: ' + response.status, 'danger');
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ 请求出错: ' + error.message;
+                showStatus('❌ 请求出错: ' + error.message, 'danger');
+            }
+        }
+        
+        async function saveCookiesToDatabase() {
+            if (Object.keys(extractedCookies).length === 0) {
+                showStatus('❌ 请先解析cookies', 'warning');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('saveResult');
+            resultDiv.textContent = '正在保存cookies到数据库...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/tools/job-search/api/save-cookies/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        platform: 'boss',
+                        cookies: extractedCookies
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        resultDiv.textContent = '✅ Cookies已成功保存到数据库！\n\n' + JSON.stringify(result, null, 2);
+                        document.getElementById('testJobBtn').disabled = false;
+                        showStatus('✅ Cookies保存成功！', 'success');
+                    } else {
+                        resultDiv.textContent = '❌ 保存失败: ' + result.error;
+                        showStatus('❌ Cookies保存失败: ' + result.error, 'danger');
+                    }
+                } else {
+                    resultDiv.textContent = '❌ 请求失败: ' + response.status;
+                    showStatus('❌ 请求失败: ' + response.status, 'danger');
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ 请求出错: ' + error.message;
+                showStatus('❌ 请求出错: ' + error.message, 'danger');
+            }
+        }
+        
+        async function testJobSearch() {
+            const resultDiv = document.getElementById('jobSearchResult');
+            resultDiv.textContent = '正在测试投递功能...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const data = {
+                    platforms: ["boss"],
+                    keywords: ["Python开发"],
+                    cities: ["北京"],
+                    expected_salary: [15000, 25000],
+                    say_hi: "您好，我对这个职位很感兴趣",
+                    use_ai: true,
+                    send_img_resume: false
+                };
+                
+                const response = await fetch('/tools/job-search/api/start/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        let resultText = `✅ 投递测试成功！\n\n`;
+                        resultText += `投递平台: ${result.platforms?.join(', ') || 'Boss直聘'}\n`;
+                        resultText += `投递数量: ${result.applied_count || 0} 个职位\n`;
+                        resultText += `找到职位: ${result.total_found || 0} 个\n`;
+                        resultText += `登录状态: ${result.login_message || '已登录'}\n`;
+                        resultText += `Cookies数量: ${result.cookie_count || 0} 个\n\n`;
+                        
+                        if (result.message) {
+                            resultText += `详细信息: ${result.message}\n`;
+                        }
+                        
+                        resultDiv.textContent = resultText;
+                        showStatus('✅ 投递测试成功！', 'success');
+                    } else {
+                        resultDiv.textContent = '❌ 投递测试失败: ' + result.error;
+                        showStatus('❌ 投递测试失败: ' + result.error, 'danger');
+                    }
+                } else {
+                    resultDiv.textContent = '❌ 请求失败: ' + response.status;
+                    showStatus('❌ 请求失败: ' + response.status, 'danger');
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ 请求出错: ' + error.message;
+                showStatus('❌ 请求出错: ' + error.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

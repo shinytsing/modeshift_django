@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token管理器测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Token管理器测试页面</h1>
+    
+    <div class="test-section">
+        <h3>1. JavaScript加载测试</h3>
+        <button class="btn" onclick="testJSLoad()">测试JavaScript加载</button>
+        <div id="js-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Token保存测试</h3>
+        <input type="text" id="test-token" placeholder="输入测试Token" style="padding: 8px; margin-right: 10px;">
+        <button class="btn" onclick="testTokenSave()">保存Token</button>
+        <div id="token-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. 跨标签页同步测试</h3>
+        <button class="btn" onclick="testCrossTabSync()">测试跨标签页同步</button>
+        <div id="sync-status" class="status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. API连接测试</h3>
+        <button class="btn" onclick="testAPIConnection()">测试API连接</button>
+        <div id="api-status" class="status"></div>
+    </div>
+
+    <script src="/static/js/cross_tab_token_manager.js"></script>
+    <script>
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+        
+        function testJSLoad() {
+            if (window.crossTabTokenManager) {
+                showStatus('js-status', '✅ JavaScript已正确加载，Token管理器可用', 'success');
+            } else {
+                showStatus('js-status', '❌ JavaScript未加载或Token管理器未初始化', 'error');
+            }
+        }
+        
+        async function testTokenSave() {
+            const token = document.getElementById('test-token').value.trim();
+            if (!token) {
+                showStatus('token-status', '请输入测试Token', 'error');
+                return;
+            }
+            
+            if (!window.crossTabTokenManager) {
+                showStatus('token-status', 'Token管理器未加载', 'error');
+                return;
+            }
+            
+            try {
+                const success = await window.crossTabTokenManager.saveTokenToServer('boss', token);
+                if (success) {
+                    showStatus('token-status', '✅ Token保存成功', 'success');
+                } else {
+                    showStatus('token-status', '❌ Token保存失败', 'error');
+                }
+            } catch (error) {
+                showStatus('token-status', `❌ Token保存出错: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCrossTabSync() {
+            if (!window.crossTabTokenManager) {
+                showStatus('sync-status', 'Token管理器未加载', 'error');
+                return;
+            }
+            
+            try {
+                await window.crossTabTokenManager.syncTokens();
+                showStatus('sync-status', '✅ 跨标签页同步测试完成', 'success');
+            } catch (error) {
+                showStatus('sync-status', `❌ 同步测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAPIConnection() {
+            try {
+                const response = await fetch('/tools/api/token/get-all/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('api-status', `✅ API连接正常，返回数据: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    showStatus('api-status', `❌ API请求失败，状态码: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus('api-status', `❌ API连接失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成后自动测试JavaScript加载
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(testJSLoad, 1000); // 延迟1秒确保JavaScript完全加载
+        });
+    </script>
+</body>
+</html>

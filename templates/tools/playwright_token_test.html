@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright Token管理测试 - 跨标签页同步</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .platform-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .platform-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        
+        .status-display {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .status-logged-in {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-not-logged-in {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .playwright-status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .playwright-status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .playwright-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .instructions {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .sync-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .sync-info h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .log-area {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-timestamp {
+            color: #6c757d;
+        }
+        
+        .log-info {
+            color: #007bff;
+        }
+        
+        .log-success {
+            color: #28a745;
+        }
+        
+        .log-error {
+            color: #dc3545;
+        }
+        
+        .log-warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Playwright Token管理测试</h1>
+        
+        <div class="instructions">
+            <h3>📋 测试说明</h3>
+            <ol>
+                <li><strong>跨标签页同步测试</strong>：在任意标签页输入Token并保存，然后打开新标签页查看是否自动同步</li>
+                <li><strong>Playwright自动登录测试</strong>：保存Token后点击"启动Playwright"，浏览器会自动打开并尝试登录</li>
+                <li><strong>登录状态检查</strong>：点击"检查登录状态"查看当前平台的登录情况</li>
+                <li><strong>多平台支持</strong>：支持Boss直聘、拉勾、猎聘、智联招聘、51job等平台</li>
+            </ol>
+        </div>
+        
+        <div class="sync-info">
+            <h4>🔄 跨标签页同步机制</h4>
+            <p>参考Java项目get_jobs的实现，使用localStorage + 服务器同步的方式实现跨标签页token同步：</p>
+            <ul>
+                <li>每3秒自动同步一次token状态</li>
+                <li>监听storage变化事件，实时同步</li>
+                <li>页面可见性变化时立即同步</li>
+                <li>支持多平台token管理</li>
+            </ul>
+        </div>
+        
+        <!-- Boss直聘 -->
+        <div class="platform-section">
+            <div class="platform-title">🎯 Boss直聘</div>
+            <div class="form-group">
+                <label for="boss_token">Token:</label>
+                <input type="text" id="boss_token" name="boss_token" placeholder="请输入Boss直聘Token">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" data-action="save-token" data-platform="boss">💾 保存Token</button>
+                <button class="btn-success" data-action="start-playwright" data-platform="boss">🚀 启动Playwright</button>
+                <button class="btn-info" data-action="check-login" data-platform="boss">🔍 检查登录状态</button>
+                <button class="btn-warning" data-action="load-cookies" data-platform="boss">📥 加载Cookies</button>
+                <button class="btn-warning" data-action="save-cookies" data-platform="boss">📤 保存Cookies</button>
+                <button class="btn-danger" data-action="clear-token" data-platform="boss">🗑️ 清除Token</button>
+            </div>
+            <div id="boss_status" class="status-display status-not-logged-in">未登录</div>
+            <div id="boss_login_time" class="status-display" style="display: none;"></div>
+            <div id="boss_playwright_status" class="playwright-status"></div>
+        </div>
+        
+        <!-- 拉勾 -->
+        <div class="platform-section">
+            <div class="platform-title">🎯 拉勾</div>
+            <div class="form-group">
+                <label for="lagou_token">Token:</label>
+                <input type="text" id="lagou_token" name="lagou_token" placeholder="请输入拉勾Token">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" data-action="save-token" data-platform="lagou">💾 保存Token</button>
+                <button class="btn-success" data-action="start-playwright" data-platform="lagou">🚀 启动Playwright</button>
+                <button class="btn-info" data-action="check-login" data-platform="lagou">🔍 检查登录状态</button>
+                <button class="btn-warning" data-action="load-cookies" data-platform="lagou">📥 加载Cookies</button>
+                <button class="btn-warning" data-action="save-cookies" data-platform="lagou">📤 保存Cookies</button>
+                <button class="btn-danger" data-action="clear-token" data-platform="lagou">🗑️ 清除Token</button>
+            </div>
+            <div id="lagou_status" class="status-display status-not-logged-in">未登录</div>
+            <div id="lagou_login_time" class="status-display" style="display: none;"></div>
+            <div id="lagou_playwright_status" class="playwright-status"></div>
+        </div>
+        
+        <!-- 猎聘 -->
+        <div class="platform-section">
+            <div class="platform-title">🎯 猎聘</div>
+            <div class="form-group">
+                <label for="liepin_token">Token:</label>
+                <input type="text" id="liepin_token" name="liepin_token" placeholder="请输入猎聘Token">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" data-action="save-token" data-platform="liepin">💾 保存Token</button>
+                <button class="btn-success" data-action="start-playwright" data-platform="liepin">🚀 启动Playwright</button>
+                <button class="btn-info" data-action="check-login" data-platform="liepin">🔍 检查登录状态</button>
+                <button class="btn-warning" data-action="load-cookies" data-platform="liepin">📥 加载Cookies</button>
+                <button class="btn-warning" data-action="save-cookies" data-platform="liepin">📤 保存Cookies</button>
+                <button class="btn-danger" data-action="clear-token" data-platform="liepin">🗑️ 清除Token</button>
+            </div>
+            <div id="liepin_status" class="status-display status-not-logged-in">未登录</div>
+            <div id="liepin_login_time" class="status-display" style="display: none;"></div>
+            <div id="liepin_playwright_status" class="playwright-status"></div>
+        </div>
+        
+        <!-- 智联招聘 -->
+        <div class="platform-section">
+            <div class="platform-title">🎯 智联招聘</div>
+            <div class="form-group">
+                <label for="zhipin_token">Token:</label>
+                <input type="text" id="zhipin_token" name="zhipin_token" placeholder="请输入智联招聘Token">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" data-action="save-token" data-platform="zhipin">💾 保存Token</button>
+                <button class="btn-success" data-action="start-playwright" data-platform="zhipin">🚀 启动Playwright</button>
+                <button class="btn-info" data-action="check-login" data-platform="zhipin">🔍 检查登录状态</button>
+                <button class="btn-warning" data-action="load-cookies" data-platform="zhipin">📥 加载Cookies</button>
+                <button class="btn-warning" data-action="save-cookies" data-platform="zhipin">📤 保存Cookies</button>
+                <button class="btn-danger" data-action="clear-token" data-platform="zhipin">🗑️ 清除Token</button>
+            </div>
+            <div id="zhipin_status" class="status-display status-not-logged-in">未登录</div>
+            <div id="zhipin_login_time" class="status-display" style="display: none;"></div>
+            <div id="zhipin_playwright_status" class="playwright-status"></div>
+        </div>
+        
+        <!-- 51job -->
+        <div class="platform-section">
+            <div class="platform-title">🎯 51job</div>
+            <div class="form-group">
+                <label for="51job_token">Token:</label>
+                <input type="text" id="51job_token" name="51job_token" placeholder="请输入51job Token">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" data-action="save-token" data-platform="51job">💾 保存Token</button>
+                <button class="btn-success" data-action="start-playwright" data-platform="51job">🚀 启动Playwright</button>
+                <button class="btn-info" data-action="check-login" data-platform="51job">🔍 检查登录状态</button>
+                <button class="btn-warning" data-action="load-cookies" data-platform="51job">📥 加载Cookies</button>
+                <button class="btn-warning" data-action="save-cookies" data-platform="51job">📤 保存Cookies</button>
+                <button class="btn-danger" data-action="clear-token" data-platform="51job">🗑️ 清除Token</button>
+            </div>
+            <div id="51job_status" class="status-display status-not-logged-in">未登录</div>
+            <div id="51job_login_time" class="status-display" style="display: none;"></div>
+            <div id="51job_playwright_status" class="playwright-status"></div>
+        </div>
+        
+        <!-- 日志区域 -->
+        <div class="log-area" id="logArea">
+            <div class="log-entry">
+                <span class="log-timestamp">[系统]</span>
+                <span class="log-info">Playwright Token管理器已初始化</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CSRF Token -->
+    {% csrf_token %}
+    
+    <!-- 引入JavaScript -->
+    <!-- 使用内联JavaScript，避免依赖外部文件 -->
+    
+    <script>
+        // 日志功能
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-${type}">${message}</span>
+            `;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 监听token更新事件
+        window.addEventListener('playwrightTokensUpdated', function(event) {
+            const tokens = event.detail.tokens;
+            addLog(`Token更新: ${Object.keys(tokens).length}个平台`, 'success');
+        });
+        
+        // 监听页面可见性变化
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                addLog('页面变为可见，触发同步', 'info');
+            }
+        });
+        
+        // 重写console.log以显示在页面上
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+        
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+        
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'warning');
+        };
+        
+        // API调用函数
+        function getCSRFToken() {
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            return token ? token.value : '';
+        }
+        
+        async function saveTokenToServer(platform, token) {
+            try {
+                const response = await fetch('/tools/api/playwright/save-token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        platform: platform,
+                        token: token
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    addLog(`${platform} Token保存成功: ${data.message}`, 'success');
+                    return true;
+                } else {
+                    addLog(`${platform} Token保存失败: ${data.error}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`${platform} Token保存异常: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkLoginStatusFromServer(platform) {
+            try {
+                const response = await fetch(`/tools/api/playwright/check-login/?platform=${platform}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    const status = data.is_logged_in ? '已登录' : '未登录';
+                    addLog(`${platform} 登录状态: ${status}`, data.is_logged_in ? 'success' : 'warning');
+                    return data.is_logged_in;
+                } else {
+                    addLog(`检查${platform}登录状态失败: ${data.error}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`检查${platform}登录状态异常: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testPlaywrightFromServer(platform) {
+            try {
+                const response = await fetch('/tools/api/playwright/test/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        platform: platform
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    addLog(`${platform} Playwright测试成功: ${data.message}`, 'success');
+                    return true;
+                } else {
+                    addLog(`${platform} Playwright测试失败: ${data.error}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`${platform} Playwright测试异常: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function clearTokenFromServer(platform) {
+            try {
+                const response = await fetch('/tools/api/playwright/clear-token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        platform: platform
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    addLog(`${platform} Token清除成功: ${data.message}`, 'info');
+                    return true;
+                } else {
+                    addLog(`${platform} Token清除失败: ${data.error}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`${platform} Token清除异常: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('页面加载完成，开始初始化', 'success');
+            
+            // 显示当前时间
+            const now = new Date().toLocaleString();
+            addLog(`当前时间: ${now}`, 'info');
+            
+            // 绑定按钮事件
+            bindButtonEvents();
+            
+            // 初始化Token管理器
+            initTokenManager();
+        });
+        
+        function bindButtonEvents() {
+            // 保存Token按钮
+            document.querySelectorAll('[data-action="save-token"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const platform = this.dataset.platform;
+                    const tokenInput = document.querySelector(`input[name="${platform}_token"]`);
+                    if (tokenInput && tokenInput.value) {
+                        saveTokenToServer(platform, tokenInput.value);
+                    } else {
+                        addLog(`${platform} Token不能为空`, 'error');
+                    }
+                });
+            });
+            
+            // 启动Playwright按钮
+            document.querySelectorAll('[data-action="start-playwright"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const platform = this.dataset.platform;
+                    testPlaywrightFromServer(platform);
+                });
+            });
+            
+            // 检查登录状态按钮
+            document.querySelectorAll('[data-action="check-login"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const platform = this.dataset.platform;
+                    checkLoginStatusFromServer(platform);
+                });
+            });
+            
+            // 清除Token按钮
+            document.querySelectorAll('[data-action="clear-token"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const platform = this.dataset.platform;
+                    if (confirm(`确定要清除${platform}的Token吗？`)) {
+                        clearTokenFromServer(platform);
+                    }
+                });
+            });
+        }
+        
+        function initTokenManager() {
+            addLog('Token管理器初始化完成', 'success');
+        }
+    </script>
+</body>
+</html>

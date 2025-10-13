@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户ID解析器 - QAToolBox</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-success {
+            background: linear-gradient(45deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .mapping-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .status-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-cog text-primary"></i>
+                        用户ID解析器
+                    </h1>
+                    <button class="btn btn-outline-primary" onclick="refreshMappings()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- 添加用户映射 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-plus-circle text-success"></i>
+                            添加用户映射
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="addMappingForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="username" required>
+                                <div class="form-text">输入小红书用户名</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="userId" class="form-label">用户ID</label>
+                                <input type="text" class="form-control" id="userId" required>
+                                <div class="form-text">输入对应的用户ID（如：5d356af3000000001603705b）</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="token" class="form-label">Token（可选）</label>
+                                <input type="text" class="form-control" id="token">
+                                <div class="form-text">输入对应的token（如果有）</div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save"></i> 添加映射
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 测试用户解析 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-search text-warning"></i>
+                            测试用户解析
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testResolverForm">
+                            <div class="mb-3">
+                                <label for="testUsername" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="testUsername" required>
+                                <div class="form-text">输入要测试的用户名</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="testUserId" class="form-label">用户ID（可选）</label>
+                                <input type="text" class="form-control" id="testUserId">
+                                <div class="form-text">输入已知的用户ID（可选）</div>
+                            </div>
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-play"></i> 测试解析
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 解析结果 -->
+        <div class="row mt-4" id="testResult" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line text-info"></i>
+                            解析结果
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="testResultContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 现有映射列表 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list text-primary"></i>
+                            现有用户映射
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="mappingsList">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                加载中...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div class="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 获取CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 显示Toast消息
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastHtml = `
+                <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-${type === 'success' ? 'check-circle text-success' : type === 'error' ? 'exclamation-circle text-danger' : 'info-circle text-info'}"></i>
+                        <strong class="me-auto ms-2">${type === 'success' ? '成功' : type === 'error' ? '错误' : '信息'}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
+            
+            // 自动移除toast元素
+            setTimeout(() => {
+                const toastElement = document.getElementById(toastId);
+                if (toastElement) {
+                    toastElement.remove();
+                }
+            }, 5000);
+        }
+
+        // 添加用户映射
+        document.getElementById('addMappingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const userId = document.getElementById('userId').value;
+            const token = document.getElementById('token').value;
+            
+            fetch('/tools/api/user_resolver/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    username: username,
+                    user_id: userId,
+                    token: token
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    document.getElementById('addMappingForm').reset();
+                    refreshMappings();
+                } else {
+                    showToast(data.message || '添加映射失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('添加映射失败:', error);
+                showToast('网络连接失败，请检查网络后重试', 'error');
+            });
+        });
+
+        // 测试用户解析
+        document.getElementById('testResolverForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('testUsername').value;
+            const userId = document.getElementById('testUserId').value;
+            
+            fetch('/tools/api/user_resolver/test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    username: username,
+                    user_id: userId || username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showTestResult(data.data);
+                } else {
+                    showToast(data.message || '测试解析失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('测试解析失败:', error);
+                showToast('网络连接失败，请检查网络后重试', 'error');
+            });
+        });
+
+        // 显示测试结果
+        function showTestResult(data) {
+            const resultDiv = document.getElementById('testResult');
+            const contentDiv = document.getElementById('testResultContent');
+            
+            const html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>原始信息</h6>
+                        <p><strong>用户名:</strong> ${data.original_username}</p>
+                        <p><strong>用户ID:</strong> ${data.original_user_id}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>解析结果</h6>
+                        <p><strong>解析ID:</strong> ${data.resolved_user_id || '未找到'}</p>
+                        <p><strong>Token:</strong> ${data.token || '无'}</p>
+                        <p><strong>有映射:</strong> 
+                            <span class="badge ${data.has_mapping ? 'bg-success' : 'bg-warning'}">
+                                ${data.has_mapping ? '是' : '否'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6>映射信息</h6>
+                    <div class="mapping-item">
+                        <p><strong>用户名:</strong> ${data.mapping_info.username}</p>
+                        <p><strong>用户ID:</strong> ${data.mapping_info.user_id || '无'}</p>
+                        <p><strong>Token:</strong> ${data.mapping_info.token || '无'}</p>
+                        <p><strong>状态:</strong> 
+                            <span class="badge ${data.mapping_info.has_mapping ? 'bg-success' : 'bg-secondary'}">
+                                ${data.mapping_info.has_mapping ? '已映射' : '未映射'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            contentDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        // 刷新映射列表
+        function refreshMappings() {
+            const mappingsList = document.getElementById('mappingsList');
+            mappingsList.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+            
+            // 这里应该从API获取现有映射，但由于我们没有获取所有映射的API，暂时显示已知映射
+            const knownMappings = [
+                { username: '宁波阮小二', user_id: '5e21955f0000000001004aec', token: 'ABY39vk1FYvF3A341leA...' },
+                { username: '肉桂乳酪', user_id: '6538e8aa00000000060060e0', token: 'AB60cYo5wJ21U9gdoe_I...' },
+                { username: '萌萌柠檬乳酪肉桂卷', user_id: '5d356af3000000001603705b', token: 'AB093wIev2tAnIYjYMcW...' }
+            ];
+            
+            let html = '';
+            knownMappings.forEach(mapping => {
+                html += `
+                    <div class="mapping-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${mapping.username}</h6>
+                                <p class="mb-1 text-muted">ID: ${mapping.user_id}</p>
+                                <p class="mb-0 text-muted">Token: ${mapping.token}</p>
+                            </div>
+                            <span class="badge bg-success status-badge">已映射</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            mappingsList.innerHTML = html || '<div class="text-center text-muted">暂无映射</div>';
+        }
+
+        // 页面加载时刷新映射列表
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshMappings();
+        });
+    </script>
+</body>
+</html>

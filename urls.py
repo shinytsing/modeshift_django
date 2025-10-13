@@ -37,6 +37,23 @@ from views import (
     welcome_view,
 )
 
+# 导入测试展示相关视图
+from testing_views import (
+    testing_dashboard_view,
+    testing_functional_view,
+    testing_api_view,
+    testing_performance_view,
+    testing_security_view,
+    run_tests_api,
+    get_test_status_api,
+    get_test_results_api,
+    get_test_stats_api,
+    get_test_history_api,
+    get_test_report_api,
+    stop_tests_api,
+    allure_report_view,
+)
+
 
 def modern_demo_view(request):
     """现代化UI演示页面"""
@@ -87,6 +104,23 @@ urlpatterns = [
     path("theme-demo/", theme_demo_view, name="theme_demo"),
     path("modern-demo/", modern_demo_view, name="modern_demo"),
     path("test-geek-login/", test_geek_login_view, name="test_geek_login"),
+    # 测试手法展示页面
+    path("testing-dashboard/", testing_dashboard_view, name="testing_dashboard"),
+    path("testing-functional/", testing_functional_view, name="testing_functional"),
+    path("testing-api/", testing_api_view, name="testing_api"),
+    path("testing-performance/", testing_performance_view, name="testing_performance"),
+    path("testing-security/", testing_security_view, name="testing_security"),
+    # 测试API接口
+            path("api/tests/run/", run_tests_api, name="api_run_tests"),
+            path("api/tests/status/", get_test_status_api, name="api_test_status"),
+            path("api/tests/results/", get_test_results_api, name="api_test_results"),
+            path("api/tests/stats/", get_test_stats_api, name="api_test_stats"),
+            path("api/tests/history/", get_test_history_api, name="api_test_history"),
+            path("api/tests/report/", get_test_report_api, name="api_test_report"),
+            path("api/tests/stop/", stop_tests_api, name="api_stop_tests"),
+            # Allure报告路径
+            path("reports/allure-report/", allure_report_view, name="allure_report"),
+            path("reports/allure-report/<path:path>", allure_report_view, name="allure_report_file"),
     path("terms/", terms_of_service_view, name="terms_of_service"),
     path("privacy/", privacy_policy_view, name="privacy_policy"),
         path("google-oauth-test/", google_oauth_test_view, name="google_oauth_test"),

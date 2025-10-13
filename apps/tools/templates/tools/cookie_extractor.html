@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss直聘Cookie提取器</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .cookies-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .manual-input {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Boss直聘Cookie提取器</h1>
+        <p>这个工具可以帮助您从Boss直聘页面提取cookies，用于自动投递功能。</p>
+        
+        <div class="step">
+            <h3>方法1: 自动提取（推荐）</h3>
+            <p>如果您当前在Boss直聘页面已登录，点击下面的按钮自动提取cookies：</p>
+            <button class="btn" onclick="extractCookiesFromCurrentPage()">🔍 从当前页面提取Cookies</button>
+            <div id="auto-result" class="result"></div>
+            <div id="auto-cookies-display" class="cookies-display" style="display: none;"></div>
+        </div>
+        
+        <div class="step">
+            <h3>方法2: 手动复制粘贴</h3>
+            <p>如果自动提取失败，请手动复制cookies：</p>
+            <ol>
+                <li>在Boss直聘页面按F12打开开发者工具</li>
+                <li>切换到"Application"或"应用"标签</li>
+                <li>在左侧找到"Cookies" → "https://www.zhipin.com"</li>
+                <li>复制以下关键cookies的值：</li>
+            </ol>
+            <div class="code-block">
+__zp_stoken__: [复制这个值]
+__a: [复制这个值]
+__c: [复制这个值]
+__g: [复制这个值]
+            </div>
+            <p>然后将cookies粘贴到下面的文本框中（JSON格式）：</p>
+            <textarea id="manual-cookies" class="manual-input" placeholder='{"__zp_stoken__": "your_token_here", "__a": "your_a_here", "__c": "your_c_here", "__g": "your_g_here"}'></textarea>
+            <br>
+            <button class="btn btn-success" onclick="useManualCookies()">🚀 使用手动输入的Cookies</button>
+            <div id="manual-result" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>方法3: 使用提取的Cookies进行投递</h3>
+            <p>提取成功后，您可以使用这些cookies进行自动投递：</p>
+            <button class="btn btn-success" onclick="startJobSearchWithCookies()" disabled id="start-btn">🚀 开始投递任务</button>
+        </div>
+    </div>
+
+    <script>
+        let extractedCookies = {};
+        
+        function extractCookiesFromCurrentPage() {
+            const resultDiv = document.getElementById('auto-result');
+            const cookiesDisplay = document.getElementById('auto-cookies-display');
+            
+            try {
+                // 获取当前页面的所有cookies
+                const allCookies = document.cookie.split(';').reduce((cookies, cookie) => {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name && value) {
+                        cookies[name] = decodeURIComponent(value);
+                    }
+                    return cookies;
+                }, {});
+                
+                // 过滤出Boss直聘相关的cookies
+                const bossCookies = {};
+                const bossCookieNames = [
+                    '__zp_stoken__', '__a', '__c', '__g', 'wt2', 'zp_at',
+                    'bst', 'wbg', 'zp_token', 'zp_session', 'zp_user_id'
+                ];
+                
+                for (const name of bossCookieNames) {
+                    if (allCookies[name]) {
+                        bossCookies[name] = allCookies[name];
+                    }
+                }
+                
+                // 如果没有找到Boss直聘cookies，尝试从localStorage获取
+                if (Object.keys(bossCookies).length === 0) {
+                    for (const name of bossCookieNames) {
+                        const value = localStorage.getItem(name);
+                        if (value) {
+                            bossCookies[name] = value;
+                        }
+                    }
+                }
+                
+                extractedCookies = bossCookies;
+                
+                if (Object.keys(bossCookies).length > 0) {
+                    resultDiv.className = 'result success';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `✅ 成功提取到 ${Object.keys(bossCookies).length} 个Boss直聘cookies！`;
+                    
+                    cookiesDisplay.style.display = 'block';
+                    cookiesDisplay.textContent = JSON.stringify(bossCookies, null, 2);
+                    
+                    document.getElementById('start-btn').disabled = false;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = '❌ 未找到Boss直聘相关的cookies。请确保您已在Boss直聘网站登录，或者使用方法2手动输入。';
+                    
+                    cookiesDisplay.style.display = 'block';
+                    cookiesDisplay.textContent = '当前页面所有cookies:\n' + JSON.stringify(allCookies, null, 2);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `❌ 提取失败: ${error.message}`;
+            }
+        }
+        
+        function useManualCookies() {
+            const manualInput = document.getElementById('manual-cookies').value.trim();
+            const resultDiv = document.getElementById('manual-result');
+            
+            if (!manualInput) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '❌ 请输入cookies';
+                return;
+            }
+            
+            try {
+                const cookies = JSON.parse(manualInput);
+                
+                // 验证必要的cookies
+                const requiredCookies = ['__zp_stoken__', '__a', '__c'];
+                const missingCookies = requiredCookies.filter(name => !cookies[name]);
+                
+                if (missingCookies.length > 0) {
+                    resultDiv.className = 'result error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `❌ 缺少必要的cookies: ${missingCookies.join(', ')}`;
+                    return;
+                }
+                
+                extractedCookies = cookies;
+                
+                resultDiv.className = 'result success';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `✅ 成功解析 ${Object.keys(cookies).length} 个cookies！`;
+                
+                document.getElementById('start-btn').disabled = false;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `❌ JSON格式错误: ${error.message}`;
+            }
+        }
+        
+        function startJobSearchWithCookies() {
+            if (Object.keys(extractedCookies).length === 0) {
+                alert('请先提取cookies！');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('auto-result');
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🚀 正在使用cookies启动投递任务...';
+            
+            // 发送启动请求
+            fetch('/tools/job-search/api/start/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    platforms: ["boss"],
+                    keywords: ["测试工程师"],
+                    cities: ["武汉"],
+                    expected_salary: [15],
+                    say_hi: "您好！我有三年测试经验，计算机本科\n个人网站shenyiqing.xin，善用大模型工具解决问题\n具备丰富的社交软件测试经验，[青藤之恋]app.\n独立负责过 Web 、移动端、h5，服务端的核心测试工作。有性能，api和ui自动化测试经验，并且因此获得了飞书的效率先锋证书\n对cicd有实践部署经验",
+                    use_ai: true,
+                    send_img_resume: true,
+                    current_browser_cookies: extractedCookies
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ 投递任务启动成功！<br>
+                    找到职位: ${data.total_found} 个<br>
+                    投递成功: ${data.applied_count} 个<br>
+                    登录状态: ${data.login_detected ? '已检测到登录' : '未检测到登录'}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ 投递任务启动失败: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 请求失败: ${error.message}`;
+            });
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 页面加载时自动尝试提取cookies
+        window.onload = function() {
+            extractCookiesFromCurrentPage();
+        };
+    </script>
+</body>
+</html>

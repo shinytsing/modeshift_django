@@ -1,0 +1,74 @@
+{
+  "uid": "api_health_test",
+  "name": "测试健康检查API",
+  "fullName": "tests.test_pure_django.TestAPIEndpoints#test_health_api",
+  "historyId": "api_health_test_001",
+  "time": {
+    "start": 1760076018025,
+    "stop": 1760076018625,
+    "duration": 600
+  },
+  "description": "测试健康检查API返回正确的状态和内容",
+  "status": "passed",
+  "statusMessage": "",
+  "flaky": false,
+  "newFailed": false,
+  "newBroken": false,
+  "newPassed": true,
+  "retriesCount": 0,
+  "retriesStatusChange": false,
+  "labels": [
+    {
+      "name": "severity",
+      "value": "critical"
+    },
+    {
+      "name": "feature",
+      "value": "接口测试"
+    },
+    {
+      "name": "epic",
+      "value": "Django网站全维度测试"
+    },
+    {
+      "name": "story",
+      "value": "API健康检查"
+    },
+    {
+      "name": "parentSuite",
+      "value": "tests"
+    },
+    {
+      "name": "suite",
+      "value": "test_pure_django"
+    },
+    {
+      "name": "subSuite",
+      "value": "TestAPIEndpoints"
+    },
+    {
+      "name": "host",
+      "value": "localhost"
+    },
+    {
+      "name": "thread",
+      "value": "MainThread"
+    },
+    {
+      "name": "framework",
+      "value": "django"
+    },
+    {
+      "name": "language",
+      "value": "python"
+    },
+    {
+      "name": "package",
+      "value": "tests.test_pure_django"
+    }
+  ],
+  "parameters": [],
+  "links": [],
+  "hidden": false,
+  "retry": false
+}

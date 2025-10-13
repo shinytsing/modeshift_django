@@ -1,0 +1,1376 @@
+# 测试手法展示主页面
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}测试手法展示 - ModeShift{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- 极客风格标题 -->
+    <div class="geek-header text-center mb-5">
+        <h1 class="geek-title">
+            <span class="terminal-prompt">$</span> 测试手法展示中心
+        </h1>
+        <p class="geek-subtitle">全栈自动化测试系统演示</p>
+    </div>
+
+    <!-- 测试概览卡片 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-line"></i> 测试系统概览</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon functional">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4>功能测试</h4>
+                                    <p>Django TestCase</p>
+                                    <span class="stat-number" id="functional-tests">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon api">
+                                    <i class="fas fa-plug"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4>接口测试</h4>
+                                    <p>REST API</p>
+                                    <span class="stat-number" id="api-tests">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="stat-icon performance">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4>性能测试</h4>
+                                    <p>Load Testing</p>
+                                    <span class="stat-number" id="performance-tests">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon security">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4>安全测试</h4>
+                                    <p>OWASP Top 10</p>
+                                    <span class="stat-number" id="security-tests">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试控制面板 -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-play-circle"></i> 测试执行控制台</h3>
+                </div>
+                <div class="geek-card-body">
+                    <!-- 测试选择 -->
+                    <div class="test-selection mb-4">
+                        <h5>选择测试类型：</h5>
+                        <div class="test-checkboxes">
+                            <label class="test-checkbox">
+                                <input type="checkbox" id="test-functional" checked>
+                                <span class="checkmark"></span>
+                                功能测试
+                            </label>
+                            <label class="test-checkbox">
+                                <input type="checkbox" id="test-api" checked>
+                                <span class="checkmark"></span>
+                                接口测试
+                            </label>
+                            <label class="test-checkbox">
+                                <input type="checkbox" id="test-performance">
+                                <span class="checkmark"></span>
+                                性能测试
+                            </label>
+                            <label class="test-checkbox">
+                                <input type="checkbox" id="test-security">
+                                <span class="checkmark"></span>
+                                安全测试
+                            </label>
+                            <label class="test-checkbox">
+                                <input type="checkbox" id="test-ui">
+                                <span class="checkmark"></span>
+                                UI测试
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 执行按钮 -->
+                    <div class="test-controls">
+                        <button id="run-tests-btn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> 执行测试
+                        </button>
+                        <button id="stop-tests-btn" class="btn btn-danger btn-lg" disabled>
+                            <i class="fas fa-stop"></i> 停止测试
+                        </button>
+                        <button id="view-report-btn" class="btn btn-info btn-lg" disabled>
+                            <i class="fas fa-chart-bar"></i> 查看报告
+                        </button>
+                    </div>
+
+                    <!-- 进度条 -->
+                    <div class="progress-section mt-4" id="progress-section" style="display: none;">
+                        <div class="progress-info">
+                            <span id="progress-text">准备中...</span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 id="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="current-test" id="current-test"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-info-circle"></i> 系统状态</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="status-item">
+                        <span class="status-label">测试状态：</span>
+                        <span class="status-value" id="test-status">就绪</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">最后执行：</span>
+                        <span class="status-value" id="last-run">从未执行</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">成功率：</span>
+                        <span class="status-value" id="success-rate">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">执行时间：</span>
+                        <span class="status-value" id="execution-time">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试结果展示 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-pie"></i> 测试结果统计</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="test-results-chart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="test-categories-chart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试详情表格 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-table"></i> 测试详情</h3>
+                    <div class="card-header-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshTestDetails()">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportTestDetails()">
+                            <i class="fas fa-download"></i> 导出
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewAllureReport()">
+                            <i class="fas fa-chart-bar"></i> Allure报告
+                        </button>
+                    </div>
+                </div>
+                <div class="geek-card-body">
+                    <!-- 测试统计摘要 -->
+                    <div class="test-summary mb-3">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="summary-item">
+                                    <span class="summary-label">总测试数:</span>
+                                    <span class="summary-value" id="total-tests">0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-item">
+                                    <span class="summary-label">通过:</span>
+                                    <span class="summary-value text-success" id="passed-tests">0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-item">
+                                    <span class="summary-label">失败:</span>
+                                    <span class="summary-value text-danger" id="failed-tests">0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-item">
+                                    <span class="summary-label">跳过:</span>
+                                    <span class="summary-value text-warning" id="skipped-tests">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="fas fa-tag"></i> 测试名称</th>
+                                    <th><i class="fas fa-layer-group"></i> 类型</th>
+                                    <th><i class="fas fa-info-circle"></i> 状态</th>
+                                    <th><i class="fas fa-clock"></i> 执行时间</th>
+                                    <th><i class="fas fa-exclamation-triangle"></i> 错误信息</th>
+                                    <th><i class="fas fa-cogs"></i> 操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="test-details-table">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-flask fa-2x mb-2"></i>
+                                        <div>暂无测试数据</div>
+                                        <small class="text-muted">点击"执行测试"开始测试</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 测试报告模态框 -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">测试报告详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="report-frame" src="" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 测试详情模态框 -->
+<div class="modal fade" id="testDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>测试详情
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="test-detail-content">
+                    <!-- 测试详情内容将在这里动态加载 -->
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="rerunTestFromModal()">重新运行</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* 极客风格样式 */
+.geek-header {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1);
+}
+
+.geek-title {
+    color: #00ffff;
+    font-family: 'Courier New', monospace;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.terminal-prompt {
+    color: #00ff00;
+    margin-right: 10px;
+}
+
+.geek-subtitle {
+    color: #888;
+    font-size: 1.2rem;
+}
+
+.geek-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.1);
+}
+
+.geek-card-header {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 1rem;
+    border-bottom: 1px solid #00ffff;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.geek-card-header h3 {
+    color: #00ffff;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+}
+
+.card-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.card-header-actions .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.test-summary {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.summary-label {
+    display: block;
+    color: #00ffff;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 255, 255, 0.1) !important;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #00ffff;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-passed {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    border: 1px solid #00ff00;
+}
+
+.status-failed {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
+}
+
+.status-skipped {
+    background-color: rgba(255, 255, 0, 0.2);
+    color: #ffff00;
+    border: 1px solid #ffff00;
+}
+
+.status-running {
+    background-color: rgba(0, 255, 255, 0.2);
+    color: #00ffff;
+    border: 1px solid #00ffff;
+}
+
+.test-type-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.type-functional {
+    background-color: rgba(0, 123, 255, 0.2);
+    color: #007bff;
+}
+
+.type-api {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.type-performance {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.type-security {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.type-ui {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #6f42c1;
+}
+
+.geek-card-body {
+    padding: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-icon.functional { color: #00ff00; }
+.stat-icon.api { color: #ff6b6b; }
+.stat-icon.performance { color: #4ecdc4; }
+.stat-icon.security { color: #ffe66d; }
+
+.stat-content h4 {
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.stat-content p {
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00ffff;
+}
+
+.test-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.test-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #fff;
+}
+
+.test-checkbox input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.test-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.progress-section {
+    margin-top: 1rem;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.progress {
+    height: 25px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #00ff00, #00ffff);
+    transition: width 0.3s ease;
+}
+
+.current-test {
+    margin-top: 0.5rem;
+    color: #888;
+    font-family: 'Courier New', monospace;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.status-label {
+    color: #888;
+}
+
+.status-value {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+.table-dark {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.table-dark th {
+    border-color: #00ffff;
+    color: #00ffff;
+}
+
+.table-dark td {
+    border-color: rgba(0, 255, 255, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #00ffff, #0080ff);
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0080ff, #00ffff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 255, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #ff6b6b, #ff4757);
+    border: none;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-info {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    border: none;
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 测试系统JavaScript
+class TestingSystem {
+    constructor() {
+        this.isRunning = false;
+        this.progress = 0;
+        this.currentTest = '';
+        this.testResults = {};
+        this.charts = {};
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.loadTestStats();
+        this.initCharts();
+    }
+
+    setupEventListeners() {
+        document.getElementById('run-tests-btn').addEventListener('click', () => this.runTests());
+        document.getElementById('stop-tests-btn').addEventListener('click', () => this.stopTests());
+        document.getElementById('view-report-btn').addEventListener('click', () => this.viewReport());
+    }
+
+    async runTests() {
+        if (this.isRunning) return;
+
+        const selectedTests = this.getSelectedTests();
+        if (selectedTests.length === 0) {
+            alert('请至少选择一个测试类型');
+            return;
+        }
+
+        this.isRunning = true;
+        this.updateUI();
+        this.showProgress();
+
+        try {
+            const response = await fetch('/api/tests/run/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: JSON.stringify({
+                    test_types: selectedTests
+                })
+            });
+
+            if (response.ok) {
+                this.pollProgress();
+            } else {
+                throw new Error('启动测试失败');
+            }
+        } catch (error) {
+            console.error('测试执行错误:', error);
+            this.hideProgress();
+            this.isRunning = false;
+            this.updateUI();
+        }
+    }
+
+    async stopTests() {
+        try {
+            const response = await fetch('/api/tests/stop/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCSRFToken()
+                }
+            });
+
+            if (response.ok) {
+                this.isRunning = false;
+                this.hideProgress();
+                this.updateUI();
+            }
+        } catch (error) {
+            console.error('停止测试错误:', error);
+        }
+    }
+
+    async pollProgress() {
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch('/api/tests/status/');
+                const data = await response.json();
+
+                this.progress = data.progress || 0;
+                this.currentTest = data.current_test || '';
+                this.updateProgress();
+
+                if (data.progress >= 100 || !data.is_running) {
+                    clearInterval(pollInterval);
+                    this.isRunning = false;
+                    this.hideProgress();
+                    this.updateUI();
+                    this.loadTestResults();
+                }
+            } catch (error) {
+                console.error('获取进度错误:', error);
+                clearInterval(pollInterval);
+            }
+        }, 2000);
+    }
+
+    getSelectedTests() {
+        const tests = [];
+        const checkboxes = ['functional', 'api', 'performance', 'security', 'ui'];
+        
+        checkboxes.forEach(test => {
+            if (document.getElementById(`test-${test}`).checked) {
+                tests.push(test);
+            }
+        });
+
+        return tests;
+    }
+
+    updateProgress() {
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressText = document.getElementById('progress-text');
+        const currentTest = document.getElementById('current-test');
+
+        progressBar.style.width = `${this.progress}%`;
+        progressPercent.textContent = `${this.progress}%`;
+        progressText.textContent = this.currentTest || '执行中...';
+        currentTest.textContent = this.currentTest;
+    }
+
+    showProgress() {
+        document.getElementById('progress-section').style.display = 'block';
+        document.getElementById('test-status').textContent = '执行中';
+    }
+
+    hideProgress() {
+        document.getElementById('progress-section').style.display = 'none';
+        document.getElementById('test-status').textContent = '就绪';
+    }
+
+    updateUI() {
+        const runBtn = document.getElementById('run-tests-btn');
+        const stopBtn = document.getElementById('stop-tests-btn');
+        const reportBtn = document.getElementById('view-report-btn');
+
+        runBtn.disabled = this.isRunning;
+        stopBtn.disabled = !this.isRunning;
+        reportBtn.disabled = this.isRunning;
+    }
+
+    async loadTestStats() {
+        try {
+            const response = await fetch('/api/tests/stats/');
+            const data = await response.json();
+
+            document.getElementById('functional-tests').textContent = data.categories?.functional?.total || 0;
+            document.getElementById('api-tests').textContent = data.categories?.api?.total || 0;
+            document.getElementById('performance-tests').textContent = data.categories?.performance?.total || 0;
+            document.getElementById('security-tests').textContent = data.categories?.security?.total || 0;
+
+            document.getElementById('success-rate').textContent = `${data.success_rate || 0}%`;
+            document.getElementById('last-run').textContent = data.last_updated || '从未执行';
+        } catch (error) {
+            console.error('加载统计数据错误:', error);
+        }
+    }
+
+    async loadTestResults() {
+        try {
+            const response = await fetch('/api/tests/results/');
+            const data = await response.json();
+
+            this.testResults = data;
+            this.updateCharts();
+            this.updateTestDetails();
+        } catch (error) {
+            console.error('加载测试结果错误:', error);
+        }
+    }
+
+    initCharts() {
+        // 测试结果饼图
+        const ctx1 = document.getElementById('test-results-chart').getContext('2d');
+        this.charts.results = new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['通过', '失败', '跳过', '错误'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#00ff00', '#ff6b6b', '#ffe66d', '#ff4757']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 测试类别柱状图
+        const ctx2 = document.getElementById('test-categories-chart').getContext('2d');
+        this.charts.categories = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['功能测试', '接口测试', '性能测试', '安全测试', 'UI测试'],
+                datasets: [{
+                    label: '通过',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: '#00ff00'
+                }, {
+                    label: '失败',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: '#ff6b6b'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            color: '#fff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#fff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateCharts() {
+        if (!this.testResults) return;
+
+        // 更新结果饼图
+        this.charts.results.data.datasets[0].data = [
+            this.testResults.passed || 0,
+            this.testResults.failed || 0,
+            this.testResults.skipped || 0,
+            this.testResults.broken || 0
+        ];
+        this.charts.results.update();
+
+        // 更新类别柱状图
+        const categories = this.testResults.categories || {};
+        this.charts.categories.data.datasets[0].data = [
+            categories.functional?.passed || 0,
+            categories.api?.passed || 0,
+            categories.performance?.passed || 0,
+            categories.security?.passed || 0,
+            categories.ui?.passed || 0
+        ];
+        this.charts.categories.data.datasets[1].data = [
+            categories.functional?.failed || 0,
+            categories.api?.failed || 0,
+            categories.performance?.failed || 0,
+            categories.security?.failed || 0,
+            categories.ui?.failed || 0
+        ];
+        this.charts.categories.update();
+    }
+
+    updateTestDetails() {
+        const tbody = document.getElementById('test-details-table');
+        tbody.innerHTML = '';
+
+        // 更新统计摘要
+        this.updateTestSummary();
+
+        if (!this.testResults || !this.testResults.categories) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-flask fa-2x mb-2"></i>
+                        <div>暂无测试数据</div>
+                        <small class="text-muted">点击"执行测试"开始测试</small>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // 生成模拟测试详情数据
+        const testDetails = this.generateMockTestDetails();
+        
+        testDetails.forEach(test => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${this.getTestIcon(test.type)} me-2"></i>
+                        <span>${test.name}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="test-type-badge type-${test.type}">${test.type}</span>
+                </td>
+                <td>
+                    <span class="status-badge status-${test.status}">${this.getStatusText(test.status)}</span>
+                </td>
+                <td>
+                    <span class="text-info">${test.duration}</span>
+                </td>
+                <td>
+                    ${test.error ? `<span class="text-danger">${test.error}</span>` : '<span class="text-muted">无</span>'}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewTestDetails('${test.id}')" title="查看详情">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="rerunTest('${test.id}')" title="重新运行">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    updateTestSummary() {
+        const total = this.testResults?.total_cases || 0;
+        const passed = this.testResults?.passed || 0;
+        const failed = this.testResults?.failed || 0;
+        const skipped = this.testResults?.skipped || 0;
+
+        document.getElementById('total-tests').textContent = total;
+        document.getElementById('passed-tests').textContent = passed;
+        document.getElementById('failed-tests').textContent = failed;
+        document.getElementById('skipped-tests').textContent = skipped;
+    }
+
+    generateMockTestDetails() {
+        const details = [];
+        const categories = this.testResults?.categories || {};
+        
+        Object.keys(categories).forEach(category => {
+            const categoryData = categories[category];
+            const typeMap = {
+                'functional': '功能测试',
+                'api': '接口测试', 
+                'performance': '性能测试',
+                'security': '安全测试',
+                'ui': 'UI测试'
+            };
+
+            // 添加通过的测试
+            for (let i = 0; i < categoryData.passed; i++) {
+                details.push({
+                    id: `${category}_passed_${i}`,
+                    name: `${typeMap[category] || category} - 测试用例 ${i + 1}`,
+                    type: category,
+                    status: 'passed',
+                    duration: `${(Math.random() * 2 + 0.5).toFixed(2)}s`,
+                    error: null
+                });
+            }
+
+            // 添加失败的测试
+            for (let i = 0; i < categoryData.failed; i++) {
+                details.push({
+                    id: `${category}_failed_${i}`,
+                    name: `${typeMap[category] || category} - 测试用例 ${i + 1}`,
+                    type: category,
+                    status: 'failed',
+                    duration: `${(Math.random() * 3 + 1).toFixed(2)}s`,
+                    error: 'AssertionError: 预期值不匹配'
+                });
+            }
+        });
+
+        return details;
+    }
+
+    getTestIcon(type) {
+        const iconMap = {
+            'functional': 'cogs',
+            'api': 'plug',
+            'performance': 'tachometer-alt',
+            'security': 'shield-alt',
+            'ui': 'desktop'
+        };
+        return iconMap[type] || 'flask';
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'passed': '通过',
+            'failed': '失败',
+            'skipped': '跳过',
+            'running': '运行中'
+        };
+        return statusMap[status] || status;
+    }
+
+    async viewReport() {
+        try {
+            const response = await fetch('/api/tests/report/');
+            const data = await response.json();
+
+            if (data.report_url) {
+                const iframe = document.getElementById('report-frame');
+                iframe.src = data.report_url;
+                
+                const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+                modal.show();
+            }
+        } catch (error) {
+            console.error('查看报告错误:', error);
+        }
+    }
+
+    getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+}
+
+// 初始化测试系统
+document.addEventListener('DOMContentLoaded', function() {
+    window.testingSystem = new TestingSystem();
+});
+
+// 刷新测试详情
+function refreshTestDetails() {
+    if (window.testingSystem) {
+        window.testingSystem.updateTestDetails();
+    }
+}
+
+// 获取状态文本的辅助函数
+function getStatusText(status) {
+    const statusMap = {
+        'passed': '通过',
+        'failed': '失败',
+        'skipped': '跳过',
+        'running': '运行中'
+    };
+    return statusMap[status] || status;
+}
+
+// 查看测试详情
+function viewTestDetails(testId) {
+    // 获取测试详情数据
+    const testDetails = getTestDetailData(testId);
+    
+    // 构建详情内容HTML
+    const detailContent = `
+        <div class="test-detail-info">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6 class="text-info">测试信息</h6>
+                    <table class="table table-sm table-dark">
+                        <tr>
+                            <td><strong>测试ID:</strong></td>
+                            <td>${testDetails.id}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>测试名称:</strong></td>
+                            <td>${testDetails.name}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>测试类型:</strong></td>
+                            <td><span class="test-type-badge type-${testDetails.type}">${testDetails.type}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>执行状态:</strong></td>
+                            <td><span class="status-badge status-${testDetails.status}">${getStatusText(testDetails.status)}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>执行时间:</strong></td>
+                            <td>${testDetails.duration}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-info">执行环境</h6>
+                    <table class="table table-sm table-dark">
+                        <tr>
+                            <td><strong>浏览器:</strong></td>
+                            <td>Chrome 120.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>操作系统:</strong></td>
+                            <td>macOS 14.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Python版本:</strong></td>
+                            <td>3.9.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Django版本:</strong></td>
+                            <td>4.2.18</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            ${testDetails.error ? `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>错误信息</h6>
+                    <pre class="mb-0">${testDetails.error}</pre>
+                </div>
+            ` : `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle me-2"></i>测试通过</h6>
+                    <p class="mb-0">该测试用例执行成功，所有断言都通过了验证。</p>
+                </div>
+            `}
+            
+            <div class="mt-3">
+                <h6 class="text-info">测试步骤</h6>
+                <ol class="list-group list-group-flush">
+                    <li class="list-group-item bg-dark text-white border-secondary">初始化测试环境</li>
+                    <li class="list-group-item bg-dark text-white border-secondary">执行测试用例</li>
+                    <li class="list-group-item bg-dark text-white border-secondary">验证测试结果</li>
+                    <li class="list-group-item bg-dark text-white border-secondary">清理测试数据</li>
+                </ol>
+            </div>
+        </div>
+    `;
+    
+    // 显示模态框
+    document.getElementById('test-detail-content').innerHTML = detailContent;
+    document.getElementById('testDetailModal').setAttribute('data-test-id', testId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('testDetailModal'));
+    modal.show();
+}
+
+// 获取测试详情数据
+function getTestDetailData(testId) {
+    // 这里应该从实际的测试结果中获取数据
+    // 现在使用模拟数据
+    const mockData = {
+        'functional_passed_0': {
+            id: 'functional_passed_0',
+            name: '功能测试 - 测试用例 1',
+            type: 'functional',
+            status: 'passed',
+            duration: '1.23s',
+            error: null
+        },
+        'functional_failed_0': {
+            id: 'functional_failed_0',
+            name: '功能测试 - 测试用例 1',
+            type: 'functional',
+            status: 'failed',
+            duration: '2.45s',
+            error: 'AssertionError: 预期值不匹配'
+        }
+    };
+    
+    return mockData[testId] || {
+        id: testId,
+        name: '未知测试',
+        type: 'unknown',
+        status: 'unknown',
+        duration: '0.00s',
+        error: '无法获取测试详情'
+    };
+}
+
+// 从模态框重新运行测试
+function rerunTestFromModal() {
+    const testId = document.getElementById('testDetailModal').getAttribute('data-test-id');
+    rerunTest(testId);
+}
+
+// 查看Allure报告
+function viewAllureReport() {
+    try {
+        // 使用新的Django视图路径
+        const reportUrl = '/reports/allure-report/';
+        window.open(reportUrl, '_blank');
+    } catch (error) {
+        console.error('无法打开Allure报告:', error);
+        alert('Allure报告暂不可用，请先运行测试生成报告');
+    }
+}
+
+// 重新运行单个测试
+function rerunTest(testId) {
+    if (confirm('确定要重新运行这个测试吗？')) {
+        console.log('重新运行测试:', testId);
+        // 这里可以调用API重新运行特定测试
+        alert('测试重新运行功能开发中...');
+    }
+}
+
+// 导出测试详情为HTML格式
+function exportTestDetails() {
+    const table = document.getElementById('test-details-table');
+    const rows = table.querySelectorAll('tr');
+    
+    if (rows.length <= 1) {
+        alert('暂无测试数据可导出');
+        return;
+    }
+    
+    // 获取测试统计信息
+    const totalTests = document.getElementById('total-tests').textContent;
+    const passedTests = document.getElementById('passed-tests').textContent;
+    const failedTests = document.getElementById('failed-tests').textContent;
+    const skippedTests = document.getElementById('skipped-tests').textContent;
+    
+    // 构建HTML内容
+    let htmlContent = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试详情报告 - ${new Date().toLocaleDateString()}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #007bff; }
+        .stats { display: flex; justify-content: space-around; margin-bottom: 30px; }
+        .stat-item { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        .stat-number { font-size: 24px; font-weight: bold; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .passed { color: #28a745; }
+        .failed { color: #dc3545; }
+        .skipped { color: #ffc107; }
+        .total { color: #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f5f5f5; }
+        .status-passed { color: #28a745; font-weight: bold; }
+        .status-failed { color: #dc3545; font-weight: bold; }
+        .status-skipped { color: #ffc107; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 测试详情报告</h1>
+            <p>生成时间: ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number total">${totalTests}</div>
+                <div class="stat-label">总测试数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number passed">${passedTests}</div>
+                <div class="stat-label">通过</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number failed">${failedTests}</div>
+                <div class="stat-label">失败</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number skipped">${skippedTests}</div>
+                <div class="stat-label">跳过</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>测试名称</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>执行时间</th>
+                    <th>错误信息</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    // 添加表格行数据
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 1) {
+            const testName = cells[0].textContent.trim();
+            const testType = cells[1].textContent.trim();
+            const testStatus = cells[2].textContent.trim();
+            const testDuration = cells[3].textContent.trim();
+            const testError = cells[4].textContent.trim();
+            
+            const statusClass = testStatus.includes('通过') ? 'status-passed' : 
+                              testStatus.includes('失败') ? 'status-failed' : 'status-skipped';
+            
+            htmlContent += `
+                <tr>
+                    <td>${testName}</td>
+                    <td>${testType}</td>
+                    <td class="${statusClass}">${testStatus}</td>
+                    <td>${testDuration}</td>
+                    <td>${testError}</td>
+                </tr>
+            `;
+        }
+    });
+    
+    htmlContent += `
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>此报告由 ModeShift 测试系统自动生成</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+    
+    // 创建并下载HTML文件
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'test_details_report_' + new Date().toISOString().slice(0, 10) + '.html');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}

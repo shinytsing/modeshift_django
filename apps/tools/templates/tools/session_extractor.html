@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss直聘Session提取器</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .cookies-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Boss直聘Session提取器</h1>
+        <p>这个工具可以帮助您从当前浏览器中提取Boss直聘的登录session，用于自动投递功能。</p>
+        
+        <div class="step">
+            <h3>步骤1: 确保您已在Boss直聘登录</h3>
+            <p>请确保您已经在另一个标签页中登录了Boss直聘网站 (www.zhipin.com)</p>
+            <a href="https://www.zhipin.com/web/geek/jobs" target="_blank" class="btn">打开Boss直聘</a>
+        </div>
+        
+        <div class="step">
+            <h3>步骤2: 提取当前页面的Cookies</h3>
+            <p>点击下面的按钮，从当前页面提取Boss直聘相关的cookies：</p>
+            <button class="btn" onclick="extractCookies()">🔍 提取Cookies</button>
+            <button class="btn btn-success" onclick="testSession()">🧪 测试Session</button>
+        </div>
+        
+        <div class="step">
+            <h3>步骤3: 查看提取结果</h3>
+            <div id="result" class="result"></div>
+            <div id="cookies-display" class="cookies-display" style="display: none;"></div>
+        </div>
+        
+        <div class="step">
+            <h3>步骤4: 使用提取的Session</h3>
+            <p>如果提取成功，您可以使用这些cookies进行自动投递：</p>
+            <button class="btn btn-success" onclick="useSession()" disabled id="use-btn">🚀 使用Session投递</button>
+        </div>
+    </div>
+
+    <script>
+        let extractedCookies = {};
+        
+        function extractCookies() {
+            const resultDiv = document.getElementById('result');
+            const cookiesDisplay = document.getElementById('cookies-display');
+            const useBtn = document.getElementById('use-btn');
+            
+            try {
+                // 获取当前页面的所有cookies
+                const allCookies = document.cookie.split(';').reduce((cookies, cookie) => {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name && value) {
+                        cookies[name] = decodeURIComponent(value);
+                    }
+                    return cookies;
+                }, {});
+                
+                // 过滤出Boss直聘相关的cookies
+                const bossCookies = {};
+                const bossCookieNames = [
+                    '__zp_stoken__', '__a', '__c', '__g', 'wt2', 'zp_at',
+                    'bst', 'wbg', 'zp_token', 'zp_session', 'zp_user_id'
+                ];
+                
+                for (const name of bossCookieNames) {
+                    if (allCookies[name]) {
+                        bossCookies[name] = allCookies[name];
+                    }
+                }
+                
+                // 如果没有找到Boss直聘cookies，尝试从localStorage获取
+                if (Object.keys(bossCookies).length === 0) {
+                    for (const name of bossCookieNames) {
+                        const value = localStorage.getItem(name);
+                        if (value) {
+                            bossCookies[name] = value;
+                        }
+                    }
+                }
+                
+                extractedCookies = bossCookies;
+                
+                if (Object.keys(bossCookies).length > 0) {
+                    resultDiv.className = 'result success';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `✅ 成功提取到 ${Object.keys(bossCookies).length} 个Boss直聘cookies！`;
+                    
+                    cookiesDisplay.style.display = 'block';
+                    cookiesDisplay.textContent = JSON.stringify(bossCookies, null, 2);
+                    
+                    useBtn.disabled = false;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = '❌ 未找到Boss直聘相关的cookies。请确保您已在Boss直聘网站登录。';
+                    
+                    cookiesDisplay.style.display = 'block';
+                    cookiesDisplay.textContent = '当前页面所有cookies:\n' + JSON.stringify(allCookies, null, 2);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `❌ 提取失败: ${error.message}`;
+            }
+        }
+        
+        function testSession() {
+            if (Object.keys(extractedCookies).length === 0) {
+                alert('请先提取cookies！');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🧪 正在测试session有效性...';
+            
+            // 发送测试请求
+            fetch('/tools/job-search/api/test-session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    cookies: extractedCookies
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.valid) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Session测试成功！${data.message}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Session测试失败：${data.message || data.error}`;
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 测试请求失败：${error.message}`;
+            });
+        }
+        
+        function useSession() {
+            if (Object.keys(extractedCookies).length === 0) {
+                alert('请先提取cookies！');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🚀 正在使用session进行投递...';
+            
+            // 发送使用session的请求
+            fetch('/tools/job-search/api/use-session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    cookies: extractedCookies
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ 成功使用session！${data.message}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ 使用session失败：${data.error}`;
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 请求失败：${error.message}`;
+            });
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 页面加载时自动提取cookies
+        window.onload = function() {
+            extractCookies();
+        };
+    </script>
+</body>
+</html>

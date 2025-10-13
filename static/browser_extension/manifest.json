@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Boss直聘Cookie获取器",
+  "version": "1.0",
+  "description": "自动获取Boss直聘的cookies用于投递任务",
+  "permissions": [
+    "cookies",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://*.zhipin.com/*",
+    "https://*.boss.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "获取Boss直聘Cookies"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.zhipin.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -1,0 +1,3512 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI一键投递系统 - QAToolBox{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 极客风格主题 */
+:root {
+    --geek-green: #00ff41;
+    --geek-dark: #0a0a0a;
+    --geek-gray: #1a1a1a;
+    --geek-light-gray: #333333;
+    --geek-text: #ffffff;
+    --geek-accent: #00cc33;
+    --geek-warning: #ff6600;
+    --geek-error: #ff0000;
+}
+
+body {
+    background: var(--geek-dark);
+    color: var(--geek-text);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.launcher-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.launcher-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 204, 51, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.launcher-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding: 30px 0;
+    border-bottom: 2px solid var(--geek-green);
+}
+
+.launcher-title {
+    font-size: 3.5rem;
+    color: var(--geek-green);
+    text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+    margin-bottom: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.launcher-subtitle {
+    font-size: 1.3rem;
+    color: var(--geek-text);
+    opacity: 0.8;
+    margin-bottom: 10px;
+}
+
+.launcher-description {
+    font-size: 1rem;
+    color: var(--geek-text);
+    opacity: 0.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.launcher-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.form-section {
+    background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
+    border: 2px solid var(--geek-green);
+    border-radius: 8px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--geek-green), var(--geek-accent));
+}
+
+.form-section h3 {
+    color: var(--geek-green);
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-section h3 i {
+    font-size: 1.6rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--geek-text);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--geek-dark);
+    border: 1px solid var(--geek-light-gray);
+    border-radius: 4px;
+    padding: 12px 15px;
+    color: var(--geek-text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--geek-green);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.platform-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.platform-card {
+    background: var(--geek-dark);
+    border: 2px solid var(--geek-light-gray);
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.platform-card.selected {
+    border-color: var(--geek-green);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.platform-card:hover {
+    border-color: var(--geek-accent);
+    transform: translateY(-2px);
+}
+
+.platform-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--geek-green);
+}
+
+.platform-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--geek-text);
+}
+
+.platform-desc {
+    font-size: 0.8rem;
+    color: var(--geek-text);
+    opacity: 0.7;
+}
+
+.launch-button {
+    background: linear-gradient(135deg, var(--geek-green) 0%, var(--geek-accent) 100%);
+    color: var(--geek-dark);
+    border: none;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0, 255, 65, 0.4);
+}
+
+.launch-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 255, 65, 0.6);
+}
+
+.launch-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.launch-button i {
+    font-size: 1.4rem;
+}
+
+/* 调试按钮样式 */
+.debug-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px auto;
+    width: fit-content;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.debug-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+}
+
+.debug-button:active {
+    transform: translateY(0);
+}
+
+.debug-button i {
+    font-size: 1.4rem;
+}
+
+/* Cookie测试按钮样式 */
+.test-cookie-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px auto;
+    width: fit-content;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.test-cookie-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.test-cookie-button:active {
+    transform: translateY(0);
+}
+
+.test-cookie-button i {
+    font-size: 1.4rem;
+}
+
+.status-panel {
+    background: var(--geek-gray);
+    border: 1px solid var(--geek-light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+    display: none;
+}
+
+.status-header {
+    color: var(--geek-green);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    background: var(--geek-light-gray);
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--geek-green), var(--geek-accent));
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-text {
+    color: var(--geek-text);
+    font-size: 0.9rem;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.results-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--geek-dark);
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--geek-light-gray);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-job {
+    color: var(--geek-text);
+    font-size: 0.9rem;
+}
+
+.result-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.result-status.success {
+    background: rgba(0, 255, 65, 0.2);
+    color: var(--geek-green);
+}
+
+.result-status.failed {
+    background: rgba(255, 0, 0, 0.2);
+    color: var(--geek-error);
+}
+
+/* Token管理面板样式 */
+.token-management-panel {
+    background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
+    border: 2px solid var(--geek-green);
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.token-management-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 65, 0.05) 50%, transparent 70%);
+    z-index: 0;
+}
+
+.token-status {
+    position: relative;
+    z-index: 1;
+}
+
+.token-status h3 {
+    color: var(--geek-green);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 65, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--geek-green);
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--geek-warning);
+    animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+    background: var(--geek-green);
+    animation: none;
+}
+
+.status-dot.offline {
+    background: var(--geek-error);
+    animation: none;
+}
+
+.status-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--geek-text);
+}
+
+.token-info {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--geek-text);
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--geek-green);
+    font-weight: 600;
+}
+
+.token-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.token-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.token-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--geek-green) 0%, var(--geek-accent) 100%);
+    border: none;
+    color: var(--geek-dark);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    border: none;
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--geek-warning) 0%, #ff8533 100%);
+    border: none;
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--geek-error) 0%, #cc0000 100%);
+    border: none;
+    color: white;
+}
+
+/* 扫码登录模态框 */
+.login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.login-modal-content {
+    background: var(--geek-gray);
+    border: 2px solid var(--geek-green);
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+}
+
+.login-modal h3 {
+    color: var(--geek-green);
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.qr-code-container {
+    margin: 30px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.qr-code-container img {
+    max-width: 200px;
+    height: auto;
+}
+
+.login-instructions {
+    color: var(--geek-text);
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.login-progress {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 255, 65, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--geek-green);
+}
+
+.progress-text {
+    color: var(--geek-green);
+    font-weight: 600;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--geek-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.close-modal:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .launcher-form {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .launcher-title {
+        font-size: 2.5rem;
+    }
+    
+    .platform-selection {
+        grid-template-columns: 1fr;
+    }
+    
+    .launch-button {
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="launcher-container">
+    <div class="launcher-header">
+        <h1 class="launcher-title">
+            <i class="fas fa-rocket"></i> AI一键投递系统
+        </h1>
+        <p class="launcher-subtitle">🤖 基于get_jobs项目的智能简历投递系统</p>
+        <p class="launcher-description">
+            支持BOSS直聘、猎聘、拉勾等主流平台，AI智能匹配职位，自动投递简历，提高求职效率
+        </p>
+    </div>
+
+    <!-- Token管理面板 -->
+    <div class="token-management-panel">
+        <div class="token-status">
+            <h3><i class="fas fa-key"></i> Boss直聘登录状态</h3>
+            <div class="status-indicator" id="loginStatusIndicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">检查中...</span>
+            </div>
+            <div class="token-info" id="tokenInfo" style="display: none;">
+                <div class="info-item">
+                    <span class="info-label">Token来源:</span>
+                    <span class="info-value" id="tokenSource">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">过期时间:</span>
+                    <span class="info-value" id="tokenExpiry">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cookie数量:</span>
+                    <span class="info-value" id="cookieCount">-</span>
+                </div>
+            </div>
+            <div class="token-actions">
+                <button class="btn btn-primary" id="checkLoginBtn">
+                    <i class="fas fa-sync"></i> 检查登录状态
+                </button>
+                <button class="btn btn-secondary" id="scanLoginBtn" style="display: none;">
+                    <i class="fas fa-qrcode"></i> 扫码登录
+                </button>
+                <button class="btn btn-warning" id="extendTokenBtn" style="display: none;">
+                    <i class="fas fa-clock"></i> 延长Token
+                </button>
+                <button class="btn btn-danger" id="clearTokenBtn" style="display: none;">
+                    <i class="fas fa-trash"></i> 清除Token
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <form id="launchForm" class="launcher-form">
+        <!-- 基础配置 -->
+        <div class="form-section">
+            <h3><i class="fas fa-cog"></i> 基础配置</h3>
+            
+            <div class="form-group">
+                <label class="form-label">搜索关键词</label>
+                <input type="text" id="keywords" class="form-input" 
+                       placeholder="如：Python开发、前端工程师、数据分析师" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">工作城市</label>
+                <select id="city" class="form-select" required>
+                    <option value="">请选择城市</option>
+                    <option value="北京">北京</option>
+                    <option value="上海">上海</option>
+                    <option value="广州">广州</option>
+                    <option value="深圳">深圳</option>
+                    <option value="杭州">杭州</option>
+                    <option value="南京">南京</option>
+                    <option value="苏州">苏州</option>
+                    <option value="成都">成都</option>
+                    <option value="武汉">武汉</option>
+                    <option value="西安">西安</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">薪资范围</label>
+                <select id="salary" class="form-select">
+                    <option value="">不限</option>
+                    <option value="402">3K以下</option>
+                    <option value="403">3-5K</option>
+                    <option value="404">5-10K</option>
+                    <option value="405">10-15K</option>
+                    <option value="406">15-25K</option>
+                    <option value="407">25-50K</option>
+                    <option value="408">50K以上</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">投递数量上限</label>
+                <input type="number" id="maxApplications" class="form-input" 
+                       value="50" min="1" max="200" required>
+            </div>
+        </div>
+
+        <!-- 高级配置 -->
+        <div class="form-section">
+            <h3><i class="fas fa-tools"></i> 高级配置</h3>
+            
+            <div class="form-group">
+                <label class="form-label">工作经验</label>
+                <select id="experience" class="form-select">
+                    <option value="">不限</option>
+                    <option value="101">应届毕业生</option>
+                    <option value="102">1年以下</option>
+                    <option value="103">1-3年</option>
+                    <option value="104">3-5年</option>
+                    <option value="105">5-10年</option>
+                    <option value="106">10年以上</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">自定义招呼语</label>
+                <textarea id="greeting" class="form-textarea" 
+                          placeholder="您好，我对这个职位很感兴趣，希望能有机会详细了解，期待您的回复。"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">投递间隔（秒）</label>
+                <input type="number" id="interval" class="form-input" 
+                       value="3" min="1" max="30" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">黑名单公司（一行一个）</label>
+                <textarea id="blacklist" class="form-textarea" 
+                          placeholder="如：某某外包公司"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Boss直聘Cookies（手动输入）</label>
+                <textarea id="manualCookies" class="form-textarea" 
+                          placeholder="请手动输入Boss直聘的cookies，格式：name1=value1; name2=value2; name3=value3&#10;&#10;获取方法：&#10;1. 在浏览器中登录Boss直聘&#10;2. 按F12打开开发者工具&#10;3. 切换到Application/应用标签&#10;4. 在左侧找到Cookies，点击www.zhipin.com&#10;5. 复制所有cookies，格式为：name=value; name=value"></textarea>
+                <div class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    输入cookies后，系统将使用这些cookies进行投递，无需扫码登录
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- 平台选择 -->
+    <div class="form-section" style="grid-column: 1 / -1;">
+        <h3><i class="fas fa-layer-group"></i> 选择投递平台</h3>
+        <div class="platform-selection">
+            <div class="platform-card selected" data-platform="boss">
+                <div class="platform-icon">🏢</div>
+                <div class="platform-name">BOSS直聘</div>
+                <div class="platform-desc">推荐使用，投递无上限</div>
+            </div>
+            <div class="platform-card" data-platform="liepin">
+                <div class="platform-icon">🎯</div>
+                <div class="platform-name">猎聘</div>
+                <div class="platform-desc">默认打招呼无上限</div>
+            </div>
+            <div class="platform-card" data-platform="lagou">
+                <div class="platform-icon">📱</div>
+                <div class="platform-name">拉勾</div>
+                <div class="platform-desc">投递无上限，限制频率</div>
+            </div>
+            <div class="platform-card" data-platform="zhilian">
+                <div class="platform-icon">💼</div>
+                <div class="platform-name">智联招聘</div>
+                <div class="platform-desc">投递上限100左右</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 启动按钮 -->
+    <button type="submit" id="launchButton" class="launch-button">
+        <i class="fas fa-rocket"></i>
+        <span>启动AI投递系统</span>
+    </button>
+    
+    <!-- 调试按钮 -->
+    <button type="button" id="debugButton" class="debug-button" onclick="startDebugMode()">
+        <i class="fas fa-bug"></i>
+        <span>调试模式</span>
+    </button>
+    
+    <!-- Cookie测试按钮 -->
+    <button type="button" id="testCookieButton" class="test-cookie-button" onclick="testCookieExecution()">
+        <i class="fas fa-cookie-bite"></i>
+        <span>测试Cookie</span>
+    </button>
+
+    <!-- 状态面板 -->
+    <div id="statusPanel" class="status-panel">
+        <div class="status-header">
+            <i class="fas fa-chart-line"></i>
+            <span>投递进度</span>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="progressText" class="progress-text">准备启动...</div>
+        </div>
+        
+        <div id="resultsList" class="results-list"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 引入跨标签页Token同步模块 -->
+{% load static %}
+<script src="{% static 'js/cross_tab_token_sync.js' %}"></script>
+<script>
+// 全局状态管理
+let currentStep = 1;
+let selectedPlatform = 'boss';
+let loginMethod = null;
+let loginStatus = {
+    isLoggedIn: false,
+    token: null,
+    method: null
+};
+
+// 跨标签页Token同步管理器
+let tokenSyncManager = null;
+
+// 步骤常量
+const STEPS = {
+    PLATFORM_SELECTION: 1,
+    SEARCH_CONFIG: 2,
+    DELIVERY_CONFIG: 3,
+    LOGIN_METHOD: 4,
+    LOGIN_PROCESS: 5,
+    TASK_RUNNING: 6
+};
+
+// 平台信息
+const PLATFORMS = {
+    boss: {
+        name: 'BOSS直聘',
+        icon: '🏢',
+        description: '推荐使用，投递无上限',
+        loginMethods: ['qr', 'phone', 'iframe']
+    },
+    liepin: {
+        name: '猎聘',
+        icon: '🎯',
+        description: '默认打招呼无上限',
+        loginMethods: ['qr', 'phone']
+    },
+    lagou: {
+        name: '拉勾',
+        icon: '📱',
+        description: '投递无上限，限制频率',
+        loginMethods: ['qr', 'phone']
+    },
+    zhilian: {
+        name: '智联招聘',
+        icon: '💼',
+        description: '投递上限100左右',
+        loginMethods: ['qr', 'phone']
+    }
+};
+let currentTaskId = null;
+let statusCheckInterval = null;
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    setupEventListeners();
+    initializeTokenSync();
+    showStep(STEPS.PLATFORM_SELECTION);
+});
+
+// 初始化页面
+function initializePage() {
+    console.log('🚀 初始化AI投递系统');
+    updateProgressText('请选择投递平台');
+}
+
+// 初始化Token同步
+function initializeTokenSync() {
+    console.log('🔄 初始化跨标签页Token同步');
+    
+    // 获取全局Token同步管理器实例
+    tokenSyncManager = window.CrossTabTokenSync;
+    
+    // 注册Token变化回调
+    tokenSyncManager.onTokenChange((event, data) => {
+        console.log('🔄 Token状态变化:', event, data);
+        
+        switch(event) {
+            case 'token_updated':
+                handleTokenUpdated(data);
+                break;
+            case 'token_cleared':
+                handleTokenCleared();
+                break;
+            case 'sync_failed':
+                handleSyncFailed(data);
+                break;
+        }
+    });
+    
+    // 立即检查当前Token状态
+    updateLoginStatusFromSync();
+}
+
+// 处理Token更新
+function handleTokenUpdated(tokenData) {
+    if (tokenData && tokenData.is_logged_in) {
+        loginStatus.isLoggedIn = true;
+        loginStatus.token = tokenData;
+        loginStatus.method = 'cross_tab_sync';
+        
+        // 更新UI显示
+        updateLoginStatusUI(tokenData);
+        
+        console.log('✅ 跨标签页Token同步成功:', tokenData);
+    }
+}
+
+// 处理Token清除
+function handleTokenCleared() {
+    loginStatus.isLoggedIn = false;
+    loginStatus.token = null;
+    loginStatus.method = null;
+    
+    // 更新UI显示
+    updateLoginStatusUI(null);
+    
+    console.log('🗑️ Token已清除');
+}
+
+// 处理同步失败
+function handleSyncFailed(error) {
+    console.error('❌ Token同步失败:', error);
+    // 可以在这里显示错误提示
+}
+
+// 从同步管理器更新登录状态
+function updateLoginStatusFromSync() {
+    const currentToken = tokenSyncManager.getCurrentToken();
+    if (currentToken) {
+        handleTokenUpdated(currentToken);
+    }
+}
+
+// 更新登录状态UI
+function updateLoginStatusUI(tokenData) {
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const tokenInfo = document.getElementById('tokenInfo');
+    const scanBtn = document.getElementById('scanLoginBtn');
+    const extendBtn = document.getElementById('extendTokenBtn');
+    const clearBtn = document.getElementById('clearTokenBtn');
+    
+    if (!statusDot || !statusText) return;
+    
+    if (tokenData && tokenData.is_logged_in) {
+        statusDot.className = 'status-dot online';
+        statusText.textContent = '已登录 (跨标签页同步)';
+        
+        // 显示Token详细信息
+        if (tokenInfo && tokenData.token_details) {
+            document.getElementById('tokenSource').textContent = tokenData.token_details.source || '跨标签页';
+            document.getElementById('tokenExpiry').textContent = tokenData.latest_login_time || '未知';
+            document.getElementById('cookieCount').textContent = '同步';
+            tokenInfo.style.display = 'block';
+        }
+        
+        // 更新按钮状态
+        if (scanBtn) scanBtn.style.display = 'none';
+        if (extendBtn) extendBtn.style.display = 'inline-flex';
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+        
+    } else {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = '未登录';
+        
+        // 隐藏Token信息
+        if (tokenInfo) tokenInfo.style.display = 'none';
+        
+        // 更新按钮状态
+        if (scanBtn) scanBtn.style.display = 'inline-flex';
+        if (extendBtn) extendBtn.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+    // 平台选择
+    document.querySelectorAll('.platform-card').forEach(card => {
+        card.addEventListener('click', function() {
+            selectPlatform(this.dataset.platform);
+        });
+    });
+    
+    // 启动按钮
+    document.getElementById('launchButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        handleLaunchClick();
+    });
+}
+
+// 显示当前步骤
+function showStep(step) {
+    currentStep = step;
+    console.log(`📍 当前步骤: ${step}`);
+    
+    switch(step) {
+        case STEPS.PLATFORM_SELECTION:
+            updateProgressText('步骤1: 选择投递平台');
+            break;
+        case STEPS.SEARCH_CONFIG:
+            updateProgressText('步骤2: 配置搜索条件');
+            break;
+        case STEPS.DELIVERY_CONFIG:
+            updateProgressText('步骤3: 配置投递参数');
+            break;
+        case STEPS.LOGIN_METHOD:
+            updateProgressText('步骤4: 选择登录方式');
+            showLoginMethodSelection();
+            break;
+        case STEPS.LOGIN_PROCESS:
+            updateProgressText('步骤5: 登录验证');
+            break;
+        case STEPS.TASK_RUNNING:
+            updateProgressText('步骤6: 任务执行中');
+            break;
+    }
+}
+
+// 选择平台
+function selectPlatform(platform) {
+    selectedPlatform = platform;
+    console.log(`🎯 选择平台: ${platform}`);
+    
+    // 更新UI
+    document.querySelectorAll('.platform-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[data-platform="${platform}"]`).classList.add('selected');
+    
+    // 显示下一步
+    setTimeout(() => {
+        showStep(STEPS.SEARCH_CONFIG);
+    }, 500);
+}
+
+// 处理启动按钮点击
+function handleLaunchClick() {
+    console.log('🚀 启动投递流程');
+    
+    // 验证表单
+    if (!validateForm()) {
+        return;
+    }
+    
+    // 直接启动投递（新流程：自动处理登录）
+    startDelivery();
+}
+
+// 启动调试模式
+async function startDebugMode() {
+    console.log('🐛 启动调试模式');
+    
+    // 验证表单
+    if (!validateForm()) {
+        return;
+    }
+    
+    showStep(STEPS.TASK_RUNNING);
+    updateProgressText('🐛 调试模式：正在启动Playwright浏览器...');
+    
+    try {
+        // 收集表单数据
+        const formData = collectFormData();
+        
+        console.log('🐛 调试模式：发送请求到调试API');
+        
+        // 发送调试请求
+        const response = await fetch('/tools/job-search/api/debug-playwright-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        console.log('🐛 调试模式响应:', result);
+        
+        // 显示调试日志
+        if (result.debug_logs && result.debug_logs.length > 0) {
+            console.log('🐛 调试日志:');
+            result.debug_logs.forEach(log => console.log(log));
+            
+            // 在页面上显示调试日志
+            showDebugLogs(result.debug_logs);
+        }
+        
+        if (result.success) {
+            updateProgressText('🐛 调试模式：投递任务启动成功！');
+            currentTaskId = result.task_id;
+            
+            // 开始轮询任务状态
+            startTaskPolling();
+            
+        } else if (result.need_login) {
+            updateProgressText('🐛 调试模式：需要登录，请扫码登录');
+            
+            // 显示调试登录说明
+            showDebugLoginInstructions(result);
+            
+        } else {
+            updateProgressText(`🐛 调试模式失败: ${result.error}`);
+            showStep(STEPS.PLATFORM_SELECTION);
+        }
+        
+    } catch (error) {
+        console.error('🐛 调试模式错误:', error);
+        updateProgressText(`🐛 调试模式错误: ${error.message}`);
+        showStep(STEPS.PLATFORM_SELECTION);
+    }
+}
+
+// 显示调试日志
+function showDebugLogs(logs) {
+    const debugPanel = document.getElementById('debugPanel');
+    if (!debugPanel) {
+        // 创建调试面板
+        const panel = document.createElement('div');
+        panel.id = 'debugPanel';
+        panel.className = 'debug-panel';
+        panel.innerHTML = `
+            <div class="debug-header">
+                <h4><i class="fas fa-bug"></i> 调试日志</h4>
+                <button onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+            <div class="debug-content">
+                <pre id="debugLogs"></pre>
+            </div>
+        `;
+        
+        // 添加样式
+        panel.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 500px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+        `;
+        
+        document.body.appendChild(panel);
+    }
+    
+    const debugLogs = document.getElementById('debugLogs');
+    if (debugLogs) {
+        debugLogs.textContent = logs.join('\n');
+        debugLogs.style.cssText = `
+            color: #00ff00;
+            background: #000;
+            padding: 10px;
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-y: auto;
+            max-height: 400px;
+        `;
+    }
+}
+
+// 显示调试登录说明
+function showDebugLoginInstructions(result) {
+    const instructions = result.instructions || [];
+    const loginUrl = result.login_url || 'https://login.zhipin.com/';
+    
+    // 创建调试登录说明模态框
+    const modal = document.createElement('div');
+    modal.className = 'debug-login-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🐛 调试模式 - Boss直聘登录</h3>
+                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="login-status">
+                    <p><strong>🐛 调试模式：浏览器已自动打开Boss直聘登录页面</strong></p>
+                    <p>请按照以下步骤完成登录：</p>
+                </div>
+                <ol class="login-steps">
+                    ${instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                </ol>
+                <div class="debug-info">
+                    <h4>🐛 调试信息：</h4>
+                    <p><strong>登录URL:</strong> ${loginUrl}</p>
+                    <p><strong>调试模式:</strong> 已启用</p>
+                    <p><strong>状态:</strong> 等待登录</p>
+                </div>
+                <div class="login-actions">
+                    <button class="btn btn-primary" onclick="checkDebugLoginAndContinue()">
+                        <i class="fas fa-check"></i> 我已登录（调试模式）
+                    </button>
+                    <button class="btn btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加样式
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.style.cssText = `
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 500px;
+        width: 90%;
+        color: #fff;
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// 检查调试登录状态并继续
+async function checkDebugLoginAndContinue() {
+    updateProgressText('🐛 调试模式：检查登录状态...');
+    
+    try {
+        // 调用调试API检查登录状态
+        const formData = collectFormData();
+        const response = await fetch('/tools/job-search/api/debug-playwright-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        console.log('🐛 调试模式登录检查结果:', result);
+        
+        // 显示调试日志
+        if (result.debug_logs && result.debug_logs.length > 0) {
+            showDebugLogs(result.debug_logs);
+        }
+        
+        if (result.success) {
+            updateProgressText('🐛 调试模式：登录检测成功，开始投递任务！');
+            currentTaskId = result.task_id;
+            
+            // 关闭登录说明模态框
+            const modal = document.querySelector('.debug-login-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // 开始轮询任务状态
+            startTaskPolling();
+            
+        } else {
+            updateProgressText(`🐛 调试模式：登录检测失败 - ${result.error}`);
+            
+            // 显示错误信息
+            if (result.debug_logs && result.debug_logs.length > 0) {
+                showDebugLogs(result.debug_logs);
+            }
+        }
+        
+    } catch (error) {
+        console.error('🐛 调试模式登录检查错误:', error);
+        updateProgressText(`🐛 调试模式登录检查错误: ${error.message}`);
+    }
+}
+
+// Cookie测试执行
+async function testCookieExecution() {
+    console.log('🧪 开始Cookie测试执行');
+    
+    showStep(STEPS.TASK_RUNNING);
+    updateProgressText('🧪 Cookie测试：正在使用你的Cookie进行测试...');
+    
+    try {
+        console.log('🧪 发送Cookie测试请求');
+        
+        // 发送Cookie测试请求
+        const response = await fetch('/tools/job-search/api/test-cookie-execution/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        });
+        
+        const result = await response.json();
+        console.log('🧪 Cookie测试响应:', result);
+        
+        // 显示测试日志
+        if (result.test_logs && result.test_logs.length > 0) {
+            console.log('🧪 测试日志:');
+            result.test_logs.forEach(log => console.log(log));
+            
+            // 在页面上显示测试日志
+            showTestLogs(result.test_logs);
+        }
+        
+        if (result.success) {
+            if (result.delivery_started) {
+                updateProgressText('🧪 Cookie测试完全成功！登录状态正常，投递任务已启动');
+                currentTaskId = result.task_id;
+                
+                // 开始轮询任务状态
+                startTaskPolling();
+            } else {
+                updateProgressText('🧪 Cookie有效但投递任务启动失败');
+                showStep(STEPS.PLATFORM_SELECTION);
+            }
+        } else {
+            if (result.login_detected) {
+                updateProgressText(`🧪 Cookie有效但投递任务失败: ${result.delivery_error}`);
+            } else {
+                updateProgressText(`🧪 Cookie测试失败: ${result.error}`);
+                
+                // 显示可能的原因
+                if (result.possible_causes) {
+                    console.log('🧪 可能的原因:', result.possible_causes);
+                }
+            }
+            showStep(STEPS.PLATFORM_SELECTION);
+        }
+        
+    } catch (error) {
+        console.error('🧪 Cookie测试错误:', error);
+        updateProgressText(`🧪 Cookie测试错误: ${error.message}`);
+        showStep(STEPS.PLATFORM_SELECTION);
+    }
+}
+
+// 显示测试日志
+function showTestLogs(logs) {
+    const testPanel = document.getElementById('testPanel');
+    if (!testPanel) {
+        // 创建测试面板
+        const panel = document.createElement('div');
+        panel.id = 'testPanel';
+        panel.className = 'test-panel';
+        panel.innerHTML = `
+            <div class="test-header">
+                <h4><i class="fas fa-cookie-bite"></i> Cookie测试日志</h4>
+                <button onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+            <div class="test-content">
+                <pre id="testLogs"></pre>
+            </div>
+        `;
+        
+        // 添加样式
+        panel.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 500px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+        `;
+        
+        document.body.appendChild(panel);
+    }
+    
+    const testLogs = document.getElementById('testLogs');
+    if (testLogs) {
+        testLogs.textContent = logs.join('\n');
+        testLogs.style.cssText = `
+            color: #00ff00;
+            background: #000;
+            padding: 10px;
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-y: auto;
+            max-height: 400px;
+        `;
+    }
+}
+
+// 验证表单
+function validateForm() {
+    const keywords = document.getElementById('keywords').value.trim();
+    const city = document.getElementById('city').value;
+    
+    if (!keywords) {
+        showError('请填写搜索关键词');
+        return false;
+    }
+    
+    if (!city) {
+        showError('请选择工作城市');
+        return false;
+    }
+    
+    return true;
+}
+
+// 检查登录状态 - 增强版支持跨标签页同步
+async function checkLoginStatus() {
+    updateProgressText('检查登录状态...');
+    
+    try {
+        // 首先检查跨标签页同步的Token
+        if (tokenSyncManager) {
+            const syncedToken = tokenSyncManager.getCurrentToken();
+            if (syncedToken && syncedToken.is_logged_in) {
+                console.log('✅ 使用跨标签页同步的Token:', syncedToken);
+                loginStatus.isLoggedIn = true;
+                loginStatus.token = syncedToken;
+                loginStatus.method = 'cross_tab_sync';
+                startDelivery();
+                return;
+            }
+        }
+        
+        // 如果跨标签页没有有效Token，检查服务器状态
+        const response = await fetch('/tools/api/playwright/quick-check/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                platform: selectedPlatform
+            })
+        });
+        
+        const result = await response.json();
+        console.log('服务器登录状态检查结果:', result);
+        
+        if (result.success && result.is_logged_in) {
+            // 服务器有登录状态，更新跨标签页同步
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = result;
+            loginStatus.method = 'server_sync';
+            
+            // 同步到跨标签页缓存
+            if (tokenSyncManager) {
+                await syncTokenToCrossTab(result);
+            }
+            
+            startDelivery();
+        } else {
+            // 未登录，显示一键扫码登录选项
+            showQuickLoginOptions();
+        }
+    } catch (error) {
+        console.error('检查登录状态失败:', error);
+        showError('检查登录状态失败，请重试');
+    }
+}
+
+// 显示一键扫码登录选项
+function showQuickLoginOptions() {
+    const modal = document.createElement('div');
+    modal.className = 'quick-login-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 30px; max-width: 500px; width: 90%; text-align: center;">
+            <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+                <i class="fas fa-sign-in-alt"></i> 快速登录
+            </h3>
+            <p style="color: var(--geek-text); margin-bottom: 30px;">
+                需要登录 ${PLATFORMS[selectedPlatform].name} 才能开始自动投递
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button onclick="startEnhancedQRLogin()" class="quick-login-btn" style="
+                    background: var(--geek-green);
+                    color: var(--geek-dark);
+                    border: none;
+                    padding: 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    transition: all 0.3s ease;
+                ">
+                    <i class="fas fa-qrcode"></i>
+                    <span>一键扫码登录</span>
+                </button>
+                <button onclick="startQuickQRLogin()" class="quick-login-btn" style="
+                    background: var(--geek-light-gray);
+                    color: var(--geek-text);
+                    border: 1px solid var(--geek-green);
+                    padding: 15px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                ">
+                    <i class="fas fa-bolt"></i>
+                    <span>快速登录（后台）</span>
+                </button>
+                <button onclick="showAdvancedLoginOptions()" class="quick-login-btn" style="
+                    background: var(--geek-light-gray);
+                    color: var(--geek-text);
+                    border: 1px solid var(--geek-green);
+                    padding: 15px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                ">
+                    <i class="fas fa-cog"></i>
+                    <span>其他登录方式</span>
+                </button>
+            </div>
+            <div style="margin-top: 20px;">
+                <button onclick="closeQuickLoginModal()" style="
+                    background: transparent;
+                    color: var(--geek-text);
+                    border: 1px solid var(--geek-text);
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                ">稍后登录</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 添加悬停效果
+    const qrBtn = modal.querySelector('.quick-login-btn');
+    qrBtn.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.05)';
+        this.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.3)';
+    });
+    qrBtn.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1)';
+        this.style.boxShadow = 'none';
+    });
+}
+
+// 关闭快速登录模态框
+function closeQuickLoginModal() {
+    const modal = document.querySelector('.quick-login-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 显示高级登录选项
+function showAdvancedLoginOptions() {
+    closeQuickLoginModal();
+    showStep(STEPS.LOGIN_METHOD);
+}
+
+// 开始一键扫码登录
+async function startQuickQRLogin() {
+    console.log('🚀 开始一键扫码登录');
+    closeQuickLoginModal();
+    
+    showStep(STEPS.LOGIN_PROCESS);
+    updateProgressText('正在启动扫码登录...');
+    
+    try {
+        // 使用Playwright扫码登录
+        const response = await fetch('/tools/api/playwright/scan-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                platform: selectedPlatform
+            })
+        });
+        
+        const result = await response.json();
+        console.log('扫码登录响应:', result);
+        
+        if (result.success) {
+            updateProgressText('扫码登录成功！正在启动投递任务...');
+            
+            // 更新登录状态
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = result.login_status;
+            loginStatus.method = 'playwright_qr';
+            
+            // 延迟后开始投递
+            setTimeout(() => {
+                startDelivery();
+            }, 2000);
+        } else {
+            showError(result.error || '扫码登录失败');
+        }
+    } catch (error) {
+        console.error('一键扫码登录失败:', error);
+        showError('扫码登录失败，请重试');
+    }
+}
+
+// 开始增强版扫码登录（带二维码显示）
+async function startEnhancedQRLogin() {
+    console.log('🚀 开始增强版扫码登录');
+    closeQuickLoginModal();
+    
+    showStep(STEPS.LOGIN_PROCESS);
+    updateProgressText('正在启动扫码登录...');
+    
+    try {
+        // 启动Playwright扫码登录
+        const response = await fetch('/tools/api/playwright/scan-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                platform: selectedPlatform,
+                show_qr: true
+            })
+        });
+        
+        const result = await response.json();
+        console.log('扫码登录响应:', result);
+        
+        if (result.success) {
+            // 显示二维码和登录状态
+            showQRCodeWithStatus(result.qr_code_url || 'https://login.zhipin.com/');
+            
+            // 开始轮询登录状态
+            pollLoginStatusWithQR();
+        } else {
+            showError(result.error || '启动扫码登录失败');
+        }
+    } catch (error) {
+        console.error('增强版扫码登录失败:', error);
+        showError('扫码登录失败，请重试');
+    }
+}
+
+// 显示带状态的二维码
+function showQRCodeWithStatus(qrCodeUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'qr-status-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 12px; padding: 30px; text-align: center; max-width: 450px; width: 90%;">
+            <h3 style="color: var(--geek-green); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-qrcode"></i>
+                <span>Boss直聘扫码登录</span>
+            </h3>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="width: 250px; height: 250px; border: 3px solid var(--geek-green); border-radius: 12px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: white; position: relative;">
+                    <div id="qrCodeContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center; color: #333;">
+                            <i class="fas fa-qrcode" style="font-size: 4rem; color: #666; margin-bottom: 15px;"></i>
+                            <div style="font-size: 1rem; font-weight: 600;">Boss直聘登录二维码</div>
+                            <div style="font-size: 0.9rem; color: #999; margin-top: 8px;">请使用Boss直聘APP扫码</div>
+                        </div>
+                    </div>
+                    <div id="qrLoadingOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; border-radius: 9px;">
+                        <div style="text-align: center;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--geek-green); margin-bottom: 10px;"></i>
+                            <div style="color: #333; font-size: 0.9rem;">正在生成二维码...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button onclick="openLoginPage()" style="background: var(--geek-green); color: var(--geek-dark); border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 10px;">
+                    <i class="fas fa-external-link-alt"></i> 打开登录页面
+                </button>
+                <button onclick="refreshQRCode()" style="background: var(--geek-light-gray); color: var(--geek-text); border: 1px solid var(--geek-green); padding: 12px 24px; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> 刷新二维码
+                </button>
+            </div>
+            
+            <div id="loginStatus" style="color: var(--geek-accent); font-weight: bold; margin-bottom: 15px; padding: 10px; background: var(--geek-light-gray); border-radius: 6px;">
+                <i class="fas fa-clock"></i> 等待扫码...
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button onclick="closeQRStatusModal()" style="background: var(--geek-gray); color: var(--geek-text); border: 1px solid var(--geek-text); padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                    取消登录
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 尝试加载真实的二维码
+    loadRealQRCode(qrCodeUrl);
+}
+
+// 加载真实二维码
+function loadRealQRCode(qrCodeUrl) {
+    const container = document.getElementById('qrCodeContainer');
+    const overlay = document.getElementById('qrLoadingOverlay');
+    
+    // 尝试获取真实的二维码
+    fetch('/tools/api/playwright/get-qr-code/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            platform: selectedPlatform
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success && result.qr_code_url) {
+            // 显示真实二维码
+            container.innerHTML = `<img src="${result.qr_code_url}" alt="登录二维码" style="width: 100%; height: 100%; object-fit: contain;">`;
+            overlay.style.display = 'none';
+        } else {
+            // 显示备用二维码
+            container.innerHTML = `
+                <div style="text-align: center; color: #333;">
+                    <i class="fas fa-qrcode" style="font-size: 4rem; color: #666; margin-bottom: 15px;"></i>
+                    <div style="font-size: 1rem; font-weight: 600;">Boss直聘登录二维码</div>
+                    <div style="font-size: 0.9rem; color: #999; margin-top: 8px;">请使用Boss直聘APP扫码</div>
+                </div>
+            `;
+            overlay.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('加载二维码失败:', error);
+        overlay.style.display = 'none';
+    });
+}
+
+// 打开登录页面
+function openLoginPage() {
+    window.open('https://login.zhipin.com/', '_blank');
+}
+
+// 刷新二维码
+function refreshQRCode() {
+    const overlay = document.getElementById('qrLoadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        loadRealQRCode('https://login.zhipin.com/');
+    }
+}
+
+// 关闭二维码状态模态框
+function closeQRStatusModal() {
+    const modal = document.querySelector('.qr-status-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 轮询登录状态（带二维码）
+async function pollLoginStatusWithQR() {
+    const maxAttempts = 120; // 最多轮询120次（10分钟）
+    let attempts = 0;
+    
+    const poll = async () => {
+        attempts++;
+        
+        try {
+            const response = await fetch('/tools/api/playwright/login-status/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            const result = await response.json();
+            console.log('登录状态检查:', result);
+            
+            const statusElement = document.getElementById('loginStatus');
+            if (statusElement) {
+                if (result.success && result.is_logged_in) {
+                    // 登录成功
+                    statusElement.innerHTML = '<i class="fas fa-check-circle" style="color: var(--geek-green);"></i> 登录成功！';
+                    statusElement.style.color = 'var(--geek-green)';
+                    
+                    // 更新登录状态
+                    loginStatus.isLoggedIn = true;
+                    loginStatus.token = result.login_status;
+                    loginStatus.method = 'playwright_qr';
+                    
+                    // 延迟后关闭模态框并开始投递
+                    setTimeout(() => {
+                        closeQRStatusModal();
+                        updateProgressText('登录成功！正在启动投递任务...');
+                        setTimeout(() => {
+                            startDelivery();
+                        }, 1000);
+                    }, 2000);
+                    
+                    return;
+                } else if (attempts >= maxAttempts) {
+                    // 超时
+                    statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: var(--geek-error);"></i> 登录超时，请重试';
+                    statusElement.style.color = 'var(--geek-error)';
+                    
+                    setTimeout(() => {
+                        closeQRStatusModal();
+                        showError('登录超时，请重试');
+                    }, 3000);
+                    
+                    return;
+                } else {
+                    // 更新状态显示
+                    const remainingTime = Math.ceil((maxAttempts - attempts) * 5 / 60);
+                    statusElement.innerHTML = `<i class="fas fa-clock"></i> 等待扫码... (剩余 ${remainingTime} 分钟)`;
+                    statusElement.style.color = 'var(--geek-accent)';
+                }
+            }
+            
+            // 继续轮询
+            setTimeout(poll, 5000);
+        } catch (error) {
+            console.error('轮询登录状态失败:', error);
+            const statusElement = document.getElementById('loginStatus');
+            if (statusElement) {
+                statusElement.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: var(--geek-warning);"></i> 检查登录状态失败';
+                statusElement.style.color = 'var(--geek-warning)';
+            }
+        }
+    };
+    
+    poll();
+}
+
+// 同步Token到跨标签页
+async function syncTokenToCrossTab(tokenData) {
+    try {
+        const response = await fetch('/tools/api/token/cross-tab-sync/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                action: 'update',
+                platform: 'boss',
+                token_data: {
+                    token: tokenData.token || '',
+                    login_time: tokenData.latest_login_time || new Date().toISOString(),
+                    source: 'server_sync'
+                }
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            console.log('✅ Token已同步到跨标签页:', result);
+        }
+    } catch (error) {
+        console.error('❌ 同步Token到跨标签页失败:', error);
+    }
+}
+
+// 显示登录方式选择
+function showLoginMethodSelection() {
+    const platform = PLATFORMS[selectedPlatform];
+    const loginMethods = platform.loginMethods;
+    
+    // 创建登录方式选择界面
+    const loginModal = createLoginMethodModal(loginMethods);
+    document.body.appendChild(loginModal);
+}
+
+// 创建登录方式选择模态框
+function createLoginMethodModal(loginMethods) {
+    const modal = document.createElement('div');
+    modal.className = 'login-method-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 30px; max-width: 500px; width: 90%;">
+            <h3 style="color: var(--geek-green); margin-bottom: 20px; text-align: center;">
+                <i class="fas fa-sign-in-alt"></i> 选择登录方式
+            </h3>
+            <p style="color: var(--geek-text); margin-bottom: 30px; text-align: center;">
+                请选择登录 ${PLATFORMS[selectedPlatform].name} 的方式
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                ${loginMethods.includes('qr') ? `
+                    <button onclick="selectLoginMethod('qr')" class="login-method-btn" style="
+                        background: var(--geek-light-gray);
+                        border: 2px solid var(--geek-green);
+                        color: var(--geek-text);
+                        padding: 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-qrcode" style="font-size: 2rem;"></i>
+                        <span>扫码登录</span>
+                    </button>
+                ` : ''}
+                ${loginMethods.includes('phone') ? `
+                    <button onclick="selectLoginMethod('phone')" class="login-method-btn" style="
+                        background: var(--geek-light-gray);
+                        border: 2px solid var(--geek-green);
+                        color: var(--geek-text);
+                        padding: 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-mobile-alt" style="font-size: 2rem;"></i>
+                        <span>手机登录</span>
+                    </button>
+                ` : ''}
+                ${loginMethods.includes('iframe') ? `
+                    <button onclick="selectLoginMethod('iframe')" class="login-method-btn" style="
+                        background: var(--geek-light-gray);
+                        border: 2px solid var(--geek-green);
+                        color: var(--geek-text);
+                        padding: 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-window-maximize" style="font-size: 2rem;"></i>
+                        <span>网页登录</span>
+                    </button>
+                ` : ''}
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeLoginMethodModal()" style="
+                    background: var(--geek-gray);
+                    border: 1px solid var(--geek-text);
+                    color: var(--geek-text);
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                ">取消</button>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
+
+// 选择登录方式
+function selectLoginMethod(method) {
+    loginMethod = method;
+    console.log(`🔐 选择登录方式: ${method}`);
+    
+    // 关闭模态框
+    closeLoginMethodModal();
+    
+    // 开始登录流程
+    showStep(STEPS.LOGIN_PROCESS);
+    startLoginProcess(method);
+}
+
+// 关闭登录方式模态框
+function closeLoginMethodModal() {
+    const modal = document.querySelector('.login-method-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 开始登录流程
+async function startLoginProcess(method) {
+    updateProgressText(`正在启动${method === 'qr' ? '二维码' : method === 'phone' ? '手机' : '网页'}登录...`);
+    
+    try {
+        let response;
+        
+        switch(method) {
+            case 'qr':
+                response = await startQRLogin();
+                break;
+            case 'phone':
+                response = await startPhoneLogin();
+                break;
+            case 'iframe':
+                response = await startIframeLogin();
+                break;
+        }
+        
+        if (response.success) {
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = response.token;
+            loginStatus.method = method;
+            
+            updateProgressText('登录成功！正在启动投递任务...');
+            
+            // 延迟后开始投递
+            setTimeout(() => {
+                startDelivery();
+            }, 2000);
+        } else {
+            showError(response.error || '登录失败');
+        }
+    } catch (error) {
+        console.error('登录过程失败:', error);
+        showError('登录过程失败，请重试');
+    }
+}
+
+// 启动二维码登录
+async function startQRLogin() {
+    console.log('📱 启动二维码登录');
+    
+    try {
+        const response = await fetch('/tools/job-search/api/boss-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                method: 'qr'
+            })
+        });
+        
+        const result = await response.json();
+        console.log('二维码登录响应:', result);
+        
+        if (result.success && result.qr_code_url) {
+            // 显示二维码
+            showQRCode(result.qr_code_url);
+            
+            // 开始轮询登录状态
+            return await pollLoginStatus();
+        } else {
+            throw new Error(result.error || '获取二维码失败');
+        }
+    } catch (error) {
+        console.error('二维码登录失败:', error);
+        throw error;
+    }
+}
+
+// 启动手机登录
+async function startPhoneLogin() {
+    console.log('📞 启动手机登录');
+    
+    // 显示手机号输入界面
+    const phone = await showPhoneInput();
+    if (!phone) {
+        throw new Error('未输入手机号');
+    }
+    
+    // 发送验证码
+    const smsResponse = await fetch('/tools/job-search/api/boss-send-sms/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: phone
+        })
+    });
+    
+    const smsResult = await smsResponse.json();
+    if (!smsResult.success) {
+        throw new Error(smsResult.error || '发送验证码失败');
+    }
+    
+    // 显示验证码输入界面
+    const code = await showCodeInput();
+    if (!code) {
+        throw new Error('未输入验证码');
+    }
+    
+    // 验证登录
+    const loginResponse = await fetch('/tools/job-search/api/boss-phone-login/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: phone,
+            code: code
+        })
+    });
+    
+    return await loginResponse.json();
+}
+
+// 启动iframe登录
+async function startIframeLogin() {
+    console.log('🌐 启动iframe登录');
+    
+    // 显示iframe登录页面
+    showIframeLogin();
+    
+    // 开始轮询登录状态
+    return await pollLoginStatus();
+}
+
+// 显示二维码
+function showQRCode(qrCodeUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'qr-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 30px; text-align: center; max-width: 400px;">
+            <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+                <i class="fas fa-qrcode"></i> Boss直聘扫码登录
+            </h3>
+            <div style="margin-bottom: 20px;">
+                <div style="width: 200px; height: 200px; border: 2px solid var(--geek-green); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: white;">
+                    <div style="text-align: center; color: #333;">
+                        <i class="fas fa-qrcode" style="font-size: 3rem; color: #666; margin-bottom: 10px;"></i>
+                        <div style="font-size: 0.9rem;">Boss直聘登录二维码</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">请使用Boss直聘APP扫码</div>
+                    </div>
+                </div>
+            </div>
+            <p style="color: var(--geek-text); margin-bottom: 20px; font-size: 0.9rem;">
+                请使用Boss直聘APP扫描二维码登录
+            </p>
+            <div style="margin-bottom: 20px;">
+                <button onclick="window.open('${qrCodeUrl}', '_blank')" style="background: var(--geek-green); color: var(--geek-dark); border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-external-link-alt"></i> 打开登录页面
+                </button>
+            </div>
+            <div id="qrStatus" style="color: var(--geek-accent); font-weight: bold;">
+                等待扫码...
+            </div>
+            <div style="margin-top: 15px;">
+                <button onclick="closeQRModal()" style="background: var(--geek-light-gray); color: var(--geek-text); border: 1px solid var(--geek-light-gray); padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                    关闭
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// 关闭二维码模态框
+function closeQRModal() {
+    const modal = document.querySelector('.qr-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 显示手机号输入
+function showPhoneInput() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'phone-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 30px; text-align: center;">
+                <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+                    <i class="fas fa-mobile-alt"></i> 手机号登录
+                </h3>
+                <input type="tel" id="phoneInput" placeholder="请输入手机号" style="
+                    width: 100%;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    background: var(--geek-light-gray);
+                    border: 1px solid var(--geek-green);
+                    color: var(--geek-text);
+                    border-radius: 4px;
+                    font-size: 16px;
+                ">
+                <div>
+                    <button onclick="submitPhone()" style="
+                        background: var(--geek-green);
+                        color: var(--geek-dark);
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        margin-right: 10px;
+                    ">发送验证码</button>
+                    <button onclick="cancelPhone()" style="
+                        background: var(--geek-gray);
+                        color: var(--geek-text);
+                        border: 1px solid var(--geek-text);
+                        padding: 12px 24px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">取消</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 全局函数
+        window.submitPhone = function() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            modal.remove();
+            resolve(phone);
+        };
+        
+        window.cancelPhone = function() {
+            modal.remove();
+            resolve(null);
+        };
+    });
+}
+
+// 显示验证码输入
+function showCodeInput() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'code-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 30px; text-align: center;">
+                <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+                    <i class="fas fa-sms"></i> 验证码登录
+                </h3>
+                <input type="text" id="codeInput" placeholder="请输入验证码" style="
+                    width: 100%;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    background: var(--geek-light-gray);
+                    border: 1px solid var(--geek-green);
+                    color: var(--geek-text);
+                    border-radius: 4px;
+                    font-size: 16px;
+                ">
+                <div>
+                    <button onclick="submitCode()" style="
+                        background: var(--geek-green);
+                        color: var(--geek-dark);
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        margin-right: 10px;
+                    ">确认登录</button>
+                    <button onclick="cancelCode()" style="
+                        background: var(--geek-gray);
+                        color: var(--geek-text);
+                        border: 1px solid var(--geek-text);
+                        padding: 12px 24px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">取消</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 全局函数
+        window.submitCode = function() {
+            const code = document.getElementById('codeInput').value.trim();
+            modal.remove();
+            resolve(code);
+        };
+        
+        window.cancelCode = function() {
+            modal.remove();
+            resolve(null);
+        };
+    });
+}
+
+// 显示iframe登录
+function showIframeLogin() {
+    const modal = document.createElement('div');
+    modal.className = 'iframe-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: var(--geek-gray); border: 2px solid var(--geek-green); border-radius: 8px; padding: 20px; width: 90%; max-width: 800px; height: 80%;">
+            <h3 style="color: var(--geek-green); margin-bottom: 20px; text-align: center;">
+                <i class="fas fa-window-maximize"></i> 网页登录
+            </h3>
+            <iframe id="loginIframe" src="https://login.zhipin.com/" style="
+                width: 100%;
+                height: calc(100% - 60px);
+                border: 1px solid var(--geek-green);
+                border-radius: 4px;
+            "></iframe>
+            <div style="text-align: center; margin-top: 10px;">
+                <button onclick="closeIframeLogin()" style="
+                    background: var(--geek-gray);
+                    color: var(--geek-text);
+                    border: 1px solid var(--geek-text);
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                ">关闭</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 全局函数
+    window.closeIframeLogin = function() {
+        modal.remove();
+    };
+}
+
+// 轮询登录状态
+async function pollLoginStatus() {
+    const maxAttempts = 60; // 最多轮询60次（5分钟）
+    let attempts = 0;
+    
+    return new Promise((resolve, reject) => {
+        const poll = async () => {
+            attempts++;
+            
+            try {
+                const response = await fetch('/tools/job-search/api/boss-status/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const result = await response.json();
+                console.log('登录状态检查:', result);
+                
+                if (result.success && result.is_logged_in) {
+                    // 登录成功
+                    closeAllModals();
+                    resolve({
+                        success: true,
+                        token: result.token
+                    });
+                } else if (attempts >= maxAttempts) {
+                    // 超时
+                    closeAllModals();
+                    reject(new Error('登录超时，请重试'));
+                } else {
+                    // 更新状态显示
+                    const statusElement = document.getElementById('qrStatus');
+                    if (statusElement) {
+                        statusElement.textContent = `等待扫码... (${attempts}/${maxAttempts})`;
+                    }
+                    
+                    // 继续轮询
+                    setTimeout(poll, 5000);
+                }
+            } catch (error) {
+                console.error('轮询登录状态失败:', error);
+                reject(error);
+            }
+        };
+        
+        poll();
+    });
+}
+
+// 关闭所有模态框
+function closeAllModals() {
+    document.querySelectorAll('.qr-modal, .phone-modal, .code-modal, .iframe-modal').forEach(modal => {
+        modal.remove();
+    });
+}
+
+// 显示自动登录说明
+function showAutoLoginInstructions(result) {
+    const instructions = result.instructions || [];
+    const loginUrl = result.login_url || 'https://login.zhipin.com/';
+    
+    // 创建自动登录说明模态框
+    const modal = document.createElement('div');
+    modal.className = 'auto-login-instructions-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎭 自动登录流程</h3>
+                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="login-status">
+                    <p><strong>🎉 浏览器已自动打开Boss直聘登录页面</strong></p>
+                    <p>系统正在后台自动检测您的登录状态，请按照以下步骤操作：</p>
+                </div>
+                <ol class="login-steps">
+                    ${instructions.map(step => `<li>${step}</li>`).join('')}
+                </ol>
+                <div class="auto-detection-info">
+                    <div class="detection-status">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span id="detectionStatusText">系统正在自动检测登录状态...</span>
+                    </div>
+                    <div class="detection-timer">
+                        <span id="detectionTimer">预计等待时间: 10分钟</span>
+                    </div>
+                    <div class="detection-progress">
+                        <div class="progress-bar">
+                            <div id="detectionProgress" class="progress-fill"></div>
+                        </div>
+                        <span id="detectionCountdown">剩余时间: 10:00</span>
+                    </div>
+                </div>
+                <div class="login-actions">
+                    <button onclick="window.open('${loginUrl}', '_blank')" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt"></i> 打开登录页面
+                    </button>
+                    <button onclick="checkLoginAndContinue()" class="btn btn-success">
+                        <i class="fas fa-check"></i> 我已登录
+                    </button>
+                    <button onclick="testPollingAPI()" class="btn btn-info">
+                        <i class="fas fa-bug"></i> 测试检测API
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .auto-login-instructions-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .modal-content {
+            background: var(--geek-gray);
+            border: 2px solid var(--geek-green);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: var(--geek-text);
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--geek-light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: var(--geek-green);
+            font-size: 1.5rem;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--geek-text);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        .close-btn:hover {
+            opacity: 1;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .login-status {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--geek-green);
+        }
+        .login-steps {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        .login-steps li {
+            margin: 10px 0;
+            line-height: 1.6;
+            color: var(--geek-text);
+        }
+        .auto-detection-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--geek-dark);
+            border-radius: 8px;
+            border: 1px solid var(--geek-light-gray);
+        }
+        .detection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--geek-accent);
+            font-weight: 600;
+        }
+        .detection-timer {
+            color: var(--geek-text);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        .login-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--geek-green) 0%, var(--geek-accent) 100%);
+            color: var(--geek-dark);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+        }
+        .detection-progress {
+            margin-top: 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        #detectionCountdown {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+            display: block;
+        }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+    
+    // 不自动启动轮询，等用户点击"我已登录"按钮后再启动
+    console.log('📋 显示登录说明，等待用户登录...');
+    
+    // 添加关闭按钮事件
+    modal.querySelector('.close-btn').addEventListener('click', () => {
+        stopLoginStatusPolling();
+        modal.remove();
+    });
+}
+
+// 轮询检测登录状态的变量
+let pollingInterval = null;
+let pollingStartTime = null;
+let pollingMaxTime = 10 * 60 * 1000; // 10分钟
+
+// 启动登录状态轮询检测
+function startLoginStatusPolling() {
+    console.log('🔄 启动前端轮询检测登录状态...');
+    
+    pollingStartTime = Date.now();
+    pollingInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/tools/job-search/api/check-login-status-polling/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            console.log('🔍 轮询检测结果:', result);
+            
+            // 更新检测状态文本
+            const statusText = document.getElementById('detectionStatusText');
+            if (statusText) {
+                const attemptCount = Math.floor((Date.now() - pollingStartTime) / 2000) + 1;
+                statusText.textContent = `正在检测登录状态... (第${attemptCount}次)`;
+                
+                // 显示调试信息
+                if (result.debug_info && result.debug_info.length > 0) {
+                    const debugInfo = result.debug_info.slice(-3).join(' | '); // 显示最近3条调试信息
+                    statusText.textContent += ` | ${debugInfo}`;
+                }
+            }
+            
+            if (result.success && result.is_logged_in) {
+                console.log('✅ 轮询检测到登录状态！');
+                
+                // 停止轮询
+                stopLoginStatusPolling();
+                
+                // 更新状态显示
+                if (statusText) {
+                    statusText.textContent = '✅ 检测到登录状态，正在启动投递任务...';
+                }
+                
+                // 显示成功消息
+                showSuccess('🎉 检测到登录状态！正在自动启动投递任务...');
+                
+                // 自动调用"我已登录"API启动投递
+                setTimeout(() => {
+                    checkLoginAndContinue();
+                }, 1000);
+                
+            } else if (result.success && !result.is_logged_in) {
+                // 继续等待
+                console.log('⏳ 继续等待登录...');
+                
+            } else {
+                // 检测失败
+                console.error('❌ 轮询检测失败:', result.error);
+                
+                // 更新状态显示
+                if (statusText) {
+                    statusText.textContent = `检测异常: ${result.error || '未知错误'}`;
+                }
+            }
+            
+            // 检查是否超时
+            const elapsed = Date.now() - pollingStartTime;
+            if (elapsed >= pollingMaxTime) {
+                console.log('⏰ 轮询检测超时');
+                stopLoginStatusPolling();
+                
+                if (statusText) {
+                    statusText.textContent = '⏰ 检测超时，请手动点击"我已登录"按钮';
+                }
+                
+                showWarning('检测超时，请手动点击"我已登录"按钮继续');
+            }
+            
+        } catch (error) {
+            console.error('❌ 轮询检测异常:', error);
+            
+            const statusText = document.getElementById('detectionStatusText');
+            if (statusText) {
+                statusText.textContent = `检测异常: ${error.message}`;
+            }
+        }
+    }, 2000); // 每2秒检测一次
+    
+    // 启动倒计时更新
+    startCountdownUpdate();
+}
+
+// 停止登录状态轮询检测
+function stopLoginStatusPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+        console.log('🛑 停止前端轮询检测');
+    }
+}
+
+// 启动倒计时更新
+function startCountdownUpdate() {
+    const countdownInterval = setInterval(() => {
+        if (!pollingStartTime) {
+            clearInterval(countdownInterval);
+            return;
+        }
+        
+        const elapsed = Date.now() - pollingStartTime;
+        const remaining = Math.max(0, pollingMaxTime - elapsed);
+        
+        // 更新倒计时显示
+        const countdownElement = document.getElementById('detectionCountdown');
+        if (countdownElement) {
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            countdownElement.textContent = `剩余时间: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 更新进度条
+        const progressElement = document.getElementById('detectionProgress');
+        if (progressElement) {
+            const progress = Math.min(100, (elapsed / pollingMaxTime) * 100);
+            progressElement.style.width = `${progress}%`;
+        }
+        
+        // 如果超时，停止倒计时
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+}
+
+// 启动检测倒计时（保留原有函数以兼容）
+function startDetectionTimer() {
+    let timeLeft = 120; // 2分钟
+    const timerElement = document.getElementById('detectionTimer');
+    
+    const timer = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        
+        if (timerElement) {
+            timerElement.textContent = `预计等待时间: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            if (timerElement) {
+                timerElement.textContent = '自动检测超时，请手动点击"我已登录"';
+            }
+        }
+    }, 1000);
+}
+
+// 显示登录说明（保留原有函数以兼容）
+function showLoginInstructions(result) {
+    showAutoLoginInstructions(result);
+}
+
+// 测试轮询API
+async function testPollingAPI() {
+    console.log('🧪 测试轮询API...');
+    
+    try {
+        const response = await fetch('/tools/job-search/api/check-login-status-polling/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        console.log('🧪 测试API结果:', result);
+        
+        // 显示测试结果
+        const statusText = document.getElementById('detectionStatusText');
+        if (statusText) {
+            statusText.textContent = `测试结果: ${result.success ? '成功' : '失败'} | ${result.message || result.error || '未知'}`;
+            
+            if (result.debug_info && result.debug_info.length > 0) {
+                statusText.textContent += ` | 调试: ${result.debug_info.join(' | ')}`;
+            }
+        }
+        
+        // 显示详细结果
+        alert(`测试API结果:\n\n成功: ${result.success}\n已登录: ${result.is_logged_in}\n消息: ${result.message || result.error || '未知'}\n\n调试信息:\n${result.debug_info ? result.debug_info.join('\n') : '无'}`);
+        
+    } catch (error) {
+        console.error('❌ 测试API失败:', error);
+        alert(`测试API失败: ${error.message}`);
+    }
+}
+
+// 检查登录状态并继续
+async function checkLoginAndContinue() {
+    updateProgressText('检查登录状态...');
+    
+    try {
+        // 调用"我已登录"API，这会启动后端的持续检测线程
+        const formData = collectFormData();
+        const response = await fetch('/tools/job-search/api/boss-auto-login-start/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateProgressText('登录检测成功，开始投递任务！');
+            currentTaskId = result.task_id;
+            
+            // 关闭登录说明模态框
+            const modal = document.querySelector('.auto-login-instructions-modal, .login-instructions-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // 停止登录状态轮询，开始任务状态轮询
+            stopLoginStatusPolling();
+            startStatusPolling();
+        } else if (result.need_login) {
+            updateProgressText('正在持续检测登录状态，请稍候...');
+            console.log('🔄 后端正在持续检测登录状态...');
+        } else {
+            showError(result.error || '登录检测失败');
+        }
+    } catch (error) {
+        console.error('检查登录状态失败:', error);
+        showError('检查登录状态失败，请重试');
+    }
+}
+
+// 开始投递
+async function startDelivery() {
+    showStep(STEPS.TASK_RUNNING);
+    updateProgressText('正在启动投递任务...');
+    
+    try {
+        // 收集表单数据
+        const formData = collectFormData();
+        
+        // 检查是否输入了手动cookies
+        if (Object.keys(formData.current_browser_cookies).length > 0) {
+            console.log('✅ 使用手动输入的cookies进行投递');
+            console.log('🍪 Cookies数量:', Object.keys(formData.current_browser_cookies).length);
+        } else {
+            console.log('ℹ️ 未输入cookies，将自动启动Playwright并处理登录');
+        }
+        
+        // 发送投递请求 - 使用新的Playwright流程
+        const response = await fetch('/tools/job-search/api/start-playwright/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateProgressText('投递任务已启动！');
+            currentTaskId = result.task_id;
+            
+            // 开始状态轮询
+            startStatusPolling();
+        } else if (result.need_login && result.playwright_active) {
+            // 新流程：需要登录，浏览器已打开
+            updateProgressText('浏览器已打开，请在浏览器中扫码登录Boss直聘');
+            showAutoLoginInstructions(result);
+        } else {
+            showError(result.error || '启动投递任务失败');
+        }
+    } catch (error) {
+        console.error('启动投递失败:', error);
+        showError('启动投递失败，请重试');
+    }
+}
+
+// 收集表单数据
+function collectFormData() {
+    // 处理手动输入的cookies
+    const manualCookiesText = document.getElementById('manualCookies').value.trim();
+    let current_browser_cookies = {};
+    
+    if (manualCookiesText) {
+        console.log('🍪 检测到手动输入的cookies');
+        // 解析cookies字符串
+        const cookiePairs = manualCookiesText.split(';').map(pair => pair.trim()).filter(pair => pair);
+        cookiePairs.forEach(pair => {
+            const [name, value] = pair.split('=').map(s => s.trim());
+            if (name && value) {
+                current_browser_cookies[name] = value;
+            }
+        });
+        console.log('🍪 解析后的cookies:', Object.keys(current_browser_cookies));
+    }
+    
+    return {
+        platforms: [selectedPlatform],
+        keywords: [document.getElementById('keywords').value.trim()],
+        cities: [document.getElementById('city').value],
+        expected_salary: [parseInt(document.getElementById('salary').value) || 15],
+        say_hi: document.getElementById('greeting').value.trim() || '您好，我对这个职位很感兴趣，希望能有机会进一步沟通。',
+        use_ai: true,
+        send_img_resume: true,
+        max_applications: parseInt(document.getElementById('maxApplications').value) || 50,
+        interval: parseInt(document.getElementById('interval').value) || 3,
+        blacklist: document.getElementById('blacklist').value.trim().split('\n').filter(item => item.trim()),
+        current_browser_cookies: current_browser_cookies
+    };
+}
+
+// 开始状态轮询
+function startStatusPolling() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+    }
+    
+    statusCheckInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/tools/job-search/api/status/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                credentials: 'same-origin'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            updateStatus(result);
+            
+            if (result.status === 'completed' || result.status === 'failed') {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+        } catch (error) {
+            console.error('状态检查失败:', error);
+        }
+    }, 3000);
+}
+
+// 更新状态
+function updateStatus(status) {
+    if (status.status === 'running') {
+        updateProgressText(`正在投递中... 已投递: ${status.applied_count || 0}`);
+    } else if (status.status === 'completed') {
+        updateProgressText(`投递完成！成功: ${status.success_count || 0}, 失败: ${status.failed_count || 0}`);
+    } else if (status.status === 'failed') {
+        updateProgressText(`投递失败: ${status.error || '未知错误'}`);
+    }
+    
+    // 更新结果列表
+    if (status.results && status.results.length > 0) {
+        updateResultsList(status.results);
+    }
+}
+
+// 更新结果列表
+function updateResultsList(results) {
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+    
+    results.forEach(result => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `
+            <div class="result-job">${result.company} - ${result.job_title}</div>
+            <div class="result-status ${result.success ? 'success' : 'failed'}">
+                ${result.success ? '投递成功' : '投递失败'}
+            </div>
+        `;
+        resultsList.appendChild(item);
+    });
+}
+
+// 更新进度文本
+function updateProgressText(text) {
+    document.getElementById('progressText').textContent = text;
+}
+
+// 显示错误
+function showError(message) {
+    console.error('错误:', message);
+    updateProgressText(`错误: ${message}`);
+    
+    // 可以添加更明显的错误提示
+    alert(message);
+}
+
+// 清理资源
+function cleanup() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        statusCheckInterval = null;
+    }
+    closeAllModals();
+}
+
+// Token管理功能 - 使用全局loginStatus变量
+
+// 页面加载时检查登录状态
+document.addEventListener('DOMContentLoaded', function() {
+    checkLoginStatus();
+    
+    // 绑定Token管理按钮事件
+    document.getElementById('checkLoginBtn').addEventListener('click', checkLoginStatus);
+    document.getElementById('scanLoginBtn').addEventListener('click', startScanLogin);
+    document.getElementById('extendTokenBtn').addEventListener('click', extendToken);
+    document.getElementById('clearTokenBtn').addEventListener('click', clearToken);
+});
+
+// 检查登录状态
+async function checkLoginStatus() {
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const tokenInfo = document.getElementById('tokenInfo');
+    const checkBtn = document.getElementById('checkLoginBtn');
+    const scanBtn = document.getElementById('scanLoginBtn');
+    const extendBtn = document.getElementById('extendTokenBtn');
+    const clearBtn = document.getElementById('clearTokenBtn');
+    
+    // 更新UI状态
+    statusDot.className = 'status-dot';
+    statusText.textContent = '检查中...';
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检查中...';
+    
+    try {
+        const response = await fetch('/tools/job-search/api/boss-status/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        console.log('登录状态检查结果:', result);
+        
+        if (result.success && result.is_logged_in) {
+            // 已登录
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = result.token;
+            loginStatus.tokenInfo = result.token_info;
+            
+            statusDot.className = 'status-dot online';
+            statusText.textContent = '已登录';
+            
+            // 显示Token信息
+            if (result.token_info) {
+                document.getElementById('tokenSource').textContent = result.token_info.source || '未知';
+                document.getElementById('tokenExpiry').textContent = result.token_info.expires_at || '未知';
+                document.getElementById('cookieCount').textContent = result.token_info.cookie_count || '0';
+                tokenInfo.style.display = 'block';
+            }
+            
+            // 显示相关按钮
+            extendBtn.style.display = 'inline-flex';
+            clearBtn.style.display = 'inline-flex';
+            scanBtn.style.display = 'none';
+            
+        } else {
+            // 未登录
+            loginStatus.isLoggedIn = false;
+            loginStatus.token = null;
+            loginStatus.tokenInfo = null;
+            
+            statusDot.className = 'status-dot offline';
+            statusText.textContent = '未登录';
+            
+            // 隐藏Token信息
+            tokenInfo.style.display = 'none';
+            
+            // 显示登录按钮
+            scanBtn.style.display = 'inline-flex';
+            extendBtn.style.display = 'none';
+            clearBtn.style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('检查登录状态失败:', error);
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = '检查失败';
+        tokenInfo.style.display = 'none';
+        scanBtn.style.display = 'inline-flex';
+        extendBtn.style.display = 'none';
+        clearBtn.style.display = 'none';
+    } finally {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = '<i class="fas fa-sync"></i> 检查登录状态';
+    }
+}
+
+// 开始扫码登录
+async function startScanLogin() {
+    const scanBtn = document.getElementById('scanLoginBtn');
+    
+    scanBtn.disabled = true;
+    scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 启动中...';
+    
+    try {
+        const response = await fetch('/tools/job-search/api/boss-scan-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 显示扫码登录模态框
+            showScanLoginModal(result.qr_code_url);
+        } else {
+            alert('启动扫码登录失败: ' + result.error);
+        }
+        
+    } catch (error) {
+        console.error('启动扫码登录失败:', error);
+        alert('启动扫码登录失败: ' + error.message);
+    } finally {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<i class="fas fa-qrcode"></i> 扫码登录';
+    }
+}
+
+// 显示扫码登录模态框
+function showScanLoginModal(qrCodeUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'login-modal';
+    modal.innerHTML = `
+        <div class="login-modal-content">
+            <button class="close-modal" onclick="closeLoginModal()">&times;</button>
+            <h3><i class="fas fa-qrcode"></i> Boss直聘扫码登录</h3>
+            <div class="qr-code-container">
+                <img src="${qrCodeUrl}" alt="二维码">
+            </div>
+            <div class="login-instructions">
+                <p>请使用Boss直聘APP扫描上方二维码</p>
+                <p>扫描成功后，页面将自动刷新</p>
+            </div>
+            <div class="login-progress">
+                <div class="progress-text">等待扫码...</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 开始轮询登录状态
+    const progressText = modal.querySelector('.progress-text');
+    let pollCount = 0;
+    const maxPolls = 60; // 最多轮询60次（5分钟）
+    
+    const pollInterval = setInterval(async () => {
+        pollCount++;
+        
+        try {
+            const response = await fetch('/tools/job-search/api/boss-status/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.is_logged_in) {
+                // 登录成功
+                progressText.textContent = '登录成功！';
+                clearInterval(pollInterval);
+                
+                setTimeout(() => {
+                    closeLoginModal();
+                    checkLoginStatus(); // 刷新登录状态
+                }, 1000);
+                
+            } else if (pollCount >= maxPolls) {
+                // 超时
+                progressText.textContent = '登录超时，请重试';
+                clearInterval(pollInterval);
+                
+                setTimeout(() => {
+                    closeLoginModal();
+                }, 3000);
+                
+            } else {
+                // 继续等待
+                progressText.textContent = `等待扫码... (${pollCount}/${maxPolls})`;
+            }
+            
+        } catch (error) {
+            console.error('轮询登录状态失败:', error);
+            progressText.textContent = '检查登录状态失败';
+        }
+    }, 5000); // 每5秒轮询一次
+}
+
+// 关闭登录模态框
+function closeLoginModal() {
+    const modal = document.querySelector('.login-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// 延长Token
+async function extendToken() {
+    const extendBtn = document.getElementById('extendTokenBtn');
+    
+    extendBtn.disabled = true;
+    extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 延长中...';
+    
+    try {
+        const response = await fetch('/tools/job-search/api/boss-extend-token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Token延长成功！');
+            checkLoginStatus(); // 刷新登录状态
+        } else {
+            alert('Token延长失败: ' + result.error);
+        }
+        
+    } catch (error) {
+        console.error('延长Token失败:', error);
+        alert('延长Token失败: ' + error.message);
+    } finally {
+        extendBtn.disabled = false;
+        extendBtn.innerHTML = '<i class="fas fa-clock"></i> 延长Token';
+    }
+}
+
+// 清除Token
+async function clearToken() {
+    if (!confirm('确定要清除Token吗？这将需要重新登录。')) {
+        return;
+    }
+    
+    const clearBtn = document.getElementById('clearTokenBtn');
+    
+    clearBtn.disabled = true;
+    clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 清除中...';
+    
+    try {
+        const response = await fetch('/tools/job-search/api/boss-clear-token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Token清除成功！');
+            checkLoginStatus(); // 刷新登录状态
+        } else {
+            alert('Token清除失败: ' + result.error);
+        }
+        
+    } catch (error) {
+        console.error('清除Token失败:', error);
+        alert('清除Token失败: ' + error.message);
+    } finally {
+        clearBtn.disabled = false;
+        clearBtn.innerHTML = '<i class="fas fa-trash"></i> 清除Token';
+    }
+}
+
+// 获取Cookie值
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// 页面卸载时清理
+window.addEventListener('beforeunload', cleanup);
+
+// 实际的跨标签页token同步功能
+function syncTokenFromOtherTabs() {
+    console.log('🔄 检查其他标签页的登录状态');
+    
+    // 检查localStorage中是否有其他标签页保存的token
+    const keys = Object.keys(localStorage);
+    const tokenKeys = keys.filter(key => 
+        key.includes('token') || 
+        key.includes('boss') || 
+        key.includes('zhipin') ||
+        key.includes('session')
+    );
+    
+    if (tokenKeys.length > 0) {
+        console.log('📦 发现其他标签页的token数据:', tokenKeys);
+        
+        // 尝试从这些key中提取有效的登录信息
+        for (const key of tokenKeys) {
+            try {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    console.log(`🔍 检查${key}:`, value.substring(0, 100) + '...');
+                }
+            } catch (e) {
+                console.warn(`解析${key}失败:`, e);
+            }
+        }
+    }
+}
+
+// 监听其他标签页的token变化
+window.addEventListener('storage', function(e) {
+    if (e.key && (e.key.includes('token') || e.key.includes('boss') || e.key.includes('zhipin'))) {
+        console.log('🔄 检测到其他标签页的token变化:', e.key, e.newValue);
+        
+        // 刷新当前页面的登录状态
+        if (typeof checkLoginStatus === 'function') {
+            setTimeout(checkLoginStatus, 1000);
+        }
+    }
+});
+
+// 页面获得焦点时检查token同步
+window.addEventListener('focus', function() {
+    console.log('👁️ 页面获得焦点，检查token同步状态');
+    syncTokenFromOtherTabs();
+});
+
+// 暴露同步函数供调试使用
+window.syncTokenFromOtherTabs = syncTokenFromOtherTabs;
+</script>
+{% endblock %}

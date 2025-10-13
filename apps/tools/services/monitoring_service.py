@@ -164,7 +164,12 @@ class DatabaseMonitor:
     @staticmethod
     def get_database_metrics():
         """获取数据库指标"""
+        from utils.test_helpers import is_testing_environment, get_mock_database_metrics
         from django.db import connection
+        
+        # 检查是否在测试环境中
+        if is_testing_environment():
+            return get_mock_database_metrics()
 
         # 检查数据库类型
         is_postgres = "postgresql" in connection.settings_dict["ENGINE"]

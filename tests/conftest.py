@@ -1,229 +1,127 @@
 """
-pytest配置文件
-定义测试夹具和配置
+pytest配置文件 - 全局测试配置和fixtures
 """
-
 import os
-from unittest.mock import Mock, patch
-
+import sys
+import pytest
+import asyncio
 import django
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.core.management import call_command
-from django.test import Client
+from django.test import TestCase
+from django.test.utils import get_runner
+from channels.testing import WebsocketCommunicator
+from channels.layers import get_channel_layer
+import logging
 
-# import factory  # 暂时注释掉，因为SQLAlchemy与Python 3.13不兼容
-import pytest
-from faker import Faker
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# 设置Django配置
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.testing")
+# 设置Django设置模块
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+
+# 初始化Django
 django.setup()
 
-User = get_user_model()
-fake = Faker("zh_CN")
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
-def django_db_setup():
-    """数据库设置"""
-    # 使用测试环境配置的数据库
-    pass
+def django_db_setup(django_db_setup, django_db_blocker):
+    """数据库设置fixture"""
+    with django_db_blocker.unblock():
+        # 创建测试数据库
+        from django.core.management import execute_from_command_line
+        execute_from_command_line(['manage.py', 'migrate', '--run-syncdb'])
+
+
+@pytest.fixture(scope="function")
+def db_transaction(django_db_setup, django_db_blocker):
+    """数据库事务fixture"""
+    with django_db_blocker.unblock():
+        yield
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """创建事件循环fixture"""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture
-def client():
-    """Django测试客户端"""
-    return Client()
+def websocket_communicator():
+    """WebSocket通信器fixture"""
+    async def _create_communicator(consumer_class, path, **kwargs):
+        communicator = WebsocketCommunicator(consumer_class, path)
+        await communicator.connect()
+        return communicator
+    
+    return _create_communicator
 
 
 @pytest.fixture
-def user():
-    """创建测试用户"""
-    return User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+def channel_layer():
+    """Channel层fixture"""
+    return get_channel_layer()
 
 
 @pytest.fixture
-def admin_user():
-    """创建管理员用户"""
-    return User.objects.create_superuser(username="admin", email="admin@example.com", password="adminpass123")
+def test_user():
+    """测试用户fixture"""
+    from django.contrib.auth.models import User
+    user = User.objects.create_user(
+        username='testuser',
+        email='test@example.com',
+        password='testpass123'
+    )
+    return user
 
 
 @pytest.fixture
-def authenticated_client(client, user):
-    """已登录的客户端"""
-    client.force_login(user)
+def authenticated_client(client, test_user):
+    """认证客户端fixture"""
+    client.force_login(test_user)
     return client
 
 
 @pytest.fixture
-def admin_client(client, admin_user):
-    """管理员客户端"""
-    client.force_login(admin_user)
-    return client
+def api_client():
+    """API客户端fixture"""
+    from rest_framework.test import APIClient
+    return APIClient()
 
 
 @pytest.fixture
-def sample_data():
-    """示例数据"""
-    return {
-        "username": fake.user_name(),
-        "email": fake.email(),
-        "password": fake.password(),
-        "title": fake.sentence(),
-        "content": fake.text(),
-        "url": fake.url(),
-    }
+def authenticated_api_client(api_client, test_user):
+    """认证API客户端fixture"""
+    api_client.force_authenticate(user=test_user)
+    return api_client
 
 
-@pytest.fixture
-def mock_external_api():
-    """模拟外部API"""
-    with patch("requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "success", "data": {}}
-        mock_get.return_value = mock_response
-        yield mock_get
+# 测试配置
+pytest_plugins = [
+    'pytest_django',
+    'pytest_asyncio',
+]
 
 
-@pytest.fixture
-def mock_redis():
-    """模拟Redis"""
-    with patch("django_redis.get_redis_connection") as mock_redis:
-        mock_connection = Mock()
-        mock_redis.return_value = mock_connection
-        yield mock_connection
-
-
-@pytest.fixture(autouse=True)
-def enable_db_access_for_all_tests(db):
-    """为所有测试启用数据库访问"""
-    pass
-
-
-# Pytest配置
 def pytest_configure(config):
     """pytest配置"""
-    # 禁用迁移以加速测试
-    settings.MIGRATION_MODULES = {
-        "auth": None,
-        "contenttypes": None,
-        "sessions": None,
-        "users": None,
-        "tools": None,
-        "content": None,
-    }
-
-    # 测试数据库配置 - 使用环境变量配置的数据库
-    pass
-
-    # 测试缓存配置
-    settings.CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "test-cache",
-        },
-        "session": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "test-session-cache",
-        },
-    }
-
-    # 会话配置
-    settings.SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-    settings.SESSION_CACHE_ALIAS = "session"
-
-    # 禁用Celery
-    settings.CELERY_TASK_ALWAYS_EAGER = True
-    settings.CELERY_TASK_EAGER_PROPAGATES = True
-
-    # 静态文件设置
-    settings.STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-
-    # 邮件设置
-    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-
-
-# 工厂类
-# class UserFactory(factory.django.DjangoModelFactory):  # 暂时注释掉，因为SQLAlchemy与Python 3.13不兼容
-#     """用户工厂"""
-#
-#     class Meta:
-#         model = User
-#
-#     username = factory.Sequence(lambda n: f"user{n}")
-#     email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
-#     first_name = factory.Faker("first_name")
-#     last_name = factory.Faker("last_name")
-#     is_active = True
-
-
-# 临时的简单用户工厂替代
-class UserFactory:
-    """临时的简单用户工厂"""
-
-    @staticmethod
-    def create(**kwargs):
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-        # 确保提供必需的username参数
-        if "username" not in kwargs:
-            kwargs["username"] = f"user_{kwargs.get('email', 'test@example.com').split('@')[0]}"
-        return User.objects.create_user(**kwargs)
-
-    @staticmethod
-    def create_batch(count, **kwargs):
-        """批量创建用户"""
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-        users = []
-        for i in range(count):
-            user_kwargs = kwargs.copy()
-            user_kwargs.setdefault("username", f"user{i}")
-            user_kwargs.setdefault("email", f"user{i}@example.com")
-            users.append(User.objects.create_user(**user_kwargs))
-        return users
-
-    def __init__(self, **kwargs):
-        """支持实例化语法"""
-        self._kwargs = kwargs
-        self._user = None
-
-    def __getattr__(self, name):
-        """代理属性访问到用户对象"""
-        if self._user is None:
-            self._user = self.create(**self._kwargs)
-        return getattr(self._user, name)
-
-
-class AdminUserFactory(UserFactory):
-    """管理员用户工厂"""
-
-    @staticmethod
-    def create(**kwargs):
-        kwargs.setdefault("is_staff", True)
-        kwargs.setdefault("is_superuser", True)
-        return UserFactory.create(**kwargs)
-
-
-# 自定义标记
-pytest_plugins = []
-
-
-def pytest_collection_modifyitems(config, items):
-    """自定义测试收集"""
-    for item in items:
-        # 为慢速测试添加标记
-        if "slow" in item.keywords:
-            item.add_marker(pytest.mark.slow)
-
-        # 为集成测试添加标记
-        if "integration" in item.keywords:
-            item.add_marker(pytest.mark.integration)
-
-        # 为API测试添加标记
-        if "api" in item.keywords:
-            item.add_marker(pytest.mark.api)
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests"
+    )
+    config.addinivalue_line(
+        "markers", "ui: marks tests as UI tests"
+    )
+    config.addinivalue_line(
+        "markers", "websocket: marks tests as WebSocket tests"
+    )
+    config.addinivalue_line(
+        "markers", "performance: marks tests as performance tests"
+    )

@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("tools", "0073_remove_achievementunlocklog_achievement_and_more"),
+        ("tools", "0072_remove_checkindetail_checkin_delete_douyinvideo_and_more"),
     ]
 
     operations = [

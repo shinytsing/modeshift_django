@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍪 Boss直聘自动Cookie提取器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .cookies-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .cookie-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .cookie-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .cookie-value {
+            color: #666;
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Boss直聘自动Cookie提取器</h1>
+        
+        <div class="alert alert-info">
+            <strong>智能提取：</strong> 这个工具会自动打开Boss直聘网站，检测你的登录状态，并自动提取所有相关的cookies用于投递任务。
+        </div>
+        
+        <div class="step">
+            <h3>步骤1：自动提取Cookies</h3>
+            <p>点击下方按钮，系统会自动打开Boss直聘网站并提取cookies</p>
+            <button class="btn" onclick="extractCookies()">🔍 自动提取Boss直聘Cookies</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>正在自动提取cookies，请稍候...</p>
+        </div>
+        
+        <div id="cookiesResult" class="cookies-display" style="display: none;">
+            <strong>提取到的Cookies：</strong><br>
+            <div id="cookiesContent"></div>
+        </div>
+        
+        <div class="step">
+            <h3>步骤2：配置投递参数</h3>
+            <div class="form-group">
+                <label for="keywords">搜索关键词 (用逗号分隔):</label>
+                <input type="text" id="keywords" value="Python开发,测试工程师" placeholder="例如: Python开发,测试工程师">
+            </div>
+            <div class="form-group">
+                <label for="cities">目标城市 (用逗号分隔):</label>
+                <input type="text" id="cities" value="北京,上海" placeholder="例如: 北京,上海">
+            </div>
+            <div class="form-group">
+                <label for="salary_min">期望薪资范围 (K):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="salary_min" value="15" placeholder="最低薪资" style="flex: 1;">
+                    <span style="line-height: 40px;">-</span>
+                    <input type="number" id="salary_max" value="25" placeholder="最高薪资" style="flex: 1;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="say_hi">打招呼语:</label>
+                <textarea id="say_hi" placeholder="请输入您的打招呼语，留空将使用默认模板">您好，我对这个职位很感兴趣，希望能有机会进一步沟通。</textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="use_ai" checked> 启用AI智能匹配和个性化打招呼语
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="send_img_resume"> 自动发送图片简历 (Boss直聘)
+                </label>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>步骤3：开始投递</h3>
+            <button class="btn btn-success" onclick="startJobSearch()" id="startBtn" disabled>🚀 开始自动投递</button>
+            <button class="btn btn-warning" onclick="copyCookies()" id="copyBtn" style="display: none;">📋 复制Cookies</button>
+        </div>
+        
+        <div id="status" class="alert" style="display: none;"></div>
+        
+        <div id="jobSearchResult" class="cookies-display" style="display: none;">
+            <strong>投递结果：</strong><br>
+            <div id="jobSearchContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let extractedCookies = {};
+        
+        async function extractCookies() {
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('cookiesResult');
+            const contentDiv = document.getElementById('cookiesContent');
+            const startBtn = document.getElementById('startBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // 显示加载状态
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            startBtn.disabled = true;
+            copyBtn.style.display = 'none';
+            
+            try {
+                const response = await fetch('/tools/job-search/api/auto-extract-cookies/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        extractedCookies = result.cookies;
+                        
+                        // 显示cookies详情
+                        let content = `成功提取到 ${result.count} 个Boss直聘cookies:\n\n`;
+                        
+                        if (result.cookies_detail) {
+                            result.cookies_detail.forEach(cookie => {
+                                content += `🍪 ${cookie.name}\n`;
+                                content += `   值: ${cookie.value.substring(0, 100)}${cookie.value.length > 100 ? '...' : ''}\n`;
+                                content += `   域名: ${cookie.domain}\n`;
+                                content += `   路径: ${cookie.path}\n`;
+                                content += `   过期: ${cookie.expires || 'Session'}\n`;
+                                content += `   安全: ${cookie.secure ? '是' : '否'}\n\n`;
+                            });
+                        }
+                        
+                        contentDiv.textContent = content;
+                        resultDiv.style.display = 'block';
+                        startBtn.disabled = false;
+                        copyBtn.style.display = 'inline-block';
+                        
+                        showStatus('✅ 成功提取到 ' + result.count + ' 个Boss直聘cookies', 'success');
+                    } else {
+                        showStatus('❌ 提取失败: ' + result.error, 'danger');
+                    }
+                } else {
+                    showStatus('❌ 请求失败: ' + response.status, 'danger');
+                }
+            } catch (error) {
+                showStatus('❌ 请求出错: ' + error.message, 'danger');
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        function copyCookies() {
+            if (Object.keys(extractedCookies).length === 0) {
+                showStatus('❌ 请先提取cookies', 'warning');
+                return;
+            }
+            
+            const cookiesText = JSON.stringify(extractedCookies, null, 2);
+            navigator.clipboard.writeText(cookiesText).then(() => {
+                showStatus('✅ Cookies已复制到剪贴板', 'success');
+            }).catch(() => {
+                showStatus('❌ 复制失败，请手动复制', 'warning');
+            });
+        }
+        
+        async function startJobSearch() {
+            if (Object.keys(extractedCookies).length === 0) {
+                showStatus('❌ 请先提取cookies', 'warning');
+                return;
+            }
+            
+            const startBtn = document.getElementById('startBtn');
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('jobSearchResult');
+            const contentDiv = document.getElementById('jobSearchContent');
+            
+            // 显示加载状态
+            startBtn.disabled = true;
+            startBtn.textContent = '投递中...';
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            showStatus('🚀 正在启动自动投递任务...', 'info');
+            
+            try {
+                const data = {
+                    keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()).filter(k => k),
+                    cities: document.getElementById('cities').value.split(',').map(c => c.trim()).filter(c => c),
+                    salary_min: parseInt(document.getElementById('salary_min').value) || 15,
+                    salary_max: parseInt(document.getElementById('salary_max').value) || 25,
+                    say_hi: document.getElementById('say_hi').value.trim(),
+                    use_ai: document.getElementById('use_ai').checked,
+                    send_img_resume: document.getElementById('send_img_resume').checked
+                };
+                
+                const response = await fetch('/tools/job-search/api/start-with-extracted-cookies/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        let content = `投递任务启动成功！\n\n`;
+                        content += `投递平台: ${result.platforms?.join(', ') || 'Boss直聘'}\n`;
+                        content += `投递数量: ${result.applied_count || 0} 个职位\n`;
+                        content += `找到职位: ${result.total_found || 0} 个\n`;
+                        content += `登录状态: ${result.login_message || '已登录'}\n`;
+                        content += `Cookies数量: ${result.cookie_count || 0} 个\n\n`;
+                        
+                        if (result.message) {
+                            content += `详细信息: ${result.message}\n`;
+                        }
+                        
+                        contentDiv.textContent = content;
+                        resultDiv.style.display = 'block';
+                        
+                        showStatus('✅ 投递任务启动成功！', 'success');
+                    } else {
+                        showStatus('❌ 投递失败: ' + result.error, 'danger');
+                    }
+                } else {
+                    showStatus('❌ 请求失败: ' + response.status, 'danger');
+                }
+            } catch (error) {
+                showStatus('❌ 请求出错: ' + error.message, 'danger');
+            } finally {
+                startBtn.disabled = false;
+                startBtn.textContent = '🚀 开始自动投递';
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'alert alert-' + type;
+            statusDiv.style.display = 'block';
+        }
+        
+        // 页面加载时自动提取cookies
+        window.onload = function() {
+            extractCookies();
+        };
+    </script>
+</body>
+</html>

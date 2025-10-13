@@ -211,6 +211,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "src/static",
     BASE_DIR / "static",
+    BASE_DIR / "tests/reports",  # 添加Allure报告目录
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 

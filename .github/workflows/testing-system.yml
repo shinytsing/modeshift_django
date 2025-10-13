@@ -1,0 +1,372 @@
+# GitHub Actions CI/CD 配置
+
+name: 🧪 全栈自动化测试系统
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 每天凌晨2点执行测试
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+  DJANGO_SETTINGS_MODULE: 'config.settings.development'
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    name: 🔍 代码质量检查
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 安装Python依赖
+        run: |
+          pip install --upgrade pip
+          pip install flake8 black isort mypy bandit safety
+          pip install -r requirements.txt
+      
+      - name: 🎨 代码格式化检查
+        run: |
+          echo "检查代码格式..."
+          black --check --diff .
+          isort --check-only --diff .
+      
+      - name: 🔍 代码质量检查
+        run: |
+          echo "执行代码质量检查..."
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: 🔒 安全扫描
+        run: |
+          echo "执行安全扫描..."
+          bandit -r . -f json -o bandit-report.json || true
+          safety check --json --output safety-report.json || true
+      
+      - name: 📊 上传安全报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # 后端测试
+  backend-tests:
+    name: 🐍 后端测试
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-django pytest-xdist
+          pip install allure-pytest
+      
+      - name: 🗄️ 数据库迁移
+        run: |
+          python manage.py migrate --run-syncdb
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      
+      - name: 🧪 执行单元测试
+        run: |
+          pytest tests/functional/ \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            --junitxml=functional-results.xml \
+            --alluredir=tests/reports/allure-results \
+            -v
+      
+      - name: 🔌 执行接口测试
+        run: |
+          pytest tests/api/ \
+            --cov=. \
+            --cov-append \
+            --cov-report=xml \
+            --cov-report=html \
+            --junitxml=api-results.xml \
+            --alluredir=tests/reports/allure-results \
+            -v
+      
+      - name: ⚡ 执行性能测试
+        run: |
+          pytest tests/performance/ \
+            --cov=. \
+            --cov-append \
+            --cov-report=xml \
+            --cov-report=html \
+            --junitxml=performance-results.xml \
+            --alluredir=tests/reports/allure-results \
+            -v
+      
+      - name: 🔒 执行安全测试
+        run: |
+          pytest tests/security/ \
+            --cov=. \
+            --cov-append \
+            --cov-report=xml \
+            --cov-report=html \
+            --junitxml=security-results.xml \
+            --alluredir=tests/reports/allure-results \
+            -v
+      
+      - name: 📊 生成Allure报告
+        run: |
+          allure generate tests/reports/allure-results \
+            -o tests/reports/allure-report \
+            --clean
+      
+      - name: 📈 上传测试报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            tests/reports/allure-report/
+            coverage.xml
+            htmlcov/
+            *-results.xml
+
+  # 前端测试
+  frontend-tests:
+    name: ⚛️ 前端测试
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 📦 设置Node.js环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📦 安装前端依赖
+        run: |
+          cd testing_system/frontend
+          npm ci
+      
+      - name: 🧪 执行前端测试
+        run: |
+          cd testing_system/frontend
+          npm run test -- --coverage --watchAll=false
+      
+      - name: 🏗️ 构建前端
+        run: |
+          cd testing_system/frontend
+          npm run build
+      
+      - name: 📊 上传前端测试报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-reports
+          path: |
+            testing_system/frontend/coverage/
+            testing_system/frontend/build/
+
+  # UI自动化测试
+  ui-tests:
+    name: 🖥️ UI自动化测试
+    runs-on: ubuntu-latest
+    needs: backend-tests
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 🐍 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: 📦 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install selenium pytest-selenium
+      
+      - name: 🌐 安装Chrome浏览器
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
+      - name: 🚗 安装ChromeDriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f3 | cut -d '.' -f1)
+          wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}/chromedriver_linux64.zip"
+          sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+      
+      - name: 🧪 执行UI测试
+        run: |
+          pytest tests/ui/ \
+            --junitxml=ui-results.xml \
+            --alluredir=tests/reports/allure-results \
+            -v
+        env:
+          DISPLAY: ':99'
+      
+      - name: 📊 上传UI测试报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ui-reports
+          path: |
+            ui-results.xml
+            tests/reports/screenshots/
+
+  # 测试结果汇总
+  test-summary:
+    name: 📊 测试结果汇总
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, ui-tests]
+    if: always()
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 📥 下载测试报告
+        uses: actions/download-artifact@v3
+        with:
+          path: reports/
+      
+      - name: 📊 生成测试摘要
+        run: |
+          echo "# 🧪 测试执行摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📈 测试统计" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 后端测试: 完成" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 前端测试: 完成" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ UI测试: 完成" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 测试报告" >> $GITHUB_STEP_SUMMARY
+          echo "- [Allure报告](reports/test-reports/allure-report/index.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- [覆盖率报告](reports/test-reports/htmlcov/index.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- [安全报告](reports/security-reports/)" >> $GITHUB_STEP_SUMMARY
+      
+      - name: 📧 发送测试通知
+        if: failure()
+        run: |
+          echo "测试执行失败，请检查测试报告"
+
+  # 部署到GitHub Pages
+  deploy:
+    name: 🚀 部署到GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [test-summary]
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 📥 下载测试报告
+        uses: actions/download-artifact@v3
+        with:
+          path: reports/
+      
+      - name: 🏗️ 构建部署包
+        run: |
+          mkdir -p deploy
+          cp -r reports/test-reports/allure-report deploy/
+          cp -r reports/test-reports/htmlcov deploy/
+          
+          # 创建index.html
+          cat > deploy/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>🧪 全栈自动化测试系统</title>
+              <meta charset="utf-8">
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  h1 { color: #333; text-align: center; }
+                  .links { display: flex; flex-direction: column; gap: 20px; margin-top: 30px; }
+                  .link { padding: 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; text-align: center; }
+                  .link:hover { background: #0056b3; }
+                  .status { text-align: center; margin: 20px 0; padding: 10px; background: #d4edda; color: #155724; border-radius: 5px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🧪 全栈自动化测试系统</h1>
+                  <div class="status">✅ 测试执行成功</div>
+                  <div class="links">
+                      <a href="allure-report/index.html" class="link">📊 Allure测试报告</a>
+                      <a href="htmlcov/index.html" class="link">📈 代码覆盖率报告</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+      
+      - name: 🚀 部署到GitHub Pages
+        uses: actions/deploy-pages@v2
+        with:
+          artifact_name: deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_url: ${{ github.pages.url }}

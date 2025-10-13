@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}跨标签页Token同步测试{% endblock %}
+
+{% block extra_css %}
+<style>
+    .token-manager-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .platform-section {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .platform-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .platform-logo {
+        width: 32px;
+        height: 32px;
+        margin-right: 10px;
+    }
+    
+    .token-form {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 15px;
+    }
+    
+    .token-input {
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background-color: #1e7e34;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+    
+    .btn-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .btn-warning:hover {
+        background-color: #e0a800;
+    }
+    
+    .status-indicator {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        min-width: 60px;
+    }
+    
+    .status-logged-in {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-logged-out {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .status-unknown {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .info-panel {
+        background: #e9ecef;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+    
+    .sync-status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sync-status.show {
+        opacity: 1;
+    }
+    
+    .sync-status.success {
+        background: #28a745;
+    }
+    
+    .sync-status.error {
+        background: #dc3545;
+    }
+    
+    .instructions {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .instructions h4 {
+        margin-top: 0;
+        color: #0c5460;
+    }
+    
+    .instructions ol {
+        margin-bottom: 0;
+    }
+    
+    .instructions li {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="token-manager-container">
+    <h1>跨标签页Token同步测试</h1>
+    
+    <div class="instructions">
+        <h4>使用说明：</h4>
+        <ol>
+            <li>在任意标签页输入Token并点击"保存Token"</li>
+            <li>打开新标签页，访问相同页面</li>
+            <li>观察Token是否自动同步到新标签页</li>
+            <li>修改Token后观察其他标签页是否同步更新</li>
+            <li>测试不同平台的Token管理</li>
+        </ol>
+    </div>
+    
+    <div class="sync-status" id="syncStatus"></div>
+    
+    <!-- Boss直聘 -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>
+                <img src="{% static 'images/boss-logo.png' %}" alt="Boss直聘" class="platform-logo" onerror="this.style.display='none'">
+                Boss直聘
+            </div>
+            <div class="status-indicator status-unknown" id="boss_status">未知</div>
+        </div>
+        
+        <div class="token-form">
+            <input type="text" id="boss_token" class="token-input" placeholder="请输入Boss直聘Token">
+            <button class="btn btn-primary" onclick="saveToken('boss')">保存Token</button>
+            <button class="btn btn-success" onclick="testLogin('boss')">测试登录</button>
+            <button class="btn btn-danger" onclick="clearToken('boss')">清除Token</button>
+        </div>
+        
+        <div class="info-panel">
+            <div>登录时间: <span id="boss_login_time">-</span></div>
+            <div>最后同步: <span id="boss_last_sync">-</span></div>
+        </div>
+    </div>
+    
+    <!-- 拉勾网 -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>
+                <img src="{% static 'images/lagou-logo.png' %}" alt="拉勾网" class="platform-logo" onerror="this.style.display='none'">
+                拉勾网
+            </div>
+            <div class="status-indicator status-unknown" id="lagou_status">未知</div>
+        </div>
+        
+        <div class="token-form">
+            <input type="text" id="lagou_token" class="token-input" placeholder="请输入拉勾网Token">
+            <button class="btn btn-primary" onclick="saveToken('lagou')">保存Token</button>
+            <button class="btn btn-success" onclick="testLogin('lagou')">测试登录</button>
+            <button class="btn btn-danger" onclick="clearToken('lagou')">清除Token</button>
+        </div>
+        
+        <div class="info-panel">
+            <div>登录时间: <span id="lagou_login_time">-</span></div>
+            <div>最后同步: <span id="lagou_last_sync">-</span></div>
+        </div>
+    </div>
+    
+    <!-- 猎聘 -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>
+                <img src="{% static 'images/liepin-logo.png' %}" alt="猎聘" class="platform-logo" onerror="this.style.display='none'">
+                猎聘
+            </div>
+            <div class="status-indicator status-unknown" id="liepin_status">未知</div>
+        </div>
+        
+        <div class="token-form">
+            <input type="text" id="liepin_token" class="token-input" placeholder="请输入猎聘Token">
+            <button class="btn btn-primary" onclick="saveToken('liepin')">保存Token</button>
+            <button class="btn btn-success" onclick="testLogin('liepin')">测试登录</button>
+            <button class="btn btn-danger" onclick="clearToken('liepin')">清除Token</button>
+        </div>
+        
+        <div class="info-panel">
+            <div>登录时间: <span id="liepin_login_time">-</span></div>
+            <div>最后同步: <span id="liepin_last_sync">-</span></div>
+        </div>
+    </div>
+    
+    <!-- 智联招聘 -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>
+                <img src="{% static 'images/zhipin-logo.png' %}" alt="智联招聘" class="platform-logo" onerror="this.style.display='none'">
+                智联招聘
+            </div>
+            <div class="status-indicator status-unknown" id="zhipin_status">未知</div>
+        </div>
+        
+        <div class="token-form">
+            <input type="text" id="zhipin_token" class="token-input" placeholder="请输入智联招聘Token">
+            <button class="btn btn-primary" onclick="saveToken('zhipin')">保存Token</button>
+            <button class="btn btn-success" onclick="testLogin('zhipin')">测试登录</button>
+            <button class="btn btn-danger" onclick="clearToken('zhipin')">清除Token</button>
+        </div>
+        
+        <div class="info-panel">
+            <div>登录时间: <span id="zhipin_login_time">-</span></div>
+            <div>最后同步: <span id="zhipin_last_sync">-</span></div>
+        </div>
+    </div>
+    
+    <!-- 51job -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>
+                <img src="{% static 'images/51job-logo.png' %}" alt="51job" class="platform-logo" onerror="this.style.display='none'">
+                51job
+            </div>
+            <div class="status-indicator status-unknown" id="51job_status">未知</div>
+        </div>
+        
+        <div class="token-form">
+            <input type="text" id="51job_token" class="token-input" placeholder="请输入51job Token">
+            <button class="btn btn-primary" onclick="saveToken('51job')">保存Token</button>
+            <button class="btn btn-success" onclick="testLogin('51job')">测试登录</button>
+            <button class="btn btn-danger" onclick="clearToken('51job')">清除Token</button>
+        </div>
+        
+        <div class="info-panel">
+            <div>登录时间: <span id="51job_login_time">-</span></div>
+            <div>最后同步: <span id="51job_last_sync">-</span></div>
+        </div>
+    </div>
+    
+    <!-- 全局操作 -->
+    <div class="platform-section">
+        <div class="platform-title">
+            <div>全局操作</div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="syncAllTokens()">同步所有Token</button>
+            <button class="btn btn-success" onclick="checkAllLoginStatus()">检查所有登录状态</button>
+            <button class="btn btn-warning" onclick="testAllLogin()">测试所有登录</button>
+            <button class="btn btn-danger" onclick="clearAllTokens()">清除所有Token</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/cross_tab_token_manager.js' %}"></script>
+<script>
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 立即同步一次
+    if (window.crossTabTokenManager) {
+        window.crossTabTokenManager.syncTokens();
+    }
+});
+
+// 保存Token
+async function saveToken(platform) {
+    const tokenInput = document.getElementById(`${platform}_token`);
+    const token = tokenInput.value.trim();
+    
+    if (!token) {
+        showSyncStatus('请输入Token', 'error');
+        return;
+    }
+    
+    // 检查crossTabTokenManager是否已加载
+    if (!window.crossTabTokenManager) {
+        showSyncStatus('Token管理器未加载，请刷新页面重试', 'error');
+        return;
+    }
+    
+    try {
+        const success = await window.crossTabTokenManager.saveTokenToServer(platform, token);
+        if (success) {
+            showSyncStatus(`${platform} Token保存成功`, 'success');
+            // 立即同步
+            await window.crossTabTokenManager.syncTokens();
+        } else {
+            showSyncStatus(`${platform} Token保存失败`, 'error');
+        }
+    } catch (error) {
+        console.error('Save token error:', error);
+        showSyncStatus(`${platform} Token保存出错`, 'error');
+    }
+}
+
+// 测试登录
+async function testLogin(platform) {
+    if (!window.crossTabTokenManager) {
+        showSyncStatus('Token管理器未加载，请刷新页面重试', 'error');
+        return;
+    }
+    
+    try {
+        const result = await window.crossTabTokenManager.testLogin(platform);
+        if (result && result.success) {
+            showSyncStatus(`${platform} 登录测试成功`, 'success');
+        } else {
+            showSyncStatus(`${platform} 登录测试失败`, 'error');
+        }
+    } catch (error) {
+        console.error('Test login error:', error);
+        showSyncStatus(`${platform} 登录测试出错`, 'error');
+    }
+}
+
+// 清除Token
+async function clearToken(platform) {
+    if (!confirm(`确定要清除${platform}的Token吗？`)) {
+        return;
+    }
+    
+    if (!window.crossTabTokenManager) {
+        showSyncStatus('Token管理器未加载，请刷新页面重试', 'error');
+        return;
+    }
+    
+    try {
+        const success = await window.crossTabTokenManager.clearToken(platform);
+        if (success) {
+            showSyncStatus(`${platform} Token已清除`, 'success');
+            // 立即同步
+            await window.crossTabTokenManager.syncTokens();
+        } else {
+            showSyncStatus(`${platform} Token清除失败`, 'error');
+        }
+    } catch (error) {
+        console.error('Clear token error:', error);
+        showSyncStatus(`${platform} Token清除出错`, 'error');
+    }
+}
+
+// 同步所有Token
+async function syncAllTokens() {
+    if (!window.crossTabTokenManager) {
+        showSyncStatus('Token管理器未加载，请刷新页面重试', 'error');
+        return;
+    }
+    
+    try {
+        await window.crossTabTokenManager.syncTokens();
+        showSyncStatus('所有Token同步完成', 'success');
+    } catch (error) {
+        console.error('Sync all tokens error:', error);
+        showSyncStatus('Token同步失败', 'error');
+    }
+}
+
+// 检查所有登录状态
+async function checkAllLoginStatus() {
+    const platforms = ['boss', 'lagou', 'liepin', 'zhipin', '51job'];
+    let successCount = 0;
+    
+    for (const platform of platforms) {
+        try {
+            const status = await window.crossTabTokenManager.checkLoginStatus(platform);
+            if (status && status.success) {
+                successCount++;
+            }
+        } catch (error) {
+            console.error(`Check login status error for ${platform}:`, error);
+        }
+    }
+    
+    showSyncStatus(`检查完成，${successCount}/${platforms.length}个平台有有效Token`, 'success');
+}
+
+// 测试所有登录
+async function testAllLogin() {
+    const platforms = ['boss', 'lagou', 'liepin', 'zhipin', '51job'];
+    let successCount = 0;
+    
+    for (const platform of platforms) {
+        try {
+            const result = await window.crossTabTokenManager.testLogin(platform);
+            if (result && result.success) {
+                successCount++;
+            }
+        } catch (error) {
+            console.error(`Test login error for ${platform}:`, error);
+        }
+    }
+    
+    showSyncStatus(`测试完成，${successCount}/${platforms.length}个平台登录成功`, 'success');
+}
+
+// 清除所有Token
+async function clearAllTokens() {
+    if (!confirm('确定要清除所有Token吗？')) {
+        return;
+    }
+    
+    const platforms = ['boss', 'lagou', 'liepin', 'zhipin', '51job'];
+    let successCount = 0;
+    
+    for (const platform of platforms) {
+        try {
+            const success = await window.crossTabTokenManager.clearToken(platform);
+            if (success) {
+                successCount++;
+            }
+        } catch (error) {
+            console.error(`Clear token error for ${platform}:`, error);
+        }
+    }
+    
+    showSyncStatus(`清除完成，${successCount}/${platforms.length}个Token已清除`, 'success');
+    // 立即同步
+    await window.crossTabTokenManager.syncTokens();
+}
+
+// 显示同步状态
+function showSyncStatus(message, type = 'success') {
+    const statusElement = document.getElementById('syncStatus');
+    statusElement.textContent = message;
+    statusElement.className = `sync-status show ${type}`;
+    
+    setTimeout(() => {
+        statusElement.classList.remove('show');
+    }, 3000);
+}
+</script>
+{% endblock %}

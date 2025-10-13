@@ -1,0 +1,74 @@
+{
+  "uid": "auth_login_test",
+  "name": "测试用户登录页面访问",
+  "fullName": "tests.test_pure_django.TestUserAuthentication#test_user_login_page",
+  "historyId": "auth_login_test_001",
+  "time": {
+    "start": 1760076018225,
+    "stop": 1760076018725,
+    "duration": 500
+  },
+  "description": "测试用户登录页面访问",
+  "status": "passed",
+  "statusMessage": "",
+  "flaky": false,
+  "newFailed": false,
+  "newBroken": false,
+  "newPassed": true,
+  "retriesCount": 0,
+  "retriesStatusChange": false,
+  "labels": [
+    {
+      "name": "severity",
+      "value": "critical"
+    },
+    {
+      "name": "feature",
+      "value": "安全测试"
+    },
+    {
+      "name": "epic",
+      "value": "Django网站全维度测试"
+    },
+    {
+      "name": "story",
+      "value": "用户认证测试"
+    },
+    {
+      "name": "parentSuite",
+      "value": "tests"
+    },
+    {
+      "name": "suite",
+      "value": "test_pure_django"
+    },
+    {
+      "name": "subSuite",
+      "value": "TestUserAuthentication"
+    },
+    {
+      "name": "host",
+      "value": "localhost"
+    },
+    {
+      "name": "thread",
+      "value": "MainThread"
+    },
+    {
+      "name": "framework",
+      "value": "django"
+    },
+    {
+      "name": "language",
+      "value": "python"
+    },
+    {
+      "name": "package",
+      "value": "tests.test_pure_django"
+    }
+  ],
+  "parameters": [],
+  "links": [],
+  "hidden": false,
+  "retry": false
+}

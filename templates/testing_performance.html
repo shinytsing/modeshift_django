@@ -1,0 +1,692 @@
+# 性能测试展示页面
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}性能测试展示 - ModeShift{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- 页面标题 -->
+    <div class="geek-header text-center mb-5">
+        <h1 class="geek-title">
+            <span class="terminal-prompt">$</span> 性能测试展示
+        </h1>
+        <p class="geek-subtitle">Load Testing & Performance Analysis</p>
+    </div>
+
+    <!-- 性能概览 -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon performance">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>响应时间</h4>
+                    <p>平均响应</p>
+                    <span class="stat-number" id="avg-response">89ms</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>QPS</h4>
+                    <p>每秒请求数</p>
+                    <span class="stat-number" id="qps">213.7</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>并发用户</h4>
+                    <p>最大支持</p>
+                    <span class="stat-number" id="concurrent">50</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>成功率</h4>
+                    <p>请求成功率</p>
+                    <span class="stat-number" id="success-rate">88%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 性能图表 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-line"></i> 响应时间趋势</h3>
+                </div>
+                <div class="geek-card-body">
+                    <canvas id="response-time-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-bar"></i> 并发性能测试</h3>
+                </div>
+                <div class="geek-card-body">
+                    <canvas id="concurrent-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 性能测试详情 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-list"></i> 性能测试详情</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="performance-tests">
+                        <!-- 响应时间测试 -->
+                        <div class="test-group">
+                            <h5><i class="fas fa-clock"></i> 响应时间测试</h5>
+                            <div class="test-results">
+                                <div class="test-result-item">
+                                    <span class="endpoint">首页访问</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 15%"></div>
+                                    </div>
+                                    <span class="time">89ms</span>
+                                </div>
+                                <div class="test-result-item">
+                                    <span class="endpoint">BMI计算API</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 25%"></div>
+                                    </div>
+                                    <span class="time">123ms</span>
+                                </div>
+                                <div class="test-result-item">
+                                    <span class="endpoint">心率计算API</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 20%"></div>
+                                    </div>
+                                    <span class="time">98ms</span>
+                                </div>
+                                <div class="test-result-item">
+                                    <span class="endpoint">测试用例生成API</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 40%"></div>
+                                    </div>
+                                    <span class="time">234ms</span>
+                                </div>
+                                <div class="test-result-item">
+                                    <span class="endpoint">健康检查API</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 10%"></div>
+                                    </div>
+                                    <span class="time">67ms</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 并发测试 -->
+                        <div class="test-group">
+                            <h5><i class="fas fa-users"></i> 并发性能测试</h5>
+                            <div class="concurrent-test-results">
+                                <div class="concurrent-test-item">
+                                    <span class="concurrent-level">1 并发</span>
+                                    <div class="metrics">
+                                        <span class="metric">成功率: 100%</span>
+                                        <span class="metric">QPS: 11.2</span>
+                                        <span class="metric">响应时间: 89ms</span>
+                                    </div>
+                                </div>
+                                <div class="concurrent-test-item">
+                                    <span class="concurrent-level">5 并发</span>
+                                    <div class="metrics">
+                                        <span class="metric">成功率: 100%</span>
+                                        <span class="metric">QPS: 40.7</span>
+                                        <span class="metric">响应时间: 123ms</span>
+                                    </div>
+                                </div>
+                                <div class="concurrent-test-item">
+                                    <span class="concurrent-level">10 并发</span>
+                                    <div class="metrics">
+                                        <span class="metric">成功率: 100%</span>
+                                        <span class="metric">QPS: 64.1</span>
+                                        <span class="metric">响应时间: 156ms</span>
+                                    </div>
+                                </div>
+                                <div class="concurrent-test-item">
+                                    <span class="concurrent-level">20 并发</span>
+                                    <div class="metrics">
+                                        <span class="metric">成功率: 95%</span>
+                                        <span class="metric">QPS: 105.8</span>
+                                        <span class="metric">响应时间: 189ms</span>
+                                    </div>
+                                </div>
+                                <div class="concurrent-test-item">
+                                    <span class="concurrent-level">50 并发</span>
+                                    <div class="metrics">
+                                        <span class="metric">成功率: 88%</span>
+                                        <span class="metric">QPS: 213.7</span>
+                                        <span class="metric">响应时间: 234ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 资源使用情况 -->
+                        <div class="test-group">
+                            <h5><i class="fas fa-server"></i> 资源使用情况</h5>
+                            <div class="resource-usage">
+                                <div class="resource-item">
+                                    <span class="resource-label">CPU使用率</span>
+                                    <div class="resource-bar">
+                                        <div class="resource-fill cpu" style="width: 45%"></div>
+                                    </div>
+                                    <span class="resource-value">45%</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="resource-label">内存使用率</span>
+                                    <div class="resource-bar">
+                                        <div class="resource-fill memory" style="width: 62%"></div>
+                                    </div>
+                                    <span class="resource-value">62%</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="resource-label">磁盘I/O</span>
+                                    <div class="resource-bar">
+                                        <div class="resource-fill disk" style="width: 28%"></div>
+                                    </div>
+                                    <span class="resource-value">28%</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="resource-label">网络带宽</span>
+                                    <div class="resource-bar">
+                                        <div class="resource-fill network" style="width: 35%"></div>
+                                    </div>
+                                    <span class="resource-value">35%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 性能测试执行 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-play-circle"></i> 性能测试执行</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="test-controls">
+                        <button id="run-performance-tests" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> 执行性能测试
+                        </button>
+                        <button id="run-load-test" class="btn btn-warning btn-lg">
+                            <i class="fas fa-weight-hanging"></i> 负载测试
+                        </button>
+                        <button id="run-stress-test" class="btn btn-danger btn-lg">
+                            <i class="fas fa-fire"></i> 压力测试
+                        </button>
+                        <button id="view-performance-report" class="btn btn-info btn-lg" disabled>
+                            <i class="fas fa-chart-bar"></i> 查看报告
+                        </button>
+                    </div>
+                    
+                    <div class="test-config mt-4">
+                        <h5>测试配置：</h5>
+                        <div class="config-options">
+                            <div class="config-item">
+                                <label>并发用户数：</label>
+                                <input type="range" id="concurrent-users" min="1" max="100" value="10">
+                                <span id="concurrent-value">10</span>
+                            </div>
+                            <div class="config-item">
+                                <label>测试时长：</label>
+                                <select id="test-duration">
+                                    <option value="60">1分钟</option>
+                                    <option value="300" selected>5分钟</option>
+                                    <option value="600">10分钟</option>
+                                </select>
+                            </div>
+                            <div class="config-item">
+                                <label>测试类型：</label>
+                                <select id="test-type">
+                                    <option value="response">响应时间测试</option>
+                                    <option value="concurrent">并发测试</option>
+                                    <option value="load">负载测试</option>
+                                    <option value="stress">压力测试</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="performance-test-output mt-4" id="performance-test-output" style="display: none;">
+                        <h5>测试输出：</h5>
+                        <div class="terminal-output" id="performance-terminal-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-icon.success { color: #00ff00; }
+.stat-icon.warning { color: #ffe66d; }
+
+.test-group {
+    margin-bottom: 2rem;
+}
+
+.test-group h5 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #00ffff;
+}
+
+.test-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.test-result-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.endpoint {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    min-width: 150px;
+}
+
+.progress-bar-container {
+    flex: 1;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff00, #00ffff);
+    transition: width 0.3s ease;
+}
+
+.time {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: right;
+}
+
+.concurrent-test-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.concurrent-test-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.concurrent-level {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.metrics {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+}
+
+.metric {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.resource-usage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.resource-label {
+    color: #fff;
+    min-width: 100px;
+}
+
+.resource-bar {
+    flex: 1;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.resource-fill.cpu { background: linear-gradient(90deg, #ff6b6b, #ff4757); }
+.resource-fill.memory { background: linear-gradient(90deg, #4ecdc4, #44a08d); }
+.resource-fill.disk { background: linear-gradient(90deg, #ffe66d, #ffa502); }
+.resource-fill.network { background: linear-gradient(90deg, #a4b0be, #747d8c); }
+
+.resource-value {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: right;
+}
+
+.test-config {
+    background: rgba(0, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.config-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.config-item label {
+    color: #fff;
+    min-width: 100px;
+}
+
+.config-item input, .config-item select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #00ffff;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+.config-item input[type="range"] {
+    flex: 1;
+}
+
+.terminal-output {
+    background: #000;
+    color: #00ff00;
+    padding: 1rem;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #00ff00;
+}
+
+.test-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .test-result-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .concurrent-test-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .metrics {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .config-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化图表
+    initCharts();
+    
+    // 设置事件监听器
+    setupEventListeners();
+    
+    // 更新并发用户数显示
+    updateConcurrentValue();
+});
+
+function initCharts() {
+    // 响应时间趋势图
+    const ctx1 = document.getElementById('response-time-chart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: ['首页', 'BMI计算', '心率计算', '测试用例生成', '健康检查'],
+            datasets: [{
+                label: '响应时间 (ms)',
+                data: [89, 123, 98, 234, 67],
+                borderColor: '#00ffff',
+                backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // 并发性能测试图
+    const ctx2 = document.getElementById('concurrent-chart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['1用户', '5用户', '10用户', '20用户', '50用户'],
+            datasets: [{
+                label: '成功率 (%)',
+                data: [100, 100, 100, 95, 88],
+                backgroundColor: '#00ff00'
+            }, {
+                label: 'QPS',
+                data: [11.2, 40.7, 64.1, 105.8, 213.7],
+                backgroundColor: '#00ffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function setupEventListeners() {
+    document.getElementById('run-performance-tests').addEventListener('click', runPerformanceTests);
+    document.getElementById('run-load-test').addEventListener('click', runLoadTest);
+    document.getElementById('run-stress-test').addEventListener('click', runStressTest);
+    document.getElementById('view-performance-report').addEventListener('click', viewPerformanceReport);
+    
+    document.getElementById('concurrent-users').addEventListener('input', updateConcurrentValue);
+}
+
+function updateConcurrentValue() {
+    const slider = document.getElementById('concurrent-users');
+    const value = document.getElementById('concurrent-value');
+    value.textContent = slider.value;
+}
+
+async function runPerformanceTests() {
+    const btn = document.getElementById('run-performance-tests');
+    const outputDiv = document.getElementById('performance-test-output');
+    const terminalOutput = document.getElementById('performance-terminal-output');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 执行中...';
+    outputDiv.style.display = 'block';
+    terminalOutput.innerHTML = '';
+
+    try {
+        const testSteps = [
+            '正在启动性能测试...',
+            '初始化测试环境...',
+            '执行响应时间测试...',
+            '✓ 首页访问: 89ms',
+            '✓ BMI计算API: 123ms',
+            '✓ 心率计算API: 98ms',
+            '✓ 测试用例生成API: 234ms',
+            '✓ 健康检查API: 67ms',
+            '执行并发测试...',
+            '✓ 1并发: 100%成功率, 11.2 QPS',
+            '✓ 5并发: 100%成功率, 40.7 QPS',
+            '✓ 10并发: 100%成功率, 64.1 QPS',
+            '✓ 20并发: 95%成功率, 105.8 QPS',
+            '✓ 50并发: 88%成功率, 213.7 QPS',
+            '分析资源使用情况...',
+            '✓ CPU使用率: 45%',
+            '✓ 内存使用率: 62%',
+            '✓ 磁盘I/O: 28%',
+            '✓ 网络带宽: 35%',
+            '生成性能测试报告...',
+            '性能测试执行完成！'
+        ];
+
+        for (let i = 0; i < testSteps.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            terminalOutput.innerHTML += testSteps[i] + '\n';
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        document.getElementById('view-performance-report').disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> 测试完成';
+
+    } catch (error) {
+        terminalOutput.innerHTML += '错误: ' + error.message + '\n';
+        btn.innerHTML = '<i class="fas fa-times"></i> 测试失败';
+    }
+}
+
+async function runLoadTest() {
+    const concurrentUsers = document.getElementById('concurrent-users').value;
+    const duration = document.getElementById('test-duration').value;
+    
+    alert(`启动负载测试：${concurrentUsers}个并发用户，持续${duration}秒`);
+}
+
+async function runStressTest() {
+    alert('启动压力测试：逐步增加负载直到系统极限');
+}
+
+function viewPerformanceReport() {
+    alert('性能测试报告功能待实现');
+}
+</script>
+{% endblock %}

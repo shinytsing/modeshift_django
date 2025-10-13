@@ -319,6 +319,17 @@ from .views.cookie_test_views import cookie_test_page
 from .views.simple_cookie_test_views import simple_cookie_test_page
 
 # 从AI助手视图导入
+from .views.java_job_integration_views import (
+    start_java_job_delivery_api,
+    get_java_job_status_api,
+    stop_java_job_api,
+    cleanup_java_job_api,
+)
+from .views.java_job_launcher_view import java_job_launcher
+from .views.boss_qr_code_views import get_boss_qr_code_api, get_boss_qr_image_api
+from .views.java_boss_qr_views import get_java_boss_qr_code_api, get_java_boss_qr_image_api, get_login_status_api
+from .views.test_qr_views import test_qr_api
+
 from .views.ai_assistant_views import ai_assistant_api, ai_assistant_features_api
 
 # 🔧 基础工具视图
@@ -865,6 +876,19 @@ urlpatterns = [
     path("job-search/api/boss-phone-login/", start_boss_phone_login_api, name="start_boss_phone_login_api"),
     path("job-search/api/boss-verify-code/", verify_boss_phone_code_api, name="verify_boss_phone_code_api"),
     path("job-search/api/boss-iframe-url/", get_boss_iframe_login_url_api, name="get_boss_iframe_login_url_api"),
+    
+    # Java Job项目集成路由
+    path("java-job/launcher/", java_job_launcher, name="java_job_launcher"),
+    path("java-job/api/start/", start_java_job_delivery_api, name="start_java_job_delivery_api"),
+    path("java-job/api/qr-code/", get_boss_qr_code_api, name="get_boss_qr_code_api"),
+    path("java-job/api/qr-image/", get_boss_qr_image_api, name="get_boss_qr_image_api"),
+    path("java-job/api/java-qr-code/", get_java_boss_qr_code_api, name="get_java_boss_qr_code_api"),
+    path("java-job/api/java-qr-image/", get_java_boss_qr_image_api, name="get_java_boss_qr_image_api"),
+    path("java-job/api/login-status/", get_login_status_api, name="get_login_status_api"),
+    path("test-qr/", test_qr_api, name="test_qr_api"),
+    path("java-job/api/status/", get_java_job_status_api, name="get_java_job_status_api"),
+    path("java-job/api/stop/", stop_java_job_api, name="stop_java_job_api"),
+    path("java-job/api/cleanup/", cleanup_java_job_api, name="cleanup_java_job_api"),
     
     # 增强版Boss直聘路由 - 已移除（功能不存在）
     

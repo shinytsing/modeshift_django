@@ -1,0 +1,1371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}增强版AI一键投递系统 - QAToolBox{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 极客风格主题 */
+:root {
+    --geek-green: #00ff41;
+    --geek-dark: #0a0a0a;
+    --geek-gray: #1a1a1a;
+    --geek-light-gray: #333333;
+    --geek-text: #ffffff;
+    --geek-accent: #00cc33;
+    --geek-warning: #ff6600;
+    --geek-error: #ff0000;
+    --geek-blue: #0099ff;
+    --geek-purple: #9966ff;
+}
+
+body {
+    background: var(--geek-dark);
+    color: var(--geek-text);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.launcher-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.launcher-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 204, 51, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 153, 255, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.launcher-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding: 30px 0;
+    border-bottom: 2px solid var(--geek-green);
+}
+
+.launcher-title {
+    font-size: 3.5rem;
+    color: var(--geek-green);
+    text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+    margin-bottom: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.launcher-subtitle {
+    font-size: 1.3rem;
+    color: var(--geek-text);
+    opacity: 0.8;
+    margin-bottom: 10px;
+}
+
+.launcher-description {
+    font-size: 1rem;
+    color: var(--geek-text);
+    opacity: 0.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.step-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.step-card {
+    background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
+    border: 2px solid var(--geek-green);
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 255, 65, 0.3);
+}
+
+.step-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--geek-green), var(--geek-accent));
+}
+
+.step-card.active {
+    border-color: var(--geek-blue);
+    background: linear-gradient(135deg, rgba(0, 153, 255, 0.1) 0%, var(--geek-light-gray) 100%);
+}
+
+.step-card.completed {
+    border-color: var(--geek-accent);
+    background: linear-gradient(135deg, rgba(0, 204, 51, 0.1) 0%, var(--geek-light-gray) 100%);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--geek-green);
+    color: var(--geek-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.step-title {
+    color: var(--geek-green);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.step-content {
+    color: var(--geek-text);
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+.platform-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.platform-card {
+    background: var(--geek-dark);
+    border: 2px solid var(--geek-light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.platform-card:hover {
+    border-color: var(--geek-accent);
+    transform: translateY(-2px);
+}
+
+.platform-card.selected {
+    border-color: var(--geek-green);
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.platform-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: var(--geek-green);
+}
+
+.platform-name {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--geek-text);
+    font-size: 1.1rem;
+}
+
+.platform-desc {
+    font-size: 0.9rem;
+    color: var(--geek-text);
+    opacity: 0.7;
+    margin-bottom: 10px;
+}
+
+.platform-features {
+    font-size: 0.8rem;
+    color: var(--geek-accent);
+    opacity: 0.8;
+}
+
+.config-form {
+    background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
+    border: 2px solid var(--geek-green);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--geek-text);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--geek-dark);
+    border: 1px solid var(--geek-light-gray);
+    border-radius: 6px;
+    padding: 12px 15px;
+    color: var(--geek-text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--geek-green);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.login-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.login-method-btn {
+    background: var(--geek-light-gray);
+    border: 2px solid var(--geek-green);
+    color: var(--geek-text);
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.login-method-btn:hover {
+    background: rgba(0, 255, 65, 0.1);
+    transform: translateY(-2px);
+}
+
+.login-method-icon {
+    font-size: 2rem;
+    color: var(--geek-green);
+}
+
+.login-method-text {
+    font-weight: 600;
+    color: var(--geek-text);
+}
+
+.launch-button {
+    background: linear-gradient(135deg, var(--geek-green) 0%, var(--geek-accent) 100%);
+    color: var(--geek-dark);
+    border: none;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0, 255, 65, 0.4);
+}
+
+.launch-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 255, 65, 0.6);
+}
+
+.launch-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.status-panel {
+    background: var(--geek-gray);
+    border: 1px solid var(--geek-light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+    display: none;
+}
+
+.status-header {
+    color: var(--geek-green);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    background: var(--geek-light-gray);
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--geek-green), var(--geek-accent));
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-text {
+    color: var(--geek-text);
+    font-size: 0.9rem;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.results-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--geek-dark);
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--geek-light-gray);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-job {
+    color: var(--geek-text);
+    font-size: 0.9rem;
+}
+
+.result-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.result-status.success {
+    background: rgba(0, 255, 65, 0.2);
+    color: var(--geek-green);
+}
+
+.result-status.failed {
+    background: rgba(255, 0, 0, 0.2);
+    color: var(--geek-error);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: var(--geek-gray);
+    border: 2px solid var(--geek-green);
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-title {
+    color: var(--geek-green);
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: var(--geek-light-gray);
+    border: 1px solid var(--geek-green);
+    color: var(--geek-text);
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.modal-btn-primary {
+    background: var(--geek-green);
+    color: var(--geek-dark);
+    border: none;
+}
+
+.modal-btn-secondary {
+    background: var(--geek-gray);
+    color: var(--geek-text);
+    border: 1px solid var(--geek-text);
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .step-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .launcher-title {
+        font-size: 2.5rem;
+    }
+    
+    .platform-selection {
+        grid-template-columns: 1fr;
+    }
+    
+    .launch-button {
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="launcher-container">
+    <div class="launcher-header">
+        <h1 class="launcher-title">
+            <i class="fas fa-rocket"></i> 增强版AI一键投递系统
+        </h1>
+        <p class="launcher-subtitle">🚀 融合get_jobs项目功能，支持多平台智能投递</p>
+        <p class="launcher-description">
+            支持BOSS直聘、猎聘、拉勾、智联招聘等主流平台，AI智能匹配职位，自动投递简历，提高求职效率
+        </p>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="step-container">
+        <div class="step-card" id="step1">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">选择平台</div>
+            </div>
+            <div class="step-content">
+                选择要投递的招聘平台，支持多平台同时投递
+            </div>
+        </div>
+        
+        <div class="step-card" id="step2">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">配置搜索</div>
+            </div>
+            <div class="step-content">
+                设置搜索关键词、城市、薪资等条件
+            </div>
+        </div>
+        
+        <div class="step-card" id="step3">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">登录验证</div>
+            </div>
+            <div class="step-content">
+                选择登录方式，完成平台登录验证
+            </div>
+        </div>
+    </div>
+
+    <!-- 平台选择 -->
+    <div class="config-form" id="platformSelection">
+        <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+            <i class="fas fa-layer-group"></i> 选择投递平台
+        </h3>
+        <div class="platform-selection" id="platformCards">
+            <!-- 平台卡片将通过JavaScript动态加载 -->
+        </div>
+    </div>
+
+    <!-- 搜索配置 -->
+    <div class="config-form" id="searchConfig" style="display: none;">
+        <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+            <i class="fas fa-search"></i> 搜索配置
+        </h3>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">搜索关键词</label>
+                <input type="text" id="keywords" class="form-input" 
+                       placeholder="如：Python开发、前端工程师、数据分析师" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">工作城市</label>
+                <select id="city" class="form-select" required>
+                    <option value="">请选择城市</option>
+                    <option value="北京">北京</option>
+                    <option value="上海">上海</option>
+                    <option value="广州">广州</option>
+                    <option value="深圳">深圳</option>
+                    <option value="杭州">杭州</option>
+                    <option value="南京">南京</option>
+                    <option value="苏州">苏州</option>
+                    <option value="成都">成都</option>
+                    <option value="武汉">武汉</option>
+                    <option value="西安">西安</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">薪资范围</label>
+                <select id="salary" class="form-select">
+                    <option value="">不限</option>
+                    <option value="402">3K以下</option>
+                    <option value="403">3-5K</option>
+                    <option value="404">5-10K</option>
+                    <option value="405">10-15K</option>
+                    <option value="406">15-25K</option>
+                    <option value="407">25-50K</option>
+                    <option value="408">50K以上</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">投递数量上限</label>
+                <input type="number" id="maxApplications" class="form-input" 
+                       value="50" min="1" max="200" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">自定义招呼语</label>
+            <textarea id="greeting" class="form-textarea" 
+                      placeholder="您好，我对这个职位很感兴趣，希望能有机会详细了解，期待您的回复。"></textarea>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">投递间隔（秒）</label>
+                <input type="number" id="interval" class="form-input" 
+                       value="3" min="1" max="30" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">黑名单公司（一行一个）</label>
+                <textarea id="blacklist" class="form-textarea" 
+                          placeholder="如：某某外包公司"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录方式选择 -->
+    <div class="config-form" id="loginConfig" style="display: none;">
+        <h3 style="color: var(--geek-green); margin-bottom: 20px;">
+            <i class="fas fa-sign-in-alt"></i> 登录方式选择
+        </h3>
+        <p style="color: var(--geek-text); opacity: 0.8; margin-bottom: 20px;">
+            请选择登录方式，系统将自动检测登录状态
+        </p>
+        <div class="login-methods" id="loginMethods">
+            <!-- 登录方式将通过JavaScript动态加载 -->
+        </div>
+    </div>
+
+    <!-- 启动按钮 -->
+    <button type="button" id="launchButton" class="launch-button" style="display: none;">
+        <i class="fas fa-rocket"></i>
+        <span>启动AI投递系统</span>
+    </button>
+
+    <!-- 状态面板 -->
+    <div id="statusPanel" class="status-panel">
+        <div class="status-header">
+            <i class="fas fa-chart-line"></i>
+            <span>投递进度</span>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="progressText" class="progress-text">准备启动...</div>
+        </div>
+        
+        <div id="resultsList" class="results-list"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 全局状态管理
+let currentStep = 1;
+let selectedPlatforms = [];
+let loginMethod = null;
+let loginStatus = {
+    isLoggedIn: false,
+    token: null,
+    method: null
+};
+
+// 步骤常量
+const STEPS = {
+    PLATFORM_SELECTION: 1,
+    SEARCH_CONFIG: 2,
+    LOGIN_CONFIG: 3,
+    TASK_RUNNING: 4
+};
+
+// 平台信息
+let platforms = {};
+let currentTaskId = null;
+let statusCheckInterval = null;
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    setupEventListeners();
+    loadPlatformInfo();
+    showStep(STEPS.PLATFORM_SELECTION);
+});
+
+// 初始化页面
+function initializePage() {
+    console.log('🚀 初始化增强版AI投递系统');
+    updateProgressText('请选择投递平台');
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+    // 启动按钮
+    document.getElementById('launchButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        handleLaunchClick();
+    });
+}
+
+// 加载平台信息
+async function loadPlatformInfo() {
+    try {
+        const response = await fetch('/tools/job-search/api/platform-info/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            platforms = result.platforms;
+            renderPlatformCards();
+        } else {
+            console.error('加载平台信息失败:', result.error);
+        }
+    } catch (error) {
+        console.error('加载平台信息失败:', error);
+    }
+}
+
+// 渲染平台卡片
+function renderPlatformCards() {
+    const container = document.getElementById('platformCards');
+    container.innerHTML = '';
+    
+    Object.entries(platforms).forEach(([platformId, platform]) => {
+        const card = document.createElement('div');
+        card.className = 'platform-card';
+        card.dataset.platform = platformId;
+        card.innerHTML = `
+            <div class="platform-icon">${platform.icon}</div>
+            <div class="platform-name">${platform.name}</div>
+            <div class="platform-desc">${platform.description}</div>
+            <div class="platform-features">最大投递: ${platform.max_applications} | 等待: ${platform.wait_time}s</div>
+        `;
+        
+        card.addEventListener('click', function() {
+            selectPlatform(platformId);
+        });
+        
+        container.appendChild(card);
+    });
+}
+
+// 选择平台
+function selectPlatform(platformId) {
+    if (selectedPlatforms.includes(platformId)) {
+        // 取消选择
+        selectedPlatforms = selectedPlatforms.filter(p => p !== platformId);
+        document.querySelector(`[data-platform="${platformId}"]`).classList.remove('selected');
+    } else {
+        // 选择平台
+        selectedPlatforms.push(platformId);
+        document.querySelector(`[data-platform="${platformId}"]`).classList.add('selected');
+    }
+    
+    console.log(`🎯 选择平台: ${selectedPlatforms}`);
+    
+    // 如果选择了平台，显示下一步
+    if (selectedPlatforms.length > 0) {
+        setTimeout(() => {
+            showStep(STEPS.SEARCH_CONFIG);
+        }, 500);
+    }
+}
+
+// 显示当前步骤
+function showStep(step) {
+    currentStep = step;
+    console.log(`📍 当前步骤: ${step}`);
+    
+    // 更新步骤卡片状态
+    document.querySelectorAll('.step-card').forEach((card, index) => {
+        card.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+            card.classList.add('completed');
+        } else if (index + 1 === step) {
+            card.classList.add('active');
+        }
+    });
+    
+    // 显示对应的配置表单
+    document.getElementById('platformSelection').style.display = step === STEPS.PLATFORM_SELECTION ? 'block' : 'none';
+    document.getElementById('searchConfig').style.display = step === STEPS.SEARCH_CONFIG ? 'block' : 'none';
+    document.getElementById('loginConfig').style.display = step === STEPS.LOGIN_CONFIG ? 'block' : 'none';
+    document.getElementById('launchButton').style.display = step === STEPS.LOGIN_CONFIG ? 'flex' : 'none';
+    
+    switch(step) {
+        case STEPS.PLATFORM_SELECTION:
+            updateProgressText('步骤1: 选择投递平台');
+            break;
+        case STEPS.SEARCH_CONFIG:
+            updateProgressText('步骤2: 配置搜索条件');
+            break;
+        case STEPS.LOGIN_CONFIG:
+            updateProgressText('步骤3: 选择登录方式');
+            checkLoginStatus();
+            break;
+        case STEPS.TASK_RUNNING:
+            updateProgressText('步骤4: 任务执行中');
+            break;
+    }
+}
+
+// 检查登录状态
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('/tools/job-search/api/boss-status/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        console.log('登录状态检查结果:', result);
+        
+        if (result.success && result.is_logged_in) {
+            // 已登录，直接显示启动按钮
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = result.token_info?.token;
+            updateProgressText('检测到已登录状态，可以直接启动投递');
+        } else {
+            // 未登录，显示登录方式选择
+            showLoginMethods();
+        }
+    } catch (error) {
+        console.error('检查登录状态失败:', error);
+        showLoginMethods();
+    }
+}
+
+// 显示登录方式
+function showLoginMethods() {
+    const container = document.getElementById('loginMethods');
+    container.innerHTML = '';
+    
+    // 为每个选中的平台显示登录方式
+    selectedPlatforms.forEach(platformId => {
+        const platform = platforms[platformId];
+        if (platform && platform.login_methods) {
+            platform.login_methods.forEach(method => {
+                const methodBtn = document.createElement('button');
+                methodBtn.className = 'login-method-btn';
+                methodBtn.dataset.platform = platformId;
+                methodBtn.dataset.method = method;
+                
+                let icon, text;
+                switch(method) {
+                    case 'qr':
+                        icon = 'fas fa-qrcode';
+                        text = '扫码登录';
+                        break;
+                    case 'phone':
+                        icon = 'fas fa-mobile-alt';
+                        text = '手机登录';
+                        break;
+                    case 'iframe':
+                        icon = 'fas fa-window-maximize';
+                        text = '网页登录';
+                        break;
+                }
+                
+                methodBtn.innerHTML = `
+                    <div class="login-method-icon"><i class="${icon}"></i></div>
+                    <div class="login-method-text">${text}</div>
+                `;
+                
+                methodBtn.addEventListener('click', function() {
+                    selectLoginMethod(platformId, method);
+                });
+                
+                container.appendChild(methodBtn);
+            });
+        }
+    });
+}
+
+// 选择登录方式
+function selectLoginMethod(platformId, method) {
+    console.log(`🔐 选择登录方式: ${platformId} - ${method}`);
+    
+    loginMethod = { platform: platformId, method: method };
+    
+    // 开始登录流程
+    startLoginProcess(platformId, method);
+}
+
+// 开始登录流程
+async function startLoginProcess(platformId, method) {
+    updateProgressText(`正在启动${method === 'qr' ? '二维码' : method === 'phone' ? '手机' : '网页'}登录...`);
+    
+    try {
+        let response;
+        
+        switch(method) {
+            case 'qr':
+                response = await startQRLogin();
+                break;
+            case 'phone':
+                response = await startPhoneLogin();
+                break;
+            case 'iframe':
+                response = await startIframeLogin();
+                break;
+        }
+        
+        if (response.success) {
+            loginStatus.isLoggedIn = true;
+            loginStatus.token = response.token;
+            loginStatus.method = method;
+            
+            updateProgressText('登录成功！可以开始投递');
+            
+            // 显示启动按钮
+            document.getElementById('launchButton').style.display = 'flex';
+        } else {
+            showError(response.error || '登录失败');
+        }
+    } catch (error) {
+        console.error('登录过程失败:', error);
+        showError('登录过程失败，请重试');
+    }
+}
+
+// 启动二维码登录
+async function startQRLogin() {
+    console.log('📱 启动二维码登录');
+    
+    const response = await fetch('/tools/job-search/api/boss-qr-login/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success && result.login_url) {
+        // 显示iframe登录页面
+        showIframeLogin(result.login_url);
+        
+        // 开始轮询登录状态
+        return await pollLoginStatus();
+    } else {
+        throw new Error(result.error || '获取登录页面失败');
+    }
+}
+
+// 启动手机登录
+async function startPhoneLogin() {
+    console.log('📞 启动手机登录');
+    
+    // 显示手机号输入界面
+    const phone = await showPhoneInput();
+    if (!phone) {
+        throw new Error('未输入手机号');
+    }
+    
+    // 发送验证码
+    const smsResponse = await fetch('/tools/job-search/api/boss-phone-login/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: phone
+        })
+    });
+    
+    const smsResult = await smsResponse.json();
+    if (!smsResult.success) {
+        throw new Error(smsResult.error || '发送验证码失败');
+    }
+    
+    // 显示验证码输入界面
+    const code = await showCodeInput();
+    if (!code) {
+        throw new Error('未输入验证码');
+    }
+    
+    // 验证登录
+    const loginResponse = await fetch('/tools/job-search/api/boss-verify-code/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: phone,
+            code: code
+        })
+    });
+    
+    return await loginResponse.json();
+}
+
+// 启动iframe登录
+async function startIframeLogin() {
+    console.log('🌐 启动iframe登录');
+    
+    const response = await fetch('/tools/job-search/api/boss-iframe-url/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success && result.iframe_url) {
+        // 显示iframe登录页面
+        showIframeLogin(result.iframe_url);
+        
+        // 开始轮询登录状态
+        return await pollLoginStatus();
+    } else {
+        throw new Error(result.error || '获取iframe登录URL失败');
+    }
+}
+
+// 显示手机号输入
+function showPhoneInput() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="modal-title">
+                    <i class="fas fa-mobile-alt"></i> 手机号登录
+                </h3>
+                <input type="tel" id="phoneInput" class="modal-input" placeholder="请输入手机号">
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-primary" onclick="submitPhone()">发送验证码</button>
+                    <button class="modal-btn modal-btn-secondary" onclick="cancelPhone()">取消</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 全局函数
+        window.submitPhone = function() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            modal.remove();
+            resolve(phone);
+        };
+        
+        window.cancelPhone = function() {
+            modal.remove();
+            resolve(null);
+        };
+    });
+}
+
+// 显示验证码输入
+function showCodeInput() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="modal-title">
+                    <i class="fas fa-sms"></i> 验证码登录
+                </h3>
+                <input type="text" id="codeInput" class="modal-input" placeholder="请输入验证码">
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-primary" onclick="submitCode()">确认登录</button>
+                    <button class="modal-btn modal-btn-secondary" onclick="cancelCode()">取消</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 全局函数
+        window.submitCode = function() {
+            const code = document.getElementById('codeInput').value.trim();
+            modal.remove();
+            resolve(code);
+        };
+        
+        window.cancelCode = function() {
+            modal.remove();
+            resolve(null);
+        };
+    });
+}
+
+// 显示iframe登录
+function showIframeLogin(loginUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px; width: 95%; height: 80%;">
+            <h3 class="modal-title">
+                <i class="fas fa-window-maximize"></i> 网页登录
+            </h3>
+            <iframe src="${loginUrl}" style="
+                width: 100%;
+                height: calc(100% - 60px);
+                border: 1px solid var(--geek-green);
+                border-radius: 4px;
+            "></iframe>
+            <div class="modal-buttons" style="margin-top: 10px;">
+                <button class="modal-btn modal-btn-secondary" onclick="closeIframeLogin()">关闭</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 全局函数
+    window.closeIframeLogin = function() {
+        modal.remove();
+    };
+}
+
+// 轮询登录状态
+async function pollLoginStatus() {
+    const maxAttempts = 60; // 最多轮询60次（5分钟）
+    let attempts = 0;
+    
+    return new Promise((resolve, reject) => {
+        const poll = async () => {
+            attempts++;
+            
+            try {
+                const response = await fetch('/tools/job-search/api/boss-status/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.is_logged_in) {
+                    // 登录成功
+                    closeAllModals();
+                    resolve({
+                        success: true,
+                        token: result.token_info?.token
+                    });
+                } else if (attempts >= maxAttempts) {
+                    // 超时
+                    closeAllModals();
+                    reject(new Error('登录超时，请重试'));
+                } else {
+                    // 继续轮询
+                    setTimeout(poll, 5000);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        poll();
+    });
+}
+
+// 关闭所有模态框
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.remove();
+    });
+}
+
+// 处理启动按钮点击
+function handleLaunchClick() {
+    console.log('🚀 启动投递流程');
+    
+    // 验证表单
+    if (!validateForm()) {
+        return;
+    }
+    
+    // 开始投递
+    startDelivery();
+}
+
+// 验证表单
+function validateForm() {
+    const keywords = document.getElementById('keywords').value.trim();
+    const city = document.getElementById('city').value;
+    
+    if (!keywords) {
+        showError('请填写搜索关键词');
+        return false;
+    }
+    
+    if (!city) {
+        showError('请选择工作城市');
+        return false;
+    }
+    
+    if (selectedPlatforms.length === 0) {
+        showError('请选择至少一个投递平台');
+        return false;
+    }
+    
+    return true;
+}
+
+// 开始投递
+async function startDelivery() {
+    showStep(STEPS.TASK_RUNNING);
+    updateProgressText('正在启动投递任务...');
+    
+    try {
+        // 收集表单数据
+        const formData = collectFormData();
+        
+        // 发送投递请求
+        const response = await fetch('/tools/job-search/api/start-enhanced/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateProgressText('投递任务已启动！');
+            currentTaskId = result.task_id;
+            
+            // 开始状态轮询
+            startStatusPolling();
+        } else {
+            showError(result.error || '启动投递任务失败');
+        }
+    } catch (error) {
+        console.error('启动投递失败:', error);
+        showError('启动投递失败，请重试');
+    }
+}
+
+// 收集表单数据
+function collectFormData() {
+    return {
+        platforms: selectedPlatforms,
+        keywords: [document.getElementById('keywords').value.trim()],
+        cities: [document.getElementById('city').value],
+        expected_salary: [parseInt(document.getElementById('salary').value) || 15],
+        say_hi: document.getElementById('greeting').value.trim() || '您好，我对这个职位很感兴趣，希望能有机会进一步沟通。',
+        use_ai: true,
+        send_img_resume: true,
+        max_applications: parseInt(document.getElementById('maxApplications').value) || 50,
+        interval: parseInt(document.getElementById('interval').value) || 3,
+        blacklist: document.getElementById('blacklist').value.trim().split('\n').filter(item => item.trim())
+    };
+}
+
+// 开始状态轮询
+function startStatusPolling() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+    }
+    
+    statusCheckInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/tools/job-search/api/status-enhanced/');
+            const result = await response.json();
+            
+            updateStatus(result);
+            
+            if (result.status === 'completed' || result.status === 'failed') {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+        } catch (error) {
+            console.error('状态检查失败:', error);
+        }
+    }, 3000);
+}
+
+// 更新状态
+function updateStatus(status) {
+    if (status.status === 'running') {
+        updateProgressText(`正在投递中... 已投递: ${status.total_applied || 0}`);
+    } else if (status.status === 'completed') {
+        updateProgressText(`投递完成！成功: ${status.total_applied || 0}, 找到: ${status.total_found || 0}`);
+    } else if (status.status === 'failed') {
+        updateProgressText(`投递失败: ${status.error || '未知错误'}`);
+    }
+    
+    // 更新结果列表
+    if (status.results && Object.keys(status.results).length > 0) {
+        updateResultsList(status.results);
+    }
+}
+
+// 更新结果列表
+function updateResultsList(results) {
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+    
+    Object.entries(results).forEach(([platform, result]) => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `
+            <div class="result-job">${platforms[platform]?.name || platform} - ${result.applied_count || 0} 份投递</div>
+            <div class="result-status ${result.success ? 'success' : 'failed'}">
+                ${result.success ? '投递成功' : '投递失败'}
+            </div>
+        `;
+        resultsList.appendChild(item);
+    });
+}
+
+// 更新进度文本
+function updateProgressText(text) {
+    document.getElementById('progressText').textContent = text;
+}
+
+// 显示错误
+function showError(message) {
+    console.error('错误:', message);
+    updateProgressText(`错误: ${message}`);
+    
+    // 可以添加更明显的错误提示
+    alert(message);
+}
+
+// 清理资源
+function cleanup() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        statusCheckInterval = null;
+    }
+    closeAllModals();
+}
+
+// 页面卸载时清理
+window.addEventListener('beforeunload', cleanup);
+</script>
+{% endblock %}

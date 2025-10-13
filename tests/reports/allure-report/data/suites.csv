@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"测试用户登录页面访问","","测试用户登录页面访问","tests","","passed","","TestUserAuthentication","test_pure_django","",""
+"测试首页加载性能是否在3秒内","","测试首页加载性能","tests","","passed","","TestFunctionalPages","test_pure_django","",""
+"测试健康检查API返回正确的状态和内容","","测试健康检查API","tests","","passed","","TestAPIEndpoints","test_pure_django","",""
+"测试测试仪表盘页面访问","","测试测试仪表盘页面访问","tests","","passed","","TestFunctionalPages","test_pure_django","",""
+"测试首页能够正常加载并返回200状态码","","测试首页正常加载","tests","","passed","","TestFunctionalPages","test_pure_django","",""

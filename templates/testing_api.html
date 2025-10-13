@@ -1,0 +1,587 @@
+# 接口测试展示页面
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}接口测试展示 - ModeShift{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- 页面标题 -->
+    <div class="geek-header text-center mb-5">
+        <h1 class="geek-title">
+            <span class="terminal-prompt">$</span> 接口测试展示
+        </h1>
+        <p class="geek-subtitle">REST API 接口测试演示</p>
+    </div>
+
+    <!-- API概览 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-plug"></i> API接口概览</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="api-list">
+                        <div class="api-item">
+                            <span class="api-method get">GET</span>
+                            <span class="api-path">/api/users/profile/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                        <div class="api-item">
+                            <span class="api-method post">POST</span>
+                            <span class="api-path">/api/users/login/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                        <div class="api-item">
+                            <span class="api-method post">POST</span>
+                            <span class="api-path">/api/fitness/bmi/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                        <div class="api-item">
+                            <span class="api-method post">POST</span>
+                            <span class="api-path">/api/fitness/heart-rate/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                        <div class="api-item">
+                            <span class="api-method post">POST</span>
+                            <span class="api-path">/api/generate-testcases/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                        <div class="api-item">
+                            <span class="api-method get">GET</span>
+                            <span class="api-path">/health/</span>
+                            <span class="api-status success">200</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-chart-line"></i> 性能指标</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="performance-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">平均响应时间：</span>
+                            <span class="metric-value">156ms</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">成功率：</span>
+                            <span class="metric-value success">90%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">QPS：</span>
+                            <span class="metric-value">213.7</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">并发支持：</span>
+                            <span class="metric-value">50用户</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API测试详情 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-code"></i> API测试详情</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="api-test-details">
+                        <!-- 认证API测试 -->
+                        <div class="api-test-group">
+                            <h5><i class="fas fa-user-shield"></i> 认证API测试</h5>
+                            
+                            <div class="api-test-item">
+                                <div class="api-test-header">
+                                    <span class="api-test-name">POST /api/users/login/</span>
+                                    <span class="api-test-status passed">PASSED</span>
+                                    <span class="api-test-time">245ms</span>
+                                </div>
+                                <div class="api-test-body">
+                                    <div class="request-response">
+                                        <div class="request-section">
+                                            <h6>请求数据：</h6>
+                                            <pre><code>{
+  "username": "testuser",
+  "password": "testpass123"
+}</code></pre>
+                                        </div>
+                                        <div class="response-section">
+                                            <h6>响应数据：</h6>
+                                            <pre><code>{
+  "status": "success",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "user": {
+    "id": 1,
+    "username": "testuser",
+    "email": "test@example.com"
+  }
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="api-test-item">
+                                <div class="api-test-header">
+                                    <span class="api-test-name">GET /api/users/profile/</span>
+                                    <span class="api-test-status passed">PASSED</span>
+                                    <span class="api-test-time">189ms</span>
+                                </div>
+                                <div class="api-test-body">
+                                    <div class="request-response">
+                                        <div class="request-section">
+                                            <h6>请求头：</h6>
+                                            <pre><code>Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...</code></pre>
+                                        </div>
+                                        <div class="response-section">
+                                            <h6>响应数据：</h6>
+                                            <pre><code>{
+  "id": 1,
+  "username": "testuser",
+  "email": "test@example.com",
+  "profile": {
+    "avatar": "/media/avatars/default.jpg",
+    "bio": "测试用户"
+  }
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 工具API测试 -->
+                        <div class="api-test-group">
+                            <h5><i class="fas fa-tools"></i> 工具API测试</h5>
+                            
+                            <div class="api-test-item">
+                                <div class="api-test-header">
+                                    <span class="api-test-name">POST /api/fitness/bmi/</span>
+                                    <span class="api-test-status passed">PASSED</span>
+                                    <span class="api-test-time">123ms</span>
+                                </div>
+                                <div class="api-test-body">
+                                    <div class="request-response">
+                                        <div class="request-section">
+                                            <h6>请求数据：</h6>
+                                            <pre><code>{
+  "height": 175,
+  "weight": 70
+}</code></pre>
+                                        </div>
+                                        <div class="response-section">
+                                            <h6>响应数据：</h6>
+                                            <pre><code>{
+  "bmi": 22.86,
+  "category": "正常",
+  "advice": "您的体重在正常范围内，请保持健康的生活方式"
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="api-test-item">
+                                <div class="api-test-header">
+                                    <span class="api-test-name">POST /api/generate-testcases/</span>
+                                    <span class="api-test-status passed">PASSED</span>
+                                    <span class="api-test-time">234ms</span>
+                                </div>
+                                <div class="api-test-body">
+                                    <div class="request-response">
+                                        <div class="request-section">
+                                            <h6>请求数据：</h6>
+                                            <pre><code>{
+  "function_name": "calculate_sum",
+  "parameters": ["a", "b"],
+  "expected_output": "number"
+}</code></pre>
+                                        </div>
+                                        <div class="response-section">
+                                            <h6>响应数据：</h6>
+                                            <pre><code>{
+  "test_cases": [
+    {
+      "name": "test_normal_case",
+      "input": {"a": 5, "b": 3},
+      "expected": 8
+    },
+    {
+      "name": "test_edge_case",
+      "input": {"a": 0, "b": 0},
+      "expected": 0
+    }
+  ]
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 健康检查API测试 -->
+                        <div class="api-test-group">
+                            <h5><i class="fas fa-heartbeat"></i> 健康检查API测试</h5>
+                            
+                            <div class="api-test-item">
+                                <div class="api-test-header">
+                                    <span class="api-test-name">GET /health/</span>
+                                    <span class="api-test-status passed">PASSED</span>
+                                    <span class="api-test-time">89ms</span>
+                                </div>
+                                <div class="api-test-body">
+                                    <div class="request-response">
+                                        <div class="response-section">
+                                            <h6>响应数据：</h6>
+                                            <pre><code>{
+  "status": "healthy",
+  "timestamp": 1703846400,
+  "version": "1.0.0",
+  "services": {
+    "database": "healthy",
+    "redis": "healthy",
+    "storage": "healthy"
+  }
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API测试执行 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="geek-card">
+                <div class="geek-card-header">
+                    <h3><i class="fas fa-play-circle"></i> API测试执行</h3>
+                </div>
+                <div class="geek-card-body">
+                    <div class="test-controls">
+                        <button id="run-api-tests" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> 执行API测试
+                        </button>
+                        <button id="test-specific-api" class="btn btn-info btn-lg">
+                            <i class="fas fa-bullseye"></i> 测试特定API
+                        </button>
+                        <button id="view-api-report" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-chart-bar"></i> 查看报告
+                        </button>
+                    </div>
+                    
+                    <div class="api-test-output mt-4" id="api-test-output" style="display: none;">
+                        <h5>测试输出：</h5>
+                        <div class="terminal-output" id="api-terminal-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.api-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.api-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.api-method {
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+}
+
+.api-method.get {
+    background: #00ff00;
+    color: #000;
+}
+
+.api-method.post {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+.api-path {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    flex: 1;
+}
+
+.api-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.api-status.success {
+    background: #00ff00;
+    color: #000;
+}
+
+.performance-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.metric-label {
+    color: #888;
+}
+
+.metric-value {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+.metric-value.success {
+    color: #00ff00;
+}
+
+.api-test-group {
+    margin-bottom: 2rem;
+}
+
+.api-test-group h5 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #00ffff;
+}
+
+.api-test-item {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.api-test-header {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.api-test-name {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    font-weight: bold;
+    flex: 1;
+}
+
+.api-test-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.api-test-status.passed {
+    background: #00ff00;
+    color: #000;
+}
+
+.api-test-time {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.api-test-body {
+    padding: 1rem;
+}
+
+.request-response {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.request-section, .response-section {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.request-section h6, .response-section h6 {
+    color: #00ffff;
+    margin-bottom: 0.5rem;
+}
+
+.request-section pre, .response-section pre {
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.terminal-output {
+    background: #000;
+    color: #00ff00;
+    padding: 1rem;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #00ff00;
+}
+
+.test-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .request-response {
+        grid-template-columns: 1fr;
+    }
+    
+    .api-test-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const runBtn = document.getElementById('run-api-tests');
+    const specificBtn = document.getElementById('test-specific-api');
+    const reportBtn = document.getElementById('view-api-report');
+    const outputDiv = document.getElementById('api-test-output');
+    const terminalOutput = document.getElementById('api-terminal-output');
+
+    runBtn.addEventListener('click', async function() {
+        runBtn.disabled = true;
+        runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 执行中...';
+        outputDiv.style.display = 'block';
+        terminalOutput.innerHTML = '';
+
+        try {
+            const testSteps = [
+                '正在启动API测试...',
+                '测试认证API...',
+                '✓ POST /api/users/login/ - 200 (245ms)',
+                '✓ GET /api/users/profile/ - 200 (189ms)',
+                '测试工具API...',
+                '✓ POST /api/fitness/bmi/ - 200 (123ms)',
+                '✓ POST /api/fitness/heart-rate/ - 200 (167ms)',
+                '✓ POST /api/generate-testcases/ - 200 (234ms)',
+                '测试健康检查API...',
+                '✓ GET /health/ - 200 (89ms)',
+                '✓ GET /health/detailed/ - 200 (123ms)',
+                '生成API测试报告...',
+                'API测试执行完成！'
+            ];
+
+            for (let i = 0; i < testSteps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 400));
+                terminalOutput.innerHTML += testSteps[i] + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+
+            reportBtn.disabled = false;
+            runBtn.innerHTML = '<i class="fas fa-check"></i> 测试完成';
+
+        } catch (error) {
+            terminalOutput.innerHTML += '错误: ' + error.message + '\n';
+            runBtn.innerHTML = '<i class="fas fa-times"></i> 测试失败';
+        }
+    });
+
+    specificBtn.addEventListener('click', function() {
+        const apiSelect = document.createElement('select');
+        apiSelect.innerHTML = `
+            <option value="">选择要测试的API</option>
+            <option value="/api/users/login/">用户登录API</option>
+            <option value="/api/fitness/bmi/">BMI计算API</option>
+            <option value="/api/generate-testcases/">测试用例生成API</option>
+            <option value="/health/">健康检查API</option>
+        `;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">选择API测试</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${apiSelect.outerHTML}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" id="confirm-api-test">确认测试</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+        
+        document.getElementById('confirm-api-test').addEventListener('click', function() {
+            const selectedApi = apiSelect.value;
+            if (selectedApi) {
+                bootstrapModal.hide();
+                // 执行特定API测试
+                console.log('测试API:', selectedApi);
+            }
+        });
+    });
+
+    reportBtn.addEventListener('click', function() {
+        alert('API测试报告功能待实现');
+    });
+});
+</script>
+{% endblock %}

@@ -3,6 +3,9 @@
 # 基础模型
 from .base_models import ToolUsageLog
 
+# 验证码模型
+from .verification_code import VerificationCode
+
 # 聊天模型从chat_models导入
 from .chat_models import ChatMessage, ChatRoom, ChatRoomMember, ChatNotification, HeartLinkRequest, MessageRead, UserOnlineStatus
 

@@ -1,0 +1,11 @@
+http://localhost:8000/
+http://localhost:8000/login/
+http://localhost:8000/register/
+http://localhost:8000/admin/
+http://localhost:8000/api/users/
+http://localhost:8000/api/content/
+http://localhost:8000/dashboard/
+http://localhost:8000/profile/
+http://localhost:8000/settings/
+http://localhost:8000/about/
+http://localhost:8000/contact/
