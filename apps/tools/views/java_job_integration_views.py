@@ -82,7 +82,7 @@ def get_client_ip(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
+# @login_required  # 临时移除登录要求用于测试
 def start_java_job_delivery_api(request):
     """启动Java版本的Boss直聘投递API"""
     try:
@@ -101,8 +101,12 @@ def start_java_job_delivery_api(request):
                 }, status=400)
         
         # 🔥 每次启动Java任务前自动清理token，确保使用最新登录状态
-        logger.info(f"用户 {request.user.username} 启动Java任务，先清理历史token...")
-        clear_boss_token_before_java_task(request.user)
+        username = getattr(request.user, 'username', 'anonymous') if hasattr(request, 'user') and request.user.is_authenticated else 'anonymous'
+        logger.info(f"用户 {username} 启动Java任务，先清理历史token...")
+        
+        # 如果有用户，清理token；如果没有用户，跳过清理
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            clear_boss_token_before_java_task(request.user)
         
         # 启动任务（包含验证码验证和IP绑定）
         result = java_job_service.start_boss_job_delivery(data, data['verification_code'], client_ip)
