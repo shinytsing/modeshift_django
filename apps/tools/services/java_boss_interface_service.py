@@ -166,7 +166,7 @@ class JavaBossInterfaceService:
                 stderr=subprocess.PIPE,
                 text=True,
                 cwd=self.java_project_path,
-                env={**os.environ, 'JAVA_HOME': '/opt/homebrew/Cellar/openjdk@21/21.0.8/libexec/openjdk.jdk/Contents/Home'}
+                env={**os.environ}  # 使用系统默认的Java环境
             )
             
             # 更新状态文件中的进程ID
@@ -197,7 +197,7 @@ class JavaBossInterfaceService:
         qr_image_path = os.path.join(self.temp_dir, f'qr_code_{task_id}.png')
         
         command = [
-            'java',
+            '/usr/bin/java',  # 使用绝对路径
             '-cp',
             f'{self.java_project_path}/target/classes:{self.java_project_path}/target/dependency/*',
             f'-Dqr.image.path={qr_image_path}',
