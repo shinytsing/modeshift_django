@@ -47,6 +47,7 @@ from .views.job_search_views import (
     boss_manual_cookies_start_api,
     boss_login_status_api,
     boss_phone_login_api,
+    boss_clear_token_api,
     boss_send_sms_api,
     check_login_status_polling_api,
     test_cookie_execution_api,
@@ -875,7 +876,7 @@ urlpatterns = [
     path("job-search/api/boss-qr-login/", start_boss_qr_login_api, name="start_boss_qr_login_api"),
     path("job-search/api/boss-phone-login/", start_boss_phone_login_api, name="start_boss_phone_login_api"),
     path("job-search/api/boss-verify-code/", verify_boss_phone_code_api, name="verify_boss_phone_code_api"),
-    path("job-search/api/boss-iframe-url/", get_boss_iframe_login_url_api, name="get_boss_iframe_login_url_api"),
+    path("job-search/api/boss-clear-token/", boss_clear_token_api, name="boss_clear_token_api"),
     
     # Java Job项目集成路由
     path("java-job/launcher/", java_job_launcher, name="java_job_launcher"),

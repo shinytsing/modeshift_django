@@ -5,8 +5,10 @@ Java Job项目集成服务
 import json
 import logging
 import os
+import signal
 import subprocess
 import tempfile
+import time
 import uuid
 from typing import Dict, List, Optional, Any, Tuple
 from django.conf import settings
@@ -131,15 +133,54 @@ class JavaJobIntegrationService:
             return False
     
     def stop_task(self, task_id: str) -> bool:
-        """停止任务"""
+        """停止任务并杀死进程"""
         try:
+            status_file = os.path.join(self.temp_dir, f'status_{task_id}.json')
+            
+            if not os.path.exists(status_file):
+                logger.warning(f"任务状态文件不存在: {status_file}")
+                return False
+            
+            # 读取任务状态
+            with open(status_file, 'r', encoding='utf-8') as f:
+                status = json.load(f)
+            
+            # 获取Java进程ID
+            java_process_id = status.get('java_process_id')
+            
+            if java_process_id:
+                try:
+                    # 尝试终止进程
+                    os.kill(java_process_id, signal.SIGTERM)
+                    logger.info(f"已发送SIGTERM信号给进程 {java_process_id}")
+                    
+                    # 等待进程结束
+                    time.sleep(2)
+                    
+                    # 检查进程是否还在运行
+                    try:
+                        os.kill(java_process_id, 0)  # 检查进程是否存在
+                        # 如果进程还存在，强制杀死
+                        os.kill(java_process_id, signal.SIGKILL)
+                        logger.info(f"强制杀死进程 {java_process_id}")
+                    except ProcessLookupError:
+                        logger.info(f"进程 {java_process_id} 已正常终止")
+                        
+                except ProcessLookupError:
+                    logger.warning(f"进程 {java_process_id} 不存在或已终止")
+                except Exception as e:
+                    logger.error(f"杀死进程 {java_process_id} 失败: {str(e)}")
+            
             # 更新任务状态为停止
             self.update_task_status(task_id, {
                 'status': 'stopped',
-                'end_time': str(uuid.uuid4())  # 使用时间戳
+                'end_time': int(time.time()),
+                'java_process_id': None
             })
             
+            logger.info(f"任务 {task_id} 已停止")
             return True
+            
         except Exception as e:
             logger.error(f"停止任务失败: {str(e)}")
             return False

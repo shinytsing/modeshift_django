@@ -40,12 +40,12 @@ class JavaBossInterfaceService:
                 "cityCode": [user_input.get('city', '北京')],  # 直接使用城市名称，让Java程序转换
                 "experience": [user_input.get('experience', '3-5年')],  # 直接使用经验描述
                 "jobType": "全职",
-                "salary": self.get_salary_range(user_input.get('minSalary', 15), user_input.get('maxSalary', 25)),
+                "salary": self.get_salary_range(user_input.get('expectedSalary', [15, 25])[0], user_input.get('expectedSalary', [15, 25])[1]),
                 "degree": [user_input.get('education', '本科')],  # 直接使用学历描述
                 "scale": ["不限"],
                 "stage": ["不限"],
                 "industry": ["不限"],
-                "expectedSalary": [user_input.get('minSalary', 15), user_input.get('maxSalary', 25)],
+                "expectedSalary": user_input.get('expectedSalary', [15, 25]),
                 "waitTime": 3,
                 "filterDeadHR": True,
                 "enableAI": True,

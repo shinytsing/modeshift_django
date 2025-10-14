@@ -1068,6 +1068,71 @@ def boss_token_login_api(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+def boss_clear_token_api(request):
+    """Boss直聘清除Token API"""
+    try:
+        import json
+        import os
+        from django.conf import settings
+        
+        logger.info(f"用户 {request.user.username} 请求清除Boss直聘Token")
+        
+        # 清除token文件
+        token_file = os.path.join(settings.BASE_DIR, 'get_jobs_integration', f'boss_token_{request.user.id}.json')
+        cookie_file = os.path.join(settings.BASE_DIR, 'get_jobs_integration', f'boss_cookies_{request.user.id}.json')
+        
+        cleared_files = []
+        
+        # 删除token文件
+        if os.path.exists(token_file):
+            os.remove(token_file)
+            cleared_files.append('token文件')
+        
+        # 删除cookie文件
+        if os.path.exists(cookie_file):
+            os.remove(cookie_file)
+            cleared_files.append('cookie文件')
+        
+        # 清除session中的相关数据
+        session_keys_to_clear = [
+            'boss_token', 'boss_login_time', 'boss_cookies', 
+            'boss_login_status', 'boss_user_info'
+        ]
+        
+        for key in session_keys_to_clear:
+            if key in request.session:
+                del request.session[key]
+        
+        request.session.modified = True
+        
+        # 清除缓存
+        from django.core.cache import cache
+        cache_keys_to_clear = [
+            f"boss_token_{request.user.id}",
+            f"boss_cookies_{request.user.id}",
+            f"boss_login_status_{request.user.id}",
+            f"user_tokens:{request.user.id}"
+        ]
+        
+        for cache_key in cache_keys_to_clear:
+            cache.delete(cache_key)
+        
+        logger.info(f"用户 {request.user.username} 清除Boss直聘Token成功，清除文件: {cleared_files}")
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Boss直聘Token已清除，请重新扫码登录",
+            "cleared_files": cleared_files
+        })
+        
+    except Exception as e:
+        logger.error(f"清除Boss直聘Token失败: {str(e)}")
+        return JsonResponse({"success": False, "error": f"清除Token失败: {str(e)}"})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def boss_phone_login_api(request):
     """Boss直聘手机号登录API - 已禁用"""
     return JsonResponse({

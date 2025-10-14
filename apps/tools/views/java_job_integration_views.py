@@ -3,13 +3,71 @@ Java Job项目集成API视图
 """
 import json
 import logging
+import os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.cache import cache
 from apps.tools.services.java_job_integration_service import java_job_service
 
 logger = logging.getLogger(__name__)
+
+
+def clear_boss_token_before_java_task(user):
+    """在启动Java任务前清理Boss直聘token"""
+    try:
+        logger.info(f"开始清理用户 {user.username} 的Boss直聘token...")
+        
+        # 清理token文件
+        token_file = os.path.join(settings.BASE_DIR, 'get_jobs_integration', f'boss_token_{user.id}.json')
+        cookie_file = os.path.join(settings.BASE_DIR, 'get_jobs_integration', f'boss_cookies_{user.id}.json')
+        
+        cleared_files = []
+        
+        # 删除token文件
+        if os.path.exists(token_file):
+            os.remove(token_file)
+            cleared_files.append('token文件')
+            logger.info(f"已删除token文件: {token_file}")
+        
+        # 删除cookie文件
+        if os.path.exists(cookie_file):
+            os.remove(cookie_file)
+            cleared_files.append('cookie文件')
+            logger.info(f"已删除cookie文件: {cookie_file}")
+        
+        # 清理Java项目中的cookie文件
+        java_cookie_paths = [
+            os.path.join(settings.BASE_DIR, 'java_job', 'cookies', f'boss_cookies_{user.id}.json'),
+            os.path.join(settings.BASE_DIR, 'java_job', 'java_job', 'cookies', f'boss_cookies_{user.id}.json'),
+            os.path.join(settings.BASE_DIR, 'temp_java_jobs', f'boss_cookies_{user.id}.json'),
+        ]
+        
+        for java_cookie_path in java_cookie_paths:
+            if os.path.exists(java_cookie_path):
+                os.remove(java_cookie_path)
+                cleared_files.append(f'Java cookie文件: {os.path.basename(java_cookie_path)}')
+                logger.info(f"已删除Java cookie文件: {java_cookie_path}")
+        
+        # 清除缓存
+        cache_keys_to_clear = [
+            f"boss_token_{user.id}",
+            f"boss_cookies_{user.id}",
+            f"boss_login_status_{user.id}",
+            f"user_tokens:{user.id}"
+        ]
+        
+        for cache_key in cache_keys_to_clear:
+            cache.delete(cache_key)
+        
+        logger.info(f"用户 {user.username} 的Boss直聘token清理完成，清理文件: {cleared_files}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"清理用户 {user.username} 的Boss直聘token失败: {str(e)}")
+        return False
 
 
 def get_client_ip(request):
@@ -42,6 +100,10 @@ def start_java_job_delivery_api(request):
                     'error': f'缺少必需字段: {field}'
                 }, status=400)
         
+        # 🔥 每次启动Java任务前自动清理token，确保使用最新登录状态
+        logger.info(f"用户 {request.user.username} 启动Java任务，先清理历史token...")
+        clear_boss_token_before_java_task(request.user)
+        
         # 启动任务（包含验证码验证和IP绑定）
         result = java_job_service.start_boss_job_delivery(data, data['verification_code'], client_ip)
         
@@ -50,7 +112,7 @@ def start_java_job_delivery_api(request):
                 'success': True,
                 'task_id': result['task_id'],
                 'qr_code_url': result['qr_code_url'],
-                'message': '验证码验证成功，任务已启动'
+                'message': '验证码验证成功，历史token已清理，任务已启动'
             })
         else:
             return JsonResponse({

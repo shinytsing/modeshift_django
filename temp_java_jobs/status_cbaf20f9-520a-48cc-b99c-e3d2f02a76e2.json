@@ -1,0 +1,14 @@
+{
+  "task_id": "cbaf20f9-520a-48cc-b99c-e3d2f02a76e2",
+  "status": "stopped",
+  "verification_code": "DEC13CAF",
+  "config_file": "/Users/gaojie/Desktop/PycharmProjects/modeshift_django/java_job/java_job/target/classes/config.yaml",
+  "client_ip": "127.0.0.1",
+  "qr_code_url": "/tools/java-job/api/qr-image/",
+  "login_status": "pending",
+  "delivery_count": 0,
+  "error_message": null,
+  "start_time": 1760368785,
+  "end_time": "0f367b4b-42c2-4472-aeda-d7804bfbc306",
+  "java_process_id": 76359
+}
