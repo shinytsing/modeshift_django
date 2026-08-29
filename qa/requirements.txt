@@ -4,6 +4,3 @@ playwright==1.40.0
 pytest-playwright==0.4.4
 allure-pytest==2.15.0
 pytest-html==4.1.1
-# config.settings.base enables this app, but the root dependency file only pins
-# django-crispy-forms. Keep the isolated QA server bootable in CI.
-crispy-bootstrap5==0.7

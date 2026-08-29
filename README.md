@@ -4,7 +4,8 @@
 
 ## 项目导航
 
-日常开发与质量门禁的唯一入口见 [项目导航](docs/PROJECT_STRUCTURE.md)。新的左移测试框架位于
+日常开发与质量门禁的唯一入口见 [项目导航](docs/PROJECT_STRUCTURE.md) 和
+[文档索引](docs/README.md)。新的左移测试框架位于
 `qa/`：使用 `python3 qa/scripts/run_suite.py` 运行 API（requests）与 UI（Playwright）全量测试，
 并在 `qa/artifacts/allure-report/index.html` 查看 Allure 报告。
 

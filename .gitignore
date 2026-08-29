@@ -350,3 +350,28 @@ qatoolbox*.tar.gz
 
 # Isolated QA automation artifacts
 qa/artifacts/
+
+# Local development and generated QA output
+.venv/
+.venv*/
+venv/
+node_modules/
+artifacts/
+tmp/
+temp_java_jobs/
+docker/ssl_certs/
+src/main/java/boss/cookie.json
+scripts/manual/legacy/
+*.bak
+*.broken
+*.backup2
+*.backup3
+*.backup_*
+
+# Local verification datasets and codes; never commit generated values.
+Boss直聘验证码*.md
+verification_codes.json
+used_codes.json
+.mypy_cache/
+data/test_results/
+media/tool_outputs/

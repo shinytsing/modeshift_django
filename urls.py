@@ -135,11 +135,18 @@ urlpatterns = [
     # 工具子路由（包含测试用例生成器等）
     path("tools/", include("apps.tools.urls", namespace="tools")),
     path("users/", include("apps.users.urls", namespace="users")),
+    # 作业批改路由
+    path("api/grading/", include("apps.grading.urls", namespace="grading")),
     # Google OAuth 直接路径（避免 /users/ 前缀）
     path("auth/google/", include("apps.users.google_auth_urls", namespace="auth")),
+    # 登录按钮走 allauth 的 google_login 时，转到已登记 redirect_uri 的代理流程
+    path(
+        "accounts/google/login/",
+        RedirectView.as_view(url="/auth/google/", query_string=True),
+    ),
     path("content/", include("apps.content.urls", namespace="content")),
     path("share/", include("apps.share.urls", namespace="share")),
-    # allauth URLs
+    # allauth 登录/注册
     path("accounts/", include("allauth.urls")),
     # Favicon路由
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),

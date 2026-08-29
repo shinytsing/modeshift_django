@@ -43,18 +43,18 @@ class ChatNotificationManager {
             '.top-ui-bar img',
             '.user-info img'
         ];
-        
+
         console.log('开始检测用户头像...');
-        
+
         for (const selector of avatarSelectors) {
             const avatarImg = document.querySelector(selector);
             console.log(`检测选择器: ${selector}`, avatarImg);
-            
+
             if (avatarImg && avatarImg.src) {
                 console.log(`找到头像图片: ${avatarImg.src}`);
-                
+
                 // 检查是否是有效头像（不是默认头像）
-                if (!avatarImg.src.includes('default') && 
+                if (!avatarImg.src.includes('default') &&
                     !avatarImg.src.includes('placeholder') &&
                     !avatarImg.src.includes('blank') &&
                     avatarImg.src.length > 10) {
@@ -65,7 +65,7 @@ class ChatNotificationManager {
                 }
             }
         }
-        
+
         // 如果没找到，返回null使用默认乌萨奇
         console.log('未找到用户头像，使用默认乌萨奇');
         return null;
@@ -81,12 +81,12 @@ class ChatNotificationManager {
         // 检查用户头像
         const userAvatar = this.getUserAvatar();
         console.log('检测到的用户头像:', userAvatar);
-        
+
         // 创建通知区域
         const notificationArea = document.createElement('div');
         notificationArea.id = 'chat-notification-manager';
         notificationArea.className = 'chat-notification-manager';
-        
+
         let characterHTML = '';
         if (userAvatar) {
             console.log('创建用户头像形象');
@@ -135,7 +135,7 @@ class ChatNotificationManager {
                 </div>
             `;
         }
-        
+
         notificationArea.innerHTML = `
             <div class="notification-icon" id="notification-icon">
                 ${characterHTML}
@@ -533,28 +533,28 @@ class ChatNotificationManager {
             }
 
             @keyframes dragParticleGlow {
-                0%, 100% { 
-                    opacity: 0.3; 
-                    transform: translate(-50%, -50%) scale(1); 
+                0%, 100% {
+                    opacity: 0.3;
+                    transform: translate(-50%, -50%) scale(1);
                 }
-                50% { 
-                    opacity: 0.8; 
-                    transform: translate(-50%, -50%) scale(1.2); 
+                50% {
+                    opacity: 0.8;
+                    transform: translate(-50%, -50%) scale(1.2);
                 }
             }
 
             @keyframes dragTrail {
-                0% { 
-                    opacity: 0; 
-                    transform: translateX(0px) scale(0.5); 
+                0% {
+                    opacity: 0;
+                    transform: translateX(0px) scale(0.5);
                 }
-                50% { 
-                    opacity: 1; 
-                    transform: translateX(-5px) scale(1); 
+                50% {
+                    opacity: 1;
+                    transform: translateX(-5px) scale(1);
                 }
-                100% { 
-                    opacity: 0; 
-                    transform: translateX(-10px) scale(0.5); 
+                100% {
+                    opacity: 0;
+                    transform: translateX(-10px) scale(0.5);
                 }
             }
 
@@ -1031,22 +1031,22 @@ class ChatNotificationManager {
 
         // 简化的拖拽事件处理
         let startX, startY, hasMoved = false;
-        
+
         icon.addEventListener('mousedown', (e) => {
             this.isDragging = true;
             hasMoved = false;
             startX = e.clientX - this.xOffset;
             startY = e.clientY - this.yOffset;
-            
+
             icon.style.cursor = 'grabbing';
             manager.classList.add('dragging');
             icon.classList.add('drag-start');
-            
+
             // 移除开始动画类
             setTimeout(() => {
                 icon.classList.remove('drag-start');
             }, 300);
-            
+
             e.preventDefault();
             e.stopPropagation();
         });
@@ -1056,13 +1056,13 @@ class ChatNotificationManager {
 
             hasMoved = true;
             e.preventDefault();
-            
+
             this.currentX = e.clientX - startX;
             this.currentY = e.clientY - startY;
-            
+
             this.xOffset = this.currentX;
             this.yOffset = this.currentY;
-            
+
             this.setTranslate(this.currentX, this.currentY);
         });
 
@@ -1072,14 +1072,14 @@ class ChatNotificationManager {
                 icon.style.cursor = 'move';
                 manager.classList.remove('dragging');
                 icon.classList.add('drag-end');
-                
+
                 // 移除结束动画类
                 setTimeout(() => {
                     icon.classList.remove('drag-end');
                 }, 500);
-                
+
                 this.savePosition();
-                
+
                 // 如果有移动，延迟一点时间再允许点击
                 if (hasMoved) {
                     setTimeout(() => {
@@ -1148,7 +1148,7 @@ class ChatNotificationManager {
         this.yOffset = 0;
         this.setTranslate(0, 0);
         localStorage.removeItem('chatNotificationPosition');
-        
+
         // 显示提示
         const icon = document.getElementById('notification-icon');
         icon.style.transform = 'scale(1.2)';
@@ -1160,7 +1160,7 @@ class ChatNotificationManager {
     startPolling() {
         // 立即获取一次
         this.fetchNotifications();
-        
+
         // 每5秒轮询一次
         this.pollInterval = setInterval(() => {
             this.fetchNotifications();
@@ -1191,7 +1191,7 @@ class ChatNotificationManager {
                     const data = await response.json();
                     if (data.success) {
                         this.updateNotificationCount(data.total_unread);
-                        
+
                         // 如果下拉框是打开的，获取详细通知
                         if (this.isVisible) {
                             this.fetchDetailedNotifications();
@@ -1259,22 +1259,22 @@ class ChatNotificationManager {
         const robot = document.getElementById('usaki-character') || document.getElementById('avatar-character');
         const toast = document.getElementById('message-toast');
         const messageCount = document.querySelector('.message-count');
-        
+
         // 更新红标显示
         const unreadBadge = document.getElementById('unread-badge');
         const unreadCount = document.querySelector('.unread-count');
-        
+
         if (count > 0) {
             // 显示红标
             if (unreadBadge && unreadCount) {
                 unreadBadge.style.display = 'flex';
                 unreadCount.textContent = count > 99 ? '99+' : count;
             }
-            
+
             // 如果有新消息（数量增加），触发机器人跑圈动画、振动和右上角提示
             if (count > previousCount) {
                 const icon = document.getElementById('notification-icon');
-                
+
                 // 触发机器人跑圈动画
                 if (robot) {
                     robot.classList.add('new-message');
@@ -1282,7 +1282,7 @@ class ChatNotificationManager {
                         robot.classList.remove('new-message');
                     }, 3000);
                 }
-                
+
                 // 触发振动效果
                 if (icon) {
                     icon.classList.add('vibrate');
@@ -1290,18 +1290,18 @@ class ChatNotificationManager {
                         icon.classList.remove('vibrate');
                     }, 500);
                 }
-                
+
                 // 显示右上角消息提示
                 const toast = document.getElementById('message-toast');
                 if (toast) {
                     toast.classList.add('show');
-                    
+
                     // 3秒后自动隐藏
                     setTimeout(() => {
                         toast.classList.remove('show');
                     }, 3000);
                 }
-                
+
                 // 播放通知声音（如果浏览器支持）
                 this.playNotificationSound();
             }
@@ -1319,16 +1319,16 @@ class ChatNotificationManager {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
             oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-            
+
             gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-            
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.2);
         } catch (error) {
@@ -1339,7 +1339,7 @@ class ChatNotificationManager {
 
     updateNotificationList() {
         const list = document.getElementById('notification-list');
-        
+
         if (this.notifications.length === 0) {
             list.innerHTML = '<div class="no-notifications">暂无未读消息</div>';
             return;
@@ -1349,9 +1349,9 @@ class ChatNotificationManager {
             <div class="notification-item" onclick="window.chatNotificationManager && window.chatNotificationManager.openChatRoom('${notification.room_id}', '${notification.message_type || ''}', '${notification.id}')">
                 <div class="notification-content">
                     <div class="notification-info">
-                        <div class="notification-room">${notification.room_name}</div>
-                        <div class="notification-sender">${notification.sender_username}</div>
-                        <div class="notification-message">${notification.message_preview}</div>
+                        <div class="notification-room">${notification.room_name || '未知聊天室'}</div>
+                        <div class="notification-sender">${notification.sender_username || '系统'}</div>
+                        <div class="notification-message">${notification.message_preview || ''}</div>
                         <div class="notification-time">${this.formatTime(notification.created_at)}</div>
                     </div>
                 </div>
@@ -1373,7 +1373,7 @@ class ChatNotificationManager {
         const dropdown = document.getElementById('notification-dropdown');
         dropdown.style.display = 'block';
         this.isVisible = true;
-        
+
         // 获取详细通知
         this.fetchDetailedNotifications();
     }
@@ -1392,7 +1392,7 @@ class ChatNotificationManager {
             // 如果没有通知ID，则标记整个聊天室为已读（向后兼容）
             await this.markRoomAsRead(roomId);
         }
-        
+
         // 根据消息类型进行不同的跳转
         if (messageType === 'system') {
             // 系统通知 - 检查是否有跳转链接信息
@@ -1404,40 +1404,47 @@ class ChatNotificationManager {
                     window.location.href = notification.metadata.jump_url;
                     return;
                 }
-                
+
                 // 从消息内容中提取跳转链接
-                const jumpUrlMatch = notification.message_preview.match(/🔗 跳转链接: (https?:\/\/[^\s]+|\/[^\s]+)/);
-                if (jumpUrlMatch) {
-                    window.location.href = jumpUrlMatch[1];
-                    return;
+                if (notification.message_preview) {
+                    const jumpUrlMatch = notification.message_preview.match(/🔗 跳转链接: (https?:\/\/[^\s]+|\/[^\s]+)/);
+                    if (jumpUrlMatch) {
+                        window.location.href = jumpUrlMatch[1];
+                        return;
+                    }
                 }
-                
+
                 // 检查是否是任务完成通知
-                if (notification.message_preview.includes('任务完成') || 
+                if (notification.message_preview && (
+                    notification.message_preview.includes('任务完成') ||
                     notification.message_preview.includes('后台任务已完成') ||
-                    notification.message_preview.includes('测试用例生成')) {
+                    notification.message_preview.includes('测试用例生成')
+                )) {
                     // 跳转到任务管理器页面
                     window.location.href = '/tools/task_manager/';
                     return;
                 }
-                
+
                 // 检查是否是任务结束通知
-                if (notification.message_preview.includes('任务结束')) {
+                if (notification.message_preview && notification.message_preview.includes('任务结束')) {
                     // 跳转到任务管理器页面
                     window.location.href = '/tools/task_manager/';
                     return;
                 }
             }
         }
-        
+
         // 检查是否是ShipBao商品咨询通知
         const notification = this.notifications.find(n => n.room_id === roomId);
-        if (notification && (notification.room_name.includes('商品') || notification.message_preview.includes('商品'))) {
+        if (notification && (
+            (notification.room_name && notification.room_name.includes('商品')) ||
+            (notification.message_preview && notification.message_preview.includes('商品'))
+        )) {
             // ShipBao商品咨询 - 跳转到对应的聊天室
             window.location.href = `/tools/heart_link/chat/${roomId}/`;
             return;
         }
-        
+
         // 默认跳转到聊天室
         window.location.href = `/tools/heart_link/chat/${roomId}/`;
     }
@@ -1520,7 +1527,7 @@ class ChatNotificationManager {
         if (minutes < 60) return `${minutes}分钟前`;
         if (hours < 24) return `${hours}小时前`;
         if (days < 7) return `${days}天前`;
-        
+
         return date.toLocaleDateString();
     }
 
@@ -1544,7 +1551,7 @@ class ChatNotificationManager {
             '.top-ui-bar img',
             '.user-info img'
         ];
-        
+
         console.log('页面中所有图片元素:');
         const allImages = document.querySelectorAll('img');
         allImages.forEach((img, index) => {
@@ -1555,7 +1562,7 @@ class ChatNotificationManager {
                 parentElement: img.parentElement?.className || img.parentElement?.tagName
             });
         });
-        
+
         console.log('尝试各个选择器:');
         avatarSelectors.forEach(selector => {
             const elements = document.querySelectorAll(selector);
@@ -1568,7 +1575,7 @@ class ChatNotificationManager {
                 });
             });
         });
-        
+
         const detectedAvatar = this.getUserAvatar();
         console.log('最终检测结果:', detectedAvatar);
         return detectedAvatar;
@@ -1581,26 +1588,26 @@ class ChatNotificationManager {
         const toast = document.getElementById('message-toast');
         const unreadBadge = document.getElementById('unread-badge');
         const unreadCount = document.querySelector('.unread-count');
-        
+
         if (robot && icon) {
             // 显示红标
             if (unreadBadge && unreadCount) {
                 unreadBadge.style.display = 'flex';
                 unreadCount.textContent = '5';
             }
-            
+
             // 触发机器人跑圈动画
             robot.classList.add('new-message');
             setTimeout(() => {
                 robot.classList.remove('new-message');
             }, 3000);
-            
+
             // 触发振动效果
             icon.classList.add('vibrate');
             setTimeout(() => {
                 icon.classList.remove('vibrate');
             }, 500);
-            
+
             // 显示右上角消息提示
             if (toast) {
                 toast.classList.add('show');
@@ -1608,7 +1615,7 @@ class ChatNotificationManager {
                     toast.classList.remove('show');
                 }, 3000);
             }
-            
+
             this.playNotificationSound();
         }
     }

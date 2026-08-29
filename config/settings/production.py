@@ -26,6 +26,11 @@ MIDDLEWARE = [
 # 生产环境特定配置 - 只设置DEBUG为False
 DEBUG = False
 
+# 暂时关闭登录/注册，方便访客直接使用
+AUTH_LOGIN_DISABLED = os.environ.get("AUTH_LOGIN_DISABLED", "true").lower() in ("1", "true", "yes")
+
+TEMPLATES[0]["OPTIONS"]["context_processors"].append("config.context_processors.site_flags")
+
 # 允许的主机 - 生产环境域名和IP
 ALLOWED_HOSTS = [
     "shenyiqing.xin",
@@ -141,10 +146,10 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 
-# 文件上传限制 - 设置为100MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
-MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB
+# 文件上传限制 - 设置为10GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 DATA_UPLOAD_MAX_NUMBER_FILES = 1000
 

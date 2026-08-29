@@ -56,9 +56,9 @@ DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS") + ["testserver"]
 
 # 文件上传设置
-DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
-MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024  # 10GB
 
 # Application definition
 INSTALLED_APPS = [
@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "apps.content",
     "apps.tools",
     "apps.share",
+    "apps.grading",
 ]
 
 MIDDLEWARE = [
@@ -122,6 +123,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.site_flags",
             ],
         },
     },
@@ -211,7 +213,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "src/static",
     BASE_DIR / "static",
-    BASE_DIR / "tests/reports",  # 添加Allure报告目录
+    BASE_DIR / "qa/artifacts",  # QA Allure 报告目录
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -224,6 +226,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 登录配置
 LOGIN_URL = "/"  # 重定向到主页，通过弹窗处理登录
+
+# 临时关闭登录/注册入口，允许访客直接使用（通过环境变量 AUTH_LOGIN_DISABLED=true 开启）
+AUTH_LOGIN_DISABLED = os.environ.get("AUTH_LOGIN_DISABLED", "false").lower() in ("1", "true", "yes")
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
@@ -235,11 +240,15 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天（1个月）
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = False  # 禁用每次请求都保存session，避免异步上下文错误
 SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为True
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_HTTPONLY = False  # 开发环境允许JavaScript访问，便于调试
+SESSION_COOKIE_SAMESITE = None  # 允许跨站请求携带Cookie（开发环境）
 
 # 会话序列化器
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
+
+# CSRF Cookie配置（开发环境）
+CSRF_COOKIE_HTTPONLY = False  # 允许JavaScript访问CSRF token
+CSRF_COOKIE_SAMESITE = None  # 允许跨站请求
 
 # DRF配置
 REST_FRAMEWORK = {
@@ -263,14 +272,15 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 SITE_ID = 1
 
 # Celery配置
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/3")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/3")
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Shanghai"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_RESULT_EXPIRES = 3600  # 结果保留1小时
 
 # 缓存配置
 CACHEOPS_REDIS = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/4")
@@ -410,6 +420,8 @@ os.makedirs(os.path.join(MEDIA_ROOT, "tool_outputs"), exist_ok=True)
 os.makedirs(os.path.join(MEDIA_ROOT, "ai_links/icons"), exist_ok=True)
 os.makedirs(os.path.join(MEDIA_ROOT, "chat_images"), exist_ok=True)  # 添加聊天图片目录
 os.makedirs(os.path.join(MEDIA_ROOT, "temp_audio"), exist_ok=True)  # 添加临时音频目录
+os.makedirs(os.path.join(MEDIA_ROOT, "homework"), exist_ok=True)  # 添加作业目录
+os.makedirs(os.path.join(MEDIA_ROOT, "papers"), exist_ok=True)  # 添加试卷目录
 os.makedirs(BASE_DIR / "logs", exist_ok=True)
 
 # django-allauth配置

@@ -140,7 +140,7 @@ def get_test_report_api(request):
     """获取测试报告API"""
     return JsonResponse({
         'report_url': '/reports/allure-report/index.html',
-        'report_path': '/tests/reports/allure-report/index.html',
+        'report_path': '/qa/artifacts/allure-report/index.html',
         'exists': True,
         'timestamp': datetime.now().isoformat()
     })

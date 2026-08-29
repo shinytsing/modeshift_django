@@ -22,6 +22,7 @@
     
     <!-- 修复悬浮函数未定义的问题 -->
     <script>
+        window.AUTH_LOGIN_DISABLED = {{ auth_login_disabled|yesno:"true,false" }};
         // 安全的DOM移除函数
         function safeRemoveChild(element) {
             if (element && element.parentNode && element.parentNode.contains(element)) {
@@ -138,6 +139,9 @@
         
         // 显示登录弹窗
         function showLoginModal() {
+            if (window.AUTH_LOGIN_DISABLED) {
+                return;
+            }
             if (typeof showGeekLoginModal === 'function') {
                 showGeekLoginModal();
             } else {
@@ -147,6 +151,9 @@
         
         // 显示注册弹窗
         function showRegisterModal() {
+            if (window.AUTH_LOGIN_DISABLED) {
+                return;
+            }
             if (typeof showGeekLoginModal === 'function') {
                 showGeekLoginModal();
             } else {
@@ -2555,12 +2562,14 @@
                             </div>
                         </div>
                     {% else %}
+                        {% if not auth_login_disabled %}
                         <a href="#" class="btn btn-primary btn-custom" onclick="stopMedia(); showLoginModal(); return false;">
                             <i class="fas fa-sign-in-alt"></i> <span data-translate="登录">登录</span>
                         </a>
                         <a href="#" class="btn btn-secondary btn-custom" onclick="stopMedia(); showRegisterModal(); return false;">
                             <i class="fas fa-user-plus"></i> <span data-translate="注册">注册</span>
                         </a>
+                        {% endif %}
                     {% endif %}
                     
                     <!-- 设置按钮移到右上角 -->
@@ -2589,9 +2598,11 @@
                                 <i class="fas fa-comment"></i> <span data-translate="意见反馈">意见反馈</span>
                             </a>
                             {% else %}
+                            {% if not auth_login_disabled %}
                             <a class="dropdown-item" href="#" onclick="showLoginModal(); return false;" style="color: white;">
                                 <i class="fas fa-sign-in-alt"></i> <span data-translate="登录后反馈">登录后反馈</span>
                             </a>
+                            {% endif %}
                             {% endif %}
                             <div class="dropdown-divider" style="border-color: #333;"></div>
                             <h6 class="dropdown-header" style="color: #fff; border-bottom: 1px solid #333;" data-translate="语言设置">语言设置</h6>

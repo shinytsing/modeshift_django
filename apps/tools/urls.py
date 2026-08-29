@@ -232,6 +232,9 @@ from .legacy_views import (
     send_image_api,
     send_message_api,
     send_video_api,
+    chunked_upload_init,
+    chunked_upload_chunk,
+    chunked_upload_complete,
     shipbao_chat,
     shipbao_check_transaction_api,
     shipbao_create_item_api,
@@ -251,7 +254,7 @@ from .legacy_views import (
     user_generated_travel_guide_upload_attachment_api,
     user_generated_travel_guide_use_api,
     video_chat_view,
-)
+    end_chat_room_api)
 
 # 导入监控视图
 from .monitoring_views import (
@@ -325,10 +328,12 @@ from .views.java_job_integration_views import (
     get_java_job_status_api,
     stop_java_job_api,
     cleanup_java_job_api,
+    get_java_qr_image_api,
+    refresh_java_qr_code_api,
 )
 from .views.java_job_launcher_view import java_job_launcher
 from .views.boss_qr_code_views import get_boss_qr_code_api, get_boss_qr_image_api
-from .views.java_boss_qr_views import get_java_boss_qr_code_api, get_java_boss_qr_image_api, get_login_status_api
+from .views.java_boss_qr_views import get_java_boss_qr_code_api, get_java_boss_qr_image_api, get_login_status_api, refresh_java_boss_qr_api, start_delivery_task_api
 from .views.test_qr_views import test_qr_api
 
 from .views.ai_assistant_views import ai_assistant_api, ai_assistant_features_api
@@ -701,14 +706,22 @@ def desire_todo_enhanced_view(request):
     return render(request, "tools/desire_todo_enhanced.html")
 
 
+@login_required
+def homework_grading_view(request):
+    """作业批改与智能组卷页面"""
+    return render(request, "tools/homework_grading.html")
+
+
 # Tools主页面视图函数
 def tools_index_view(request):
     """工具主页面"""
-    # 快速检查用户登录状态，避免慢查询
-    if not request.user.is_authenticated:
-        from django.contrib.auth.views import redirect_to_login
+    from django.conf import settings
 
-        return redirect_to_login(request.get_full_path())
+    if not getattr(settings, "AUTH_LOGIN_DISABLED", False):
+        if not request.user.is_authenticated:
+            from django.contrib.auth.views import redirect_to_login
+
+            return redirect_to_login(request.get_full_path())
     return render(request, "tools/index.html")
 
 
@@ -735,6 +748,7 @@ urlpatterns = [
     path("guitar_training/", guitar_training_view, name="guitar_training"),
     path("anti_programmer_profile/", anti_programmer_profile_view, name="anti_programmer_profile"),
     path("desire_todo_enhanced/", desire_todo_enhanced_view, name="desire_todo_enhanced"),
+    path("homework_grading/", homework_grading_view, name="homework_grading"),
     # 基础工具页面路由
     path("test_case_generator/", test_case_generator, name="test_case_generator"),
     path("task_manager/", task_manager, name="task_manager"),
@@ -885,11 +899,15 @@ urlpatterns = [
     path("java-job/api/qr-image/", get_boss_qr_image_api, name="get_boss_qr_image_api"),
     path("java-job/api/java-qr-code/", get_java_boss_qr_code_api, name="get_java_boss_qr_code_api"),
     path("java-job/api/java-qr-image/", get_java_boss_qr_image_api, name="get_java_boss_qr_image_api"),
+    path("java-job/api/refresh-qr/", refresh_java_boss_qr_api, name="refresh_java_boss_qr_api"),
+    path("java-job/api/start-delivery/", start_delivery_task_api, name="start_delivery_task_api"),
     path("java-job/api/login-status/", get_login_status_api, name="get_login_status_api"),
     path("test-qr/", test_qr_api, name="test_qr_api"),
     path("java-job/api/status/", get_java_job_status_api, name="get_java_job_status_api"),
     path("java-job/api/stop/", stop_java_job_api, name="stop_java_job_api"),
     path("java-job/api/cleanup/", cleanup_java_job_api, name="cleanup_java_job_api"),
+    path("java-job/api/qr-image/", get_java_qr_image_api, name="get_java_qr_image_api"),
+    path("java-job/api/refresh-qr/", refresh_java_qr_code_api, name="refresh_java_qr_code_api"),
     
     # 增强版Boss直聘路由 - 已移除（功能不存在）
     
@@ -1001,6 +1019,10 @@ urlpatterns = [
     path("api/chat/<str:room_id>/send-file/", send_file_api, name="send_file_api"),
     path("api/chat/<str:room_id>/send-video/", send_video_api, name="send_video_api"),
     path("api/chat/<str:room_id>/delete-message/<int:message_id>/", delete_message_api, name="delete_message_api"),
+    # 分片上传API路由
+    path("api/chat/<str:room_id>/chunked-upload/init/", chunked_upload_init, name="chunked_upload_init"),
+    path("api/chat/<str:room_id>/chunked-upload/chunk/", chunked_upload_chunk, name="chunked_upload_chunk"),
+    path("api/chat/<str:room_id>/chunked-upload/complete/", chunked_upload_complete, name="chunked_upload_complete"),
     # 通知相关API路由
     path("api/notifications/unread/", get_unread_notifications_api, name="get_unread_notifications_api"),
     path("api/notifications/mark-read/", mark_notifications_read_api, name="mark_notifications_read_api"),
@@ -1008,6 +1030,7 @@ urlpatterns = [
     path("api/notifications/summary/", get_notification_summary_api, name="get_notification_summary_api"),
     path("api/notifications/create/", create_system_notification_api, name="create_system_notification_api"),
     path("api/chat/<str:room_id>/mark-read/", mark_messages_read_api, name="mark_messages_read_api"),
+    path("api/chat/<str:room_id>/end/", end_chat_room_api, name="end_chat_room_api"),
     path("api/chat/<str:room_id>/download/<int:message_id>/", download_chat_file, name="download_chat_file"),
     path("api/chat/online_status/", update_online_status_api, name="update_online_status_api"),
     path("api/chat/<str:room_id>/online_users/", get_online_users_api, name="get_online_users_api"),

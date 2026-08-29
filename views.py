@@ -13,25 +13,28 @@ def login_required_modal(view_func):
     """
     自定义登录装饰器，未登录时重定向到主页
     """
+    if getattr(settings, "AUTH_LOGIN_DISABLED", False):
+        return view_func
+
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if request.user.is_authenticated:
             return view_func(request, *args, **kwargs)
-        else:
-            # 重定向到主页，用户可以手动点击登录按钮
-            return redirect('home')
+        return redirect("home")
+
     return wrapper
 
 
 @login_required_modal  # 使用自定义装饰器
 def tool_view(request):
-    # 获取用户偏好模式
-    try:
-        from apps.users.models import UserModePreference
+    preferred_mode = "work"
+    if request.user.is_authenticated:
+        try:
+            from apps.users.models import UserModePreference
 
-        preferred_mode = UserModePreference.get_user_preferred_mode(request.user)
-    except Exception:
-        preferred_mode = "work"  # 默认极客模式
+            preferred_mode = UserModePreference.get_user_preferred_mode(request.user)
+        except Exception:
+            preferred_mode = "work"
 
     context = {
         "preferred_mode": preferred_mode,

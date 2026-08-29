@@ -62,10 +62,33 @@ class GoogleAuthCallbackView(View, GoogleAuthProxyViewMixin):
     def get(self, request):
         """处理 Google Auth 回调"""
         try:
+            from django.core.signing import BadSignature, SignatureExpired
+
+            from apps.users.oauth_utils import (
+                build_google_callback_bounce_url,
+                load_google_oauth_state,
+                should_bounce_oauth_callback,
+            )
+
             # 获取授权码和 state 参数
             code = request.GET.get('code')
             state = request.GET.get('state')
             error = request.GET.get('error')
+
+            if state and not error:
+                try:
+                    payload = load_google_oauth_state(state)
+                    return_origin = payload.get("return_origin", "")
+                    if should_bounce_oauth_callback(request, return_origin):
+                        bounce_url = build_google_callback_bounce_url(
+                            return_origin,
+                            {k: v for k, v in request.GET.items() if v is not None},
+                        )
+                        if bounce_url:
+                            logger.info("Bouncing Google OAuth callback to %s", return_origin)
+                            return redirect(bounce_url)
+                except (BadSignature, SignatureExpired, ValueError, TypeError) as exc:
+                    logger.warning("Google OAuth state bounce skipped: %s", exc)
             
             if error:
                 logger.error(f"Google auth error: {error}")

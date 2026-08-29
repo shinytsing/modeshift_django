@@ -8,25 +8,23 @@ class ToolsConfig(AppConfig):
 
     def ready(self):
         """应用启动时的初始化"""
-
-        # 只在非管理命令环境下运行
-        if not self._is_management_command():
+        if self._should_initialize_services():
             self._initialize_services()
 
-    def _is_management_command(self):
-        """检查是否在管理命令环境下运行"""
-        import sys
+    def _should_initialize_services(self) -> bool:
+        """仅在 Web 进程启动时初始化后台服务。
 
-        return len(sys.argv) > 1 and sys.argv[1] in [
-            "runserver",
-            "migrate",
-            "collectstatic",
-            "test",
-            "shell",
-            "health_check",
-            "cache_test",
-            "api_test",
-        ]
+        Django 会在大量管理命令（如 `check`、`migrate`、`shell`）中触发 app registry 的
+        populate；此时启动后台线程/定时任务会导致初始化阶段卡住或产生副作用。
+        """
+        import sys
+        import os
+
+        if os.environ.get("DISABLE_STARTUP_TASKS") == "1":
+            return False
+
+        # 只在实际启动开发服务器时启用（可按需扩展到 gunicorn/daphne 等）
+        return len(sys.argv) > 1 and sys.argv[1] in ["runserver", "runserver_plus"]
 
     def _initialize_services(self):
         """初始化各种服务"""

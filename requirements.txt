@@ -26,7 +26,16 @@ django-cachalot==2.6.1
 django-health-check==3.17.0
 djangorestframework==3.14.0
 django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+django-filter==23.3
 channels==4.0.0
 daphne==4.0.0
 PyYAML>=6.0
 selenium>=4.0.0
+# 作业批改系统依赖
+reportlab==4.0.7
+pdf2image==1.16.3
+pytesseract==0.3.10
+easyocr==1.7.0
+sympy==1.12
+google-generativeai==0.3.2

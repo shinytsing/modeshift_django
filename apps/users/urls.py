@@ -5,9 +5,9 @@ from . import views
 app_name = "users"
 
 urlpatterns = [
-    # API端点用于弹窗登录/注册
-    path("api/login/", views.user_login_api, name="login_api"),
-    path("api/register/", views.user_register_api, name="register_api"),
+    # 登录/注册 API（暂时关闭，开放访客使用）
+    # path("api/login/", views.user_login_api, name="login_api"),
+    # path("api/register/", views.user_register_api, name="register_api"),
     path("logout/", views.user_logout, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),

@@ -1,6 +1,9 @@
+import os
+
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialApp
 from django.core.exceptions import ObjectDoesNotExist
+
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def get_app(self, request, provider):
@@ -8,12 +11,14 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             app = SocialApp.objects.get(provider=provider)
             return app
         except ObjectDoesNotExist:
-            if provider == 'google':
+            if provider == "google":
+                client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+                secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
                 app = SocialApp.objects.create(
-                    provider='google',
-                    name='Google',
-                    client_id='264574147455-fe39bnpbocvkdiaiasks8ptdkr1lbruq.apps.googleusercontent.com',
-                    secret='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',
+                    provider="google",
+                    name="Google",
+                    client_id=client_id,
+                    secret=secret,
                 )
                 return app
             raise

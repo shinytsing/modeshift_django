@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-{% if user.is_authenticated %}
+{% if user.is_authenticated or auth_login_disabled %}
 <div id="tool-container" style="min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
   
   <!-- 搞怪的标题区域 -->

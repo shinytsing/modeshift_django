@@ -18,19 +18,22 @@ from ..models.chat_models import ChatMessage, ChatNotification, ChatRoom
 @require_http_methods(["GET"])
 def get_unread_notifications_api(request):
     """获取未读通知API"""
-    # 检查用户是否登录
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
-    
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
-        # 确保ChatNotification表存在
-        from django.db import connection
+        # 检查用户是否登录
+        if not request.user.is_authenticated:
+            logger.warning("未认证用户尝试访问未读通知API")
+            return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
 
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'tools_chatnotification')")
-            table_exists = cursor.fetchone()[0]
+        logger.info(f"获取未读通知 - 用户: {request.user.username}")
 
-        if not table_exists:
+        # 确保ChatNotification表存在（直接尝试查询，如果失败则返回空）
+        try:
+            ChatNotification.objects.exists()
+        except Exception as table_error:
+            logger.warning(f"ChatNotification表可能不存在: {table_error}")
             return JsonResponse({"success": True, "total_unread": 0, "notifications": [], "unread_rooms": []})
 
         # 获取用户的未读通知
@@ -51,36 +54,49 @@ def get_unread_notifications_api(request):
         # 构建响应数据
         notifications_data = []
         for notification in unread_notifications[:10]:  # 最近10条
-            notification_data = {
-                "id": notification.id,
-                "room_id": notification.room.room_id,
-                "room_name": notification.room.name,
-                "sender_username": notification.message.sender.username,
-                "message_preview": notification.message.content[:50]
-                + ("..." if len(notification.message.content) > 50 else ""),
-                "message_type": notification.message.message_type,
-                "created_at": notification.created_at.isoformat(),
-            }
-            
-            # 添加metadata信息（如果存在）
-            if notification.message.metadata:
-                notification_data["metadata"] = notification.message.metadata
-            
-            notifications_data.append(notification_data)
+            try:
+                notification_data = {
+                    "id": notification.id,
+                    "room_id": notification.room.room_id if notification.room else None,
+                    "room_name": notification.room.name if notification.room else "未知聊天室",
+                    "sender_username": notification.message.sender.username if notification.message and notification.message.sender else "系统",
+                    "message_preview": (notification.message.content[:50]
+                    + ("..." if len(notification.message.content) > 50 else "")) if notification.message else "",
+                    "message_type": notification.message.message_type if notification.message else "text",
+                    "created_at": notification.created_at.isoformat(),
+                }
+
+                # 添加metadata信息（如果存在）
+                if notification.message and notification.message.metadata:
+                    notification_data["metadata"] = notification.message.metadata
+
+                notifications_data.append(notification_data)
+            except Exception as notification_error:
+                logger.error(f"处理通知数据失败 (ID: {notification.id}): {notification_error}")
+                continue
 
         rooms_data = []
         for room in unread_rooms:
             rooms_data.append(
-                {"room_id": room["room__room_id"], "room_name": room["room__name"], "unread_count": room["unread_count"]}
+                {"room_id": room["room__room_id"], "room_name": room["room__name"] or "未知聊天室", "unread_count": room["unread_count"]}
             )
 
         total_unread = ChatNotification.objects.filter(user=request.user, is_read=False).count()
 
-        return JsonResponse(
-            {"success": True, "total_unread": total_unread, "notifications": notifications_data, "unread_rooms": rooms_data}
-        )
+        response_data = {
+            "success": True,
+            "total_unread": total_unread,
+            "notifications": notifications_data,
+            "unread_rooms": rooms_data
+        }
+
+        logger.info(f"成功获取未读通知 - 用户: {request.user.username}, 未读数: {total_unread}")
+        return JsonResponse(response_data)
 
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"获取通知失败: {str(e)}\n{error_trace}")
         return JsonResponse({"success": False, "error": f"获取通知失败: {str(e)}"}, status=500)
 
 
@@ -91,7 +107,7 @@ def mark_notifications_read_api(request):
     # 检查用户是否登录
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
-    
+
     try:
         data = json.loads(request.body)
         room_id = data.get("room_id")
@@ -133,19 +149,22 @@ def mark_notifications_read_api(request):
 @require_http_methods(["POST"])
 def clear_all_notifications_api(request):
     """清除所有通知API"""
-    # 检查用户是否登录
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
-    
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
-        # 确保ChatNotification表存在
-        from django.db import connection
+        # 检查用户是否登录
+        if not request.user.is_authenticated:
+            logger.warning("未认证用户尝试清除所有通知")
+            return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
 
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'tools_chatnotification')")
-            table_exists = cursor.fetchone()[0]
+        logger.info(f"清除所有通知 - 用户: {request.user.username}")
 
-        if not table_exists:
+        # 确保ChatNotification表存在（直接尝试查询，如果失败则返回空）
+        try:
+            ChatNotification.objects.exists()
+        except Exception as table_error:
+            logger.warning(f"ChatNotification表可能不存在: {table_error}")
             return JsonResponse({"success": True, "message": "已清除 0 条通知"})
 
         # 标记所有未读通知为已读
@@ -155,9 +174,13 @@ def clear_all_notifications_api(request):
         for notification in notifications:
             notification.mark_as_read()
 
+        logger.info(f"成功清除通知 - 用户: {request.user.username}, 清除数量: {count}")
         return JsonResponse({"success": True, "message": f"已清除 {count} 条通知"})
 
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"清除通知失败: {str(e)}\n{error_trace}")
         return JsonResponse({"success": False, "error": f"清除通知失败: {str(e)}"}, status=500)
 
 
@@ -170,7 +193,7 @@ def create_chat_notification(message, exclude_sender=True):
         # 跳过系统消息的自动通知创建，避免重复通知
         if message.message_type == "system":
             return
-            
+
         room = message.room
 
         # 获取聊天室的所有用户
@@ -214,7 +237,7 @@ def get_notification_summary_api(request):
                 from django.core.cache import cache
                 cache_key = f"notification_summary:{request.user.id}"
                 cached_data = cache.get(cache_key)
-                
+
                 if cached_data:
                     return JsonResponse(cached_data)
                 else:
@@ -231,14 +254,14 @@ def get_notification_summary_api(request):
         except RuntimeError:
             # 不在异步上下文中，继续正常处理
             pass
-        
+
         if not request.user.is_authenticated:
             return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
-        
+
     except Exception as auth_error:
         logger.error(f"认证检查失败: {auth_error}")
         return JsonResponse({"success": False, "error": "认证检查失败"}, status=500)
-    
+
     try:
         # 添加调试信息
         import logging
@@ -276,12 +299,12 @@ def get_notification_summary_api(request):
                 "user": request.user.username,
                 "timestamp": str(timezone.now()),
             }
-            
+
             # 缓存结果供异步上下文使用
             from django.core.cache import cache
             cache_key = f"notification_summary:{request.user.id}"
             cache.set(cache_key, response_data, 60 * 5)  # 5分钟缓存
-            
+
         except Exception as db_error:
             # 如果数据库查询失败，返回空通知
             logger.warning(f"数据库查询失败，返回空通知: {db_error}")
@@ -315,7 +338,7 @@ def create_system_notification_api(request):
     # 检查用户是否登录
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
-    
+
     try:
         data = json.loads(request.body)
         title = data.get("title", "系统通知")

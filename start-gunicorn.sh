@@ -140,7 +140,7 @@ User=root
 Group=root
 WorkingDirectory=$DEPLOY_PATH
 Environment="PATH=$DEPLOY_PATH/venv/bin"
-ExecStart=$DEPLOY_PATH/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application
+ExecStart=$DEPLOY_PATH/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 600 wsgi:application
 ExecReload=/bin/kill -s HUP \$MAINPID
 Restart=always
 RestartSec=3
@@ -173,7 +173,7 @@ EOF
         nohup gunicorn \
             --bind 0.0.0.0:8000 \
             --workers 3 \
-            --timeout 120 \
+            --timeout 600 \
             --pid "$PID_FILE" \
             --access-logfile "$LOG_FILE" \
             --error-logfile "$LOG_FILE" \

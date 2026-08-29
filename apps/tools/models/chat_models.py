@@ -1,6 +1,11 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ChatRoom(models.Model):
@@ -117,6 +122,64 @@ class ChatRoom(models.Model):
         elif current_user == self.user2:
             return self.user1
         return None
+
+    def delete(self, *args, **kwargs):
+        """删除聊天室时清理相关文件"""
+        logger.info(f"正在删除聊天室 {self.room_id}，开始清理文件...")
+
+        # 获取该聊天室的所有消息
+        messages = self.messages.all()
+        deleted_files_count = 0
+
+        for message in messages:
+            # 清理文件类型消息的文件
+            if message.message_type == 'file' and message.file_url:
+                file_path = os.path.join(settings.MEDIA_ROOT, message.file_url)
+                if os.path.exists(file_path):
+                    try:
+                        os.remove(file_path)
+                        deleted_files_count += 1
+                        logger.info(f"已删除文件: {file_path}")
+                    except Exception as e:
+                        logger.error(f"删除文件失败 {file_path}: {e}")
+
+            # 清理图片类型消息的图片
+            elif message.message_type == 'image' and message.image_url:
+                image_path = os.path.join(settings.MEDIA_ROOT, message.image_url)
+                if os.path.exists(image_path):
+                    try:
+                        os.remove(image_path)
+                        deleted_files_count += 1
+                        logger.info(f"已删除图片: {image_path}")
+                    except Exception as e:
+                        logger.error(f"删除图片失败 {image_path}: {e}")
+
+            # 清理语音类型消息的音频文件
+            elif message.message_type == 'voice' and message.voice_url:
+                voice_path = os.path.join(settings.MEDIA_ROOT, message.voice_url)
+                if os.path.exists(voice_path):
+                    try:
+                        os.remove(voice_path)
+                        deleted_files_count += 1
+                        logger.info(f"已删除语音: {voice_path}")
+                    except Exception as e:
+                        logger.error(f"删除语音失败 {voice_path}: {e}")
+
+            # 清理视频类型消息的视频文件
+            elif message.message_type == 'video' and message.video_url:
+                video_path = os.path.join(settings.MEDIA_ROOT, message.video_url)
+                if os.path.exists(video_path):
+                    try:
+                        os.remove(video_path)
+                        deleted_files_count += 1
+                        logger.info(f"已删除视频: {video_path}")
+                    except Exception as e:
+                        logger.error(f"删除视频失败 {video_path}: {e}")
+
+        logger.info(f"聊天室 {self.room_id} 共删除 {deleted_files_count} 个文件")
+
+        # 调用父类的delete方法
+        super().delete(*args, **kwargs)
 
 
 class ChatRoomMember(models.Model):

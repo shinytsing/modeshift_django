@@ -140,7 +140,7 @@ def register(request):
             # 自动登录用户
             from django.contrib.auth import login
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            
+
             messages.success(request, "注册成功！已自动登录。")
             return redirect("home")  # 跳转到首页
     else:
@@ -785,7 +785,7 @@ def theme_api(request):
     # 检查用户是否登录
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "用户未登录"}, status=401, content_type="application/json")
-    
+
     try:
         if request.method == "GET":
             # 获取用户当前主题
@@ -1228,20 +1228,20 @@ def user_login_api(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-        
+
         if not username or not password:
             return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
-        
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
             # 确保request有session属性
             if not hasattr(request, 'session'):
                 from django.contrib.sessions.backends.db import SessionStore
                 request.session = SessionStore()
-            
+
             login(request, user)
             return JsonResponse({
-                "success": True, 
+                "success": True,
                 "message": "登录成功",
                 "user": {
                     "id": user.id,
@@ -1251,7 +1251,7 @@ def user_login_api(request):
             })
         else:
             return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
-            
+
     except Exception as e:
         return JsonResponse({"success": False, "message": f"登录失败: {str(e)}"}, status=500)
 
@@ -1266,31 +1266,37 @@ def user_register_api(request):
         username = data.get('username')
         password = data.get('password')
         email = data.get('email', '')
-        
+
         if not username or not password:
             return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
-        
+
         if User.objects.filter(username=username).exists():
             return JsonResponse({"success": False, "message": "用户名已存在"}, status=400)
-        
+
         if len(password) < 8:
             return JsonResponse({"success": False, "message": "密码必须大于8位"}, status=400)
-        
+
         user = User.objects.create_user(username=username, password=password, email=email)
-        
+
         # 创建用户相关记录
         UserRole.objects.create(user=user, role="user")
         UserStatus.objects.create(user=user, status="active")
         UserMembership.objects.create(user=user, membership_type="free")
-        # Profile 会通过信号处理器自动创建
-        
+
+        # 确保Profile被创建（信号处理器可能失败）
+        try:
+            from .models import Profile
+            Profile.objects.get_or_create(user=user)
+        except Exception as profile_error:
+            logger.warning(f"Profile创建失败（可能已存在）: {str(profile_error)}")
+
         # 自动登录用户
         from django.contrib.auth import login
         from django.contrib.auth.backends import ModelBackend
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        
+
         return JsonResponse({
-            "success": True, 
+            "success": True,
             "message": "注册成功，已自动登录",
             "user": {
                 "id": user.id,
@@ -1299,7 +1305,7 @@ def user_register_api(request):
             },
             "redirect_url": "/"  # 注册成功后跳转到首页
         })
-        
+
     except Exception as e:
         return JsonResponse({"success": False, "message": f"注册失败: {str(e)}"}, status=500)
 
@@ -1312,7 +1318,7 @@ def user_profile_api(request):
     try:
         if not request.user.is_authenticated:
             return JsonResponse({"success": False, "message": "用户未登录"}, status=401)
-        
+
         if request.method == "GET":
             # 获取用户资料
             profile, created = Profile.objects.get_or_create(user=request.user)
@@ -1332,21 +1338,21 @@ def user_profile_api(request):
                     }
                 }
             })
-        
+
         elif request.method == "POST":
             # 更新用户资料
             data = json.loads(request.body)
             profile, created = Profile.objects.get_or_create(user=request.user)
-            
+
             if 'first_name' in data:
                 request.user.first_name = data['first_name']
             if 'last_name' in data:
                 request.user.last_name = data['last_name']
             if 'email' in data:
                 request.user.email = data['email']
-            
+
             request.user.save()
-            
+
             return JsonResponse({
                 "success": True,
                 "message": "资料更新成功",
@@ -1358,7 +1364,7 @@ def user_profile_api(request):
                     "last_name": request.user.last_name
                 }
             })
-            
+
     except Exception as e:
         return JsonResponse({"success": False, "message": f"操作失败: {str(e)}"}, status=500)
 
