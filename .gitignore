@@ -391,3 +391,17 @@ media/tool_outputs/
 /test_qr_display.html
 /user_info_debug.html
 /xiaohongshu_*.html
+
+# Root-level local exports, proxy state, and generated samples.
+/.env.example
+/env.server
+/requirements_local.txt
+/cookies.txt
+/clash_config_example.yaml
+/proxy_icon.icns
+/puqu_*.txt
+/mock_*
+/test_qr.png
+/ningbo_page_screenshot.png
+/*_marked.jpg
+/*.tar.gz
