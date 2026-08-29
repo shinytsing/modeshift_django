@@ -65,3 +65,45 @@ def test_dashboard_blocks_execution_when_no_test_type_is_selected(page: Page) ->
         name="empty-selection-guard.png",
         attachment_type=allure.attachment_type.PNG,
     )
+
+
+@pytest.mark.ui
+@allure.epic("QAToolBox 左移质量门禁")
+@allure.feature("UI 自动化 - Playwright")
+@allure.story("看板统计渲染")
+def test_dashboard_renders_each_api_provided_summary_total(page: Page) -> None:
+    """The visible cards must render the exact totals returned by the statistics API."""
+    page.goto(_dashboard_url(), wait_until="domcontentloaded")
+
+    with allure.step("验证五类看板统计的用户可见数值"):
+        expect(page.locator("#functional-tests")).to_have_text("50")
+        expect(page.locator("#api-tests")).to_have_text("80")
+        expect(page.locator("#performance-tests")).to_have_text("60")
+        expect(page.locator("#security-tests")).to_have_text("40")
+        expect(page.locator("#success-rate")).to_have_text("90%")
+
+
+@pytest.mark.ui
+@allure.epic("QAToolBox 左移质量门禁")
+@allure.feature("UI 自动化 - Playwright")
+@allure.story("已选测试类型执行")
+def test_dashboard_submits_only_the_user_selected_test_type(page: Page) -> None:
+    """Selecting API only sends that exact scope to the real dashboard runner endpoint."""
+    page.goto(_dashboard_url(), wait_until="domcontentloaded")
+    page.get_by_label("功能测试").uncheck()
+    expect(page.get_by_label("接口测试")).to_be_checked()
+
+    with allure.step("仅执行接口测试并观察真实请求"):
+        with page.expect_response(
+            lambda response: response.url.endswith("/api/tests/run/") and response.request.method == "POST",
+            timeout=3_000,
+        ) as response_info:
+            page.get_by_role("button", name="执行测试").click()
+
+    response = response_info.value
+    assert response.status == 200
+    assert response.json()["test_types"] == ["api"]
+
+    with allure.step("验证看板恢复可执行状态"):
+        expect(page.locator("#test-status")).to_have_text("就绪", timeout=5_000)
+        expect(page.get_by_role("button", name="执行测试")).to_be_enabled()

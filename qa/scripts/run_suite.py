@@ -108,6 +108,11 @@ def main(arguments: list[str] | None = None) -> int:
 
         wait_for_health(base_url)
         pytest_command = [sys.executable, "-m", "pytest", "-c", "qa/pytest.ini", *parse_arguments(arguments)]
+        headed_option = environment.get("QA_HEADED")
+        run_headed = headed_option.lower() in {"1", "true", "yes"} if headed_option else not environment.get("CI")
+        if run_headed:
+            pytest_command.append("--headed")
+            pytest_command.extend(["--slowmo", environment.get("QA_SLOW_MO", "200")])
         if environment.get("QA_BROWSER_CHANNEL"):
             pytest_command.extend(["--browser-channel", environment["QA_BROWSER_CHANNEL"]])
         elif sys.platform == "darwin" and Path("/Applications/Google Chrome.app").exists():

@@ -28,6 +28,10 @@ python3 qa/run_api.py
 
 # Playwright UI scenarios only
 python3 qa/run_ui.py
+
+# Local UI defaults to a visible Chromium window. Adjust or disable the delay as needed.
+QA_SLOW_MO=500 python3 qa/run_ui.py
+QA_HEADED=0 python3 qa/run_ui.py
 ```
 
 All three commands use the same server lifecycle, `BASE_URL` contract, artifact location, and
@@ -40,8 +44,9 @@ Open `qa/artifacts/allure-report/index.html` after a run. It contains both categ
 - **API 自动化 - requests**: health, response schema, timing, and CSRF negative-path evidence.
 - **UI 自动化 - Playwright**: dashboard navigation, visible assertions, and a browser screenshot.
 
-The first showcase suite contains 7 independent tests: 5 API contracts (including CSRF and
-result consistency) and 2 UI scenarios. The unified runner also verifies health before pytest starts.
+The showcase suite contains 12 independent tests: 8 API contracts (including CSRF, method-boundary,
+statistics, history, and result-consistency checks) and 4 UI scenarios. The unified runner also
+verifies health before pytest starts.
 
 ## Other evidence
 

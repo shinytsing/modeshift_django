@@ -148,3 +148,67 @@ def test_run_tests_endpoint_echoes_the_selected_test_types(
     assert body["message"] == "测试已启动"
     assert body["test_types"] == selected_test_types
     assert isinstance(body["timestamp"], str) and body["timestamp"]
+
+
+@pytest.mark.api
+@allure.epic("QAToolBox 左移质量门禁")
+@allure.feature("API 自动化 - requests")
+@allure.story("看板统计聚合契约")
+def test_test_stats_endpoint_keeps_global_and_category_totals_consistent(
+    base_url: str, http_session: requests.Session
+) -> None:
+    """Dashboard summary cards must reconcile with the reported global test totals."""
+    with allure.step("请求测试统计汇总"):
+        response = http_session.get(f"{base_url}/api/tests/stats/", timeout=3)
+
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith("application/json")
+    body = response.json()
+    allure.attach(response.text, name="test-stats-response.json", attachment_type=allure.attachment_type.JSON)
+
+    assert body["total_tests"] == body["passed_tests"] + body["failed_tests"]
+    assert body["success_rate"] == 90.0
+    assert set(body["categories"]) == {"functional", "api", "performance", "security", "ui"}
+    assert sum(category["total"] for category in body["categories"].values()) == body["total_tests"]
+    assert sum(category["passed"] for category in body["categories"].values()) == body["passed_tests"]
+    assert sum(category["failed"] for category in body["categories"].values()) == body["failed_tests"]
+
+
+@pytest.mark.api
+@allure.epic("QAToolBox 左移质量门禁")
+@allure.feature("API 自动化 - requests")
+@allure.story("测试历史分页契约")
+def test_test_history_endpoint_returns_a_complete_first_page(
+    base_url: str, http_session: requests.Session
+) -> None:
+    """History rows must be uniquely identified and internally consistent for dashboard pagination."""
+    with allure.step("请求第一页测试历史"):
+        response = http_session.get(f"{base_url}/api/tests/history/", timeout=3)
+
+    assert response.status_code == 200
+    body = response.json()
+    allure.attach(response.text, name="test-history-response.json", attachment_type=allure.attachment_type.JSON)
+
+    assert body["pagination"] == {"page": 1, "page_size": 10, "total_count": 10, "total_pages": 1}
+    assert len(body["history"]) == 10
+    assert [entry["id"] for entry in body["history"]] == list(range(1, 11))
+    for entry in body["history"]:
+        assert entry["total_tests"] == entry["passed"] + entry["failed"] + entry["skipped"] + entry["broken"]
+        assert 0 <= entry["success_rate"] <= 100
+        assert entry["duration"] > 0
+        assert entry["test_types"] == ["functional", "api"]
+
+
+@pytest.mark.api
+@allure.epic("QAToolBox 左移质量门禁")
+@allure.feature("API 自动化 - requests")
+@allure.story("测试启动方法边界")
+def test_run_tests_endpoint_rejects_get_requests(
+    base_url: str, http_session: requests.Session
+) -> None:
+    """The runner endpoint accepts only an explicit POST command, never a browser GET request."""
+    with allure.step("使用 GET 请求访问测试启动接口"):
+        response = http_session.get(f"{base_url}/api/tests/run/", timeout=3)
+
+    assert response.status_code == 405
+    assert response.headers["Allow"] == "POST"
