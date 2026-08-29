@@ -44,7 +44,9 @@ jobs:
           python -m pip install -r requirements.txt -r qa/requirements.txt
 
       - name: Install Playwright Chromium
-        run: python -m playwright install --with-deps chromium
+        # ubuntu-latest already supplies browser system libraries. Playwright 1.40's
+        # --with-deps helper asks Ubuntu 24.04 for the retired libasound2 package.
+        run: python -m playwright install chromium
 
       - name: Run the shared local and CI QA command
         run: python qa/scripts/run_suite.py
@@ -58,15 +60,17 @@ jobs:
 
           report = "qa/artifacts/junit.xml"
           if not os.path.exists(report):
-              raise SystemExit("JUnit report was not created; inspect the QA artifact.")
-          root = ET.parse(report).getroot()
-          suite = root if root.tag == "testsuite" else root.find("testsuite")
-          tests = suite.attrib.get("tests", "0") if suite is not None else "0"
-          failures = suite.attrib.get("failures", "0") if suite is not None else "0"
-          errors = suite.attrib.get("errors", "0") if suite is not None else "0"
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write("## QA shift-left gate\\n")
-              summary.write(f"- Tests: {tests}\\n- Failures: {failures}\\n- Errors: {errors}\\n")
+              if not os.path.exists(report):
+                  summary.write("- JUnit was not produced because the test command did not start or complete.\\n")
+              else:
+                  root = ET.parse(report).getroot()
+                  suite = root if root.tag == "testsuite" else root.find("testsuite")
+                  tests = suite.attrib.get("tests", "0") if suite is not None else "0"
+                  failures = suite.attrib.get("failures", "0") if suite is not None else "0"
+                  errors = suite.attrib.get("errors", "0") if suite is not None else "0"
+                  summary.write(f"- Tests: {tests}\\n- Failures: {failures}\\n- Errors: {errors}\\n")
               summary.write("- Evidence: download the `qa-evidence` workflow artifact.\\n")
           PY
 
