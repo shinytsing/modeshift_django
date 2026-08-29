@@ -59,7 +59,6 @@ jobs:
           import xml.etree.ElementTree as ET
 
           report = "qa/artifacts/junit.xml"
-          if not os.path.exists(report):
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write("## QA shift-left gate\\n")
               if not os.path.exists(report):
