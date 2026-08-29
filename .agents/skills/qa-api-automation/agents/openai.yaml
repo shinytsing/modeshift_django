@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA API Automation"
+  short_description: "Generate and run pytest plus requests API checks."
+  default_prompt: "Build or run contract-focused API tests for this project."

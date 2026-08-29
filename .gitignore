@@ -346,3 +346,7 @@ awesome-cursorrules/
 # 特定项目的敏感文件
 QAToolBox/
 qatoolbox*.tar.gz
+.plan/
+
+# Isolated QA automation artifacts
+qa/artifacts/
