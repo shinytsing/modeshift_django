@@ -28,9 +28,9 @@ jobs:
       - name: 📦 准备代码传输
         run: |
           echo "准备代码传输..."
-          # 创建代码压缩包
-          tar -czf code.tar.gz --exclude='.git' --exclude='venv' --exclude='__pycache__' --exclude='*.pyc' .
-          echo "代码压缩完成，大小: $(du -h code.tar.gz | cut -f1)"
+          # 从 Git 已跟踪文件生成归档，避免把正在生成的压缩包再次打包。
+          git archive --format=tar.gz --output="$RUNNER_TEMP/code.tar.gz" HEAD
+          echo "代码压缩完成，大小: $(du -h "$RUNNER_TEMP/code.tar.gz" | cut -f1)"
 
       - name: 🔄 部署和重启服务
         run: |
@@ -68,7 +68,7 @@ jobs:
           
           # 步骤1.5: 传输代码
           echo "步骤1.5: 传输代码..."
-          sshpass -p '${{ secrets.SERVER_PASSWORD }}' scp -o StrictHostKeyChecking=no code.tar.gz $SERVER_USER@$SERVER_HOST:/tmp/
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' scp -o StrictHostKeyChecking=no "$RUNNER_TEMP/code.tar.gz" $SERVER_USER@$SERVER_HOST:/tmp/code.tar.gz
           
           # 步骤2: 部署代码和环境
           echo "步骤2: 部署代码和环境..."
