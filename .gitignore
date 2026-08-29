@@ -375,3 +375,19 @@ used_codes.json
 .mypy_cache/
 data/test_results/
 media/tool_outputs/
+
+# Browser crawl and debugging captures created at the project root.
+/*_debug.html
+/*_result.html
+/*_page_source.html
+/boss_response.html
+/cinnamon_*.html
+/cookie_test.html
+/direct_access_result.html
+/google_auth_test.html
+/playwright_token_test_standalone.html
+/puqu_*.html
+/test_chat_debug.html
+/test_qr_display.html
+/user_info_debug.html
+/xiaohongshu_*.html
