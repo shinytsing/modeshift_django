@@ -6,268 +6,268 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tools', '0081_cookiesession_usercookie'),
+        ("tools", "0081_cookiesession_usercookie"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='VerificationCode',
+            name="VerificationCode",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=20, unique=True, verbose_name='验证码')),
-                ('is_used', models.BooleanField(default=False, verbose_name='是否已使用')),
-                ('used_at', models.DateTimeField(blank=True, null=True, verbose_name='使用时间')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
-                ('task_id', models.CharField(blank=True, max_length=100, null=True, verbose_name='任务ID')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("code", models.CharField(max_length=20, unique=True, verbose_name="验证码")),
+                ("is_used", models.BooleanField(default=False, verbose_name="是否已使用")),
+                ("used_at", models.DateTimeField(blank=True, null=True, verbose_name="使用时间")),
+                ("created_at", models.DateTimeField(auto_now_add=True, verbose_name="创建时间")),
+                ("task_id", models.CharField(blank=True, max_length=100, null=True, verbose_name="任务ID")),
             ],
             options={
-                'verbose_name': '验证码',
-                'verbose_name_plural': '验证码',
-                'db_table': 'verification_codes',
-                'ordering': ['-created_at'],
+                "verbose_name": "验证码",
+                "verbose_name_plural": "验证码",
+                "db_table": "verification_codes",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.RemoveField(
-            model_name='achievementunlocklog',
-            name='achievement',
+            model_name="achievementunlocklog",
+            name="achievement",
         ),
         migrations.RemoveField(
-            model_name='achievementunlocklog',
-            name='user',
+            model_name="achievementunlocklog",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='bodypart',
-            name='muscle_groups',
+            model_name="bodypart",
+            name="muscle_groups",
         ),
         migrations.RemoveField(
-            model_name='enhancedfitnessachievement',
-            name='module',
+            model_name="enhancedfitnessachievement",
+            name="module",
         ),
         migrations.RemoveField(
-            model_name='enhancedtrainingplan',
-            name='category',
+            model_name="enhancedtrainingplan",
+            name="category",
         ),
         migrations.RemoveField(
-            model_name='enhancedtrainingplan',
-            name='creator',
+            model_name="enhancedtrainingplan",
+            name="creator",
         ),
         migrations.RemoveField(
-            model_name='enhancedtrainingplan',
-            name='exercise_library',
+            model_name="enhancedtrainingplan",
+            name="exercise_library",
         ),
         migrations.RemoveField(
-            model_name='enhancedtrainingplan',
-            name='target_body_parts',
+            model_name="enhancedtrainingplan",
+            name="target_body_parts",
         ),
         migrations.RemoveField(
-            model_name='enhancedtrainingplan',
-            name='users',
+            model_name="enhancedtrainingplan",
+            name="users",
         ),
         migrations.AlterUniqueTogether(
-            name='enhanceduserfitnessachievement',
+            name="enhanceduserfitnessachievement",
             unique_together=None,
         ),
         migrations.RemoveIndex(
-            model_name='enhanceduserfitnessachievement',
-            name='tools_enhan_achieve_991ebf_idx',
+            model_name="enhanceduserfitnessachievement",
+            name="tools_enhan_achieve_991ebf_idx",
         ),
         migrations.RemoveField(
-            model_name='enhanceduserfitnessachievement',
-            name='achievement',
+            model_name="enhanceduserfitnessachievement",
+            name="achievement",
         ),
         migrations.RemoveField(
-            model_name='enhanceduserfitnessachievement',
-            name='user',
+            model_name="enhanceduserfitnessachievement",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='body_parts',
+            model_name="exercise",
+            name="body_parts",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='created_by',
+            model_name="exercise",
+            name="created_by",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='equipment',
+            model_name="exercise",
+            name="equipment",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='prerequisites',
+            model_name="exercise",
+            name="prerequisites",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='primary_muscles',
+            model_name="exercise",
+            name="primary_muscles",
         ),
         migrations.RemoveField(
-            model_name='exercise',
-            name='secondary_muscles',
+            model_name="exercise",
+            name="secondary_muscles",
         ),
         migrations.AlterUniqueTogether(
-            name='exerciserating',
+            name="exerciserating",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='exerciserating',
-            name='exercise',
+            model_name="exerciserating",
+            name="exercise",
         ),
         migrations.RemoveField(
-            model_name='exerciserating',
-            name='user',
+            model_name="exerciserating",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='exerciseset',
-            name='exercise',
+            model_name="exerciseset",
+            name="exercise",
         ),
         migrations.RemoveField(
-            model_name='exerciseset',
-            name='session',
+            model_name="exerciseset",
+            name="session",
         ),
         migrations.DeleteModel(
-            name='FitnessAchievementCategory',
+            name="FitnessAchievementCategory",
         ),
         migrations.RemoveField(
-            model_name='planlibrary',
-            name='added_by',
+            model_name="planlibrary",
+            name="added_by",
         ),
         migrations.RemoveField(
-            model_name='planlibrary',
-            name='plan',
+            model_name="planlibrary",
+            name="plan",
         ),
         migrations.AlterUniqueTogether(
-            name='templateexercise',
+            name="templateexercise",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='templateexercise',
-            name='exercise',
+            model_name="templateexercise",
+            name="exercise",
         ),
         migrations.RemoveField(
-            model_name='templateexercise',
-            name='template',
+            model_name="templateexercise",
+            name="template",
         ),
         migrations.RemoveField(
-            model_name='trainingsession',
-            name='user_plan',
+            model_name="trainingsession",
+            name="user_plan",
         ),
         migrations.RemoveField(
-            model_name='userbadgeshowcase',
-            name='featured_badges',
+            model_name="userbadgeshowcase",
+            name="featured_badges",
         ),
         migrations.RemoveField(
-            model_name='userbadgeshowcase',
-            name='primary_badge',
+            model_name="userbadgeshowcase",
+            name="primary_badge",
         ),
         migrations.RemoveField(
-            model_name='userbadgeshowcase',
-            name='user',
+            model_name="userbadgeshowcase",
+            name="user",
         ),
         migrations.AlterUniqueTogether(
-            name='userexercisepreference',
+            name="userexercisepreference",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='userexercisepreference',
-            name='exercise',
+            model_name="userexercisepreference",
+            name="exercise",
         ),
         migrations.RemoveField(
-            model_name='userexercisepreference',
-            name='user',
+            model_name="userexercisepreference",
+            name="user",
         ),
         migrations.AlterUniqueTogether(
-            name='userplancollection',
+            name="userplancollection",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='userplancollection',
-            name='plan',
+            model_name="userplancollection",
+            name="plan",
         ),
         migrations.RemoveField(
-            model_name='userplancollection',
-            name='user',
+            model_name="userplancollection",
+            name="user",
         ),
         migrations.AlterUniqueTogether(
-            name='usertrainingplan',
+            name="usertrainingplan",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='usertrainingplan',
-            name='plan',
+            model_name="usertrainingplan",
+            name="plan",
         ),
         migrations.RemoveField(
-            model_name='usertrainingplan',
-            name='user',
+            model_name="usertrainingplan",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='workouttemplate',
-            name='created_by',
+            model_name="workouttemplate",
+            name="created_by",
         ),
         migrations.RemoveField(
-            model_name='workouttemplate',
-            name='exercises',
+            model_name="workouttemplate",
+            name="exercises",
         ),
         migrations.RemoveField(
-            model_name='workouttemplate',
-            name='target_body_parts',
+            model_name="workouttemplate",
+            name="target_body_parts",
         ),
         migrations.DeleteModel(
-            name='AchievementUnlockLog',
+            name="AchievementUnlockLog",
         ),
         migrations.DeleteModel(
-            name='BodyPart',
+            name="BodyPart",
         ),
         migrations.DeleteModel(
-            name='EnhancedFitnessAchievement',
+            name="EnhancedFitnessAchievement",
         ),
         migrations.DeleteModel(
-            name='EnhancedTrainingPlan',
+            name="EnhancedTrainingPlan",
         ),
         migrations.DeleteModel(
-            name='EnhancedUserFitnessAchievement',
+            name="EnhancedUserFitnessAchievement",
         ),
         migrations.DeleteModel(
-            name='Equipment',
+            name="Equipment",
         ),
         migrations.DeleteModel(
-            name='Exercise',
+            name="Exercise",
         ),
         migrations.DeleteModel(
-            name='ExerciseRating',
+            name="ExerciseRating",
         ),
         migrations.DeleteModel(
-            name='ExerciseSet',
+            name="ExerciseSet",
         ),
         migrations.DeleteModel(
-            name='FitnessAchievementModule',
+            name="FitnessAchievementModule",
         ),
         migrations.DeleteModel(
-            name='MuscleGroup',
+            name="MuscleGroup",
         ),
         migrations.DeleteModel(
-            name='PlanLibrary',
+            name="PlanLibrary",
         ),
         migrations.DeleteModel(
-            name='TemplateExercise',
+            name="TemplateExercise",
         ),
         migrations.DeleteModel(
-            name='TrainingPlanCategory',
+            name="TrainingPlanCategory",
         ),
         migrations.DeleteModel(
-            name='TrainingSession',
+            name="TrainingSession",
         ),
         migrations.DeleteModel(
-            name='UserBadgeShowcase',
+            name="UserBadgeShowcase",
         ),
         migrations.DeleteModel(
-            name='UserExercisePreference',
+            name="UserExercisePreference",
         ),
         migrations.DeleteModel(
-            name='UserPlanCollection',
+            name="UserPlanCollection",
         ),
         migrations.DeleteModel(
-            name='UserTrainingPlan',
+            name="UserTrainingPlan",
         ),
         migrations.DeleteModel(
-            name='WorkoutTemplate',
+            name="WorkoutTemplate",
         ),
     ]

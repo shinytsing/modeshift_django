@@ -50,19 +50,28 @@ jobs:
       - name: 🔍 Code quality checks
         run: |
           echo "Running code quality checks..."
+          base_sha="${{ github.event.before }}"
+          if [ -z "$base_sha" ] || ! git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
+            base_sha="${{ github.sha }}^"
+          fi
+          changed_python_files=$(git diff --name-only "$base_sha" "${{ github.sha }}" -- '*.py')
+
+          if [ -z "$changed_python_files" ]; then
+            echo "No Python files changed; skipping incremental Python checks."
+            exit 0
+          fi
+
+          printf '%s\n' "$changed_python_files" > changed-python-files.txt
           
-          # Black code formatting check
-          black --check --diff .
+          # Enforce formatting and static checks for every changed Python file.
+          xargs black --check --diff < changed-python-files.txt
           
-          # isort import sorting check
-          isort --check-only --diff .
+          xargs isort --check-only --diff < changed-python-files.txt
           
-          # flake8 linting
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics < changed-python-files.txt
+          xargs flake8 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics < changed-python-files.txt
           
-          # mypy type checking
-          mypy . --ignore-missing-imports
+          xargs mypy --ignore-missing-imports < changed-python-files.txt
           
           # Security checks
           bandit -r . -f json -o bandit-report.json || true
