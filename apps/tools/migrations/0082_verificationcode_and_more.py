@@ -67,6 +67,10 @@ class Migration(migrations.Migration):
             name='enhanceduserfitnessachievement',
             unique_together=None,
         ),
+        migrations.RemoveIndex(
+            model_name='enhanceduserfitnessachievement',
+            name='tools_enhan_achieve_7e4f1a_idx',
+        ),
         migrations.RemoveField(
             model_name='enhanceduserfitnessachievement',
             name='achievement',
