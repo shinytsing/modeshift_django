@@ -103,6 +103,14 @@ def main(arguments: list[str] | None = None) -> int:
         reset_artifacts()
         if start_server and not health_is_available(base_url):
             host, port = local_server_address(base_url)
+            migration_result = subprocess.run(
+                [sys.executable, "manage.py", "migrate", "--noinput"],
+                cwd=PROJECT_ROOT,
+                env=environment,
+                check=False,
+            )
+            if migration_result.returncode:
+                return migration_result.returncode
             server = subprocess.Popen(
                 [sys.executable, "manage.py", "runserver", f"{host}:{port}", "--noreload"],
                 cwd=PROJECT_ROOT,
