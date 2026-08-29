@@ -81,11 +81,14 @@ def parse_arguments(arguments: list[str] | None = None) -> list[str]:
     selected_suite = parser.add_mutually_exclusive_group()
     selected_suite.add_argument("--api", action="store_true", help="run only requests API contracts")
     selected_suite.add_argument("--ui", action="store_true", help="run only Playwright UI scenarios")
+    selected_suite.add_argument("--e2e", action="store_true", help="run only stateful API and UI journeys")
     options = parser.parse_args(arguments)
     if options.api:
         return ["qa/api"]
     if options.ui:
         return ["qa/ui"]
+    if options.e2e:
+        return ["qa/api/test_auth_flow_api.py", "qa/ui/test_authenticated_bmi_flow.py"]
     return ["qa/api", "qa/ui"]
 
 

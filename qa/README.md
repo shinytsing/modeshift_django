@@ -17,8 +17,14 @@ To run the same suite against a dedicated deployed test environment, do not star
 BASE_URL=https://your-test-environment.example QA_START_SERVER=0 python3 qa/scripts/run_suite.py
 ```
 
-Do not target production with this command. The initial endpoints are read-only, but future test
-cases may create test data.
+Do not target production with this command. The full suite now includes a registration journey
+that creates a uniquely labelled `qa-e2e-...@example.invalid` user. It runs automatically on
+localhost and CI; a dedicated deployed test environment additionally needs explicit opt-in:
+
+```bash
+BASE_URL=https://your-test-environment.example QA_START_SERVER=0 QA_ALLOW_AUTH_MUTATIONS=1 \
+  python3 qa/scripts/run_suite.py
+```
 
 ### Focused local runs
 
@@ -32,6 +38,9 @@ python3 qa/run_ui.py
 # Local UI defaults to a visible Chromium window. Adjust or disable the delay as needed.
 QA_SLOW_MO=500 python3 qa/run_ui.py
 QA_HEADED=0 python3 qa/run_ui.py
+
+# Only the complete stateful API + visible-browser journey
+python3 qa/scripts/run_suite.py --e2e
 ```
 
 All three commands use the same server lifecycle, `BASE_URL` contract, artifact location, and
@@ -44,9 +53,11 @@ Open `qa/artifacts/allure-report/index.html` after a run. It contains both categ
 - **API 自动化 - requests**: health, response schema, timing, and CSRF negative-path evidence.
 - **UI 自动化 - Playwright**: dashboard navigation, visible assertions, and a browser screenshot.
 
-The showcase suite contains 12 independent tests: 8 API contracts (including CSRF, method-boundary,
-statistics, history, and result-consistency checks) and 4 UI scenarios. The unified runner also
-verifies health before pytest starts.
+The showcase suite contains 14 independent tests: 9 API contracts (including CSRF, method-boundary,
+statistics, history, result consistency, and an authentication/profile state machine) and 5 UI
+scenarios. The flagship `--e2e` path visibly performs **注册 → 退出 → 登录 → 受保护个人资料 →
+BMI 计算**, while the requests scenario carries the same session across **匿名拒绝 → 注册 → 登出 →
+登录 → 资料更新 → BMI 接口 → 登出拒绝**. The unified runner verifies health before pytest starts.
 
 ## Other evidence
 
