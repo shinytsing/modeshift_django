@@ -29,6 +29,7 @@ django-crispy-forms==2.1
 crispy-bootstrap5==0.7
 django-filter==23.3
 django-ratelimit==4.1.0
+fake-useragent==2.2.0
 channels==4.0.0
 daphne==4.0.0
 psutil==7.0.0
