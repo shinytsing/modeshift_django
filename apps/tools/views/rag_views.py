@@ -26,6 +26,9 @@ def _api_login_required(view):
 @login_required
 @require_GET
 def requirement_rag_page(request):
+    # Keep the shared system knowledge document current without requiring a
+    # manual bootstrap action after every deployment or feature update.
+    sync_site_capabilities()
     return render(request, "tools/rag_testcase_generator.html")
 
 
@@ -56,6 +59,7 @@ def rag_sync_site_capabilities_api(request):
 @_api_login_required
 def rag_search_api(request):
     try:
+        sync_site_capabilities()
         results = search_chunks(request.user, request.GET.get("q", ""), int(request.GET.get("limit", 5)))
     except (RagInputError, ValueError) as exc:
         return JsonResponse({"error": str(exc)}, status=400)
@@ -68,6 +72,7 @@ def rag_generate_api(request):
     payload = json.loads(request.body or "{}")
     request_text = str(payload.get("request", "")).strip()
     try:
+        sync_site_capabilities()
         sources = search_chunks(request.user, request_text, int(payload.get("limit", 5)))
     except (RagInputError, ValueError) as exc:
         return JsonResponse({"error": str(exc)}, status=400)
