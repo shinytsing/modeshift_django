@@ -41,6 +41,9 @@ services:
       DB_PORT: "5432"
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      # Optional AI providers. Values live only in the VM's ignored .env.vm file.
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      TENCENT_SECRET_KEY: ${TENCENT_SECRET_KEY:-}
     command: >-
       sh -c "python manage.py migrate --noinput &&
       gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application"

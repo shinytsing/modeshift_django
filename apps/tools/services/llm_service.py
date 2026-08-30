@@ -878,7 +878,8 @@ class LLMServiceManager:
             LLMProvider.MOCK: MockService(),
         }
         self.provider_priority = [
-            LLMProvider.TENCENT,  # 腾讯混元，本地有key，最高优先级
+            LLMProvider.DEEPSEEK,  # 已验证的默认云端模型
+            LLMProvider.TENCENT,  # 腾讯混元，作为 DeepSeek 不可用时的备选
             LLMProvider.AIMLAPI,  # 你的密钥，第二优先级
             LLMProvider.AITOOLS,  # 无需登录，兼容OpenAI
             LLMProvider.GROQ,     # 免费额度大
@@ -889,8 +890,6 @@ class LLMServiceManager:
             LLMProvider.TOGETHER, # Together AI
             LLMProvider.OPENROUTER, # OpenRouter
             LLMProvider.OLLAMA,   # 本地服务
-            LLMProvider.MOCK,     # Mock服务，确保总是可用
-            LLMProvider.DEEPSEEK, # 备用
         ]
     
     def get_available_providers(self) -> List[LLMProvider]:
