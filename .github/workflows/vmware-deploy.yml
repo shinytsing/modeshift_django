@@ -16,7 +16,9 @@ jobs:
   deploy:
     name: Rebuild Docker application on VMware
     runs-on: [self-hosted, linux, x64, vmware]
-    timeout-minutes: 20
+    # The first production build downloads optional OCR dependencies. Subsequent
+    # builds reuse Docker layers, but the initial build needs more than 20 min.
+    timeout-minutes: 45
 
     steps:
       - name: Check out the triggering revision
