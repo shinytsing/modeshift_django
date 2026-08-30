@@ -18,9 +18,9 @@ jobs:
     # A completed workflow can be successful, failed, cancelled, or timed out.
     # This separate job is intentionally independent of the original runner.
     if: ${{ always() }}
-    # QQ SMTP closes authenticated connections from GitHub-hosted public IPs.
-    # The trusted VMware runner uses the project's established network route.
-    runs-on: [self-hosted, linux, x64, vmware]
+    # Notifications must remain available even while the deployment VM is
+    # offline. The main-branch restriction above keeps secret use trusted.
+    runs-on: ubuntu-latest
     timeout-minutes: 2
     env:
       EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
