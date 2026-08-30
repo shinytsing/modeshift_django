@@ -10,7 +10,9 @@ from typing import Iterable
 
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from django.db.models import Q
 
+from apps.tools.models import Feature
 from apps.tools.models.rag_models import RequirementChunk, RequirementDocument
 
 
@@ -18,6 +20,7 @@ VECTOR_DIMENSIONS = 256
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 120
 SUPPORTED_SUFFIXES = {".md", ".markdown", ".txt", ".pdf", ".docx"}
+SITE_CAPABILITIES_TITLE = "QAToolBox 当前网站能力（系统知识库）"
 
 
 class RagInputError(ValueError):
@@ -108,7 +111,7 @@ def search_chunks(owner, query: str, limit: int = 5) -> list[dict]:
     if not query.strip():
         raise RagInputError("请输入搜索问题或测试生成请求")
     query_vector = embed(query)
-    candidates = RequirementChunk.objects.filter(document__owner=owner).select_related("document")
+    candidates = RequirementChunk.objects.filter(Q(document__owner=owner) | Q(document__owner__isnull=True)).select_related("document")
     ranked = sorted(
         ((cosine_similarity(query_vector, chunk.vector), chunk) for chunk in candidates),
         key=lambda item: item[0],
@@ -141,3 +144,33 @@ def build_testcase_prompt(request_text: str, sources: list[dict]) -> str:
 
 输出 Markdown，并按模块列出：用例标题、前置条件、步骤、预期结果、优先级、测试类型。
 每条用例末尾必须标注使用的来源，例如：来源：[文档名#分块1]。不确定的信息要明确写为待确认，不得编造。"""
+
+
+@transaction.atomic
+def sync_site_capabilities() -> RequirementDocument:
+    """Index public website capabilities as a shared, queryable RAG document."""
+    catalog = [
+        "# QAToolBox 当前网站能力",
+        "## 测试开发与质量左移\n提供 pytest 统一测试框架：requests 接口自动化、Playwright UI 自动化、Allure 报告、成功截图、接口执行记录与 GitHub Actions 质量门禁。",
+        "## 需求 RAG 测试生成\n支持上传 PDF、DOCX、Markdown、TXT 需求文档；解析、分块、本地向量化、余弦检索，并将带来源引用的片段交给 DeepSeek 生成可追溯测试用例。",
+        "## 工作模式工具\n包含测试用例生成器、测试手法展示中心、PDF 转换、网页爬虫、文件压缩、音频转换、AI 简历投递和作业批改等工具入口。",
+        "## 健康与生活工具\n包含 BMI 计算、训练计划、营养计算、生活日记、旅行规划、音乐与社交订阅等能力。",
+    ]
+    public_features = Feature.objects.filter(is_active=True, is_public=True).order_by("category", "name")
+    if public_features.exists():
+        catalog.append("## 已登记功能目录")
+        catalog.extend(
+            f"- {feature.name}（{feature.get_category_display()} / {feature.get_feature_type_display()}）：{feature.description}；路由名：{feature.url_name}"
+            for feature in public_features
+        )
+    content = "\n\n".join(catalog)
+    document, _ = RequirementDocument.objects.update_or_create(
+        owner=None,
+        title=SITE_CAPABILITIES_TITLE,
+        defaults={"source_type": "system", "extracted_text": content},
+    )
+    document.chunks.all().delete()
+    RequirementChunk.objects.bulk_create(
+        [RequirementChunk(document=document, sequence=index + 1, content=piece, vector=embed(piece)) for index, piece in enumerate(chunk_text(content))]
+    )
+    return document

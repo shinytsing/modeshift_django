@@ -11,7 +11,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.tools.services.llm_service import DeepSeekService
-from apps.tools.services.rag_service import RagInputError, build_testcase_prompt, ingest_document, search_chunks
+from apps.tools.services.rag_service import RagInputError, build_testcase_prompt, ingest_document, search_chunks, sync_site_capabilities
 
 
 def _api_login_required(view):
@@ -43,6 +43,13 @@ def rag_upload_api(request):
         {"id": document.id, "title": document.title, "chunks": document.chunks.count(), "message": "文档已完成分块并写入 RAG 知识库"},
         status=201,
     )
+
+
+@require_POST
+@_api_login_required
+def rag_sync_site_capabilities_api(request):
+    document = sync_site_capabilities()
+    return JsonResponse({"id": document.id, "title": document.title, "chunks": document.chunks.count(), "message": "本站能力已同步到共享 RAG 知识库"})
 
 
 @require_GET

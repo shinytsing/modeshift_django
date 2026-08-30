@@ -5,7 +5,7 @@ from django.db import models
 
 
 class RequirementDocument(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requirement_documents")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requirement_documents", null=True, blank=True)
     title = models.CharField(max_length=255)
     source_file = models.FileField(upload_to="rag_requirements/%Y/%m/%d/")
     source_type = models.CharField(max_length=10)

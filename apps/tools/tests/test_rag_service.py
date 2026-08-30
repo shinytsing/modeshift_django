@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from apps.tools.models.rag_models import RequirementChunk, RequirementDocument
-from apps.tools.services.rag_service import build_testcase_prompt, embed, search_chunks
+from apps.tools.services.rag_service import build_testcase_prompt, embed, search_chunks, sync_site_capabilities
 
 
 class RagServiceTests(TestCase):
@@ -23,3 +23,10 @@ class RagServiceTests(TestCase):
         source = search_chunks(self.user, "验证码过期")[0]
         prompt = build_testcase_prompt("生成登录异常用例", [source])
         self.assertIn("登录需求.md#分块1", prompt)
+
+    def test_site_capabilities_are_searchable_by_every_user(self):
+        sync_site_capabilities()
+        another_user = User.objects.create_user(username="another-rag-user", password="secret")
+        results = search_chunks(another_user, "网站有哪些自动化测试和 Allure 报告能力")
+        self.assertTrue(results)
+        self.assertEqual(results[0]["document"], "QAToolBox 当前网站能力（系统知识库）")
