@@ -6,6 +6,8 @@ on:
       - QA shift-left gate
       - Deploy to VMware Ubuntu
     types: [completed]
+    # Only trusted main-branch workflows may use deployment-network secrets.
+    branches: [main]
 
 permissions:
   contents: read
@@ -16,7 +18,9 @@ jobs:
     # A completed workflow can be successful, failed, cancelled, or timed out.
     # This separate job is intentionally independent of the original runner.
     if: ${{ always() }}
-    runs-on: ubuntu-latest
+    # QQ SMTP closes authenticated connections from GitHub-hosted public IPs.
+    # The trusted VMware runner uses the project's established network route.
+    runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 2
     env:
       EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
