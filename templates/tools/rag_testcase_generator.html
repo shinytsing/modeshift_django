@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>需求 RAG 测试用例生成</title>
+  <style>
+    body { max-width: 1000px; margin: 40px auto; padding: 0 20px; font: 15px/1.6 system-ui, sans-serif; background:#f5f7fb; color:#1d2736; }
+    section { background:#fff; border-radius:12px; padding:24px; margin:16px 0; box-shadow:0 4px 20px #1d273610; }
+    input, textarea, button { font:inherit; padding:10px; border-radius:8px; border:1px solid #cbd5e1; }
+    input[type=file], textarea { box-sizing:border-box; width:100%; margin:8px 0; } textarea { min-height:90px; }
+    button { background:#2563eb; color:#fff; border:0; cursor:pointer; } button:disabled { opacity:.55; }
+    .source { border-left:4px solid #60a5fa; background:#eff6ff; padding:12px; margin:10px 0; white-space:pre-wrap; }
+    pre { white-space:pre-wrap; background:#111827; color:#e5e7eb; padding:16px; border-radius:8px; overflow:auto; }
+    #status { min-height:24px; color:#475569; } .error { color:#b91c1c !important; }
+  </style>
+</head>
+<body>
+  <h1>需求知识库（RAG）测试用例生成</h1>
+  <p>上传需求文档后，系统会解析、分块、向量化并保存。搜索和生成结果均显示可追溯来源。</p>
+  <section>
+    <h2>1. 上传需求</h2>
+    <input id="file" type="file" accept=".pdf,.docx,.md,.markdown,.txt">
+    <button id="upload">上传并建立索引</button>
+  </section>
+  <section>
+    <h2>2. 搜索需求知识库</h2>
+    <textarea id="query" placeholder="例如：登录失败、验证码过期、用户资料更新的测试范围"></textarea>
+    <button id="search">检索相关需求片段</button>
+    <div id="sources"></div>
+  </section>
+  <section>
+    <h2>3. 生成可追溯测试用例</h2>
+    <button id="generate">基于检索内容交给 DeepSeek 生成</button>
+    <pre id="answer">尚未生成</pre>
+  </section>
+  <p id="status"></p>
+  <script>
+    const csrf = '{{ csrf_token }}';
+    const status = document.querySelector('#status');
+    const sources = document.querySelector('#sources');
+    const answer = document.querySelector('#answer');
+    const query = document.querySelector('#query');
+    const setStatus = (message, error=false) => { status.textContent = message; status.className = error ? 'error' : ''; };
+    const renderSources = items => { sources.innerHTML = items.map(item => `<article class="source"><b>${item.document} #${item.sequence}</b>（相似度 ${item.score}）<br>${item.content}</article>`).join('') || '<p>未检索到匹配需求。</p>'; };
+    async function parse(response) { const data = await response.json(); if (!response.ok) throw new Error(data.error || '请求失败'); return data; }
+    document.querySelector('#upload').onclick = async () => {
+      const file = document.querySelector('#file').files[0]; if (!file) return setStatus('请选择 PDF、Word、Markdown 或 TXT 文件', true);
+      const form = new FormData(); form.append('file', file); setStatus('正在解析、分块并写入知识库…');
+      try { const data = await parse(await fetch('{% url "tools:rag_upload_api" %}', { method:'POST', headers:{'X-CSRFToken':csrf}, body:form })); setStatus(`${data.message}：${data.title}，共 ${data.chunks} 个分块。`); } catch (error) { setStatus(error.message, true); }
+    };
+    document.querySelector('#search').onclick = async () => {
+      try { const data = await parse(await fetch(`{% url "tools:rag_search_api" %}?q=${encodeURIComponent(query.value)}`)); renderSources(data.results); setStatus(`检索到 ${data.results.length} 个可追溯片段。`); } catch (error) { setStatus(error.message, true); }
+    };
+    document.querySelector('#generate').onclick = async () => {
+      setStatus('正在检索需求并调用 DeepSeek…');
+      try { const data = await parse(await fetch('{% url "tools:rag_generate_api" %}', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf}, body:JSON.stringify({request:query.value}) })); renderSources(data.sources); answer.textContent = data.test_cases; setStatus('已生成测试用例，来源已附在下方检索片段。'); } catch (error) { setStatus(error.message, true); }
+    };
+  </script>
+</body>
+</html>

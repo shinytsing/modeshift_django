@@ -2,6 +2,7 @@
 
 # 基础模型
 from .base_models import ToolUsageLog
+from .rag_models import RequirementChunk, RequirementDocument
 
 # 验证码模型
 from .verification_code import VerificationCode

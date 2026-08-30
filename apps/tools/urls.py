@@ -131,6 +131,7 @@ from .generate_redbook_api import GenerateRedBookAPI
 
 # 从测试用例生成API导入
 from .generate_test_cases_api import GenerateTestCasesAPI
+from .views.rag_views import rag_generate_api, rag_search_api, rag_upload_api, requirement_rag_page
 from .guitar_training_views import (
     complete_practice_session_api,
     download_tab_api,
@@ -762,6 +763,10 @@ urlpatterns = [
     path("storyboard/", storyboard, name="storyboard"),
     # 测试用例生成API路由
     path("api/generate-testcases/", GenerateTestCasesAPI.as_view(), name="generate_test_cases_api"),
+    path("requirement-rag/", requirement_rag_page, name="requirement_rag"),
+    path("api/rag/documents/", rag_upload_api, name="rag_upload_api"),
+    path("api/rag/search/", rag_search_api, name="rag_search_api"),
+    path("api/rag/generate/", rag_generate_api, name="rag_generate_api"),
     path("api/generate-redbook/", GenerateRedBookAPI.as_view(), name="generate_redbook_api"),
     # 异步测试用例生成API路由
     path("api/async/generate-testcases/", AsyncGenerateTestCasesAPI.as_view(), name="async_generate_test_cases_api"),
