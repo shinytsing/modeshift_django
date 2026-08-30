@@ -58,7 +58,9 @@ jobs:
     name: Pull and start Docker application on VMware
     needs: build_image
     runs-on: [self-hosted, linux, x64, vmware]
-    timeout-minutes: 15
+    # The first pull transfers OCR/AI runtime layers to a new VMware Docker
+    # cache. Subsequent image updates reuse those layers and complete quickly.
+    timeout-minutes: 45
     env:
       QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
       GHCR_USERNAME: ${{ github.actor }}
