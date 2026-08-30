@@ -1,0 +1,30 @@
+name: Deploy to VMware Ubuntu
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vmware-deploy-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Rebuild Docker application on VMware
+    runs-on: [self-hosted, linux, x64, vmware]
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the triggering revision
+        uses: actions/checkout@v4
+
+      - name: Deploy the checked-out project
+        run: bash scripts/deploy-vm.sh "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+
+      - name: Verify deployed health contract
+        run: |
+          curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/
