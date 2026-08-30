@@ -49,7 +49,12 @@ def rag_upload_api(request):
     except RagInputError as exc:
         return JsonResponse({"error": str(exc)}, status=400)
     return JsonResponse(
-        {"id": document.id, "title": document.title, "chunks": document.chunks.count(), "message": "文档已完成分块并写入 RAG 知识库"},
+        {
+            "id": document.id,
+            "title": document.title,
+            "chunks": document.chunks.count(),
+            "message": "文档已完成分块并写入 RAG 知识库",
+        },
         status=201,
     )
 
@@ -59,7 +64,12 @@ def rag_upload_api(request):
 def rag_sync_site_capabilities_api(request):
     document = sync_site_capabilities()
     return JsonResponse(
-        {"id": document.id, "title": document.title, "chunks": document.chunks.count(), "message": "本站能力已同步到共享 RAG 知识库"}
+        {
+            "id": document.id,
+            "title": document.title,
+            "chunks": document.chunks.count(),
+            "message": "本站能力已同步到共享 RAG 知识库",
+        }
     )
 
 
@@ -87,7 +97,9 @@ def rag_generate_api(request):
     if not sources:
         return JsonResponse({"error": "知识库中没有匹配片段，请先上传更相关的需求文档"}, status=404)
     if not settings.DEEPSEEK_API_KEY:
-        return JsonResponse({"error": "未配置 DEEPSEEK_API_KEY；已返回检索来源，可配置后生成测试用例", "sources": sources}, status=503)
+        return JsonResponse(
+            {"error": "未配置 DEEPSEEK_API_KEY；已返回检索来源，可配置后生成测试用例", "sources": sources}, status=503
+        )
     try:
         answer = DeepSeekService().generate_content(
             build_testcase_prompt(request_text, sources), temperature=0.2, max_tokens=4000
