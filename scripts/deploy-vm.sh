@@ -31,8 +31,24 @@ install_docker() {
 
 sync_project() {
   if [[ -d "$PROJECT_DIR/.git" ]]; then
-    echo "==> Updating $PROJECT_DIR"
-    git -C "$PROJECT_DIR" pull --ff-only
+    if git -C "$PROJECT_DIR" diff --quiet && git -C "$PROJECT_DIR" diff --cached --quiet; then
+      echo "==> Updating $PROJECT_DIR"
+      git -C "$PROJECT_DIR" pull --ff-only
+    else
+      # A VM often contains an older experimental checkout. Never overwrite it:
+      # deploy the current repository to a sibling directory instead.
+      PROJECT_DIR="${PROJECT_DIR}-deploy"
+      if [[ -d "$PROJECT_DIR/.git" ]]; then
+        echo "==> Updating separate deployment checkout $PROJECT_DIR"
+        git -C "$PROJECT_DIR" pull --ff-only
+      elif [[ -e "$PROJECT_DIR" ]]; then
+        echo "$PROJECT_DIR exists but is not a Git checkout; set QATOOLBOX_DIR to a clean directory." >&2
+        exit 1
+      else
+        echo "==> Existing checkout has local changes; cloning a safe deployment copy"
+        git clone --depth 1 "$REPOSITORY_URL" "$PROJECT_DIR"
+      fi
+    fi
   elif [[ -e "$PROJECT_DIR" ]]; then
     echo "$PROJECT_DIR exists but is not a Git checkout; choose another QATOOLBOX_DIR." >&2
     exit 1
