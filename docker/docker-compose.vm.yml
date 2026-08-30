@@ -27,9 +27,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.prod
+    image: ${QATOOLBOX_IMAGE:-ghcr.io/shinytsing/modeshift_django:main}
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       DEBUG: "False"

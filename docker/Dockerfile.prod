@@ -19,9 +19,9 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # 复制并安装Python依赖
-COPY requirements.txt .
+COPY requirements.txt requirements.production.txt ./
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.production.txt
 
 # 生产阶段
 FROM python:3.12-slim as production

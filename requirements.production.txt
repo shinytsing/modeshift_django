@@ -1,0 +1,10 @@
+# Production uses CPU-only PyTorch.  The default PyPI Torch package pulls large
+# CUDA dependencies and makes first-time builds on the VMware runner time out.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+-r requirements.txt
+
+# EasyOCR has broad Torch constraints. Pin a compatible CPU pair so pip does
+# not backtrack across GPU/CUDA releases during the Docker image build.
+torch==2.8.0+cpu
+torchvision==0.23.0+cpu

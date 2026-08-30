@@ -92,8 +92,23 @@ main() {
       -f "$PROJECT_DIR/docker/docker-compose.vm.yml" "$@"
   }
 
-  echo "==> Building and starting QAToolBox"
-  compose up -d --build --remove-orphans
+  if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
+    echo "QATOOLBOX_IMAGE is required; deploy through the GitHub Actions image-build workflow." >&2
+    exit 1
+  fi
+  if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
+    echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required to pull the private production image." >&2
+    exit 1
+  fi
+
+  echo "==> Logging in to GitHub Container Registry"
+  printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
+    --username "$GHCR_USERNAME" --password-stdin
+
+  echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
+  export QATOOLBOX_IMAGE
+  compose pull web
+  compose up -d --no-build --remove-orphans
 
   local vm_ip attempt
   vm_ip="$(hostname -I | awk '{print $1}')"
