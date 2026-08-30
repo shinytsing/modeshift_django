@@ -37,6 +37,23 @@ pip install -r requirements.txt
 
 ## 🚀 快速部署
 
+### VMware Ubuntu 虚拟机一键部署
+
+在**另一台电脑的 Ubuntu VMware 虚拟机**终端运行（首次会安装 Docker、克隆项目、构建并启动服务）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shinytsing/modeshift_django/main/scripts/deploy-vm.sh | bash
+```
+
+完成后访问脚本输出的 `http://虚拟机IP:8000`。虚拟机使用桥接网络时，Windows 可直接访问；NAT 网络需要在 VMware 配置 8000 端口转发。后续更新时运行同一命令即可。查看日志：
+
+```bash
+cd ~/modeshift_django
+docker compose --env-file .env.vm -f docker/docker-compose.vm.yml logs -f web
+```
+
+该方案仅供内网/面试演示：数据库与 Redis 不暴露端口，不配置公网 TLS 或 GitHub Actions 部署凭证。
+
 ### 阿里云一键部署
 
 1. **克隆项目**

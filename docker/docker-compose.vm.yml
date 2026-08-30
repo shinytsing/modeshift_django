@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: qatoolbox_vm
+      POSTGRES_USER: qatoolbox
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/deploy-vm.sh first}
+    volumes:
+      - vm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qatoolbox -d qatoolbox_vm"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?Run scripts/deploy-vm.sh first}
+    volumes:
+      - vm_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "False"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Run scripts/deploy-vm.sh first}
+      DB_NAME: qatoolbox_vm
+      DB_USER: qatoolbox
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+    command: >-
+      sh -c "python manage.py migrate --noinput &&
+      gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wsgi:application"
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  vm_postgres_data:
+  vm_redis_data:

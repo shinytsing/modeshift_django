@@ -360,6 +360,7 @@ artifacts/
 tmp/
 temp_java_jobs/
 docker/ssl_certs/
+.env.vm
 src/main/java/boss/cookie.json
 scripts/manual/legacy/
 *.bak
