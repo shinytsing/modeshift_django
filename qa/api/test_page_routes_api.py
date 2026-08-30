@@ -15,9 +15,7 @@ from qa.support.auth import auth_mutations_are_allowed
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试用例生成页面可用性")
-def test_test_case_generator_page_renders_from_the_deployment_template(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_case_generator_page_renders_from_the_deployment_template(base_url: str, http_session: requests.Session) -> None:
     """The linked tool page must not become a production 500 due to a missing template."""
     if not auth_mutations_are_allowed(base_url):
         pytest.skip("页面受登录保护；非本机目标不创建 QA 用户")

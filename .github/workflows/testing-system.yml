@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,6 +49,20 @@ jobs:
         # ubuntu-latest already supplies browser system libraries. Playwright 1.40's
         # --with-deps helper asks Ubuntu 24.04 for the retired libasound2 package.
         run: python -m playwright install chromium
+
+      - name: Check formatting for changed Python files
+        shell: bash
+        run: |
+          base_sha="${{ github.event.before }}"
+          if [ -z "$base_sha" ] || ! git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
+            base_sha="${{ github.sha }}^"
+          fi
+          changed_python_files=$(git diff --name-only "$base_sha" "${{ github.sha }}" -- '*.py')
+          if [ -z "$changed_python_files" ]; then
+            echo "No Python files changed."
+            exit 0
+          fi
+          printf '%s\n' "$changed_python_files" | xargs python -m black --check
 
       - name: Run the shared local and CI QA command
         run: python qa/scripts/run_suite.py
