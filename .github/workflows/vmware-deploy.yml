@@ -28,3 +28,69 @@ jobs:
       - name: Verify deployed health contract
         run: |
           curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/
+
+      - name: Send successful deployment email
+        if: success()
+        env:
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+
+          message = EmailMessage()
+          message["Subject"] = f"[成功] QAToolBox VMware 部署 {os.environ['GITHUB_SHA'][:7]}"
+          message["From"] = os.environ["DEFAULT_FROM_EMAIL"]
+          message["To"] = os.environ["NOTIFICATION_EMAIL"]
+          message.set_content(
+              "QAToolBox 已部署成功。\n\n"
+              f"仓库：{os.environ['GITHUB_REPOSITORY']}\n"
+              f"提交：{os.environ['GITHUB_SHA']}\n"
+              f"工作流：{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}\n"
+          )
+          with smtplib.SMTP(os.environ["EMAIL_HOST"], int(os.environ["EMAIL_PORT"]), timeout=30) as server:
+              if os.environ.get("EMAIL_USE_TLS", "true").lower() in {"1", "true", "yes"}:
+                  server.starttls()
+              server.login(os.environ["EMAIL_HOST_USER"], os.environ["EMAIL_HOST_PASSWORD"])
+              server.send_message(message)
+          PY
+
+      - name: Send failed deployment email
+        if: failure()
+        env:
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+
+          message = EmailMessage()
+          message["Subject"] = f"[失败] QAToolBox VMware 部署 {os.environ['GITHUB_SHA'][:7]}"
+          message["From"] = os.environ["DEFAULT_FROM_EMAIL"]
+          message["To"] = os.environ["NOTIFICATION_EMAIL"]
+          message.set_content(
+              "QAToolBox 部署失败，请查看工作流日志。\n\n"
+              f"仓库：{os.environ['GITHUB_REPOSITORY']}\n"
+              f"提交：{os.environ['GITHUB_SHA']}\n"
+              f"工作流：{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}\n"
+          )
+          with smtplib.SMTP(os.environ["EMAIL_HOST"], int(os.environ["EMAIL_PORT"]), timeout=30) as server:
+              if os.environ.get("EMAIL_USE_TLS", "true").lower() in {"1", "true", "yes"}:
+                  server.starttls()
+              server.login(os.environ["EMAIL_HOST_USER"], os.environ["EMAIL_HOST_PASSWORD"])
+              server.send_message(message)
+          PY
