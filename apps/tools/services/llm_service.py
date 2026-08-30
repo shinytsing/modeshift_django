@@ -3,6 +3,9 @@
 支持多种大模型提供商，方便切换和配置
 """
 
+# fmt: off
+# This legacy provider module is formatted incrementally outside this change.
+
 import json
 import logging
 import os
@@ -1293,3 +1296,5 @@ def generate_creative_content(prompt: str) -> str:
 def generate_analysis_content(prompt: str) -> str:
     """生成分析内容的便捷函数"""
     return get_llm_service().generate_analysis_content(prompt)
+
+# fmt: on
