@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Validate mail configuration and send result
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import os
           import smtplib
           from email.message import EmailMessage
