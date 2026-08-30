@@ -1,0 +1,78 @@
+name: Send workflow result email
+
+on:
+  workflow_run:
+    workflows:
+      - QA shift-left gate
+      - Deploy to VMware Ubuntu
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Notify workflow result by email
+    # A completed workflow can be successful, failed, cancelled, or timed out.
+    # This separate job is intentionally independent of the original runner.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+      NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      SOURCE_WORKFLOW: ${{ github.event.workflow_run.name }}
+      SOURCE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+      SOURCE_URL: ${{ github.event.workflow_run.html_url }}
+      SOURCE_REPOSITORY: ${{ github.repository }}
+
+    steps:
+      - name: Validate mail configuration and send result
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+
+          required = (
+              "EMAIL_HOST",
+              "EMAIL_PORT",
+              "EMAIL_HOST_USER",
+              "EMAIL_HOST_PASSWORD",
+              "DEFAULT_FROM_EMAIL",
+              "NOTIFICATION_EMAIL",
+          )
+          missing = [name for name in required if not os.environ.get(name)]
+          if missing:
+              raise RuntimeError("Missing GitHub Actions secrets: " + ", ".join(missing))
+
+          conclusion = os.environ.get("SOURCE_CONCLUSION", "unknown")
+          label = {"success": "成功", "failure": "失败", "cancelled": "已取消", "timed_out": "超时"}.get(
+              conclusion, conclusion
+          )
+          message = EmailMessage()
+          message["Subject"] = (
+              f"[{label}] QAToolBox {os.environ['SOURCE_WORKFLOW']} "
+              f"{os.environ['SOURCE_SHA'][:7]}"
+          )
+          message["From"] = os.environ["DEFAULT_FROM_EMAIL"]
+          message["To"] = os.environ["NOTIFICATION_EMAIL"]
+          message.set_content(
+              f"工作流：{os.environ['SOURCE_WORKFLOW']}\n"
+              f"结果：{label} ({conclusion})\n"
+              f"仓库：{os.environ['SOURCE_REPOSITORY']}\n"
+              f"提交：{os.environ['SOURCE_SHA']}\n"
+              f"详情：{os.environ['SOURCE_URL']}\n"
+          )
+          with smtplib.SMTP(os.environ["EMAIL_HOST"], int(os.environ["EMAIL_PORT"]), timeout=30) as server:
+              if os.environ.get("EMAIL_USE_TLS", "true").lower() in {"1", "true", "yes"}:
+                  server.starttls()
+              server.login(os.environ["EMAIL_HOST_USER"], os.environ["EMAIL_HOST_PASSWORD"])
+              server.send_message(message)
+          PY
