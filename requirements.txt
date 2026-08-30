@@ -38,6 +38,8 @@ daphne==4.0.0
 psutil==7.0.0
 PyYAML>=6.0
 selenium>=4.0.0
+# Imported by the job-search service during Django URL loading.
+playwright==1.40.0
 # 作业批改系统依赖
 reportlab==4.0.7
 pdf2image==1.16.3
