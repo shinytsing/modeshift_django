@@ -30,6 +30,7 @@ from views import (
     custom_static_serve,
     help_page_view,
     home_view,
+    resume_3d_view,
     secure_media_serve,
     theme_demo_view,
     tool_view,
@@ -102,6 +103,7 @@ urlpatterns = [
     path("", home_view, name="home"),
     path("welcome/", welcome_view, name="welcome"),
     path("theme-demo/", theme_demo_view, name="theme_demo"),
+    path("resume-3d/", resume_3d_view, name="resume_3d"),
     path("modern-demo/", modern_demo_view, name="modern_demo"),
     path("test-geek-login/", test_geek_login_view, name="test_geek_login"),
     # 测试手法展示页面

@@ -58,6 +58,11 @@ def theme_demo_view(request):
     return render(request, "theme_demo.html")
 
 
+def resume_3d_view(request):
+    """Public interactive portfolio page for the QA resume."""
+    return render(request, "resume_3d.html")
+
+
 def version_history_view(request):
     """版本迭代记录页面"""
     return render(request, "version_history.html")
