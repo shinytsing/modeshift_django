@@ -4,7 +4,9 @@ on:
   pull_request:
     branches: [main, develop]
   push:
-    branches: [main, develop]
+    # Deployments on main run this same QA suite first in vmware-deploy.yml.
+    # Keep an independent fast-feedback run for the integration branch only.
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
