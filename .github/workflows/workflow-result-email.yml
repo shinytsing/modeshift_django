@@ -1,25 +1,18 @@
-name: Send workflow result email
+name: Send QA result email
 
 on:
   workflow_run:
     workflows:
       - QA shift-left gate
-      - Deploy to VMware Ubuntu
     types: [completed]
-    # Only trusted main-branch workflows may use deployment-network secrets.
-    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   notify:
-    name: Notify workflow result by email
-    # A completed workflow can be successful, failed, cancelled, or timed out.
-    # This separate job is intentionally independent of the original runner.
+    name: Notify QA result by email
     if: ${{ always() }}
-    # Notifications must remain available even while the deployment VM is
-    # offline. The main-branch restriction above keeps secret use trusted.
     runs-on: ubuntu-latest
     timeout-minutes: 2
     env:
@@ -39,18 +32,14 @@ jobs:
     steps:
       - name: Validate mail configuration and send result
         run: |
-          python3 - <<'PY'
+          python - <<'PY'
           import os
           import smtplib
           from email.message import EmailMessage
 
           required = (
-              "EMAIL_HOST",
-              "EMAIL_PORT",
-              "EMAIL_HOST_USER",
-              "EMAIL_HOST_PASSWORD",
-              "DEFAULT_FROM_EMAIL",
-              "NOTIFICATION_EMAIL",
+              "EMAIL_HOST", "EMAIL_PORT", "EMAIL_HOST_USER", "EMAIL_HOST_PASSWORD",
+              "DEFAULT_FROM_EMAIL", "NOTIFICATION_EMAIL",
           )
           missing = [name for name in required if not os.environ.get(name)]
           if missing:
@@ -61,10 +50,7 @@ jobs:
               conclusion, conclusion
           )
           message = EmailMessage()
-          message["Subject"] = (
-              f"[{label}] QAToolBox {os.environ['SOURCE_WORKFLOW']} "
-              f"{os.environ['SOURCE_SHA'][:7]}"
-          )
+          message["Subject"] = f"[{label}] QAToolBox {os.environ['SOURCE_WORKFLOW']} {os.environ['SOURCE_SHA'][:7]}"
           message["From"] = os.environ["DEFAULT_FROM_EMAIL"]
           message["To"] = os.environ["NOTIFICATION_EMAIL"]
           message.set_content(
