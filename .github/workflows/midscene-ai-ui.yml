@@ -1,0 +1,102 @@
+name: Midscene AI UI smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_base_url:
+        description: OpenAI-compatible visual-model endpoint
+        required: true
+        default: https://api.deepseek.com
+      model_name:
+        description: Vision-capable model name
+        required: true
+        default: deepseek-v4-flash-vision-exp
+      model_family:
+        description: Midscene model family
+        required: true
+        default: deepseek
+
+permissions:
+  contents: read
+
+concurrency:
+  group: midscene-ai-ui-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  midscene:
+    name: AI RAG UI smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: http://127.0.0.1:8000
+      CI: true
+      MIDSCENE_HEADED: false
+      MIDSCENE_MODEL_BASE_URL: ${{ inputs.model_base_url }}
+      MIDSCENE_MODEL_NAME: ${{ inputs.model_name }}
+      MIDSCENE_MODEL_FAMILY: ${{ inputs.model_family }}
+      MIDSCENE_MODEL_API_KEY: ${{ secrets.MIDSCENE_MODEL_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: qa/midscene/package-lock.json
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          for name in MIDSCENE_MODEL_API_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "Missing required repository secret: $name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install Django and Midscene dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          npm --prefix qa/midscene ci
+          npm --prefix qa/midscene exec playwright install chromium
+
+      - name: Start local Django target
+        shell: bash
+        run: |
+          python manage.py migrate --noinput
+          python manage.py runserver 127.0.0.1:8000 --noreload > /tmp/django-midscene.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/django-midscene.log
+          exit 1
+
+      - name: Typecheck Midscene scenario
+        run: npm --prefix qa/midscene run typecheck
+
+      - name: Run AI requirement-RAG UI smoke
+        run: npm --prefix qa/midscene run smoke
+
+      - name: Upload Midscene evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: midscene-ai-ui-evidence
+          path: qa/artifacts/midscene/
+          if-no-files-found: warn
+          retention-days: 14

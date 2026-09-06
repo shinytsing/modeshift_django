@@ -358,6 +358,7 @@ from .views.basic_tools_views import (
     web_crawler,
     yuanqi_marriage_analyzer,
 )
+from .views.resume_3d_generator_views import resume_3d_generator
 
 # 导入浏览器代理配置视图
 from .views.browser_proxy_views import (
@@ -756,6 +757,7 @@ urlpatterns = [
     path("redbook_generator/", redbook_generator, name="redbook_generator"),
     path("pdf_converter/", pdf_converter, name="pdf_converter"),
     path("pdf_converter_test/", pdf_converter_test, name="pdf_converter_test"),
+    path("resume-3d-generator/", resume_3d_generator, name="resume_3d_generator"),
     path("yuanqi/", yuanqi_marriage_analyzer, name="yuanqi_marriage_analyzer"),
     path("fortune_analyzer/", fortune_analyzer, name="fortune_analyzer"),
     path("web_crawler/", web_crawler, name="web_crawler"),
