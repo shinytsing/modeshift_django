@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -35,7 +35,7 @@ jobs:
             qa/requirements.txt
 
       - name: Set up Node for Allure rendering
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
 
@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload QA evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qa-evidence
           path: qa/artifacts/
@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Check out the triggering revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set image reference
         id: image
@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Check out the triggering revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Deploy the checked-out project
         run: bash scripts/deploy-vm.sh "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
