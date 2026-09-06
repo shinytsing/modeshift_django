@@ -15,10 +15,15 @@ sys.path.append(str(BASE_DIR / "apps"))
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-docker-production-key-change-me")
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-# 允许的主机
+# 允许的主机（IP + 域名，支持本机/内网/公网/隧道访问）
 ALLOWED_HOSTS_STR = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1")
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(",") if host.strip()]
-ALLOWED_HOSTS.extend(["testserver", "web", "localhost"])
+ALLOWED_HOSTS.extend([
+    "testserver", "web", "localhost",
+    "127.0.0.1", "192.168.27.128",
+    "shenyiqing.xyz", "www.shenyiqing.xyz",
+])
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))  # 去重
 
 # 站点配置
 SITE_ID = 1
@@ -39,7 +44,12 @@ DJANGO_APPS = [
 ]
 
 # 第三方应用 - 安全地添加
-THIRD_PARTY_APPS = []
+THIRD_PARTY_APPS = [
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+]
 optional_third_party = [
     "rest_framework",
     "corsheaders",
@@ -66,6 +76,7 @@ local_app_candidates = [
     "apps.content",
     "apps.tools",
     "apps.share",
+    "apps.grading",
 ]
 
 for app in local_app_candidates:
@@ -88,6 +99,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # 安全地添加中间件
@@ -173,7 +185,7 @@ USE_TZ = True
 
 # 静态文件配置
 STATIC_URL = "/static/"
-STATIC_ROOT = "/app/static/"
+STATIC_ROOT = "/app/staticfiles/"
 
 # 收集静态文件的目录
 STATICFILES_DIRS = []
@@ -187,7 +199,7 @@ for static_dir in static_dirs:
         STATICFILES_DIRS.append(static_dir)
 
 # 静态文件存储配置
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # 媒体文件配置
 MEDIA_URL = "/media/"
@@ -241,9 +253,8 @@ if "rest_framework" in THIRD_PARTY_APPS:
 # CORS配置
 if "corsheaders" in THIRD_PARTY_APPS:
     CORS_ALLOWED_ORIGINS = [
-        "https://shenyiqing.xin",
-        "https://www.shenyiqing.xin",
-        "http://47.103.143.152",
+        "https://shenyiqing.xyz",
+        "https://www.shenyiqing.xyz",
         "http://localhost:8000",
     ]
     CORS_ALLOW_CREDENTIALS = True
@@ -259,18 +270,28 @@ if "captcha" in THIRD_PARTY_APPS:
     CAPTCHA_LENGTH = 4
     CAPTCHA_TIMEOUT = 5
 
+# 认证后端（allauth）
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
 # 安全配置
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # CSRF配置
-CSRF_TRUSTED_ORIGINS = [
-    "https://shenyiqing.xin",
-    "https://www.shenyiqing.xin",
-    "http://47.103.143.152",
+_base_csrf = [
+    "http://192.168.27.128",
+    "http://localhost",
+    "http://127.0.0.1",
     "http://localhost:8000",
+    "https://shenyiqing.xyz",
+    "https://www.shenyiqing.xyz",
 ]
+_extra = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = _base_csrf + [x.strip() for x in _extra.split(",") if x.strip()]
 
 # 邮件配置
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
