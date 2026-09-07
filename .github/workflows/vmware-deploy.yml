@@ -126,6 +126,7 @@ jobs:
         with:
           name: vmware-deployment-configuration
           path: .deploy-bundle/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 
