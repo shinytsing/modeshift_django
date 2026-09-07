@@ -212,10 +212,6 @@ function checkPasswordStrength(password) {
         feedback.push('避免连续重复字符');
     }
     
-    // 检查连续数字或字母
-    if (/123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password)) {
-        score -= 1;
-        feedback.push('避免连续字符');
     }
     
     // 检查键盘模式

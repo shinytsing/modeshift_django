@@ -99,8 +99,6 @@ def register_view(request):
                     messages.error(request, "密码必须大于8位。", extra_tags="password")
                 elif has_repeated_characters(password):
                     messages.error(request, "密码不能包含连续重复的字符。", extra_tags="password")
-                elif has_consecutive_characters(password):
-                    messages.error(request, "密码不能是完全连续的字符。", extra_tags="password")
                 elif not has_two_different_character_types(password):
                     messages.error(request, "密码必须包含至少两种不同的字符类型（如字母和数字）。", extra_tags="password")
                 else:
