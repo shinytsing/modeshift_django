@@ -30,6 +30,24 @@ install_docker() {
 }
 
 sync_project() {
+  if [[ "${QATOOLBOX_SKIP_GIT_SYNC:-false}" == "true" ]]; then
+    # GitHub Actions already supplied this minimal deployment bundle as an
+    # artifact. Avoid a second GitHub fetch on the VMware runner, whose
+    # network path can be less reliable than the Actions artifact service.
+    local script_dir source_compose
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    source_compose="$script_dir/../docker/docker-compose.vm.yml"
+    if [[ ! -f "$source_compose" ]]; then
+      echo "Deployment bundle is missing docker/docker-compose.vm.yml." >&2
+      exit 1
+    fi
+
+    echo "==> Updating deployment configuration in $PROJECT_DIR"
+    mkdir -p "$PROJECT_DIR/docker"
+    install -m 0644 "$source_compose" "$PROJECT_DIR/docker/docker-compose.vm.yml"
+    return
+  fi
+
   if [[ -d "$PROJECT_DIR/.git" ]]; then
     if git -C "$PROJECT_DIR" diff --quiet && git -C "$PROJECT_DIR" diff --cached --quiet; then
       echo "==> Updating $PROJECT_DIR"

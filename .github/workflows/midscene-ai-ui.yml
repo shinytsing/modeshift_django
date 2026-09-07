@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload Midscene evidence
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: midscene-ai-ui-evidence
           path: qa/artifacts/midscene/

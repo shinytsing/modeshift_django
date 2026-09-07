@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload QA evidence
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: qa-evidence
           path: qa/artifacts/
@@ -114,6 +114,21 @@ jobs:
           cache-from: type=gha,scope=qatoolbox-production
           cache-to: type=gha,mode=max,scope=qatoolbox-production
 
+      - name: Package the deployment configuration
+        shell: bash
+        run: |
+          mkdir -p .deploy-bundle/docker .deploy-bundle/scripts
+          cp docker/docker-compose.vm.yml .deploy-bundle/docker/
+          cp scripts/deploy-vm.sh .deploy-bundle/scripts/
+
+      - name: Upload the deployment configuration
+        uses: actions/upload-artifact@v6
+        with:
+          name: vmware-deployment-configuration
+          path: .deploy-bundle/
+          if-no-files-found: error
+          retention-days: 1
+
   deploy:
     name: Pull and start Docker application on VMware
     needs: build_image
@@ -127,11 +142,16 @@ jobs:
       GHCR_PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Check out the triggering revision
-        uses: actions/checkout@v5
+      - name: Download the deployment configuration
+        uses: actions/download-artifact@v5
+        with:
+          name: vmware-deployment-configuration
+          path: ${{ github.workspace }}
 
-      - name: Deploy the checked-out project
-        run: bash scripts/deploy-vm.sh "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+      - name: Deploy the packaged configuration and prebuilt image
+        env:
+          QATOOLBOX_SKIP_GIT_SYNC: "true"
+        run: bash scripts/deploy-vm.sh
 
       - name: Verify deployed health contract
         run: |
