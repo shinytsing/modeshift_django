@@ -80,6 +80,8 @@ jobs:
     timeout-minutes: 20
     outputs:
       image: ${{ steps.image.outputs.ref }}
+      compose_bundle: ${{ steps.bundle.outputs.compose }}
+      deploy_script_bundle: ${{ steps.bundle.outputs.script }}
 
     steps:
       - name: Check out the triggering revision
@@ -115,20 +117,11 @@ jobs:
           cache-to: type=gha,mode=max,scope=qatoolbox-production
 
       - name: Package the deployment configuration
+        id: bundle
         shell: bash
         run: |
-          mkdir -p .deploy-bundle/docker .deploy-bundle/scripts
-          cp docker/docker-compose.vm.yml .deploy-bundle/docker/
-          cp scripts/deploy-vm.sh .deploy-bundle/scripts/
-
-      - name: Upload the deployment configuration
-        uses: actions/upload-artifact@v6
-        with:
-          name: vmware-deployment-configuration
-          path: .deploy-bundle/
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 1
+          echo "compose=$(base64 -w0 docker/docker-compose.vm.yml)" >> "$GITHUB_OUTPUT"
+          echo "script=$(base64 -w0 scripts/deploy-vm.sh)" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Pull and start Docker application on VMware
@@ -143,11 +136,16 @@ jobs:
       GHCR_PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Download the deployment configuration
-        uses: actions/download-artifact@v5
-        with:
-          name: vmware-deployment-configuration
-          path: ${{ github.workspace }}
+      - name: Restore the deployment configuration
+        shell: bash
+        env:
+          COMPOSE_BUNDLE: ${{ needs.build_image.outputs.compose_bundle }}
+          DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
+        run: |
+          mkdir -p docker scripts
+          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > docker/docker-compose.vm.yml
+          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > scripts/deploy-vm.sh
+          chmod +x scripts/deploy-vm.sh
 
       - name: Deploy the packaged configuration and prebuilt image
         env:

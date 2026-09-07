@@ -80,6 +80,7 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 COPY --from=application --chown=appuser:appuser /app /app
+RUN chown appuser:appuser /app
 
 USER appuser
 
