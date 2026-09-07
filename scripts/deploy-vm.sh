@@ -190,7 +190,7 @@ main() {
 
   echo "==> Aligning the persistent PostgreSQL role password"
   printf '%s\n' \
-    '\\getenv deployment_password QATOOLBOX_DEPLOYMENT_DB_PASSWORD' \
+    '\getenv deployment_password QATOOLBOX_DEPLOYMENT_DB_PASSWORD' \
     "ALTER ROLE qatoolbox WITH PASSWORD :'deployment_password';" | \
     compose exec -T -u postgres -e "QATOOLBOX_DEPLOYMENT_DB_PASSWORD=$postgres_password" \
       db psql -U qatoolbox -d qatoolbox_vm --set=ON_ERROR_STOP=1 >/dev/null

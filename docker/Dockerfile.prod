@@ -23,8 +23,9 @@ COPY requirements.txt requirements.production.txt ./
 RUN pip install --upgrade pip && \
     pip install -r requirements.production.txt
 
-# 生产阶段
-FROM python:3.12-slim AS production
+# 应用打包阶段。collectstatic 会把 src/static 复制到 staticfiles；
+# 在中间阶段删掉源静态目录，避免大型音频在最终镜像中存两份。
+FROM python:3.12-slim AS application
 
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -47,17 +48,37 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 
 # 复制应用代码
-COPY . .
-
-# 创建必要的目录
-RUN mkdir -p /app/staticfiles /app/media /app/logs && \
-    chown -R appuser:appuser /app
+COPY --chown=appuser:appuser . .
 
 # 切换到应用用户
 USER appuser
 
-# 收集静态文件
-RUN python manage.py collectstatic --noinput
+# 收集静态文件，然后移除已被收集的源文件副本
+RUN mkdir -p /app/staticfiles /app/media /app/logs && \
+    python manage.py collectstatic --noinput && \
+    rm -rf /app/src/static
+
+# 最终生产阶段只携带一份静态资源。中间阶段的 COPY 层不会进入镜像，
+# 因此不是用 whiteout “看起来删除”，而是实际减小传输大小。
+FROM python:3.12-slim AS production
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+COPY --from=application --chown=appuser:appuser /app /app
+
+USER appuser
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
