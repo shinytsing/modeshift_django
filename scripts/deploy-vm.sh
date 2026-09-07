@@ -119,16 +119,30 @@ main() {
     exit 1
   fi
 
-  echo "==> Logging in to GitHub Container Registry"
-  printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
-    --username "$GHCR_USERNAME" --password-stdin
-
   echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
   export QATOOLBOX_IMAGE
   if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
     echo "==> Reusing cached image $QATOOLBOX_IMAGE"
   else
-    local pull_attempt pull_succeeded
+    local login_attempt login_succeeded pull_attempt pull_succeeded
+    login_succeeded=false
+    echo "==> Logging in to GitHub Container Registry"
+    for login_attempt in {1..4}; do
+      if printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
+        --username "$GHCR_USERNAME" --password-stdin; then
+        login_succeeded=true
+        break
+      fi
+      if [[ "$login_attempt" -lt 4 ]]; then
+        echo "Registry login attempt $login_attempt failed; retrying shortly..." >&2
+        sleep $((login_attempt * 5))
+      fi
+    done
+    if [[ "$login_succeeded" != "true" ]]; then
+      echo "Unable to log in to ghcr.io after 4 attempts." >&2
+      exit 1
+    fi
+
     pull_succeeded=false
     for pull_attempt in {1..4}; do
       if compose pull web; then
