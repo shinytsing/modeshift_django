@@ -126,11 +126,48 @@ main() {
   echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
   export QATOOLBOX_IMAGE
   compose pull web
-  compose up -d --no-build --remove-orphans
+
+  # A persistent PostgreSQL volume keeps the password used when it was first
+  # initialized. If .env.vm is later recreated, POSTGRES_PASSWORD alone does
+  # not update that existing role and the web container enters a restart loop.
+  # Start infrastructure first, then align the database role over its trusted
+  # local socket before starting Django. This preserves all existing data.
+  local postgres_password db_ready
+  postgres_password="$(sed -n 's/^POSTGRES_PASSWORD=//p' "$PROJECT_DIR/.env.vm" | head -n 1)"
+  if [[ -z "$postgres_password" ]]; then
+    echo "POSTGRES_PASSWORD is missing from $PROJECT_DIR/.env.vm" >&2
+    exit 1
+  fi
+
+  echo "==> Starting PostgreSQL and Redis"
+  compose up -d --no-build db redis
+  db_ready=false
+  for attempt in {1..15}; do
+    if compose exec -T db pg_isready -U qatoolbox -d qatoolbox_vm >/dev/null 2>&1; then
+      db_ready=true
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$db_ready" != "true" ]]; then
+    echo "PostgreSQL did not become ready." >&2
+    compose logs --tail=50 db >&2
+    exit 1
+  fi
+
+  echo "==> Aligning the persistent PostgreSQL role password"
+  printf '%s\n' \
+    '\\getenv deployment_password QATOOLBOX_DEPLOYMENT_DB_PASSWORD' \
+    "ALTER ROLE qatoolbox WITH PASSWORD :'deployment_password';" | \
+    compose exec -T -u postgres -e "QATOOLBOX_DEPLOYMENT_DB_PASSWORD=$postgres_password" \
+      db psql -U qatoolbox -d qatoolbox_vm --set=ON_ERROR_STOP=1 >/dev/null
+
+  echo "==> Starting QAToolBox web application"
+  compose up -d --no-build --remove-orphans web
 
   local vm_ip attempt
   vm_ip="$(hostname -I | awk '{print $1}')"
-  for attempt in {1..30}; do
+  for attempt in {1..20}; do
     if curl -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
       echo
       echo "Deployment succeeded. Open: http://${vm_ip}:${APP_PORT}"
