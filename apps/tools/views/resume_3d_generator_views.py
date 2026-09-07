@@ -124,7 +124,7 @@ def parse_resume(text):
 def avatar_data_url(upload):
     if not upload:
         return ""
-    if upload.size > 3 * 1024 * 1024 or not (upload.content_type or "").startswith("image/"):
+    if upload.size > 3 * 1024 * 1024 or (not (upload.content_type or "").startswith("image/") and not upload.name.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))):
         raise ValueError("头像需为 3 MB 以内的图片文件。")
     encoded = base64.b64encode(upload.read()).decode("ascii")
     return f"data:{upload.content_type};base64,{encoded}"
