@@ -125,7 +125,26 @@ main() {
 
   echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
   export QATOOLBOX_IMAGE
-  compose pull web
+  if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
+    echo "==> Reusing cached image $QATOOLBOX_IMAGE"
+  else
+    local pull_attempt pull_succeeded
+    pull_succeeded=false
+    for pull_attempt in {1..4}; do
+      if compose pull web; then
+        pull_succeeded=true
+        break
+      fi
+      if [[ "$pull_attempt" -lt 4 ]]; then
+        echo "Image pull attempt $pull_attempt failed; retrying shortly..." >&2
+        sleep $((pull_attempt * 5))
+      fi
+    done
+    if [[ "$pull_succeeded" != "true" ]]; then
+      echo "Unable to pull $QATOOLBOX_IMAGE after 4 attempts." >&2
+      exit 1
+    fi
+  fi
 
   # A persistent PostgreSQL volume keeps the password used when it was first
   # initialized. If .env.vm is later recreated, POSTGRES_PASSWORD alone does
