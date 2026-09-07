@@ -50,12 +50,15 @@ WORKDIR /app
 # 复制应用代码
 COPY --chown=appuser:appuser . .
 
+# WORKDIR 由 root 创建；先为运行用户创建可写目录。
+RUN mkdir -p /app/staticfiles /app/media /app/logs && \
+    chown appuser:appuser /app /app/staticfiles /app/media /app/logs
+
 # 切换到应用用户
 USER appuser
 
 # 收集静态文件，然后移除已被收集的源文件副本
-RUN mkdir -p /app/staticfiles /app/media /app/logs && \
-    python manage.py collectstatic --noinput && \
+RUN python manage.py collectstatic --noinput && \
     rm -rf /app/src/static
 
 # 最终生产阶段只携带一份静态资源。中间阶段的 COPY 层不会进入镜像，
