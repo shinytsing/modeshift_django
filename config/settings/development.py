@@ -7,8 +7,19 @@ from .base import *
 # 开发环境特定配置 - 只设置DEBUG为True
 DEBUG = True
 
-# 允许的主机 - 开发环境支持局域网访问
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "192.168.0.118", "172.16.0.1", "0.0.0.0", "*"]
+# 允许的主机 - 开发环境支持局域网 + 公网 IP/域名直接访问
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "testserver",
+    "192.168.0.118",
+    "172.16.0.1",
+    "0.0.0.0",
+    "117.152.223.23",
+    "shqingting.cn",
+    "www.shqingting.cn",
+    "*",
+]
 
 # 数据库配置 - 临时使用SQLite解决权限问题
 DATABASES = {

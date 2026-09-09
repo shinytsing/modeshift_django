@@ -24,9 +24,19 @@ cryptography==45.0.7
 django-cachalot==2.6.1
 # 监控
 django-health-check==3.17.0
+django-ratelimit==4.1.0
 djangorestframework==3.14.0
+django-filter==24.3
 django-crispy-forms==2.1
+crispy-bootstrap5==0.7
 channels==4.0.0
+channels-redis==4.1.0
 daphne==4.0.0
 PyYAML>=6.0
 selenium>=4.0.0
+playwright>=1.40.0
+fake-useragent>=1.4.0
+xmind>=1.2.0
+beautifulsoup4>=4.12.0
+psutil>=5.9.0
+pillow-heif>=0.13.0
