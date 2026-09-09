@@ -18,11 +18,17 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 # 允许的主机（IP + 域名，支持本机/内网/公网/隧道访问）
 ALLOWED_HOSTS_STR = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1")
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(",") if host.strip()]
-ALLOWED_HOSTS.extend([
-    "testserver", "web", "localhost",
-    "127.0.0.1", "192.168.27.128",
-    "shenyiqing.xyz", "www.shenyiqing.xyz",
-])
+ALLOWED_HOSTS.extend(
+    [
+        "testserver",
+        "web",
+        "localhost",
+        "127.0.0.1",
+        "192.168.27.128",
+        "shenyiqing.xyz",
+        "www.shenyiqing.xyz",
+    ]
+)
 ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))  # 去重
 
 # 站点配置

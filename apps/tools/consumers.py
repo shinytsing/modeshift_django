@@ -80,19 +80,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # 检查用户是否已登录
         if isinstance(self.scope["user"], AnonymousUser):
             # 对于测试房间、shipbao房间、多人聊天室，允许匿名用户连接
-            # heart_link房间也允许匿名连接，但会在后续验证中检查权限
+            # 但是heart_link房间需要登录用户
             if (
                 self.room_id.startswith("test-room-")
                 or self.room_id.startswith("shipbao-")
                 or self.room_id in ["public-room", "general", "chat", "random"]
                 or self.room_id == "0c38a502-25ad-47e7-9a37-15660a57d135"
                 or self.room_id == "e3aee9e3-99e1-428b-8e09-fb6389db5bef"
-                # heart_link房间也允许连接，权限验证在后续进行
-                or len(self.room_id) == 36 and self.room_id.count('-') == 4
             ):
                 logger.info(f"Anonymous user connecting to room {self.room_id}")
             else:
-                logger.warning(f"Anonymous user attempted to connect to unknown room {self.room_id}")
+                # heart_link房间和UUID格式的房间需要登录用户
+                logger.warning(f"Anonymous user attempted to connect to heart_link room {self.room_id}")
                 await self.close()
                 return
 

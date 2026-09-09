@@ -1,0 +1,1330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}🚀 AI测试用例生成器 - 极客版{% endblock %}
+
+{% block extra_css %}
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            /* 极客风格配色 */
+            --primary-color: #00ff88;
+            --primary-dark: #00cc6a;
+            --secondary-color: #00d4ff;
+            --accent-color: #ff6b35;
+            --warning-color: #ffd700;
+            --error-color: #ff4757;
+            --success-color: #2ed573;
+            --info-color: #3742fa;
+            
+            /* 深色主题 */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #666666;
+            --border-color: #333333;
+            --border-glow: rgba(0, 255, 136, 0.3);
+            
+            /* 动画效果 */
+            --glow-shadow: 0 0 20px var(--border-glow);
+            --glow-shadow-strong: 0 0 30px var(--primary-color);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景动画效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* 网格背景 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            box-shadow: var(--glow-shadow);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #app::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 20px var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        h1::after {
+            content: '⚡';
+            position: absolute;
+            right: -40px;
+            top: 0;
+            font-size: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        label::after {
+            content: ' ▸';
+            color: var(--primary-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transition: var(--transition);
+            resize: vertical;
+            position: relative;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-shadow);
+            background: var(--bg-secondary);
+        }
+
+        #requirement {
+            min-height: 150px;
+            font-size: 1.1rem;
+        }
+
+        #prompt {
+            min-height: 120px;
+        }
+
+        .hint {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .hint::before {
+            content: '💡';
+            margin-right: 8px;
+        }
+
+        .toggle-btn {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            transition: var(--transition);
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--glow-shadow);
+        }
+
+        #defaultPromptContainer {
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--bg-primary);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--glow-shadow-strong);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: var(--bg-primary);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            margin: 30px 0;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-title {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 15px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-step {
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        /* 结果显示区域 */
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .result-container.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-title {
+            color: var(--success-color);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .test-case-display {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-primary);
+        }
+
+        .test-case-display::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .test-case-display::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .test-case-display::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .test-case-display::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 消息提示 */
+        .message {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+            display: none;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .message.success {
+            background: rgba(46, 213, 115, 0.1);
+            color: var(--success-color);
+            border-left-color: var(--success-color);
+        }
+
+        .message.error {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--error-color);
+            border-left-color: var(--error-color);
+        }
+
+        .message.loading {
+            background: rgba(55, 66, 250, 0.1);
+            color: var(--info-color);
+            border-left-color: var(--info-color);
+        }
+
+        .message.warning {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--warning-color);
+            border-left-color: var(--warning-color);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #app {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* 加载动画 */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 极客风格装饰 */
+        .geek-decoration {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 终端风格输入框 */
+        .terminal-input {
+            position: relative;
+        }
+
+        .terminal-input::before {
+            content: '$ ';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .terminal-input textarea {
+            padding-left: 35px;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: var(--success-color);
+        }
+
+        .status-indicator.processing {
+            background: var(--warning-color);
+        }
+
+        .status-indicator.error {
+            background: var(--error-color);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 255, 136, 0.1);
+        }
+
+        .info-box i {
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div id="app">
+        <div class="geek-decoration">⚡</div>
+        <h1>AI测试用例生成器</h1>
+        <p class="subtitle">🚀 极客版 - 真正的后台任务，关闭页面也能继续运行</p>
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <span>为了生成更高质量的测试用例（每个维度至少10条，总计至少100条），生成时间会适当延长</span>
+        </div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="requirement">产品需求</label>
+                <div class="terminal-input">
+                    <textarea
+                        id="requirement"
+                        placeholder="请详细描述产品需求，例如：用户登录功能，支持手机号和邮箱登录，包含记住密码选项..."
+                        required
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="prompt">自定义提示词</label>
+                <textarea
+                    id="prompt"
+                    placeholder="请输入自定义提示词（使用{requirement}作为需求占位符），例如：根据{requirement}生成详细的测试用例..."
+                ></textarea>
+                <div class="hint">
+                    提示：留空将使用默认提示词模板，生成包含多级结构的测试用例
+                </div>
+
+                <div class="toggle-section">
+                    <button type="button" class="toggle-btn" onclick="toggleDefaultPrompt()">
+                        <i class="fas fa-cog"></i> 查看/编辑默认提示词模板
+                    </button>
+                </div>
+                <div id="defaultPromptContainer">
+                    <textarea
+                        id="defaultPromptText"
+                        placeholder="默认提示词模板..."
+                    ></textarea>
+                    <div class="hint">
+                        提示：修改后将影响所有未输入自定义提示词的生成结果
+                    </div>
+                </div>
+            </div>
+
+                    <div class="action-buttons">
+            <button type="button" id="resetBtn" class="btn-outline">
+                <i class="fas fa-undo"></i> 重置
+            </button>
+            <button type="submit" id="generateBtn">
+                <i class="fas fa-rocket"></i> 开始生成
+            </button>
+            <button type="button" id="taskManagerBtn" class="btn-outline" onclick="window.open('/tools/task_manager/', '_blank')">
+                <i class="fas fa-tasks"></i> 任务管理器
+            </button>
+        </div>
+        </form>
+
+        <!-- 进度条容器 -->
+        <div id="progressContainer" class="progress-container">
+            <div class="progress-header">
+                <div class="progress-title">
+                    <span class="status-indicator processing"></span>
+                    任务处理中...
+                </div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-step" id="progressStep">准备中...</div>
+        </div>
+
+        <!-- 结果显示容器 -->
+        <div id="resultContainer" class="result-container">
+            <div class="result-header">
+                <div class="result-title">
+                    <span class="status-indicator online"></span>
+                    生成完成
+                </div>
+            </div>
+            <div class="test-case-display" id="testCaseDisplay"></div>
+            <div class="action-buttons">
+                <button class="btn-outline" id="copyBtn">
+                    <i class="fas fa-copy"></i> 复制内容
+                </button>
+                <button class="btn-outline" id="downloadTxtBtn" style="display: none;">
+                    <i class="fas fa-file-alt"></i> 下载TXT
+                </button>
+                <button class="btn-primary" id="downloadXmindBtn" style="display: none;">
+                    <i class="fas fa-sitemap"></i> 下载XMind
+                </button>
+                <button class="btn-secondary" id="downloadFeishuBtn" style="display: none;">
+                    <i class="fas fa-file-code"></i> 下载飞书格式(.mm)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息容器 -->
+    <div id="messageContainer"></div>
+
+    <script>
+        const DEFAULT_PROMPT = `作为资深测试工程师，请根据以下产品需求生成完整的测试用例：
+
+## 重要要求
+⚠️ **绝对禁止使用"此处省略"、"等等"、"..."等任何形式的省略表述**
+⚠️ **必须生成足够数量的测试用例，不能因为长度限制而减少**
+⚠️ **优先保证完整性和数量，速度其次**
+⚠️ **每个用例都必须完整，不能中途截断**
+⚠️ **严格按照指定格式输出，不要乱**
+
+## 测试用例要求
+1. **功能测试**：核心功能、主要业务流程、数据处理
+2. **界面测试**：关键UI交互、用户体验、页面跳转
+3. **异常测试**：重要错误处理、边界条件、异常流程
+4. **安全测试**：基本数据安全、权限控制、输入验证
+5. **性能测试**：基本性能指标、响应时间
+6. **兼容性测试**：浏览器兼容、设备兼容、版本兼容
+
+## 用例结构（每个用例必须包含）
+- **用例ID**：TC-模块-序号（如：TC-登录-001）
+- **用例标题**：简洁明确的功能描述
+- **测试场景**：具体的业务场景
+- **前置条件**：系统状态、数据准备
+- **测试步骤**：详细的操作步骤（1.2.3...）
+- **预期结果**：具体的验证点
+- **优先级**：P0/P1/P2（P0最高）
+- **测试类型**：功能/界面/异常/安全/性能
+
+## 数量要求（必须满足）
+- **每个测试维度至少10个用例，推荐15-20个**
+- **总用例数量至少100个，推荐120-150个**
+- **测试维度包括：功能测试、界面测试、异常测试、安全测试、性能测试、兼容性测试**
+- **用例分布：正向60% + 异常25% + 边界15%**
+- **必须覆盖所有核心功能和关键场景**
+- **优先保证数量和质量，生成时间可以适当延长**
+
+## 输出格式（严格按照此格式）
+\`\`\`
+# 测试用例文档
+
+## 模块1：[模块名称]
+### TC-001：[用例标题]
+**测试场景**：[具体场景]
+**前置条件**：[系统状态和数据准备]
+**测试步骤**：
+1. [步骤1]
+2. [步骤2]
+3. [步骤3]
+**预期结果**：[具体验证点]
+**优先级**：P0/P1/P2
+**测试类型**：[功能/界面/异常/安全/性能]
+
+### TC-002：[用例标题]
+[同上格式]
+
+...（继续该模块的其他用例）
+
+## 模块2：[模块名称]
+### TC-XXX：[用例标题]
+[同上格式]
+
+...（继续其他模块）
+
+## 总结
+- 总用例数量：[数字]个
+- 功能模块数量：[数字]个
+- 测试覆盖情况：[覆盖的功能点]
+- 测试类型分布：[正向/异常/边界测试分布]
+\`\`\`
+
+## 完整性保证
+- 每个用例必须包含完整的测试步骤
+- 预期结果必须具体可验证
+- 不能使用任何省略表述
+- 严格按照格式输出，不要乱
+- 最后必须有总结部分
+
+产品需求：{requirement}
+
+请严格按照上述格式生成完整、充足的测试用例，确保数量和质量都满足要求。`;
+
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            bindEvents();
+        });
+
+        function initializePage() {
+            // 初始化默认提示词
+            document.getElementById('defaultPromptText').value = DEFAULT_PROMPT;
+            
+            // 显示在线状态
+            showMessage('系统已就绪，准备接受任务', 'success');
+        }
+
+        function bindEvents() {
+            // 表单提交事件
+            document.getElementById('testForm').addEventListener('submit', handleFormSubmit);
+            
+            // 重置按钮事件
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            
+            // 复制按钮事件
+            document.getElementById('copyBtn').addEventListener('click', copyContent);
+            
+            // 下载按钮事件
+            document.getElementById('downloadTxtBtn').addEventListener('click', downloadTxtContent);
+            document.getElementById('downloadXmindBtn').addEventListener('click', downloadXmindFile);
+            document.getElementById('downloadFeishuBtn').addEventListener('click', downloadFeishuFile);
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const requirement = document.getElementById('requirement').value.trim();
+            const prompt = document.getElementById('prompt').value.trim();
+            
+            if (!requirement) {
+                showMessage('请输入产品需求内容', 'error');
+                return;
+            }
+            
+            // 禁用提交按钮
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="spinner"></div> 创建任务中...';
+            
+            // 创建异步任务
+            createAsyncTask(requirement, prompt);
+        }
+
+        function createAsyncTask(requirement, prompt) {
+            const csrfToken = getCookie('csrftoken');
+            const finalPrompt = prompt || document.getElementById('defaultPromptText').value;
+            
+            axios.post('/tools/api/async/generate-testcases/', {
+                requirement: requirement,
+                prompt: finalPrompt
+            }, {
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                            if (response.data.success) {
+                currentTaskId = response.data.task_id;
+                showMessage('后台任务创建成功！您可以关闭页面，任务完成后会通知您', 'success');
+                showProgress();
+                startStatusCheck();
+            } else {
+                showMessage('任务创建失败：' + (response.data.error || '未知错误'), 'error');
+            }
+            })
+            .catch(error => {
+                // console.error(...)
+                let errorMsg = '创建任务失败，请稍后重试';
+                if (error.response) {
+                    errorMsg = error.response.data.error || `服务器错误 (${error.response.status})`;
+                }
+                showMessage(errorMsg, 'error');
+            })
+            .finally(() => {
+                // 恢复提交按钮
+                const generateBtn = document.getElementById('generateBtn');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-rocket"></i> 开始生成';
+            });
+        }
+
+        function showProgress() {
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('resultContainer').classList.remove('active');
+        }
+
+        function startStatusCheck() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+            
+            statusCheckInterval = setInterval(() => {
+                checkTaskStatus();
+            }, 2000); // 每2秒检查一次
+        }
+
+        function checkTaskStatus() {
+            if (!currentTaskId) return;
+            
+            axios.get(`/tools/api/async/task/${currentTaskId}/`)
+            .then(response => {
+                const task = response.data;
+                updateProgress(task);
+                
+                if (task.status === 'completed' || task.status === 'failed') {
+                    clearInterval(statusCheckInterval);
+                    statusCheckInterval = null;
+                    
+                    if (task.status === 'completed') {
+                        showResult(task.result);
+                        showMessage('测试用例生成完成！', 'success');
+                        // 通知由异步任务管理器自动创建，不需要手动发送
+                    } else {
+                        showMessage('任务执行失败：' + (task.error || '未知错误'), 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                // console.error(...)
+            });
+        }
+
+        function updateProgress(task) {
+            const progressFill = document.getElementById('progressFill');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const progressStep = document.getElementById('progressStep');
+            
+            const progress = task.progress || 0;
+            progressFill.style.width = progress + '%';
+            progressPercentage.textContent = progress + '%';
+            
+            if (task.current_step) {
+                progressStep.textContent = `当前步骤：${task.current_step}`;
+            }
+        }
+
+        function showResult(result) {
+            document.getElementById('resultContainer').classList.add('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            
+            const testCaseDisplay = document.getElementById('testCaseDisplay');
+            testCaseDisplay.innerHTML = result
+                .replace(/#{2}\s(.*?)\n/g, '<h2 style="color: var(--primary-color); margin: 20px 0 10px 0;">$1</h2>')
+                .replace(/#{3}\s(.*?)\n/g, '<h3 style="color: var(--secondary-color); margin: 15px 0 8px 0;">$1</h3>')
+                .replace(/#{4}\s(.*?)\n/g, '<h4 style="color: var(--accent-color); margin: 10px 0 5px 0;">$1</h4>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-color);">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em style="color: var(--secondary-color);">$1</em>')
+                .replace(/\n/g, '<br>');
+            
+            // 显示下载按钮
+            document.getElementById('downloadTxtBtn').style.display = 'flex';
+            document.getElementById('downloadXmindBtn').style.display = 'flex';
+            document.getElementById('downloadFeishuBtn').style.display = 'flex';
+            
+            // 保存结果到全局变量供下载使用
+            window.currentTestResult = result;
+            
+            // 显示任务完成信息
+            showMessage('🎉 测试用例生成完成！可以下载多种格式文件', 'success');
+        }
+
+        function resetForm() {
+            document.getElementById('testForm').reset();
+            document.getElementById('defaultPromptContainer').style.display = 'none';
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('resultContainer').classList.remove('active');
+            document.getElementById('testCaseDisplay').innerHTML = '';
+            
+            // 隐藏下载按钮
+            document.getElementById('downloadTxtBtn').style.display = 'none';
+            document.getElementById('downloadXmindBtn').style.display = 'none';
+            document.getElementById('downloadFeishuBtn').style.display = 'none';
+            
+            hideMessage();
+            
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+            
+            currentTaskId = null;
+        }
+
+        function copyContent() {
+            const testCaseText = document.getElementById('testCaseDisplay').textContent;
+            navigator.clipboard.writeText(testCaseText).then(() => {
+                showMessage('内容已复制到剪贴板！', 'success');
+            }).catch(err => {
+                // console.error(...)
+                showMessage('复制失败，请手动选择复制', 'error');
+            });
+        }
+
+        function downloadTxtContent() {
+            const testCaseText = window.currentTestResult || document.getElementById('testCaseDisplay').textContent;
+            const blob = new Blob([testCaseText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `测试用例_${new Date().toISOString().slice(0, 10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('TXT格式测试用例已下载！', 'success');
+        }
+        
+        function downloadXmindFile() {
+            // 生成XMind格式的思维导图文件
+            const testCaseText = window.currentTestResult || document.getElementById('testCaseDisplay').textContent;
+            
+            // 创建XMind格式的XML内容
+            const xmindContent = generateXmindContent(testCaseText);
+            
+            const blob = new Blob([xmindContent], { type: 'application/xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `测试用例_${new Date().toISOString().slice(0, 10)}.xmind`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('XMind格式文件已下载！', 'success');
+        }
+        
+        function downloadFeishuFile() {
+            // 生成飞书兼容的Markdown格式文件
+            const testCaseText = window.currentTestResult || document.getElementById('testCaseDisplay').textContent;
+            
+            // 创建飞书格式的Markdown内容
+            const feishuContent = generateFeishuContent(testCaseText);
+            
+            const blob = new Blob([feishuContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `测试用例_${new Date().toISOString().slice(0, 10)}_feishu.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('飞书格式文件已下载！', 'success');
+        }
+        
+        function generateXmindContent(testCaseText) {
+            // 生成XMind格式的XML内容
+            const lines = testCaseText.split('\n');
+            let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xmlContent += '<map version="1.0.1">\n';
+            xmlContent += '  <node TEXT="测试用例文档" STYLE="bubble" COLOR="#000000">\n';
+            
+            let currentModule = null;
+            let moduleNode = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 检测模块标题
+                if (line.startsWith('## ')) {
+                    currentModule = line.substring(3).trim();
+                    moduleNode = `    <node TEXT="${escapeXml(currentModule)}" COLOR="#FF7F50" STYLE="fork">\n`;
+                    xmlContent += moduleNode;
+                }
+                // 检测测试用例
+                else if (line.startsWith('- ') && currentModule) {
+                    const testCase = line.substring(2).trim();
+                    xmlContent += `      <node TEXT="${escapeXml(testCase)}" COLOR="#4682B4" STYLE="bullet"/>\n`;
+                }
+                // 检测用例详情
+                else if (line.startsWith('* ') && currentModule) {
+                    const detail = line.substring(2).trim();
+                    xmlContent += `      <node TEXT="${escapeXml(detail)}" COLOR="#32CD32" STYLE="bullet"/>\n`;
+                }
+            }
+            
+            if (currentModule) {
+                xmlContent += '    </node>\n';
+            }
+            
+            xmlContent += '  </node>\n';
+            xmlContent += '</map>';
+            
+            return xmlContent;
+        }
+        
+        function generateFeishuContent(testCaseText) {
+            // 生成飞书兼容的Markdown内容
+            let feishuContent = '# 测试用例文档\n\n';
+            feishuContent += '> 本文档由AI测试用例生成器自动生成，支持飞书直接导入\n\n';
+            
+            const lines = testCaseText.split('\n');
+            let currentModule = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 检测模块标题
+                if (line.startsWith('## ')) {
+                    if (currentModule) {
+                        feishuContent += '\n---\n\n';
+                    }
+                    currentModule = line.substring(3).trim();
+                    feishuContent += `## 📋 ${currentModule}\n\n`;
+                }
+                // 检测测试用例
+                else if (line.startsWith('- ')) {
+                    const testCase = line.substring(2).trim();
+                    feishuContent += `### ✅ ${testCase}\n\n`;
+                }
+                // 检测用例详情
+                else if (line.startsWith('* ')) {
+                    const detail = line.substring(2).trim();
+                    feishuContent += `- ${detail}\n`;
+                }
+                // 其他内容
+                else if (line) {
+                    feishuContent += `${line}\n`;
+                }
+            }
+            
+            feishuContent += '\n---\n\n';
+            feishuContent += '## 📊 文档信息\n\n';
+            feishuContent += '- **生成时间**: ' + new Date().toLocaleString() + '\n';
+            feishuContent += '- **生成工具**: AI测试用例生成器\n';
+            feishuContent += '- **格式**: 飞书兼容Markdown\n';
+            feishuContent += '- **用途**: 可直接导入飞书文档使用\n\n';
+            
+            return feishuContent;
+        }
+        
+        function escapeXml(text) {
+            return text.replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&apos;');
+        }
+
+        function toggleDefaultPrompt() {
+            const container = document.getElementById('defaultPromptContainer');
+            const isVisible = container.style.display !== 'none';
+            container.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                const customPrompt = document.getElementById('prompt').value.trim();
+                if (!customPrompt) {
+                    document.getElementById('prompt').value = document.getElementById('defaultPromptText').value;
+                }
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            
+            container.appendChild(messageDiv);
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+                container.removeChild(messageDiv);
+            }, 3000);
+        }
+
+        function hideMessage() {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = '';
+        }
+
+        function sendNotification(title, message) {
+            // 检查浏览器是否支持通知
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    new Notification(title, {
+                        body: message,
+                        icon: '/static/favicon.ico'
+                    });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(title, {
+                                body: message,
+                                icon: '/static/favicon.ico'
+                            });
+                        }
+                    });
+                }
+            }
+            
+            // 发送到聊天通知系统
+            if (window.chatNotificationManager) {
+                // 创建系统通知消息
+                const notificationData = {
+                    title: title,
+                    message: message,
+                    type: 'system',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // 调用聊天通知系统显示通知
+                try {
+                    // 这里可以调用聊天通知系统的API来显示通知
+                    fetch('/tools/api/notifications/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(notificationData)
+                    }).then(response => {
+                        if (response.ok) {
+                            // // console.log(...)
+                        }
+                    }).catch(error => {
+                        // console.error(...)
+                    });  // 调试信息已隐藏
+                } catch (error) {
+                    // console.error(...)
+                }
+            }
+        }
+        
+        function sendSystemNotification(message) {
+            // 简化的系统通知函数
+            fetch('/tools/api/notifications/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    title: '测试用例生成完成',
+                    message: message,
+                    type: 'system'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // // console.log(...)
+                } else {
+                    // console.error(...)
+                }
+            })
+            .catch(error => {
+                // console.error(...)
+            });  // 调试信息已隐藏
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        });
+
+        // 请求通知权限
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    </script>
+{% endblock %}

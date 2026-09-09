@@ -2,6 +2,13 @@
 
 一个基于Django的QA工具箱，提供多种实用工具和功能。
 
+## 项目导航
+
+日常开发与质量门禁的唯一入口见 [项目导航](docs/PROJECT_STRUCTURE.md) 和
+[文档索引](docs/README.md)。新的左移测试框架位于
+`qa/`：使用 `python3 qa/scripts/run_suite.py` 运行 API（requests）与 UI（Playwright）全量测试，
+并在 `qa/artifacts/allure-report/index.html` 查看 Allure 报告。
+
 ## 🚀 快速开始
 
 ### 本地开发环境
@@ -29,6 +36,23 @@ pip install -r requirements.txt
 ```
 
 ## 🚀 快速部署
+
+### VMware Ubuntu 虚拟机一键部署
+
+在**另一台电脑的 Ubuntu VMware 虚拟机**终端运行（首次会安装 Docker、克隆项目、构建并启动服务）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shinytsing/modeshift_django/main/scripts/deploy-vm.sh | bash
+```
+
+完成后访问脚本输出的 `http://虚拟机IP:8000`。虚拟机使用桥接网络时，Windows 可直接访问；NAT 网络需要在 VMware 配置 8000 端口转发。后续更新时运行同一命令即可。查看日志：
+
+```bash
+cd ~/modeshift_django
+docker compose --env-file .env.vm -f docker/docker-compose.vm.yml logs -f web
+```
+
+该方案仅供内网/面试演示：数据库与 Redis 不暴露端口，不配置公网 TLS 或 GitHub Actions 部署凭证。
 
 ### 阿里云一键部署
 

@@ -55,7 +55,7 @@ services:
         echo '运行数据库迁移...' &&
         python manage.py migrate --settings=config.settings.testing --verbosity=2 &&
         echo '运行测试...' &&
-        pytest tests/ --cov=apps --cov-report=xml --cov-report=html --junit-xml=test-results.xml --html=test-report.html --self-contained-html -v --maxfail=10 --tb=short --durations=10
+        pytest -c qa/pytest.ini qa/ -v --maxfail=10 --tb=short --durations=10
       "
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.testing

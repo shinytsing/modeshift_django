@@ -1,0 +1,61 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: qatoolbox_redis_local
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    image: modeshift_django-web:latest
+    container_name: qatoolbox_web_local
+    user: "0:0"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env}
+      DJANGO_DEBUG: "False"
+      DB_NAME: ${DB_NAME:-qatoolbox}
+      DB_USER: ${DB_USER:-qatoolbox}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-5432}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}@redis:6379/0
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      AUTH_LOGIN_DISABLED: "true"
+      SECURE_SSL_REDIRECT: "False"
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-noreply@example.com}
+    command: >
+      sh -c "pip install beautifulsoup4 xmind -q &&
+      gunicorn --bind 0.0.0.0:8000 --workers 2 --timeout 300 wsgi:application"
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../media:/app/media
+      - ../staticfiles:/app/staticfiles
+      - ../logs:/app/logs
+
+  nginx:
+    image: nginx:alpine
+    container_name: qatoolbox_nginx_local
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.local.conf:/etc/nginx/nginx.conf:ro
+      - ../ssl_certs:/etc/nginx/ssl:ro
+      - ../staticfiles:/var/www/static:ro
+      - ../media:/var/www/media:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - web

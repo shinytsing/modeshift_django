@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA UI Automation"
+  short_description: "Generate and run pytest Playwright UI checks."
+  default_prompt: "Build or run resilient Playwright UI tests for this project."

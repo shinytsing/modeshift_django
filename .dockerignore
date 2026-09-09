@@ -2,6 +2,7 @@
 .git
 .gitignore
 .gitattributes
+.github/
 
 # Python
 __pycache__
@@ -28,6 +29,7 @@ coverage.xml
 # Virtual environments
 .env
 .venv
+.venv*/
 env/
 venv/
 ENV/
@@ -83,4 +85,18 @@ build/
 # Temporary files
 *.tmp
 *.temp
-.cache/ 
+.cache/
+
+# Front-end and local auxiliary projects are not part of the Django image.
+node_modules/
+java_job/
+
+# CI evidence and local work state must never inflate a production build context.
+qa/artifacts/
+.plan/
+.agents/
+
+# Local audio conversion/debug intermediates are not referenced by production
+# templates. Keeping them out removes roughly 175 MB from every changed app layer.
+src/static/audio/meditation/MISTERK*
+src/static/audio/meditation/decrypted_temp_*

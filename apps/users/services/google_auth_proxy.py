@@ -8,7 +8,6 @@ import json
 import logging
 import requests
 from urllib.parse import urlencode, parse_qs, urlparse
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -25,7 +24,10 @@ class GoogleAuthProxyService:
     def __init__(self):
         self.client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
         self.client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
-        self.redirect_uri = f"{settings.SITE_URL}/accounts/google/login/callback/"
+        from apps.users.oauth_utils import get_registered_google_redirect_uri
+
+        # 必须与 Google 控制台登记的 redirect_uri 完全一致
+        self.redirect_uri = get_registered_google_redirect_uri()
         # 不使用代理，直接访问Google API
         self.proxy_configs = [None]  # 只使用无代理配置
         self.proxy_config = None
@@ -202,17 +204,26 @@ class GoogleAuthProxyViewMixin:
         return self._auth_proxy
     
     def get_auth_url_with_state(self, request) -> str:
-        """生成带 state 参数的授权 URL"""
-        # 使用 session ID 作为 state 参数
-        state = request.session.session_key or str(request.session.create())
-        return self.auth_proxy.get_auth_url(state)
-    
+        """生成带签名 state 的授权 URL，state 中记录回跳 origin。"""
+        from apps.users.oauth_utils import dump_google_oauth_state
+
+        return self.auth_proxy.get_auth_url(dump_google_oauth_state(request))
+
     def handle_auth_callback(self, request, code: str, state: str = None) -> Tuple[User, bool]:
         """处理认证回调"""
-        # 验证 state 参数
-        expected_state = request.session.session_key
-        if not self.auth_proxy.validate_state(state, expected_state):
+        from django.core.signing import BadSignature, SignatureExpired
+
+        from apps.users.oauth_utils import load_google_oauth_state
+
+        if not state:
             raise ValidationError("Invalid state parameter")
-        
-        # 执行认证
+        try:
+            payload = load_google_oauth_state(state)
+        except (BadSignature, SignatureExpired) as exc:
+            raise ValidationError("Invalid state parameter") from exc
+
+        expected_sid = payload.get("sid")
+        if not expected_sid or request.session.session_key != expected_sid:
+            raise ValidationError("Invalid state parameter")
+
         return self.auth_proxy.authenticate_user(code, state)

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main style="min-height:100vh;padding:7rem 1.5rem;background:radial-gradient(circle at 80% 5%,#244a77,transparent 35%),#07111d;color:#f3f7ff">
+  <section style="max-width:780px;margin:auto;padding:2.5rem;border:1px solid #36536e;border-radius:24px;background:rgba(8,23,40,.88);box-shadow:0 24px 80px rgba(0,0,0,.35)">
+    <p style="color:#a8dfff;letter-spacing:.16em;font:600 12px monospace">GEEK MODE / RESUME LAB</p>
+    <h1 style="font-size:clamp(2.2rem,6vw,4rem);margin:.5rem 0 1rem">简历 → 3D 履历</h1>
+    <p style="color:#bfccdb;line-height:1.8">上传 PDF 或 DOCX，自动生成可浏览的 3D 简历。文字完整保留；城市和公司图标只会在原简历中明确识别到时显示。</p>
+    {% if error %}<p role="alert" style="padding:1rem;border-radius:12px;background:#4f1f2a;color:#ffd6da">{{ error }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" style="display:grid;gap:1.2rem;margin-top:2rem">
+      {% csrf_token %}
+      <label style="display:grid;gap:.55rem;font-weight:700">简历文件（PDF / DOCX）<input required name="resume" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="padding:1rem;border:1px dashed #78b7e5;border-radius:12px;background:#0a1b2d;color:#fff"></label>
+      <label style="display:grid;gap:.55rem;font-weight:700">真人头像（可选）<input name="avatar" type="file" accept="image/*" style="padding:1rem;border:1px dashed #78b7e5;border-radius:12px;background:#0a1b2d;color:#fff"></label>
+      <button type="submit" style="padding:1rem 1.4rem;border:0;border-radius:999px;background:#c5e9ff;color:#07111d;font-weight:800;cursor:pointer">生成 3D 简历</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

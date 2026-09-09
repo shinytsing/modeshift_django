@@ -3,6 +3,9 @@
 支持多种大模型提供商，方便切换和配置
 """
 
+# fmt: off
+# This legacy provider module is formatted incrementally outside this change.
+
 import json
 import logging
 import os
@@ -878,7 +881,8 @@ class LLMServiceManager:
             LLMProvider.MOCK: MockService(),
         }
         self.provider_priority = [
-            LLMProvider.TENCENT,  # 腾讯混元，本地有key，最高优先级
+            LLMProvider.DEEPSEEK,  # 已验证的默认云端模型
+            LLMProvider.TENCENT,  # 腾讯混元，作为 DeepSeek 不可用时的备选
             LLMProvider.AIMLAPI,  # 你的密钥，第二优先级
             LLMProvider.AITOOLS,  # 无需登录，兼容OpenAI
             LLMProvider.GROQ,     # 免费额度大
@@ -889,8 +893,6 @@ class LLMServiceManager:
             LLMProvider.TOGETHER, # Together AI
             LLMProvider.OPENROUTER, # OpenRouter
             LLMProvider.OLLAMA,   # 本地服务
-            LLMProvider.MOCK,     # Mock服务，确保总是可用
-            LLMProvider.DEEPSEEK, # 备用
         ]
     
     def get_available_providers(self) -> List[LLMProvider]:
@@ -1294,3 +1296,5 @@ def generate_creative_content(prompt: str) -> str:
 def generate_analysis_content(prompt: str) -> str:
     """生成分析内容的便捷函数"""
     return get_llm_service().generate_analysis_content(prompt)
+
+# fmt: on

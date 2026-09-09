@@ -43,7 +43,9 @@ services:
 
   # Django应用
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: qatoolbox_web
     restart: unless-stopped
     environment:
@@ -94,7 +96,7 @@ services:
       - logs_data:/app/logs
       - task_storage_data:/app/task_storage
     ports:
-      - "8000:8000"
+      - "8081:8000"
     depends_on:
       db:
         condition: service_healthy

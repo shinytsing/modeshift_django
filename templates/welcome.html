@@ -24,8 +24,13 @@
         </div>
         
         <div class="welcome-actions">
+            {% if auth_login_disabled %}
+            <a href="/tools/" class="btn btn-primary">开始使用</a>
+            <a href="/" class="btn btn-secondary">返回首页</a>
+            {% else %}
             <button onclick="showLoginModal()" class="btn btn-primary">立即注册</button>
             <button onclick="showLoginModal()" class="btn btn-secondary">登录账户</button>
+            {% endif %}
         </div>
     </div>
 </div>

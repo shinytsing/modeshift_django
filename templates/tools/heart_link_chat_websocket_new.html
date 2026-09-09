@@ -1,589 +1,1072 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}聊天室 - {{ room_id }}{% endblock %}
+{% block title %}心动聊天 - QAToolBox{% endblock %}
 
-{% block extra_body_class %}chat-page{% endblock %}
+{% block extra_head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
 
 {% block extra_css %}
 <style>
-    .chat-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        max-width: 800px;
-        margin: 0 auto;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+.chat-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #ffffff;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 当有自定义背景时，用背景图替代渐变 */
+.chat-container.has-custom-bg {
+    /* 自定义背景会通过JS的style.background直接设置，这里不需要重复定义 */
+    /* 使用!important确保自定义背景优先级最高 */
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+/* 自定义背景的半透明遮罩 */
+.chat-container.has-custom-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 0;
+}
+
+.chat-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+    /* 背景上传按钮已隐藏 */
+    .bg-upload-btn {
+        display: none !important;
     }
 
-    .chat-header {
+    /* 文件上传进度条样式 */
+    .upload-progress-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .upload-progress-container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        min-width: 400px;
+        max-width: 500px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .upload-progress-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .upload-progress-icon {
+        width: 48px;
+        height: 48px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .chat-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    
-    .video-chat-btn {
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 50%;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .video-chat-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        color: white;
-        text-decoration: none;
-    }
-    
-    .video-chat-btn i {
-        font-size: 1.2em;
+        margin-right: 15px;
     }
 
-    .chat-header h3 {
+    .upload-progress-icon i {
+        color: white;
+        font-size: 24px;
+    }
+
+    .upload-progress-title {
+        flex: 1;
+    }
+
+    .upload-progress-title h3 {
         margin: 0;
         font-size: 18px;
+        color: #333;
     }
 
-    .connection-status {
+    .upload-progress-title p {
+        margin: 5px 0 0 0;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .upload-progress-bar-container {
+        background: #f0f0f0;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+
+    .upload-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .upload-progress-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .upload-progress-stats span {
+        display: flex;
+        align-items: center;
+    }
+
+    .upload-progress-stats i {
+        margin-right: 5px;
+    }
+
+    .upload-progress-cancel {
+        width: 100%;
+        padding: 10px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
         font-size: 14px;
+        font-weight: 500;
+        transition: background 0.3s;
     }
 
-    .status-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #ff4757;
-        animation: pulse 2s infinite;
+    .upload-progress-cancel:hover {
+        background: #d32f2f;
     }
 
-    .status-indicator.connected {
-        background: #2ed573;
+.chat-header {
+    background: rgba(240, 147, 251, 0.1);
+    border-bottom: 2px solid rgba(240, 147, 251, 0.2);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(20px);
+}
+
+.chat-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-right: 1rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(240, 147, 251, 0.2);
+    transform: scale(1.1);
+}
+
+.chat-user-info {
+    display: flex;
+    align-items: center;
+}
+
+.chat-user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.chat-user-details h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+.chat-user-status {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.chat-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.connection-status {
+    font-size: 0.8rem;
+    margin-right: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+    background: rgba(76, 175, 80, 0.2);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.connection-status.disconnected {
+    background: rgba(255, 152, 0, 0.2);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.connection-status.error {
+    background: rgba(244, 67, 54, 0.2);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.connection-status.fallback {
+    background: rgba(158, 158, 158, 0.2);
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.typing-indicator {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 1rem;
+    display: none;
+}
+
+.typing-dots {
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+.typing-dots::after {
+    content: '';
+    animation: typingDots 1.5s infinite;
+}
+
+@keyframes typingDots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message {
+    max-width: 70%;
+    padding: 1rem;
+    border-radius: 12px;
+    position: relative;
+    animation: messageSlideIn 0.3s ease-out;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.message-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.own {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.message.other {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-bottom-left-radius: 4px;
+    backdrop-filter: blur(10px);
+}
+
+.message-content {
+    margin-bottom: 0.5rem;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.message-time {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    text-align: right;
+}
+
+.message.other .message-time {
+    text-align: left;
+}
+
+/* 消息顶部：用户名和时间横排 */
+.message-sender {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffd700;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.message.own .message-sender {
+    color: #fff3cd;
+}
+
+/* 消息内容 */
+.message-content-wrapper {
+    margin: 0.5rem 0 0 0;
+}
+
+.message-content {
+    font-size: 1rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* 消息底部：时间和状态 */
+.message-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+}
+
+.message-time {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.message-status {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.message-status.read {
+    color: #4CAF50;
+}
+
+.message-status.unread {
+    color: #ff9800;
+    font-weight: 600;
+}
+
+.message-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: none;
+    gap: 0.3rem;
+}
+
+.message:hover .message-actions {
+    display: flex;
+}
+
+.message-action-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.message-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 聊天室已结束相关样式 */
+.system-message {
+    align-self: center;
+    max-width: 80%;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    text-align: center;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+.room-ended-message {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.system-message-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.system-message-content i {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+}
+
+.system-message.warning {
+    background: rgba(255, 152, 0, 0.1);
+    border-left: 4px solid #ff9800;
+}
+
+.system-message.info {
+    background: rgba(33, 150, 243, 0.1);
+    border-left: 4px solid #2196f3;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 禁用状态的输入框样式 */
+.chat-input.disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+}
+
+.chat-input.disabled::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.send-btn.disabled {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.send-btn.disabled:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: none !important;
+}
+
+.message-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.05);
+}
+
+.message-audio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.audio-player {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.audio-player:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.chat-input-container {
+    background: rgba(240, 147, 251, 0.1);
+    border-top: 2px solid rgba(240, 147, 251, 0.2);
+    padding: 1.5rem 2rem;
+    backdrop-filter: blur(20px);
+}
+
+.chat-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(240, 147, 251, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    color: #ffffff;
+    font-size: 1rem;
+    resize: none;
+    min-height: 50px;
+    max-height: 120px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: rgba(240, 147, 251, 0.6);
+    box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+}
+
+.chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chat-send-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.chat-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.toolbar-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    color: #ffffff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.6rem;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.toolbar-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.toolbar-btn:hover {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.3) 0%, rgba(245, 87, 108, 0.3) 100%);
+    border-color: rgba(240, 147, 251, 0.5);
+    transform: scale(1.15) translateY(-2px);
+    box-shadow: 0 8px 16px rgba(240, 147, 251, 0.4);
+}
+
+.toolbar-btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.toolbar-btn:active {
+    transform: scale(1.05) translateY(0);
+}
+
+.emoji-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.emoji-btn:hover {
+    background: rgba(240, 147, 251, 0.2);
+    transform: scale(1.1);
+}
+
+.emoji-picker {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(240, 147, 251, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    display: none;
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    min-width: 300px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.5rem;
+}
+
+.emoji-item {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.emoji-item:hover {
+    background: rgba(240, 147, 251, 0.2);
+    transform: scale(1.2);
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(240, 147, 251, 0.1);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.welcome-message h3 {
+    color: #f093fb;
+    margin-bottom: 1rem;
+}
+
+.welcome-message p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+.no-messages {
+    text-align: center;
+    padding: 3rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.send-cooldown {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.file-upload-input {
+    display: none;
+}
+
+.recording-indicator {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff0000;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+    display: none;
+}
+
+.recording-timer {
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+.upload-success-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    max-width: 300px;
+    animation: slideInRight 0.3s ease-out;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.upload-success-toast.success {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.upload-success-toast.error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.upload-success-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.upload-success-icon {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.upload-success-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.upload-success-content {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.upload-success-file-info {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.upload-success-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.upload-success-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .chat-header {
+        padding: 1rem;
     }
 
     .chat-messages {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        background: #f8f9fa;
-    }
-
-    .message {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .message.own {
-        align-items: flex-end;
-    }
-
-    .message.other {
-        align-items: flex-start;
-    }
-
-    .message-bubble {
-        max-width: 70%;
-        padding: 12px 16px;
-        border-radius: 18px;
-        position: relative;
-        word-wrap: break-word;
-    }
-
-    .message.own .message-bubble {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-bottom-right-radius: 4px;
-    }
-
-    .message.other .message-bubble {
-        background: white;
-        color: #333;
-        border: 1px solid #e9ecef;
-        border-bottom-left-radius: 4px;
-    }
-
-    .message-content {
-        margin-bottom: 5px;
-    }
-
-    .message-image {
-        max-width: 100%;
-        max-height: 300px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .message-image:hover {
-        transform: scale(1.05);
-    }
-
-    .message-audio {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .audio-player {
-        height: 40px;
-        border-radius: 20px;
-        flex: 1;
-        min-width: 200px;
-    }
-    
-    .audio-download-btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .audio-download-btn:hover {
-        background: #5a6fd8;
-        transform: scale(1.1);
-    }
-
-    .message-file {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 8px;
-    }
-
-    .message-file a {
-        color: inherit;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    .message-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        color: #6c757d;
-        margin-top: 4px;
-    }
-
-    .message.own .message-meta {
-        justify-content: flex-end;
-    }
-
-    .message-time {
-        font-size: 12px;
-        font-weight: 600;
-        color: #495057;
-        background: rgba(255, 255, 255, 0.8);
-        padding: 2px 6px;
-        border-radius: 4px;
-        margin-right: 4px;
-    }
-
-    .message-status {
-        font-size: 11px;
-        font-weight: 500;
-    }
-
-    .message-status.unread {
-        color: #ff4757;
-    }
-
-    .message-status.read {
-        color: #2ed573;
+        padding: 1rem;
     }
 
     .chat-input-container {
-        padding: 20px;
-        background: white;
-        border-top: 1px solid #e9ecef;
+        padding: 1rem;
     }
 
-    .chat-toolbar {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .toolbar-btn {
-        background: none;
-        border: none;
-        padding: 8px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        color: #6c757d;
-    }
-
-    .toolbar-btn:hover {
-        background: #f8f9fa;
-        color: #495057;
-    }
-
-    .toolbar-btn.active {
-        background: #e9ecef;
-        color: #495057;
-    }
-
-    .emoji-picker {
-        position: absolute;
-        bottom: 100%;
-        left: 0;
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        z-index: 99999;
-        display: none;
-        min-width: 200px;
-        max-width: 300px;
-        margin-bottom: 10px;
-        visibility: hidden;
-    }
-    
-    .emoji-picker.show {
-        display: block !important;
-        visibility: visible !important;
-    }
-
-    .emoji-grid {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 5px;
-    }
-
-    .emoji-btn {
-        background: none;
-        border: none;
-        padding: 5px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 20px;
-        transition: background-color 0.2s;
-    }
-
-    .emoji-btn:hover {
-        background: #f8f9fa;
+    .message {
+        max-width: 85%;
     }
 
     .chat-input-wrapper {
-        position: relative;
-        display: flex;
-        align-items: flex-end;
-        gap: 10px;
-    }
-
-    .chat-input {
-        flex: 1;
-        border: 1px solid #e9ecef;
-        border-radius: 20px;
-        padding: 12px 16px;
-        resize: none;
-        outline: none;
-        font-family: inherit;
-        font-size: 14px;
-        line-height: 1.4;
-        max-height: 120px;
-        transition: all 0.2s;
-        background: #f8f9fa;
-        color: #495057;
-    }
-
-    .chat-input:focus {
-        border-color: #667eea;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .chat-input::placeholder {
-        color: #adb5bd;
+        gap: 0.5rem;
     }
 
     .chat-send-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        cursor: pointer;
-        transition: transform 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 0.8rem 1.2rem;
+        font-size: 1rem;
     }
-
-    .chat-send-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .chat-send-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .typing-indicator {
-        padding: 10px 20px;
-        color: #6c757d;
-        font-style: italic;
-        font-size: 14px;
-    }
-
-    .system-message {
-        text-align: center;
-        margin: 20px 0;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 8px;
-        color: #6c757d;
-    }
-
-    .room-ended-message {
-        background: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeaa7;
-    }
-
-    .welcome-message {
-        text-align: center;
-        padding: 40px 20px;
-        color: #6c757d;
-    }
-
-    .welcome-message h4 {
-        margin-bottom: 10px;
-        color: #495057;
-    }
-
-    .no-messages {
-        text-align: center;
-        padding: 40px 20px;
-        color: #6c757d;
-    }
-
-    .cooldown-message {
-        font-size: 12px;
-        color: #6c757d;
-        text-align: center;
-        margin-top: 5px;
-    }
-
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-
-    .pulse-animation {
-        animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .file-input {
-        display: none;
-    }
-
-    .upload-progress {
-        margin-top: 10px;
-        padding: 10px;
-        background: #e9ecef;
-        border-radius: 8px;
-        display: none;
-    }
-
-    .progress-bar {
-        width: 100%;
-        height: 4px;
-        background: #dee2e6;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        width: 0%;
-        transition: width 0.3s;
-    }
-
-    @media (max-width: 768px) {
-        .chat-container {
-            height: 100vh;
-            border-radius: 0;
-        }
-        
-        .message-bubble {
-            max-width: 85%;
-        }
-    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="chat-container">
-    <!-- 聊天头部 -->
+{% csrf_token %}
+<button class="bg-upload-btn" onclick="document.getElementById('bg-upload').click()">
+    <i class="fas fa-image"></i> 更换背景
+</button>
+<input type="file" id="bg-upload" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
+<div class="chat-container" id="chat-container">
     <div class="chat-header">
-        <h3>聊天室 {{ room_id|truncatechars:8 }}</h3>
-        <div class="connection-status">
-            <div class="status-indicator" id="status-indicator"></div>
-            <span id="status-text">连接中...</span>
+        <div class="chat-header-left">
+            <button class="back-btn" onclick="window.location.href='{% url 'tools:heart_link' %}'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="chat-user-info">
+                <div class="chat-user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="chat-user-details">
+                    <h3>{{ other_user.username }}</h3>
+                    <div class="chat-user-status" id="user-status">在线</div>
+                </div>
+            </div>
         </div>
-        <div class="chat-actions">
-            <a href="/tools/video-chat/{{ room_id }}/" class="video-chat-btn" title="开始视频通话">
-                <i class="fas fa-video"></i>
-            </a>
+        <div class="chat-header-right">
+            <div class="typing-indicator" id="typing-indicator">
+                正在输入<span class="typing-dots"></span>
+            </div>
         </div>
     </div>
 
-    <!-- 聊天消息区域 -->
     <div class="chat-messages" id="chat-messages">
         <div class="welcome-message">
-            <h4>欢迎来到聊天室</h4>
-            <p>开始您的对话吧！</p>
+            <h3><i class="fas fa-heart"></i> 心动链接已建立</h3>
+            <p>你们已经成功匹配！开始一段美好的对话吧 💕</p>
+        </div>
+        <div class="no-messages" id="no-messages">
+            还没有消息，发送第一条消息开始聊天吧！
         </div>
     </div>
 
-    <!-- 聊天输入区域 -->
     <div class="chat-input-container">
-        <!-- 工具栏 -->
-        <div class="chat-toolbar">
-            <!-- <button class="toolbar-btn" title="表情" id="emoji-btn" style="position: relative; z-index: 1000;">
-                <i class="fas fa-smile"></i>
-            </button> -->
-            <button class="toolbar-btn" title="图片" onclick="document.getElementById('image-input').click()">
-                <i class="fas fa-image"></i>
-            </button>
-            <button class="toolbar-btn" title="录音" id="record-btn">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button class="toolbar-btn" title="文件" onclick="document.getElementById('file-input').click()">
-                <i class="fas fa-paperclip"></i>
-            </button>
-            <button class="toolbar-btn" title="视频通话" onclick="sendVideoCallInvite()">
-                <i class="fas fa-video"></i>
-            </button>
-        </div>
-
-        <!-- 表情选择器 -->
-        <!-- <div class="emoji-picker" id="emoji-picker" style="display: none;">
-            <div class="emoji-grid">
-                <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
-                <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-                <button class="emoji-btn" onclick="insertEmoji('😍')">😍</button>
-                <button class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
-                <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-                <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-                <button class="emoji-btn" onclick="insertEmoji('😭')">😭</button>
-                <button class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
-                <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-                <button class="emoji-btn" onclick="insertEmoji('💯')">💯</button>
-                <button class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
-                <button class="emoji-btn" onclick="insertEmoji('🤗')">🤗</button>
-                <button class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
-                <button class="emoji-btn" onclick="insertEmoji('🤯')">🤯</button>
-                <button class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
-                <button class="emoji-btn" onclick="insertEmoji('😇')">😇</button>
-            </div>
-        </div> -->
-
-        <!-- 输入区域 -->
         <div class="chat-input-wrapper">
-            <textarea 
-                class="chat-input" 
-                id="chat-input" 
-                placeholder="输入消息..." 
+            <div style="position: relative;">
+                <div class="chat-toolbar">
+                    <button class="toolbar-btn" title="表情" id="emoji-btn" type="button">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <button class="toolbar-btn" onclick="document.getElementById('image-upload').click()" title="发送图片">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="toolbar-btn" onclick="toggleVoiceRecording()" title="语音消息">
+                        <i class="fas fa-microphone" id="mic-icon"></i>
+                    </button>
+                    <button class="toolbar-btn" onclick="document.getElementById('file-upload').click()" title="发送文件">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="toolbar-btn" title="视频通话" onclick="sendVideoCallInvite()">
+                        <i class="fas fa-video"></i>
+                    </button>
+                </div>
+                <div class="emoji-picker" id="emoji-picker" style="display: none;">
+                    <div class="emoji-grid">
+                        <button class="emoji-item" onclick="insertEmoji('😊')">😊</button>
+                        <button class="emoji-item" onclick="insertEmoji('😄')">😄</button>
+                        <button class="emoji-item" onclick="insertEmoji('😍')">😍</button>
+                        <button class="emoji-item" onclick="insertEmoji('🥰')">🥰</button>
+                        <button class="emoji-item" onclick="insertEmoji('😘')">😘</button>
+                        <button class="emoji-item" onclick="insertEmoji('😉')">😉</button>
+                        <button class="emoji-item" onclick="insertEmoji('😋')">😋</button>
+                        <button class="emoji-item" onclick="insertEmoji('😎')">😎</button>
+                        <button class="emoji-item" onclick="insertEmoji('🤗')">🤗</button>
+                        <button class="emoji-item" onclick="insertEmoji('🤔')">🤔</button>
+                        <button class="emoji-item" onclick="insertEmoji('😅')">😅</button>
+                        <button class="emoji-item" onclick="insertEmoji('😂')">😂</button>
+                        <button class="emoji-item" onclick="insertEmoji('❤️')">❤️</button>
+                        <button class="emoji-item" onclick="insertEmoji('💕')">💕</button>
+                        <button class="emoji-item" onclick="insertEmoji('💖')">💖</button>
+                        <button class="emoji-item" onclick="insertEmoji('💝')">💝</button>
+                        <button class="emoji-item" onclick="insertEmoji('👍')">👍</button>
+                        <button class="emoji-item" onclick="insertEmoji('👏')">👏</button>
+                        <button class="emoji-item" onclick="insertEmoji('🎉')">🎉</button>
+                        <button class="emoji-item" onclick="insertEmoji('✨')">✨</button>
+                        <button class="emoji-item" onclick="insertEmoji('🌟')">🌟</button>
+                        <button class="emoji-item" onclick="insertEmoji('💫')">💫</button>
+                        <button class="emoji-item" onclick="insertEmoji('🔥')">🔥</button>
+                        <button class="emoji-item" onclick="insertEmoji('💯')">💯</button>
+                    </div>
+                </div>
+            </div>
+            <textarea
+                class="chat-input"
+                id="chat-input"
+                placeholder="输入消息..."
                 rows="1"
-                onkeydown="handleKeyDown(event)"
-                oninput="autoResize(this)"
             ></textarea>
-            <button class="chat-send-btn" id="send-btn">
+            <button class="chat-send-btn" id="send-btn" type="button">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
-
-        <!-- 冷却提示 -->
-        <div class="cooldown-message" id="send-cooldown"></div>
-
-        <!-- 上传进度 -->
-        <div class="upload-progress" id="upload-progress">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 隐藏的文件输入 -->
-    <input type="file" id="image-input" class="file-input" accept="image/*" onchange="handleImageUpload(event)">
-    <input type="file" id="file-input" class="file-input" onchange="handleFileUpload(event)">
-</div>
-
-<!-- 图片预览模态框 -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imageModalLabel">图片预览</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeImageModal()"></button>
-            </div>
-            <div class="modal-body text-center">
-                <img id="modal-image" src="" alt="预览图片" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeImageModal()">关闭</button>
-                <button type="button" class="btn btn-primary" onclick="downloadImage()">下载图片</button>
-            </div>
+        <div class="send-cooldown" id="send-cooldown"></div>
+        <div class="recording-indicator" id="recording-indicator">
+            <i class="fas fa-microphone"></i> 正在录音... <span class="recording-timer" id="recording-timer">00:00</span>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<!-- Bootstrap JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 隐藏的文件上传输入 -->
+<input type="file" id="image-upload" class="file-upload-input" accept="image/*" onchange="handleImageUpload(event)">
+<input type="file" id="file-upload" class="file-upload-input" onchange="handleFileUpload(event)">
+
+<!-- 文件上传进度显示 -->
+<div id="upload-progress-overlay" class="upload-progress-overlay">
+    <div class="upload-progress-container">
+        <div class="upload-progress-header">
+            <div class="upload-progress-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-progress-title">
+                <h3 id="upload-filename">正在上传文件...</h3>
+                <p id="upload-filesize">0 MB / 0 MB</p>
+            </div>
+        </div>
+
+        <div class="upload-progress-bar-container">
+            <div id="upload-progress-bar" class="upload-progress-bar" style="width: 0%">
+                <span id="upload-percentage">0%</span>
+            </div>
+        </div>
+
+        <div class="upload-progress-stats">
+            <span>
+                <i class="fas fa-tachometer-alt"></i>
+                <span id="upload-speed">0 KB/s</span>
+            </span>
+            <span>
+                <i class="fas fa-clock"></i>
+                <span id="upload-remaining">计算中...</span>
+            </span>
+        </div>
+
+        <button class="upload-progress-cancel" onclick="cancelUpload()">
+            <i class="fas fa-times"></i> 取消上传
+        </button>
+    </div>
+</div>
 
 <script>
-// WebSocket连接
-let socket = null;
-let reconnectAttempts = 0;
-const maxReconnectAttempts = 5;
-const reconnectDelay = 3000;
+// ============================================
+// 🎯 聊天室JS版本: 2025-11-06-V13-CLEAN-LOG
+// 修复1: 函数命名冲突 - 使用独立命名空间 ✅
+// 修复2: 隐藏重复的加入/离开消息 ✅
+// 修复3: WebSocket连接不稳定 - 添加心跳机制 ✅
+// 优化4: 消息实时性 - 0.5秒轮询（极致实时） ✅
+// 优化5: 消息展示 - 用户名、消息、时间分行，不同颜色 ✅
+// 优化6: 按钮hover效果 - 动画和阴影 ✅
+// 新功能7: 支持更换背景图 ✅
+// 新功能8: 视频通话功能完整恢复 ✅
+// 优化9: 已读未读状态显示优化 ✅
+// 优化10: 消息紧凑展示 - 用户名+消息同行 ✅
+// 修复11: Toolbar功能暴露为全局 ✅
+// 修复12: 背景上传功能修复 ✅
+// 新功能13: 消息头像显示 ✅
+// 优化14: 文件上传大小限制提升到1GB ✅
+// 优化15: 清理控制台日志 ✅
+// 修复16: 头像用户名对齐 ✅
+// ============================================
 
-// 聊天状态
+// 调试模式开关
+const DEBUG_MODE = false;
+const log = DEBUG_MODE ? console.log.bind(console) : () => {};
+
+// 🔒 使用立即执行函数表达式(IIFE)创建私有作用域
+(function() {
+'use strict';
+
+const roomId = '{{ chat_room.room_id }}';
+const currentUser = '{{ request.user.username }}';
+const otherUser = '{{ other_user.username }}';
 let lastMessageId = 0;
+
+log('🔍 聊天室初始化信息:');
+log('  - roomId:', roomId);
+log('  - currentUser:', currentUser);
+log('  - otherUser:', otherUser);
 let typingTimeout = null;
 let sendCooldown = false;
 let sendCooldownTimer = null;
@@ -592,568 +1075,1600 @@ let recordingTimer = null;
 let recordingStartTime = null;
 let mediaRecorder = null;
 let audioChunks = [];
-
-// 获取房间ID
-const roomId = '{{ room_id }}';
+let websocket = null;
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 5;
+let heartbeatInterval = null;
+let heartbeatTimeout = null;
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
+    log('🎬 页面DOM加载完成 - 开始初始化');
+    log('🔑 roomId:', roomId);
+    log('👤 currentUser:', currentUser);
+    log('👤 otherUser:', otherUser);
 
-    // 检查roomId是否有效
-    if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        // console.error(...)
-        // console.error(...)
-        return;
+    loadMessages();
+    updateOnlineStatus('online');
+    markMessagesAsRead(); // 标记消息为已读
+    connectWebSocket(); // 连接WebSocket
+
+    // 添加发送按钮事件监听器
+    const sendBtn = document.getElementById('send-btn');
+    log('🔍 发送按钮元素:', sendBtn);
+    log('🔍 按钮是否禁用:', sendBtn ? sendBtn.disabled : 'N/A');
+    log('🔍 按钮可见性:', sendBtn ? window.getComputedStyle(sendBtn).display : 'N/A');
+
+    if (sendBtn) {
+        // 移除onclick避免重复绑定
+        sendBtn.removeAttribute('onclick');
+
+        sendBtn.addEventListener('click', function(e) {
+            log('🖱️ 发送按钮被点击 (addEventListener)');
+            log('🖱️ Event对象:', e);
+            e.preventDefault();
+            sendMessage();
+        });
+        log('✅ 发送按钮事件监听器已绑定');
+    } else {
+        console.error('❌ 找不到发送按钮元素');
     }
 
-    // 延迟一点初始化，确保DOM完全准备好
-    setTimeout(() => {
-        initializeEventListeners();
-        connectWebSocket();
-        loadInitialMessages();
-    }, 100);
-});
+    // 添加textarea事件监听器
+    const chatInput = document.getElementById('chat-input');
+    log('🔍 输入框元素:', chatInput);
+    if (chatInput) {
+        chatInput.addEventListener('keydown', handleKeyDown);
+        chatInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+        log('✅ 输入框事件监听器已绑定');
+    } else {
+        console.error('❌ 找不到输入框元素');
+    }
 
-// 初始化事件监听器
-function initializeEventListeners() {
+    // 定期检查新消息（作为WebSocket的备用方案） - 改为0.5秒，极致实时
+    setInterval(loadMessages, 500);
 
-    // 表情按钮 - 彻底重写
+    // 定期更新在线状态
+    setInterval(() => updateOnlineStatus('online'), 30000);
 
+    // 定期标记消息为已读
+    setInterval(markMessagesAsRead, 5000);
+
+    // 初始加载一次消息
+    setTimeout(loadMessages, 500);
+
+    // 测试表情按钮功能
     const emojiBtn = document.getElementById('emoji-btn');
     if (emojiBtn) {
 
-        // 清除所有旧事件
+        // 移除可能存在的旧事件监听器
         emojiBtn.removeEventListener('click', handleEmojiClick);
-        emojiBtn.onclick = null;
-        
-        // 设置样式确保可点击
+
+        // 添加新的事件监听器
+        emojiBtn.addEventListener('click', handleEmojiClick);
+
+        // 测试按钮是否可点击
         emojiBtn.style.pointerEvents = 'auto';
         emojiBtn.style.cursor = 'pointer';
-        emojiBtn.style.zIndex = '10000';
-        emojiBtn.style.position = 'relative';
-        emojiBtn.disabled = false;
-        
-        // 使用简单直接的事件处理
-        emojiBtn.onclick = function(e) {
-
-            e.preventDefault();
-            e.stopPropagation();
-            toggleEmojiPicker();
-        };
-        
-        // 添加hover效果验证按钮响应
-        emojiBtn.onmouseenter = function() {
-
-            this.style.backgroundColor = '#e9ecef';
-        };
-        
-        emojiBtn.onmouseleave = function() {
-
-            this.style.backgroundColor = '';
-        };
 
     } else {
-        // console.error(...)
-        setTimeout(() => {
-
-            const delayedBtn = document.getElementById('emoji-btn');
-            if (delayedBtn) {
-
-                delayedBtn.onclick = function(e) {
-
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleEmojiPicker();
-                };
-            }
-        }, 1000);
+        console.error('Emoji button not found!');
     }
-    
-    // 录音按钮
-    const recordBtn = document.getElementById('record-btn');
-    if (recordBtn) {
-        recordBtn.addEventListener('click', toggleVoiceRecording);
+
+    // 表情按钮点击处理函数
+    function handleEmojiClick(e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+        toggleEmojiPicker();
     }
-    
-    // 发送按钮
-    const sendBtn = document.getElementById('send-btn');
-    if (sendBtn) {
-        sendBtn.addEventListener('click', sendMessage);
-    }
-    
-    // 点击其他地方隐藏表情选择器
-    document.addEventListener('click', function(event) {
-        const emojiPicker = document.getElementById('emoji-picker');
-        const emojiBtn = document.getElementById('emoji-btn');
-        
-        if (emojiPicker && !emojiPicker.contains(event.target) && !emojiBtn.contains(event.target)) {
-            emojiPicker.style.display = 'none';
-        }
-    });
-    
-    // 事件委托：处理文件下载链接点击
-    document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('file-download-link') || event.target.closest('.file-download-link')) {
-            event.preventDefault();
-            const link = event.target.classList.contains('file-download-link') ? event.target : event.target.closest('.file-download-link');
-            const fileUrl = link.getAttribute('data-file-url');
-            const fileName = link.getAttribute('data-file-name');
-            downloadFile(fileUrl, fileName);
-        }
-    });
-    
-    // 事件委托：处理音频下载按钮点击
-    document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('audio-download-btn') || event.target.closest('.audio-download-btn')) {
-            event.preventDefault();
-            const btn = event.target.classList.contains('audio-download-btn') ? event.target : event.target.closest('.audio-download-btn');
-            const fileUrl = btn.getAttribute('data-file-url');
-            const fileName = btn.getAttribute('data-file-name');
-            downloadFile(fileUrl, fileName);
-        }
-    });
-}
+});
 
-// 处理表情按钮点击
-function handleEmojiClick(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const picker = document.getElementById('emoji-picker');
-    if (picker) {
-        // 检查当前显示状态
-        const isCurrentlyVisible = picker.classList.contains('show') || 
-                                  picker.style.display === 'block' ||
-                                  getComputedStyle(picker).display === 'block';
-
-        if (isCurrentlyVisible) {
-            // 隐藏
-            picker.classList.remove('show');
-            picker.style.display = 'none';
-            picker.style.visibility = 'hidden';
-
-        } else {
-            // 显示
-            picker.classList.add('show');
-            picker.style.display = 'block';
-            picker.style.visibility = 'visible';
-            picker.style.position = 'absolute';
-            picker.style.zIndex = '99999';
-            picker.style.bottom = '100%';
-            picker.style.left = '0';
-
-        }
-    } else {
-        // console.error(...)
-    }
-}
-
-// 连接WebSocket
 function connectWebSocket() {
-    // 检查roomId是否有效
-    if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        // console.error(...)
-        // console.error(...)
+    // 防止重复连接
+    if (websocket && (websocket.readyState === WebSocket.CONNECTING || websocket.readyState === WebSocket.OPEN)) {
+        log('⚠️ WebSocket已连接或正在连接中，跳过重复连接');
         return;
     }
-    
-    // 检查是否已经连接
-    if (socket && socket.readyState === WebSocket.OPEN) {
 
-        return;
-    }
-    
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // 添加认证信息到WebSocket URL
-    const sessionId = getCookie('sessionid') || getCookie('session_id') || '';
-    const csrfToken = getCookie('csrftoken') || getCookie('csrf_token') || '';
-    
-    // 构建WebSocket URL，如果认证信息存在则添加，否则不添加
-    let wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomId}/`;
-    if (sessionId || csrfToken) {
-        const params = new URLSearchParams();
-        if (sessionId) params.append('sessionid', sessionId);
-        if (csrfToken) params.append('csrftoken', csrfToken);
-        wsUrl += '?' + params.toString();
+
+    // 本地开发环境使用8001端口，生产环境使用当前host
+    let wsHost = window.location.host;
+    if (window.location.hostname === 'localhost' && window.location.port === '8000') {
+        wsHost = 'localhost:8001';
     }
-    
-    // // console.log(...)
-    // console.log(...)
-    // console.log(...)
+
+    const wsUrl = `${protocol}//${wsHost}/ws/chat/${roomId}/`;
+    log('🔌 尝试连接WebSocket:', wsUrl);
 
     try {
-        socket = new WebSocket(wsUrl);  // 调试信息已隐藏
+        websocket = new WebSocket(wsUrl);
+
+        // 暴露websocket为全局变量，供视频通话功能使用
+        window.chatWebSocket = websocket;
+
+        websocket.onopen = function(event) {
+            log('✅ WebSocket连接成功建立');
+            reconnectAttempts = 0;
+            updateConnectionStatus('connected');
+
+            // 启动心跳机制
+            startHeartbeat();
+        };
+
+        websocket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                log('📨 WebSocket收到消息:', data.type);
+                handleWebSocketMessage(data);
+            } catch (error) {
+                console.error('❌ WebSocket消息解析错误:', error);
+            }
+        };
+
+        websocket.onclose = function(event) {
+            log(`🔌 WebSocket连接关闭 - Code: ${event.code}, Reason: ${event.reason || '无'}, Clean: ${event.wasClean}`);
+            updateConnectionStatus('disconnected');
+
+            // 停止心跳
+            stopHeartbeat();
+
+            // 只在非正常关闭时才重连
+            if (!event.wasClean && reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000); // 指数退避，最多10秒
+                log(`🔄 ${delay/1000}秒后尝试重连 (${reconnectAttempts}/${maxReconnectAttempts})`);
+                setTimeout(connectWebSocket, delay);
+            } else if (reconnectAttempts >= maxReconnectAttempts) {
+                log('⚠️ WebSocket重连次数已达上限，切换到HTTP轮询模式');
+                updateConnectionStatus('fallback');
+            }
+        };
+
+        websocket.onerror = function(error) {
+            console.error('❌ WebSocket错误:', error);
+            updateConnectionStatus('error');
+        };
+
     } catch (error) {
-        // console.error(...)
+        console.error('❌ WebSocket连接失败:', error);
+        updateConnectionStatus('error');
+    }
+}
+
+// 心跳机制 - 保持WebSocket连接活跃
+function startHeartbeat() {
+    stopHeartbeat(); // 先清除之前的
+
+    // 每30秒发送一次心跳
+    heartbeatInterval = setInterval(() => {
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            websocket.send(JSON.stringify({
+                type: 'ping',
+                timestamp: Date.now()
+            }));
+            log('💓 发送心跳包');
+
+            // 设置超时，如果10秒内没收到pong，认为连接断开
+            heartbeatTimeout = setTimeout(() => {
+                console.warn('⚠️ 心跳超时，主动关闭连接并重连');
+                websocket.close();
+            }, 10000);
+        }
+    }, 30000);
+}
+
+function stopHeartbeat() {
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+    }
+    if (heartbeatTimeout) {
+        clearTimeout(heartbeatTimeout);
+        heartbeatTimeout = null;
+    }
+}
+
+function handleWebSocketMessage(data) {
+    // 处理pong响应
+    if (data.type === 'pong') {
+        if (heartbeatTimeout) {
+            clearTimeout(heartbeatTimeout);
+            heartbeatTimeout = null;
+        }
+        log('💓 收到心跳响应');
         return;
     }
-    
-    socket.onopen = function(event) {
-
-        updateConnectionStatus(true);
-        reconnectAttempts = 0;
-    };
-    
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
-    };
-    
-    socket.onclose = function(event) {
-
-        updateConnectionStatus(false);
-        
-        // 如果不是正常关闭，尝试重连
-        if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
-            setTimeout(() => {
-                reconnectAttempts++;
-
-                // 检查roomId是否仍然有效
-                if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== '') {
-                    connectWebSocket();
-                } else {
-                    // console.error(...)
-                }
-            }, reconnectDelay);
-        } else if (reconnectAttempts >= maxReconnectAttempts) {
-            // console.error(...)
-            alert('连接已断开，请刷新页面重试');
-        }
-    };
-    
-    socket.onerror = function(error) {
-        // console.error(...)
-        updateConnectionStatus(false);
-    };
-}
-
-// 更新连接状态
-function updateConnectionStatus(connected) {
-    const indicator = document.getElementById('status-indicator');
-    const statusText = document.getElementById('status-text');
-    
-    if (connected) {
-        indicator.classList.add('connected');
-        statusText.textContent = '已连接';
-    } else {
-        indicator.classList.remove('connected');
-        statusText.textContent = '连接中...';
-    }
-}
-
-// 处理WebSocket消息
-function handleWebSocketMessage(data) {
 
     switch (data.type) {
-        case 'connection_established':
-
-            break;
-            
         case 'chat_message':
-            addMessageToChat(data.message);
+            log('📡 WebSocket收到chat_message:', data.message);
+            // 创建类型安全的消息对象
+            const safeWsMessage = {
+                id: data.message.id,
+                sender: String(data.message.sender || '未知用户'),
+                content: String(data.message.content || ''),
+                message_type: String(data.message.message_type || 'text'),
+                created_at: data.message.created_at || new Date().toISOString(),
+                is_own: Boolean(data.message.is_own),
+                is_read: Boolean(data.message.is_read),
+                file_url: data.message.file_url
+            };
+            log('📡 WebSocket安全消息:', safeWsMessage);
+            addMessageToChat(safeWsMessage);
             break;
-            
-        case 'user_typing':
-            handleUserTyping(data.username, data.is_typing);
-            break;
-            
         case 'user_joined':
-
-            showSystemMessage(`${data.username} 加入了聊天室`);
+            // 在一对一心动链接聊天中，隐藏加入消息，只在控制台记录
+            log(`👋 ${data.username} 加入了聊天室`);
+            // 更新用户在线状态显示
+            updateUserOnlineStatus(data.username, true);
             break;
-            
-        case 'new_message':
-            // 收到新消息通知，刷新消息列表
-
-            loadInitialMessages();
+        case 'user_left':
+            // 在一对一心动链接聊天中，隐藏离开消息，只在控制台记录
+            log(`👋 ${data.username} 离开了聊天室`);
+            // 更新用户在线状态显示
+            updateUserOnlineStatus(data.username, false);
             break;
-            
+        case 'duplicate_connection':
+            // 重复连接警告仅在控制台显示
+            console.warn('⚠️ 检测到重复连接:', data.message);
+            break;
+        case 'typing':
+            updateTypingIndicator(data.username, data.is_typing);
+            break;
+        case 'connection_established':
+            log('✅ WebSocket连接确认:', data.message);
+            break;
         case 'video_call_invite':
             handleVideoCallInvite(data);
             break;
-            
         case 'video_call_status':
             handleVideoCallStatus(data);
             break;
-            
-        case 'read_status_update':
-            updateMessageReadStatus(data.message_ids, data.username);
-            break;
-            
         default:
-
+            log('未知WebSocket消息类型:', data.type);
     }
 }
 
-// 加载初始消息
-function loadInitialMessages() {
-    // 检查roomId是否有效
-    if (!roomId || roomId === 'undefined' || roomId === 'null' || roomId === '') {
-        // console.error(...)
-        return;
+function updateUserOnlineStatus(username, isOnline) {
+    // 更新对方用户的在线状态显示
+    const userStatusElement = document.getElementById('user-status');
+    if (userStatusElement && username === otherUser) {
+        if (isOnline) {
+            userStatusElement.textContent = '在线';
+            userStatusElement.style.color = 'rgba(76, 175, 80, 0.9)';
+        } else {
+            userStatusElement.textContent = '离线';
+            userStatusElement.style.color = 'rgba(255, 255, 255, 0.5)';
+        }
+        log(`🟢 用户状态更新: ${username} - ${isOnline ? '在线' : '离线'}`);
     }
+}
 
+function updateConnectionStatus(status) {
+    let statusElement = document.getElementById('connection-status');
+    if (!statusElement) {
+        // 创建连接状态显示元素
+        const header = document.querySelector('.chat-header-right');
+        const statusDiv = document.createElement('div');
+        statusDiv.id = 'connection-status';
+        statusDiv.className = 'connection-status';
+        header.insertBefore(statusDiv, header.firstChild);
+        statusElement = statusDiv;
+    }
+    switch (status) {
+        case 'connected':
+            statusElement.innerHTML = '<i class="fas fa-circle" style="color: #4CAF50;"></i> 实时连接';
+            statusElement.className = 'connection-status connected';
+            break;
+        case 'disconnected':
+            statusElement.innerHTML = '<i class="fas fa-circle" style="color: #FF9800;"></i> 连接断开';
+            statusElement.className = 'connection-status disconnected';
+            break;
+        case 'error':
+            statusElement.innerHTML = '<i class="fas fa-circle" style="color: #F44336;"></i> 连接错误';
+            statusElement.className = 'connection-status error';
+            break;
+        case 'fallback':
+            statusElement.innerHTML = '<i class="fas fa-circle" style="color: #9E9E9E;"></i> 轮询模式';
+            statusElement.className = 'connection-status fallback';
+            break;
+    }
+}
+
+function showSystemMessage(message, type = 'info') {
+    const messagesContainer = document.getElementById('chat-messages');
+    const systemMessage = document.createElement('div');
+    systemMessage.className = `system-message ${type}`;
+    systemMessage.innerHTML = `
+        <div class="system-message-content">
+            <i class="fas fa-info-circle"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    messagesContainer.appendChild(systemMessage);
+    scrollToBottom();
+}
+
+function loadMessages() {
     fetch(`/tools/api/chat/${roomId}/messages/`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.messages) {
                 displayMessages(data.messages);
-                // 标记消息为已读
-                markMessagesAsRead();
             } else if (data.room_ended) {
+                // 聊天室已结束，显示提示并禁用输入
                 showRoomEndedMessage();
                 disableChatInput();
+            } else {
+                console.error('加载消息失败:', data.error);
             }
         })
-        .catch(error => // console.error(...));
+        .catch(error => console.error('Error loading messages:', error));
 }
 
-// 显示消息
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('chat-messages');
+    const noMessages = document.getElementById('no-messages');
+
+    // 移除欢迎消息和空消息提示
     const welcomeMessage = messagesContainer.querySelector('.welcome-message');
     if (welcomeMessage) {
         welcomeMessage.remove();
     }
-    
+    if (noMessages) {
+        noMessages.remove();
+    }
+
+    // 显示新消息
     messages.forEach(message => {
         if (message.id > lastMessageId) {
-            addMessageToChat(message);
+            log('🔄 displayMessages 处理消息:', message.id, '内容:', message.content, '类型:', typeof message.content);
+
+            // 创建类型安全的消息对象
+            const safeMessage = {
+                id: message.id,
+                sender: String(message.sender || '未知用户'),
+                content: String(message.content || ''),
+                message_type: String(message.message_type || 'text'),
+                created_at: message.created_at || new Date().toISOString(),
+                is_own: Boolean(message.is_own),
+                is_read: Boolean(message.is_read),
+                file_url: message.file_url
+            };
+
+            log('✅ displayMessages 安全消息:', safeMessage.content, '类型:', typeof safeMessage.content);
+
+            addMessageToChat(safeMessage);
             lastMessageId = Math.max(lastMessageId, message.id);
         }
     });
 }
 
-// 添加消息到聊天界面
 function addMessageToChat(message) {
+    // 🚨 最优先的调试日志 - 函数入口
+    log('🎯🎯🎯 addMessageToChat 函数被调用!!! message:', message);
+    log('🎯🎯🎯 调用堆栈:', new Error().stack);
+
+    try {
+        // 全面的类型检查和数据清理
+        if (!message) {
+            console.error('❌ addMessageToChat: message对象为空');
+            return;
+        }
+
+        // ✅ 消息去重：检查消息是否已存在
+        const messageId = message.id || 0;
+        if (messageId > 0) {
+            const existingMessage = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (existingMessage) {
+                log('⚠️ 消息已存在，跳过重复添加:', messageId);
+                return;
+            }
+        }
+
+        // ✅ 更新lastMessageId
+        if (messageId > lastMessageId) {
+            lastMessageId = messageId;
+        }
+
+        log('📨 addMessageToChat 收到消息:', JSON.stringify(message));
+        log('📨 content类型:', typeof message.content, '值:', message.content);
+
+        // 创建消息对象的安全副本，确保所有字段都是正确的类型
+        const safeMessage = {
+            id: message.id || 0,
+            sender: '',
+            content: '',
+            message_type: 'text',
+            is_own: false,
+            is_read: false,
+            created_at: message.created_at || new Date().toISOString(),
+            file_url: message.file_url || null
+        };
+
+        // 特别处理 content - 必须是字符串
+        if (message.content === null || message.content === undefined) {
+            safeMessage.content = '';
+        } else if (typeof message.content === 'string') {
+            safeMessage.content = message.content;
+        } else {
+            console.warn('⚠️ content不是字符串，正在转换:', typeof message.content, '原始值:', message.content);
+            safeMessage.content = String(message.content);
+        }
+
+        // 处理其他字段
+        if (message.sender === null || message.sender === undefined) {
+            safeMessage.sender = '未知用户';
+        } else if (typeof message.sender === 'string') {
+            safeMessage.sender = message.sender;
+        } else {
+            safeMessage.sender = String(message.sender);
+        }
+
+        if (message.message_type && typeof message.message_type === 'string') {
+            safeMessage.message_type = message.message_type;
+        } else if (message.message_type) {
+            safeMessage.message_type = String(message.message_type);
+        }
+
+        safeMessage.is_own = Boolean(message.is_own);
+        safeMessage.is_read = Boolean(message.is_read);
+
+        log('✅ 类型检查后 - content类型:', typeof safeMessage.content, '值:', safeMessage.content);
+        log('✅ 安全消息对象:', JSON.stringify(safeMessage));
+
+        // 使用安全的消息对象替换原始对象
+        message = safeMessage;
+
     const messagesContainer = document.getElementById('chat-messages');
+    if (!messagesContainer) {
+        console.error('❌ 找不到消息容器元素');
+        return;
+    }
+
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.is_own ? 'own' : 'other'}`;
-    messageDiv.setAttribute('data-message-id', message.id);
-    
+    messageDiv.setAttribute('data-message-id', message.id || '0');
+
     const time = new Date(message.created_at).toLocaleTimeString('zh-CN', {
         hour: '2-digit',
         minute: '2-digit'
     });
-    
+
     let contentHtml = '';
     if (message.message_type === 'image') {
-        // 确保图片URL是完整的
-        const imageUrl = message.file_url.startsWith('http') ? message.file_url : 
-                        message.file_url.startsWith('/media/') ? window.location.origin + message.file_url :
-                        window.location.origin + '/media/' + message.file_url;
-        contentHtml = `<img src="${imageUrl}" alt="图片" class="message-image" onclick="openImageModal('${imageUrl}')" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div class="image-error" style="display: none; color: #dc3545; font-size: 12px;">图片加载失败</div>`;
-    } else if (message.message_type === 'audio' || message.message_type === 'voice') {
-        // 确保音频URL是完整的
-        const audioUrl = message.file_url.startsWith('http') ? message.file_url : 
-                        message.file_url.startsWith('/media/') ? window.location.origin + message.file_url :
-                        window.location.origin + '/media/' + message.file_url;
+        contentHtml = `<img src="${message.file_url}" alt="图片" class="message-image" onclick="openImageModal('${message.file_url}')">`;
+    } else if (message.message_type === 'audio') {
         contentHtml = `
             <div class="message-audio">
-                <audio controls class="audio-player" preload="metadata">
-                    <source src="${audioUrl}" type="audio/webm">
-                    <source src="${audioUrl}" type="audio/mp3">
-                    <source src="${audioUrl}" type="audio/wav">
-                    <source src="${audioUrl}" type="audio/ogg">
+                <audio controls class="audio-player">
+                    <source src="${message.file_url}" type="audio/wav">
                     您的浏览器不支持音频播放
                 </audio>
-                <button class="audio-download-btn" data-file-url="${audioUrl}" data-file-name="voice_message.webm" title="下载音频">
-                    <i class="fas fa-download"></i>
-                </button>
             </div>
         `;
     } else if (message.message_type === 'file') {
-        // 确保文件URL是完整的
-        const fileUrl = message.file_url.startsWith('http') ? message.file_url : 
-                       message.file_url.startsWith('/media/') ? window.location.origin + message.file_url :
-                       window.location.origin + '/media/' + message.file_url;
+        const fileName = message.content || '未知文件';
+        const safeFileName = typeof fileName === 'string' ? fileName : String(fileName);
         contentHtml = `
             <div class="message-file">
                 <i class="fas fa-file"></i>
-                <a href="javascript:void(0)" data-file-url="${fileUrl}" data-file-name="${escapeHtml(message.content)}" class="file-download-link" title="点击下载文件">${escapeHtml(message.content)}</a>
+                <a href="${message.file_url}" target="_blank" download>${safeFileName}</a>
             </div>
         `;
     } else {
-        contentHtml = `<div class="message-content">${escapeHtml(message.content)}</div>`;
+        // 使用DOM方法安全处理文本，避免escapeHtml问题
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+
+        // 确保content是字符串
+        let textContent = message.content;
+        if (textContent === null || textContent === undefined) {
+            textContent = '';
+        } else if (typeof textContent !== 'string') {
+            textContent = String(textContent);
+        }
+        contentDiv.textContent = textContent;
+
+        contentHtml = contentDiv.outerHTML;
     }
-    
-    let statusHtml = '';
-    if (message.is_own) {
-        // 发送方显示已读状态（知道对方是否已读）
-        statusHtml = `<span class="message-status ${message.is_read ? 'read' : 'unread'}">${message.is_read ? '已读' : '未读'}</span>`;
-    } else {
-        // 接收方也显示已读状态（表示自己是否已读这条消息）
-        statusHtml = `<span class="message-status ${message.is_read ? 'read' : 'unread'}">${message.is_read ? '已读' : '未读'}</span>`;
-    }
-    
-    messageDiv.innerHTML = `
-        <div class="message-bubble">
-            ${contentHtml}
-            <div class="message-meta">
-                <span class="message-time">${time}</span>
-                ${statusHtml}
+
+    let actionsHtml = '';
+    if (message.is_own && message.message_type === 'text') {
+        actionsHtml = `
+            <div class="message-actions">
+                <button class="message-action-btn" onclick="deleteMessage(${message.id})" title="撤回">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
+        `;
+    }
+
+    const senderName = message.sender || '未知用户';
+    const safeSenderName = typeof senderName === 'string' ? senderName : String(senderName);
+
+    // 生成头像（使用用户头像或默认头像）
+    const avatarHtml = message.avatar_url
+        ? `<img src="${message.avatar_url}" alt="${safeSenderName}" class="message-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+        : '';
+
+    // 默认头像（首字母）
+    const firstLetter = safeSenderName.charAt(0).toUpperCase();
+    const defaultAvatarHtml = `<div class="message-avatar" style="${message.avatar_url ? 'display:none;' : ''}">${firstLetter}</div>`;
+
+    // 构建消息内容（用户名+消息在同一行）
+    let messageContentHtml = '';
+    if (!message.is_own) {
+        messageContentHtml = `<span class="message-sender">${safeSenderName}</span>${contentHtml}`;
+    } else {
+        messageContentHtml = contentHtml;
+    }
+
+    // 构建消息底部信息（时间+状态）
+    let footerHtml = '<div class="message-footer">';
+    footerHtml += `<span class="message-time">${time}</span>`;
+
+    if (message.is_own) {
+        const statusClass = message.is_read ? 'read' : 'unread';
+        const statusIcon = message.is_read ? '<i class="fas fa-check-double"></i>' : '<i class="fas fa-check"></i>';
+        const statusText = message.is_read ? '已读' : '未读';
+        footerHtml += `<span class="message-status ${statusClass}" data-message-id="${message.id}">${statusIcon} ${statusText}</span>`;
+    }
+    footerHtml += '</div>';
+
+    messageDiv.innerHTML = `
+        ${avatarHtml}
+        ${defaultAvatarHtml}
+        <div class="message-body">
+            <div class="message-content-wrapper">${messageContentHtml}</div>
+            ${footerHtml}
         </div>
+        ${actionsHtml}
     `;
-    
+
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
+
+    } catch (error) {
+        console.error('❌ addMessageToChat 发生错误:', error);
+        console.error('❌ 错误堆栈:', error.stack);
+        console.error('❌ 问题消息对象:', message);
+        console.error('❌ content值:', message ? message.content : 'N/A');
+        console.error('❌ content类型:', message ? typeof message.content : 'N/A');
+
+        // 重新抛出错误以便在调用处捕获
+        throw error;
+    }
 }
 
-// 发送消息
 function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const content = input.value.trim();
-    
-    if (!content) {
+    log('🚀 sendMessage函数被调用');
 
+    if (sendCooldown) {
+        log('⏳ 发送冷却中，跳过');
         return;
     }
-    
+
+    const input = document.getElementById('chat-input');
+    const content = input.value.trim();
+    log('📝 输入内容:', content);
+
+    if (!content) {
+        log('❌ 内容为空，返回');
+        return;
+    }
+
+    // 立即设置发送冷却，防止重复发送
+    setSendCooldown(1000);
+
     const sendBtn = document.getElementById('send-btn');
     sendBtn.disabled = true;
 
-    // 通过WebSocket发送消息
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-            type: 'message',
+    const url = `/tools/api/chat/${roomId}/send/`;
+    log('📡 发送请求到:', url);
+    log('🔑 roomId:', roomId);
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    log('🔐 CSRF Token元素:', csrfToken);
+    log('🔐 CSRF Token值:', csrfToken ? csrfToken.value : 'NOT FOUND');
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken ? csrfToken.value : '',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
             content: content,
             message_type: 'text'
-        }));
-        
-        // 清空输入框
-        input.value = '';
-        autoResize(input);
-        
-        // 重新启用发送按钮
-        setTimeout(() => {
-            sendBtn.disabled = false;
-        }, 1000);
-    } else {
-        // console.error(...)
-        alert('连接已断开，请刷新页面重试');
-    }
+        })
+    })
+    .then(response => {
+        log('📬 响应状态:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        log('📦 响应数据:', data);
+        log('📦 响应数据类型:', typeof data);
+        log('📦 响应数据详细:', JSON.stringify(data));
+
+        if (data.success) {
+            log('✅ 发送成功');
+            input.value = '';
+            autoResize(input);
+
+            // 确保消息对象有必要的字段
+            if (data.message) {
+                log('📨 原始消息对象:', JSON.stringify(data.message));
+                log('📨 content原始值:', data.message.content, '类型:', typeof data.message.content);
+
+                // 深度克隆消息对象，避免引用问题
+                const messageToAdd = {
+                    id: data.message.id,
+                    sender: String(data.message.sender || '未知用户'),
+                    content: String(data.message.content || ''),
+                    message_type: String(data.message.message_type || 'text'),
+                    created_at: data.message.created_at || new Date().toISOString(),
+                    is_own: Boolean(data.message.is_own),
+                    is_read: Boolean(data.message.is_read),
+                    file_url: data.message.file_url
+                };
+
+                log('📨 处理后的消息对象:', JSON.stringify(messageToAdd));
+                addMessageToChat(messageToAdd);
+            } else {
+                console.error('❌ 消息对象不存在');
+            }
+        } else {
+            log('❌ 发送失败:', data.error);
+            if (data.room_ended) {
+                // 聊天室已结束，显示特殊提示并禁用发送功能
+                showRoomEndedMessage();
+                disableChatInput();
+            } else {
+                alert('发送失败: ' + data.error);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('💥 网络错误:', error);
+        alert('网络错误，请重试');
+    })
+    .finally(() => {
+        sendBtn.disabled = false;
+    });
 }
 
-// 处理回车键
+function setSendCooldown(duration) {
+    sendCooldown = true;
+    const cooldownElement = document.getElementById('send-cooldown');
+    cooldownElement.textContent = '发送冷却中...';
+
+    // 清除之前的定时器
+    if (sendCooldownTimer) {
+        clearTimeout(sendCooldownTimer);
+    }
+
+    sendCooldownTimer = setTimeout(() => {
+        sendCooldown = false;
+        cooldownElement.textContent = '';
+    }, duration);
+}
+
 function handleKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        event.stopPropagation();
-        
+        event.stopPropagation(); // 阻止事件冒泡
 
-        
-        const sendBtn = document.getElementById('send-btn');
-        if (sendBtn.disabled) {
-
-            return false;
+        // 三重检查防止重复发送
+        if (!sendCooldown && !document.getElementById('send-btn').disabled) {
+            // 添加额外的防重复检查
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if (content) {
+                sendMessage();
+            }
         }
-        
-        const input = document.getElementById('chat-input');
-        const content = input.value.trim();
-        if (!content) {
-
-            return false;
-        }
-
-        sendMessage();
-        
-        return false;
+        return false; // 防止重复触发
     }
 }
 
-// 处理发送按钮点击（已内联到事件监听器中）
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
 
-// 冷却功能已移除 - 允许快速发送消息
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-// 处理表情按钮点击（已内联到事件监听器中）
+function updateOnlineStatus(status) {
+    fetch('/tools/api/chat/online_status/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            status: status,
+            room_id: roomId
+        })
+    })
+    .catch(error => console.error('Error updating status:', error));
+}
 
-// 插入表情到输入框
-// function insertEmoji(emoji) {
-//     const messageInput = document.getElementById('message-input');
-//     if (messageInput) {
-//         const currentValue = messageInput.value;
-//         const cursorPosition = messageInput.selectionStart;
-//         const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
-//         messageInput.value = newValue;
-//         messageInput.focus();
-//         // 设置光标位置到表情后面
-//         messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
-//         
-//         // 隐藏表情选择器
-//         const picker = document.getElementById('emoji-picker');
-//         if (picker) {
-//             picker.style.display = 'none';
-//             picker.classList.remove('show');
-//         }
-//     }
-// }
+function markMessagesAsRead() {
+    fetch(`/tools/api/chat/${roomId}/mark-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        log('📖 标记已读响应:', data);
+        if (data.success && data.marked_count > 0) {
+            log(`✅ 成功标记 ${data.marked_count} 条消息为已读`);
+            // 更新本地消息状态
+            // 如果API返回了消息ID列表，使用它；否则更新所有
+            updateLocalMessageStatus(data.message_ids);
+        }
+    })
+    .catch(error => console.error('❌ 标记消息已读失败:', error));
+}
 
-// 显示系统消息
-function showSystemMessage(message) {
-    const chatContainer = document.getElementById('chat-messages');
-    if (chatContainer) {
-        const systemMsg = document.createElement('div');
-        systemMsg.className = 'system-message';
-        systemMsg.style.cssText = `
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            margin: 10px 0;
-            font-size: 0.9em;
-        `;
-        systemMsg.textContent = message;
-        chatContainer.appendChild(systemMsg);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+function showRoomEndedMessage() {
+    // 显示聊天室已结束的提示
+    const messagesContainer = document.getElementById('chat-messages');
+    const endedMessage = document.createElement('div');
+    endedMessage.className = 'system-message room-ended-message';
+    endedMessage.innerHTML = `
+        <div class="system-message-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>聊天室已结束，无法继续发送消息</span>
+        </div>
+    `;
+    messagesContainer.appendChild(endedMessage);
+    scrollToBottom();
+}
+
+function disableChatInput() {
+    // 禁用聊天输入框和发送按钮
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const fileInput = document.getElementById('file-input');
+    const audioBtn = document.getElementById('audio-btn');
+
+    input.disabled = true;
+    input.placeholder = '聊天室已结束';
+    sendBtn.disabled = true;
+    if (fileInput) fileInput.disabled = true;
+    if (audioBtn) audioBtn.disabled = true;
+
+    // 添加禁用样式
+    input.classList.add('disabled');
+    sendBtn.classList.add('disabled');
+}
+
+function updateLocalMessageStatus(readMessageIds) {
+    // 更新本地消息的已读状态显示
+    log('📖 更新消息已读状态:', readMessageIds);
+
+    if (!readMessageIds || !Array.isArray(readMessageIds)) {
+        // 如果没有提供消息ID列表，更新所有自己发送的未读消息
+        const unreadStatuses = document.querySelectorAll('.message.own .message-status.unread');
+        unreadStatuses.forEach(statusElement => {
+            statusElement.classList.remove('unread');
+            statusElement.classList.add('read');
+            statusElement.innerHTML = '<i class="fas fa-check-double"></i> 已读';
+        });
+        return;
+    }
+
+    // 根据消息ID列表更新状态
+    readMessageIds.forEach(msgId => {
+        const statusElement = document.querySelector(`.message-status[data-message-id="${msgId}"]`);
+        if (statusElement && statusElement.classList.contains('unread')) {
+            statusElement.classList.remove('unread');
+            statusElement.classList.add('read');
+            statusElement.innerHTML = '<i class="fas fa-check-double"></i> 已读';
+            log('✅ 消息', msgId, '已标记为已读');
+        }
+    });
+}
+
+function toggleEmojiPicker() {
+
+    const picker = document.getElementById('emoji-picker');
+    if (!picker) {
+        console.error('Emoji picker not found!');
+        return;
+    }
+
+    const currentDisplay = picker.style.display;
+
+
+    // 检查当前状态并切换
+    if (currentDisplay === 'none' || currentDisplay === '') {
+        picker.style.display = 'block';
+
+    } else {
+        picker.style.display = 'none';
+
+    }
+
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('chat-input');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+
+    input.value = text.substring(0, start) + emoji + text.substring(end);
+    input.selectionStart = input.selectionEnd = start + emoji.length;
+    input.focus();
+
+    // 隐藏表情选择器
+    document.getElementById('emoji-picker').style.display = 'none';
+}
+
+// 上传进度管理
+let currentUploadXHR = null;
+let uploadStartTime = 0;
+let uploadedBytes = 0;
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+}
+
+function formatSpeed(bytesPerSecond) {
+    return formatFileSize(bytesPerSecond) + '/s';
+}
+
+function formatTime(seconds) {
+    if (!isFinite(seconds)) return '计算中...';
+    if (seconds < 60) return Math.ceil(seconds) + ' 秒';
+    if (seconds < 3600) return Math.ceil(seconds / 60) + ' 分钟';
+    return Math.ceil(seconds / 3600) + ' 小时';
+}
+
+function showUploadProgress(filename, filesize) {
+    document.getElementById('upload-progress-overlay').style.display = 'flex';
+    document.getElementById('upload-filename').textContent = filename;
+    document.getElementById('upload-filesize').textContent = `0 ${formatFileSize(0)} / ${formatFileSize(filesize)}`;
+    document.getElementById('upload-progress-bar').style.width = '0%';
+    document.getElementById('upload-percentage').textContent = '0%';
+    document.getElementById('upload-speed').textContent = '0 KB/s';
+    document.getElementById('upload-remaining').textContent = '计算中...';
+    uploadStartTime = Date.now();
+    uploadedBytes = 0;
+}
+
+function updateUploadProgress(loaded, total) {
+    const percentage = Math.round((loaded / total) * 100);
+    const elapsed = (Date.now() - uploadStartTime) / 1000; // 秒
+    const speed = loaded / elapsed; // 字节/秒
+    const remaining = (total - loaded) / speed; // 剩余秒数
+
+    document.getElementById('upload-progress-bar').style.width = percentage + '%';
+    document.getElementById('upload-percentage').textContent = percentage + '%';
+    document.getElementById('upload-filesize').textContent = `${formatFileSize(loaded)} / ${formatFileSize(total)}`;
+    document.getElementById('upload-speed').textContent = formatSpeed(speed);
+    document.getElementById('upload-remaining').textContent = '剩余 ' + formatTime(remaining);
+    uploadedBytes = loaded;
+}
+
+function hideUploadProgress() {
+    document.getElementById('upload-progress-overlay').style.display = 'none';
+    currentUploadXHR = null;
+}
+
+function cancelUpload() {
+    log('🛑 用户请求取消上传');
+
+    // 取消普通上传
+    if (currentUploadXHR) {
+        currentUploadXHR.abort();
+        currentUploadXHR = null;
+        log('✅ 已取消普通上传');
+    }
+
+    // 取消分片上传
+    if (currentChunkUploads && currentChunkUploads.length > 0) {
+        isUploadCancelled = true;
+        currentChunkUploads.forEach(controller => {
+            try {
+                controller.abort();
+            } catch (e) {
+                // 忽略已经完成的请求
+            }
+        });
+        currentChunkUploads = [];
+        log('✅ 已取消分片上传');
+    }
+
+    hideUploadProgress();
+    alert('上传已取消');
+}
+
+function uploadFileWithProgress(file, url, fileFieldName) {
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append(fileFieldName, file);
+        formData.append('room_id', roomId);
+
+        const xhr = new XMLHttpRequest();
+        currentUploadXHR = xhr;
+
+        // 显示进度条
+        showUploadProgress(file.name, file.size);
+
+        // 上传进度
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                updateUploadProgress(e.loaded, e.total);
+            }
+        });
+
+        // 上传完成
+        xhr.addEventListener('load', () => {
+            hideUploadProgress();
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    resolve(data);
+                } catch (e) {
+                    reject(new Error('解析响应失败'));
+                }
+            } else {
+                reject(new Error(`上传失败: ${xhr.status}`));
+            }
+        });
+
+        // 上传错误
+        xhr.addEventListener('error', () => {
+            hideUploadProgress();
+            reject(new Error('网络错误'));
+        });
+
+        // 上传中止
+        xhr.addEventListener('abort', () => {
+            hideUploadProgress();
+            reject(new Error('上传已取消'));
+        });
+
+        xhr.open('POST', url);
+        xhr.setRequestHeader('X-CSRFToken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        xhr.send(formData);
+    });
+}
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024 * 1024) { // 10GB限制
+        alert('图片大小不能超过10GB');
+        return;
+    }
+
+    // 使用分片上传（大文件会自动分片）
+    uploadFileWithChunks(file, 'image')
+        .then(data => {
+            if (data.success) {
+                addMessageToChat(data.message);
+                showUploadSuccess(data.upload_info);
+            } else {
+                alert('发送图片失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (error.message !== '上传已取消') {
+                alert('上传失败: ' + error.message);
+            }
+        });
+
+    // 清空文件输入
+    event.target.value = '';
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 分片上传功能（优化大文件上传速度）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB per chunk
+const PARALLEL_UPLOADS = 5; // 并发上传5个分片（提升速度）
+
+let isUploadCancelled = false; // 上传取消标志
+let currentChunkUploads = []; // 当前正在上传的分片请求
+
+async function uploadFileWithChunks(file, messageType = 'file') {
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+    // 重置取消标志
+    isUploadCancelled = false;
+    currentChunkUploads = [];
+
+    // 如果文件小于20MB，使用普通上传（更快）
+    if (file.size < 20 * 1024 * 1024) {
+        log(`📦 文件小于20MB，使用普通上传`);
+        const url = messageType === 'image'
+            ? `/tools/api/chat/${roomId}/send-image/`
+            : `/tools/api/chat/${roomId}/send-file/`;
+        return uploadFileWithProgress(file, url, messageType === 'image' ? 'image' : 'file');
+    }
+
+    log(`📦 开始分片上传 - 文件大小: ${formatFileSize(file.size)}, 总分片数: ${totalChunks}, 并发数: ${PARALLEL_UPLOADS}`);
+
+    try {
+        // 步骤1: 初始化上传
+        const initResponse = await fetch(`/tools/api/chat/${roomId}/chunked-upload/init/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                total_size: file.size,
+                total_chunks: totalChunks,
+            }),
+        });
+
+        const initData = await initResponse.json();
+        if (!initData.success) {
+            throw new Error(initData.error || '初始化上传失败');
+        }
+
+        const uploadId = initData.upload_id;
+        log(`✅ 初始化成功 - upload_id: ${uploadId}`);
+
+        // 显示上传进度
+        showUploadProgress(file.name, file.size);
+
+        // 步骤2: 上传所有分片（并行上传）
+        const uploadedBytes = { value: 0 };
+        const startTime = Date.now();
+
+        for (let i = 0; i < totalChunks; i += PARALLEL_UPLOADS) {
+            // 检查是否取消
+            if (isUploadCancelled) {
+                log('⚠️ 上传已被用户取消');
+                throw new Error('上传已取消');
+            }
+
+            const chunkPromises = [];
+
+            // 创建并行上传的分片
+            for (let j = 0; j < PARALLEL_UPLOADS && (i + j) < totalChunks; j++) {
+                const chunkIndex = i + j;
+                const start = chunkIndex * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, file.size);
+                const chunk = file.slice(start, end);
+
+                chunkPromises.push(uploadChunk(uploadId, chunkIndex, chunk, uploadedBytes, file.size, startTime));
+            }
+
+            // 等待本批次所有分片上传完成
+            await Promise.all(chunkPromises);
+        }
+
+        log(`✅ 所有分片上传完成`);
+
+        // 步骤3: 完成上传，合并文件
+        const completeResponse = await fetch(`/tools/api/chat/${roomId}/chunked-upload/complete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                upload_id: uploadId,
+                filename: file.name,
+                total_chunks: totalChunks,
+                message_type: messageType,
+            }),
+        });
+
+        const completeData = await completeResponse.json();
+        if (!completeData.success) {
+            throw new Error(completeData.error || '完成上传失败');
+        }
+
+        hideUploadProgress();
+        log(`✅ 上传完成 - ${file.name}`);
+
+        return completeData;
+
+    } catch (error) {
+        hideUploadProgress();
+        if (error.message !== '上传已取消') {
+            log(`❌ 分片上传失败: ${error.message}`);
+        }
+        throw error;
     }
 }
+
+async function uploadChunk(uploadId, chunkIndex, chunk, uploadedBytes, totalSize, startTime) {
+    // 检查是否取消
+    if (isUploadCancelled) {
+        throw new Error('上传已取消');
+    }
+
+    const formData = new FormData();
+    formData.append('upload_id', uploadId);
+    formData.append('chunk_index', chunkIndex);
+    formData.append('chunk', chunk);
+
+    const controller = new AbortController();
+    currentChunkUploads.push(controller);
+
+    try {
+        const response = await fetch(`/tools/api/chat/${roomId}/chunked-upload/chunk/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: formData,
+            signal: controller.signal,
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(`分片${chunkIndex}上传失败: ${data.error}`);
+        }
+
+        // 更新进度
+        uploadedBytes.value += chunk.size;
+
+        // 计算实时速度
+        const elapsed = (Date.now() - startTime) / 1000; // 秒
+        const speed = uploadedBytes.value / elapsed; // 字节/秒
+        const remaining = (totalSize - uploadedBytes.value) / speed; // 剩余秒数
+        const percentage = Math.floor((uploadedBytes.value / totalSize) * 100);
+
+        // 更新UI
+        document.getElementById('upload-progress-bar').style.width = percentage + '%';
+        document.getElementById('upload-percentage').textContent = percentage + '%';
+        document.getElementById('upload-filesize').textContent = `${formatFileSize(uploadedBytes.value)} / ${formatFileSize(totalSize)}`;
+        document.getElementById('upload-speed').textContent = formatSpeed(speed);
+        document.getElementById('upload-remaining').textContent = '剩余 ' + formatTime(remaining);
+
+        log(`✅ 分片 ${chunkIndex + 1}/${Math.ceil(totalSize/CHUNK_SIZE)} 上传成功 (速度: ${formatSpeed(speed)})`);
+
+        // 从当前上传列表中移除
+        const index = currentChunkUploads.indexOf(controller);
+        if (index > -1) {
+            currentChunkUploads.splice(index, 1);
+        }
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw new Error('上传已取消');
+        }
+        throw error;
+    }
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024 * 1024) { // 10GB限制
+        alert('文件大小不能超过10GB');
+        return;
+    }
+
+    // 使用分片上传（大文件会自动分片）
+    uploadFileWithChunks(file, 'file')
+        .then(data => {
+            if (data.success) {
+                addMessageToChat(data.message);
+                showUploadSuccess(data.upload_info);
+            } else {
+                alert('发送文件失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (error.message !== '上传已取消') {
+                alert('上传失败: ' + error.message);
+            }
+        });
+
+    // 清空文件输入
+    event.target.value = '';
+}
+
+function toggleVoiceRecording() {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+}
+
+function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('您的浏览器不支持录音功能');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                sendAudioMessage(audioBlob);
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            recordingStartTime = Date.now();
+
+            // 更新UI
+            document.getElementById('mic-icon').className = 'fas fa-stop';
+            document.getElementById('recording-indicator').style.display = 'block';
+
+            // 开始计时
+            recordingTimer = setInterval(updateRecordingTimer, 1000);
+        })
+        .catch(error => {
+            console.error('Error accessing microphone:', error);
+            alert('无法访问麦克风');
+        });
+}
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+
+        isRecording = false;
+        clearInterval(recordingTimer);
+
+        // 更新UI
+        document.getElementById('mic-icon').className = 'fas fa-microphone';
+        document.getElementById('recording-indicator').style.display = 'none';
+        document.getElementById('recording-timer').textContent = '00:00';
+    }
+}
+
+function updateRecordingTimer() {
+    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('recording-timer').textContent =
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function sendAudioMessage(audioBlob) {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('room_id', roomId);
+
+    fetch(`/tools/api/chat/${roomId}/send-audio/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addMessageToChat(data.message);
+            // 显示上传成功提示
+            showUploadSuccess(data.upload_info);
+        } else {
+            alert('发送语音失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('网络错误，请重试');
+    });
+}
+
+function deleteMessage(messageId) {
+    if (!confirm('确定要撤回这条消息吗？')) {
+        return;
+    }
+
+    fetch(`/tools/api/chat/${roomId}/delete-message/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.remove();
+            }
+        } else {
+            alert('撤回失败: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('网络错误，请重试');
+    });
+}
+
+function openImageModal(imageUrl) {
+    // 创建图片预览模态框
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        cursor: pointer;
+    `;
+
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.style.cssText = `
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    `;
+
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+
+    modal.onclick = () => {
+        document.body.removeChild(modal);
+    };
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showUploadSuccess(uploadInfo) {
+    // 移除之前的提示
+    const existingToast = document.querySelector('.upload-success-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // 创建新的提示
+    const toast = document.createElement('div');
+    toast.className = 'upload-success-toast success';
+
+    const icon = uploadInfo.file_type === '图片' ? 'fa-image' :
+                 uploadInfo.file_type === '音频' ? 'fa-microphone' : 'fa-file';
+
+    toast.innerHTML = `
+        <button class="upload-success-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="upload-success-header">
+            <i class="fas ${icon} upload-success-icon"></i>
+            <div class="upload-success-title">上传成功</div>
+        </div>
+        <div class="upload-success-content">
+            您的${uploadInfo.file_type}已成功发送
+        </div>
+        <div class="upload-success-file-info">
+            <div><strong>文件名：</strong>${uploadInfo.file_name}</div>
+            <div><strong>文件大小：</strong>${uploadInfo.file_size}</div>
+            <div><strong>上传时间：</strong>${uploadInfo.upload_time}</div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // 3秒后自动移除
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+// 页面卸载时更新状态为离线
+window.addEventListener('beforeunload', function() {
+    updateOnlineStatus('offline');
+    if (isRecording) {
+        stopRecording();
+    }
+    stopHeartbeat();
+    if (websocket) {
+        websocket.close();
+    }
+});
+
+// 点击其他地方隐藏表情选择器
+document.addEventListener('click', function(event) {
+    const picker = document.getElementById('emoji-picker');
+    const emojiBtn = event.target.closest('.toolbar-btn');
+
+    if (!emojiBtn && picker.style.display === 'block') {
+        picker.style.display = 'none';
+    }
+});
+
+// 暴露必要的函数为全局，供HTML onclick使用
+window.handleImageUpload = handleImageUpload;
+window.handleFileUpload = handleFileUpload;
+window.toggleVoiceRecording = toggleVoiceRecording;
+window.insertEmoji = insertEmoji;
+
+// 🔒 关闭IIFE，创建私有作用域
+})();
+
+// 背景上传功能（全局函数）
+function handleBackgroundUpload(event) {
+    console.log('🎨 handleBackgroundUpload 被调用');
+
+    const file = event.target.files[0];
+    console.log('📁 选择的文件:', file);
+
+    if (!file) {
+        console.log('❌ 没有文件');
+        return;
+    }
+
+    console.log('📋 文件信息:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+    });
+
+    if (!file.type.startsWith('image/')) {
+        alert('请选择图片文件');
+        return;
+    }
+
+    // 允许最大200MB的图片
+    if (file.size > 200 * 1024 * 1024) {
+        alert('背景图片大小不能超过200MB');
+        return;
+    }
+
+    // 根据文件大小给出提示
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    console.log(`✅ 文件验证通过，大小: ${fileSizeMB}MB，开始读取...`);
+
+    // 大文件提示
+    if (file.size > 10 * 1024 * 1024) {
+        console.warn(`⚠️ 图片较大(${fileSizeMB}MB)，无法保存到localStorage，刷新后会恢复默认背景`);
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        console.log('📖 文件读取完成，数据长度:', e.target.result.length);
+
+        const container = document.getElementById('chat-container');
+        console.log('📦 容器元素:', container);
+
+        if (!container) {
+            console.error('❌ 找不到容器');
+            alert('页面加载出错，请刷新后重试');
+            return;
+        }
+
+        // 设置背景图 - 使用inline style确保最高优先级
+        const bgUrl = e.target.result;
+        console.log('🎨 设置背景URL长度:', bgUrl.length);
+        console.log('🎨 设置前的背景:', container.style.background);
+
+        container.style.setProperty('background', `url(${bgUrl}) center/cover fixed`, 'important');
+        container.classList.add('has-custom-bg');
+
+        console.log('🎨 设置后的背景:', container.style.background);
+        console.log('🎨 容器class:', container.className);
+
+        // 尝试保存到localStorage（大文件会失败）
+        let saved = false;
+        if (file.size <= 5 * 1024 * 1024) {
+            try {
+                localStorage.setItem('chat_background', bgUrl);
+                console.log('✅ 背景已保存到localStorage');
+                saved = true;
+                alert(`✅ 背景已更换并保存！\n图片大小: ${fileSizeMB}MB`);
+            } catch (err) {
+                console.error('❌ 保存失败:', err);
+            }
+        }
+
+        if (!saved) {
+            console.log(`ℹ️ 图片较大(${fileSizeMB}MB)，仅本次会话有效`);
+            alert(`✅ 背景已更换！\n图片大小: ${fileSizeMB}MB\n\n⚠️ 提示：图片较大，无法永久保存\n刷新页面后将恢复默认背景`);
+        }
+    };
+
+    reader.onerror = function(err) {
+        console.error('❌ 文件读取失败:', err);
+        alert('文件读取失败，请重试');
+    };
+
+    console.log('📖 开始读取文件...');
+    reader.readAsDataURL(file);
+    event.target.value = '';
+}
+
+// ============================================
+// 视频通话功能（全局函数）
+// ============================================
 
 // 发送视频通话邀请
 function sendVideoCallInvite() {
+    const roomId = '{{ room_id }}';
+    const websocket = window.chatWebSocket; // 从IIFE中访问WebSocket
 
     // 通过WebSocket发送邀请
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
         const message = {
             type: 'video_call_invite',
             room_id: roomId,
             message: '邀请您进行视频通话'
         };
-        
-        socket.send(JSON.stringify(message));
+
+        websocket.send(JSON.stringify(message));
+        log('📹 已发送视频通话邀请');
 
         // 在聊天中显示邀请消息
         showVideoInviteMessage('您', '发起了视频通话邀请', roomId, true);
     } else {
-        // console.error(...)
         alert('连接未建立，无法发送邀请');
+        console.error('❌ WebSocket未连接');
     }
 }
 
 // 处理收到的视频通话邀请
 function handleVideoCallInvite(data) {
-
-    // 在聊天中显示邀请消息
-    showVideoInviteMessage(data.username || '对方', '邀请您进行视频通话', data.room_id || roomId, false);
+    log('📹 收到视频通话邀请:', data);
+    const roomId = data.room_id || '{{ room_id }}';
+    showVideoInviteMessage(data.username || '对方', '邀请您进行视频通话', roomId, false);
 }
 
 // 处理视频通话状态更新
 function handleVideoCallStatus(data) {
+    log('📹 视频通话状态更新:', data);
 
     if (data.message_id) {
-
         // 查找所有可能的消息ID（因为可能有多个视频邀请消息）
         const allVideoInvites = document.querySelectorAll('.video-invite-message');
 
-        allVideoInvites.forEach((invite, index) => {
+        allVideoInvites.forEach((invite) => {
             const messageId = invite.id;
-
             if (messageId) {
                 updateVideoCallStatus(messageId, data.status, data.username || '对方');
             }
         });
-    } else {
-
     }
 }
 
@@ -1161,22 +2676,24 @@ function handleVideoCallStatus(data) {
 function showVideoInviteMessage(senderName, message, videoRoomId, isSelf) {
     const chatContainer = document.getElementById('chat-messages');
     if (!chatContainer) return;
-    
+
     const messageId = `video-invite-${Date.now()}`;
     const messageDiv = document.createElement('div');
     messageDiv.id = messageId;
-    messageDiv.className = `message ${isSelf ? 'self' : 'other'} video-invite-message`;
+    messageDiv.className = `message ${isSelf ? 'own' : 'other'} video-invite-message`;
     messageDiv.style.cssText = `
+        max-width: 80%;
         margin: 10px 0;
         padding: 15px;
-        border-radius: 10px;
-        background: ${isSelf ? '#007bff' : '#f8f9fa'};
-        color: ${isSelf ? 'white' : '#333'};
-        border: 2px solid #007bff;
+        border-radius: 12px;
+        background: ${isSelf ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' : 'rgba(255, 255, 255, 0.1)'};
+        color: white;
+        border: 2px solid ${isSelf ? '#f5576c' : '#f093fb'};
+        backdrop-filter: blur(10px);
     `;
-    
+
     const statusId = `status-${messageId}`;
-    
+
     messageDiv.innerHTML = `
         <div class="video-invite-content">
             <div class="invite-header">
@@ -1184,31 +2701,31 @@ function showVideoInviteMessage(senderName, message, videoRoomId, isSelf) {
                 <strong>${senderName}</strong> ${message}
             </div>
             <div id="${statusId}" class="invite-status" style="margin-top: 8px; font-size: 0.9em; opacity: 0.8;">
-                <i class="fas fa-clock"></i> 等待对方响应...
+                <i class="fas fa-clock"></i> 等待响应...
             </div>
             <div class="invite-actions" style="margin-top: 10px;">
                 ${!isSelf ? `
-                    <button onclick="joinVideoCall('${videoRoomId}', '${messageId}')" 
-                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin-right: 10px; cursor: pointer;">
+                    <button onclick="joinVideoCall('${videoRoomId}', '${messageId}')"
+                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-size: 0.9rem;">
                         <i class="fas fa-video"></i> 加入通话
                     </button>
-                    <button onclick="declineVideoCall('${messageId}')" 
-                            style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
+                    <button onclick="declineVideoCall('${messageId}')"
+                            style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
                         <i class="fas fa-times"></i> 拒绝
                     </button>
                 ` : `
-                    <button onclick="joinVideoCall('${videoRoomId}', '${messageId}')" 
-                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
+                    <button onclick="joinVideoCall('${videoRoomId}', '${messageId}')"
+                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
                         <i class="fas fa-video"></i> 进入通话
                     </button>
                 `}
             </div>
         </div>
     `;
-    
+
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-    
+
     // 开始监控视频通话状态
     if (isSelf) {
         monitorVideoCallStatus(videoRoomId, messageId);
@@ -1219,15 +2736,15 @@ function showVideoInviteMessage(senderName, message, videoRoomId, isSelf) {
 function monitorVideoCallStatus(videoRoomId, messageId) {
     const statusElement = document.getElementById(`status-${messageId}`);
     if (!statusElement) return;
-    
+
     let checkCount = 0;
     const maxChecks = 120; // 检查120次，每次3秒，共6分钟
     let animationCount = 0;
-    
+
     const statusInterval = setInterval(async () => {
         checkCount++;
         animationCount++;
-        
+
         // 检查对方是否已进入视频聊天室
         try {
             const response = await fetch(`/tools/check-video-room-status/${videoRoomId}/`, {
@@ -1237,7 +2754,7 @@ function monitorVideoCallStatus(videoRoomId, messageId) {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data.participants && data.participants.length > 1) {
@@ -1245,37 +2762,43 @@ function monitorVideoCallStatus(videoRoomId, messageId) {
                     statusElement.innerHTML = '<i class="fas fa-video" style="color: #28a745;"></i> 对方已加入通话';
                     statusElement.style.color = '#28a745';
                     clearInterval(statusInterval);
-                    delete window.videoStatusIntervals[messageId];
+                    if (window.videoStatusIntervals) {
+                        delete window.videoStatusIntervals[messageId];
+                    }
                     return;
                 } else if (data.status === 'declined') {
                     // 对方拒绝了
                     statusElement.innerHTML = '<i class="fas fa-times" style="color: #dc3545;"></i> 对方拒绝了通话';
                     statusElement.style.color = '#dc3545';
                     clearInterval(statusInterval);
-                    delete window.videoStatusIntervals[messageId];
+                    if (window.videoStatusIntervals) {
+                        delete window.videoStatusIntervals[messageId];
+                    }
                     return;
                 }
             }
         } catch (error) {
-
+            console.warn('⚠️ 检查视频通话状态失败:', error);
         }
-        
+
         if (checkCount > maxChecks) {
             // 超时
             statusElement.innerHTML = '<i class="fas fa-clock" style="color: #dc3545;"></i> 邀请已过期';
             statusElement.style.color = '#dc3545';
             clearInterval(statusInterval);
-            delete window.videoStatusIntervals[messageId];
+            if (window.videoStatusIntervals) {
+                delete window.videoStatusIntervals[messageId];
+            }
             return;
         }
-        
+
         // 更新等待状态动画
         const dots = '.'.repeat((animationCount % 3) + 1);
         const waitingText = '等待对方响应' + dots;
-        statusElement.innerHTML = `<i class="fas fa-clock pulse-animation"></i> ${waitingText}`;
-        
+        statusElement.innerHTML = `<i class="fas fa-clock"></i> ${waitingText}`;
+
     }, 3000); // 每3秒检查一次
-    
+
     // 存储interval以便后续清理
     if (!window.videoStatusIntervals) {
         window.videoStatusIntervals = {};
@@ -1287,13 +2810,13 @@ function monitorVideoCallStatus(videoRoomId, messageId) {
 function updateVideoCallStatus(messageId, status, userInfo) {
     const statusElement = document.getElementById(`status-${messageId}`);
     if (!statusElement) return;
-    
+
     // 清理监控interval
     if (window.videoStatusIntervals && window.videoStatusIntervals[messageId]) {
         clearInterval(window.videoStatusIntervals[messageId]);
         delete window.videoStatusIntervals[messageId];
     }
-    
+
     switch (status) {
         case 'joined':
             statusElement.innerHTML = `<i class="fas fa-check-circle" style="color: #28a745;"></i> ${userInfo || '对方'}已进入视频聊天`;
@@ -1316,21 +2839,23 @@ function updateVideoCallStatus(messageId, status, userInfo) {
 
 // 加入视频通话
 function joinVideoCall(videoRoomId, messageId) {
+    log('📹 加入视频通话:', videoRoomId);
 
     // 更新状态
     if (messageId) {
         updateVideoCallStatus(messageId, 'joined', '您');
     }
-    
+
     // 在新窗口打开视频通话页面
     const videoUrl = `/tools/video-chat/${videoRoomId}/`;
     window.open(videoUrl, '_blank', 'width=1200,height=800');
-    
+
     // 通过WebSocket通知对方用户已加入
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
+    const websocket = window.chatWebSocket;
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({
             type: 'video_call_status',
-            room_id: roomId,
+            room_id: '{{ room_id }}',
             video_room_id: videoRoomId,
             status: 'joined',
             message_id: messageId
@@ -1340,100 +2865,28 @@ function joinVideoCall(videoRoomId, messageId) {
 
 // 拒绝视频通话
 function declineVideoCall(messageId) {
+    log('📹 拒绝视频通话');
 
     // 更新状态
     if (messageId) {
         updateVideoCallStatus(messageId, 'declined', '您');
     }
-    
-    showSystemMessage('您拒绝了视频通话邀请');
-    
+
     // 通过WebSocket通知对方用户拒绝了邀请
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
+    const websocket = window.chatWebSocket;
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({
             type: 'video_call_status',
-            room_id: roomId,
+            room_id: '{{ room_id }}',
             status: 'declined',
             message_id: messageId
         }));
     }
+
+    alert('已拒绝视频通话邀请');
 }
 
-// 切换表情选择器
-function toggleEmojiPicker() {
-
-    const picker = document.getElementById('emoji-picker');
-    if (!picker) {
-        // console.error(...)
-        return;
-    }
-    
-    // 检查当前显示状态
-    const isCurrentlyVisible = picker.classList.contains('show');
-
-
-    if (isCurrentlyVisible) {
-        // 隐藏表情选择器
-
-        picker.classList.remove('show');
-        picker.style.display = 'none';
-        picker.style.visibility = 'hidden';
-
-    } else {
-        // 显示表情选择器 - 强制设置所有必要样式
-
-        picker.classList.add('show');
-        
-        // 强制设置样式，确保显示
-        picker.style.display = 'block';
-        picker.style.visibility = 'visible';
-        picker.style.opacity = '1';
-        picker.style.position = 'absolute';
-        picker.style.bottom = '100%';
-        picker.style.left = '0';
-        picker.style.zIndex = '99999';
-        picker.style.background = 'white';
-        picker.style.border = '1px solid #e9ecef';
-        picker.style.borderRadius = '8px';
-        picker.style.padding = '10px';
-        picker.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-        picker.style.minWidth = '200px';
-        picker.style.maxWidth = '300px';
-
-        // 延迟添加关闭监听器
-        setTimeout(() => {
-            function closeEmojiPicker(e) {
-                if (!picker.contains(e.target) && !e.target.closest('#emoji-btn')) {
-
-                    picker.classList.remove('show');
-                    picker.style.display = 'none';
-                    picker.style.visibility = 'hidden';
-                    document.removeEventListener('click', closeEmojiPicker);
-                }
-            }
-            document.addEventListener('click', closeEmojiPicker);
-        }, 100);
-    }
-    
-    // 验证最终状态
-    setTimeout(() => {
-        const finalDisplay = getComputedStyle(picker).display;
-        const finalVisibility = getComputedStyle(picker).visibility;
-        const finalOpacity = getComputedStyle(picker).opacity;
-        const finalZIndex = getComputedStyle(picker).zIndex;
-        const hasShowClass = picker.classList.contains('show');
-
-
-
-
-
-
-
-
-    }, 100);
-}
-
-// 获取Cookie函数
+// 辅助函数：获取Cookie
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -1449,678 +2902,24 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// 插入表情
-// function insertEmoji(emoji) {
-//     const input = document.getElementById('chat-input');
-//     if (!input) {
-//         // console.error(...)
-//         return;
-//     }
-//     
-//     const start = input.selectionStart;
-//     const end = input.selectionEnd;
-//     const text = input.value;
-//     
-//     input.value = text.substring(0, start) + emoji + text.substring(end);
-//     input.selectionStart = input.selectionEnd = start + emoji.length;
-//     input.focus();
-//     
-//     // 自动调整输入框高度
-//     autoResize(input);
-//     
-//     const picker = document.getElementById('emoji-picker');
-//     if (picker) {
-//         picker.style.display = 'none';
-//     }
-// }
-
-// 处理图片上传
-function handleImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    // 检查文件类型
-    if (!file.type.startsWith('image/')) {
-        alert('请选择图片文件');
-        return;
-    }
-    
-    // 检查文件大小（5MB）
-    if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过5MB');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('room_id', roomId);
-    
-    // 获取CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                     document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                     getCookie('csrftoken');
-    if (!csrfToken) {
-        alert('CSRF token未找到，请刷新页面重试');
-        return;
-    }
-    
-    // 显示上传进度
-    const progressDiv = document.getElementById('upload-progress');
-    const progressFill = document.getElementById('progress-fill');
-    if (progressDiv) progressDiv.style.display = 'block';
-    
-    fetch(`/tools/api/chat/${roomId}/send-image/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (progressDiv) progressDiv.style.display = 'none';
-        if (data.success) {
-            // 图片上传成功，通过WebSocket广播给其他用户
-
-            // 发送WebSocket消息通知其他用户有新图片
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    'type': 'new_message',
-                    'message_id': data.message.id,
-                    'room_id': roomId
-                }));
-
-            }
-            
-            // 本地刷新消息列表
-            loadInitialMessages();
-        } else {
-            alert('发送图片失败: ' + data.error);
+// 页面加载时恢复背景
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 检查保存的背景...');
+    const savedBg = localStorage.getItem('chat_background');
+    if (savedBg) {
+        console.log('📖 找到保存的背景，长度:', savedBg.length);
+        const container = document.getElementById('chat-container');
+        if (container) {
+            // 使用inline style + !important确保最高优先级
+            container.style.setProperty('background', `url(${savedBg}) center/cover fixed`, 'important');
+            container.classList.add('has-custom-bg');
+            console.log('✅ 背景已恢复');
         }
-    })
-    .catch(error => {
-        if (progressDiv) progressDiv.style.display = 'none';
-        // console.error(...)
-        alert('网络错误，请重试');
-    });
-    
-    event.target.value = '';
-}
-
-// 处理文件上传
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    // 检查文件大小（10MB）
-    if (file.size > 10 * 1024 * 1024) {
-        alert('文件大小不能超过10MB');
-        return;
-    }
-    
-    // 检查文件类型（排除可执行文件）
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.com', '.scr', '.pif', '.vbs', '.js', '.jar'];
-    const fileName = file.name.toLowerCase();
-    const hasDangerousExtension = dangerousExtensions.some(ext => fileName.endsWith(ext));
-    
-    if (hasDangerousExtension) {
-        alert('不允许上传可执行文件');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('room_id', roomId);
-    
-    // 获取CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                     document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                     getCookie('csrftoken');
-    if (!csrfToken) {
-        alert('CSRF token未找到，请刷新页面重试');
-        return;
-    }
-    
-    fetch(`/tools/api/chat/${roomId}/send-file/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // 文件上传成功，通过WebSocket广播给其他用户
-
-            // 发送WebSocket消息通知其他用户有新文件
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    'type': 'new_message',
-                    'message_id': data.message.id,
-                    'room_id': roomId
-                }));
-
-            }
-            
-            // 本地刷新消息列表
-            loadInitialMessages();
-        } else {
-            alert('发送文件失败: ' + data.error);
-        }
-    })
-    .catch(error => {
-        // console.error(...)
-        alert('网络错误，请重试');
-    });
-    
-    event.target.value = '';
-}
-
-// 切换语音录制
-function toggleVoiceRecording() {
-    if (isRecording) {
-        stopRecording();
     } else {
-        startRecording();
-    }
-}
-
-// 开始录音
-function startRecording() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('您的浏览器不支持录音功能');
-        return;
-    }
-    
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus' // 使用WebM格式，支持更好的压缩
-            });
-            
-            audioChunks = [];
-            recordingStartTime = Date.now();
-            
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
-            
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                uploadAudio(audioBlob);
-                
-                // 停止所有音轨
-                stream.getTracks().forEach(track => track.stop());
-            };
-            
-            mediaRecorder.start();
-            isRecording = true;
-            
-            // 更新UI
-            const recordBtn = document.getElementById('record-btn');
-            if (recordBtn) {
-                recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
-                recordBtn.style.backgroundColor = '#ff4757';
-                recordBtn.style.color = 'white';
-            }
-            
-            // 开始录音计时
-            startRecordingTimer();
-
-        })
-        .catch(error => {
-            // console.error(...)
-            alert('无法访问麦克风，请检查权限设置');
-        });
-}
-
-// 停止录音
-function stopRecording() {
-    if (mediaRecorder && isRecording) {
-        mediaRecorder.stop();
-        isRecording = false;
-        
-        // 更新UI
-        const recordBtn = document.getElementById('record-btn');
-        if (recordBtn) {
-            recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-            recordBtn.style.backgroundColor = '';
-            recordBtn.style.color = '';
-        }
-        
-        // 停止计时
-        stopRecordingTimer();
-
-    }
-}
-
-// 上传音频文件
-function uploadAudio(audioBlob) {
-    const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
-    formData.append('room_id', roomId);
-    
-    // 获取CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                     document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                     getCookie('csrftoken');
-    if (!csrfToken) {
-        alert('CSRF token未找到，请刷新页面重试');
-        return;
-    }
-    
-    // 显示上传进度
-    const progressDiv = document.getElementById('upload-progress');
-    const progressFill = document.getElementById('progress-fill');
-    if (progressDiv) progressDiv.style.display = 'block';
-    
-    fetch(`/tools/api/chat/${roomId}/send-audio/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (progressDiv) progressDiv.style.display = 'none';
-        if (data.success) {
-            // 语音上传成功，通过WebSocket广播给其他用户
-
-            // 发送WebSocket消息通知其他用户有新语音
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    'type': 'new_message',
-                    'message_id': data.message.id,
-                    'room_id': roomId
-                }));
-
-            }
-            
-            // 本地刷新消息列表
-            loadInitialMessages();
-        } else {
-            alert('发送语音失败: ' + data.error);
-        }
-    })
-    .catch(error => {
-        if (progressDiv) progressDiv.style.display = 'none';
-        // console.error(...)
-        alert('网络错误，请重试');
-    });
-}
-
-// 开始录音计时
-function startRecordingTimer() {
-    recordingTimer = setInterval(() => {
-        const elapsed = Date.now() - recordingStartTime;
-        const seconds = Math.floor(elapsed / 1000);
-        const minutes = Math.floor(seconds / 60);
-        
-        const recordBtn = document.getElementById('record-btn');
-        if (recordBtn) {
-            const timeStr = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
-            recordBtn.title = `录音中 ${timeStr}`;
-        }
-    }, 1000);
-}
-
-// 停止录音计时
-function stopRecordingTimer() {
-    if (recordingTimer) {
-        clearInterval(recordingTimer);
-        recordingTimer = null;
-        
-        const recordBtn = document.getElementById('record-btn');
-        if (recordBtn) {
-            recordBtn.title = '录音';
-        }
-    }
-}
-
-// 标记消息为已读
-function markMessagesAsRead() {
-    const unreadMessages = document.querySelectorAll('.message.other .message-status.unread');
-    if (unreadMessages.length > 0) {
-        const messageIds = Array.from(unreadMessages).map(el => {
-            const messageDiv = el.closest('.message');
-            return messageDiv.getAttribute('data-message-id');
-        });
-
-        // 通过WebSocket发送已读状态
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({
-                type: 'read_status',
-                message_ids: messageIds
-            }));
-        }
-        
-        // 同时通过API标记已读
-        fetch(`/tools/api/chat/${roomId}/mark-read/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || 
-                              document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                              getCookie('csrftoken')
-            },
-            body: JSON.stringify({ message_ids: messageIds })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-
-            }
-        })
-        .catch(error => {
-            // console.error(...)
-        });
-    }
-}
-
-// 更新消息已读状态
-function updateMessageReadStatus(messageIds, username) {
-    messageIds.forEach(messageId => {
-        const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
-        if (messageDiv) {
-            const statusElement = messageDiv.querySelector('.message-status');
-            if (statusElement) {
-                statusElement.textContent = '已读';
-                statusElement.className = 'message-status read';
-            }
-        }
-    });
-}
-
-// 处理用户打字状态
-function handleUserTyping(username, isTyping) {
-    // 可以在这里显示"对方正在输入..."的提示
-
-}
-
-// 自动调整输入框高度
-function autoResize(textarea) {
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-}
-
-// 滚动到底部
-function scrollToBottom() {
-    const messagesContainer = document.getElementById('chat-messages');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// 打开图片模态框
-function openImageModal(imageUrl) {
-
-    const modalElement = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modal-image');
-    
-    if (!modalElement || !modalImage) {
-        // console.error(...)
-        window.open(imageUrl, '_blank');
-        return;
-    }
-    
-    // 确保图片URL是完整的
-    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : window.location.origin + imageUrl;
-
-    // 先设置图片源
-    modalImage.src = fullImageUrl;
-    window.currentImageUrl = fullImageUrl; // 保存图片URL用于下载
-    
-    // 确保图片加载完成后再显示模态框
-    modalImage.onload = function() {
-
-        try {
-            // 检查Bootstrap是否可用
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-            } else {
-                // console.error(...)
-                modalElement.style.display = 'block';
-                modalElement.classList.add('show');
-            }
-        } catch (error) {
-            // console.error(...)
-            // 备用方案：直接显示模态框
-            modalElement.style.display = 'block';
-            modalElement.classList.add('show');
-        }
-    };
-    
-    modalImage.onerror = function() {
-        // console.error(...)
-        alert('图片加载失败，请检查图片链接');
-        window.open(fullImageUrl, '_blank');
-    };
-}
-
-// 关闭图片模态框
-function closeImageModal() {
-    const modalElement = document.getElementById('imageModal');
-    if (modalElement) {
-        try {
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                if (modal) {
-                    modal.hide();
-                } else {
-                    modalElement.style.display = 'none';
-                    modalElement.classList.remove('show');
-                }
-            } else {
-                modalElement.style.display = 'none';
-                modalElement.classList.remove('show');
-            }
-        } catch (error) {
-            // console.error(...)
-            modalElement.style.display = 'none';
-            modalElement.classList.remove('show');
-        }
-    }
-}
-
-// 下载图片
-function downloadImage() {
-    const imageUrl = window.currentImageUrl;
-    if (!imageUrl) {
-        // console.error(...)
-        return;
-    }
-    
-    try {
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = 'image_' + Date.now() + '.jpg';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-    } catch (error) {
-        // console.error(...)
-        // 备用方案：在新窗口打开
-        window.open(imageUrl, '_blank');
-    }
-}
-
-// 下载文件
-function downloadFile(fileUrl, fileName) {
-
-    // 如果是聊天室文件，使用专门的下载API
-    if (fileUrl.includes('/media/chat_')) {
-        // 从URL中提取消息ID
-        const urlParts = fileUrl.split('/');
-        const filename = urlParts[urlParts.length - 1];
-        const messageId = filename.split('_')[1]?.split('.')[0];
-        
-        if (messageId) {
-            const downloadUrl = `/tools/api/chat/${roomId}/download/${messageId}/`;
-
-            // 创建一个隐藏的下载链接
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.style.display = 'none';
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            return;
-        }
-    }
-    
-    // 确保文件URL是完整的
-    const fullFileUrl = fileUrl.startsWith('http') ? fileUrl : window.location.origin + fileUrl;
-    
-    try {
-        // 使用fetch下载文件
-        fetch(fullFileUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                // 创建下载链接
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-
-            })
-            .catch(error => {
-                // console.error(...)
-                // 备用方案：直接打开链接
-                window.open(fullFileUrl, '_blank');
-            });
-    } catch (error) {
-        // console.error(...)
-        // 备用方案：在新窗口打开
-        window.open(fullFileUrl, '_blank');
-    }
-}
-
-// 显示聊天室结束消息
-function showRoomEndedMessage() {
-    const messagesContainer = document.getElementById('chat-messages');
-    const endedMessage = document.createElement('div');
-    endedMessage.className = 'system-message room-ended-message';
-    endedMessage.innerHTML = `
-        <div class="system-message-content">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>聊天室已结束，无法继续发送消息</span>
-        </div>
-    `;
-    messagesContainer.appendChild(endedMessage);
-    scrollToBottom();
-}
-
-// 禁用聊天输入
-function disableChatInput() {
-    const input = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-btn');
-    const toolbarBtns = document.querySelectorAll('.toolbar-btn');
-    
-    input.disabled = true;
-    sendBtn.disabled = true;
-    toolbarBtns.forEach(btn => btn.disabled = true);
-    
-    input.classList.add('disabled');
-    sendBtn.classList.add('disabled');
-}
-
-// HTML转义
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// 定期标记消息为已读
-setInterval(markMessagesAsRead, 2000);
-
-// 定期检查WebSocket连接状态
-setInterval(() => {
-    try {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            try {
-                // 发送心跳包
-                socket.send(JSON.stringify({ type: 'ping' }));
-            } catch (error) {
-                // console.error(...)
-                // 如果心跳包发送失败，可能需要重新连接
-                if (error.name === 'InvalidStateError' || error.name === 'NetworkError') {
-
-                    connectWebSocket();
-                }
-            }
-        } else if (socket && socket.readyState === WebSocket.CLOSED) {
-
-            // 检查roomId是否仍然有效
-            if (roomId && roomId !== 'undefined' && roomId !== 'null' && roomId !== '') {
-                connectWebSocket();
-            } else {
-                // console.error(...)
-            }
-        }
-    } catch (error) {
-        // console.error(...)
-    }
-}, 30000); // 每30秒检查一次
-
-// 页面卸载时关闭WebSocket连接
-window.addEventListener('beforeunload', function() {
-    if (socket) {
-        socket.close();
+        console.log('ℹ️ 没有保存的背景');
     }
 });
 
-// 添加键盘事件监听
-document.addEventListener('keydown', function(event) {
-    // ESC键关闭图片模态框
-    if (event.key === 'Escape') {
-        const modalElement = document.getElementById('imageModal');
-        if (modalElement && modalElement.style.display === 'block') {
-            closeImageModal();
-        }
-        
-        // ESC键关闭表情选择器
-        const emojiPicker = document.getElementById('emoji-picker');
-        if (emojiPicker && emojiPicker.classList.contains('show')) {
-            emojiPicker.classList.remove('show');
-            emojiPicker.style.display = 'none';
-        }
-    }
-});
-
-// 全局错误处理
-window.addEventListener('error', function(event) {
-    if (event.error && event.error.message && event.error.message.includes('WebSocket')) {
-        // console.error(...)
-        // console.error(...)
-        // console.error(...)
-    }
-});
-
-// 全局未处理的Promise拒绝处理
-window.addEventListener('unhandledrejection', function(event) {
-    if (event.reason && event.reason.message && event.reason.message.includes('WebSocket')) {
-        // console.error(...)
-        // console.error(...)
-    }
-});
+log('✅ 聊天室脚本初始化完成 - 所有函数已封装在私有作用域中');
 </script>
 {% endblock %}

@@ -16,6 +16,7 @@ from asgiref.sync import sync_to_async
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.sessions import SessionMiddlewareStack
 
 # 设置Django设置模块
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
@@ -67,7 +68,11 @@ except Exception as e:
 application = ProtocolTypeRouter(
     {
         "http": create_async_safe_http_app(),
-        "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+        "websocket": SessionMiddlewareStack(
+            AuthMiddlewareStack(
+                URLRouter(websocket_urlpatterns)
+            )
+        ),
     }
 )
 

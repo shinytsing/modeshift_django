@@ -213,7 +213,7 @@ def deepseek_api(request):
         # 使用统一的LLM服务
         from apps.tools.services.llm_service import get_llm_service
         llm_service = get_llm_service()
-        
+
         try:
             content = llm_service.generate_content(prompt)
             return JsonResponse({"success": True, "content": content}, content_type="application/json")
@@ -632,21 +632,21 @@ def self_analysis_api(request):
         try:
             # 构建完整的对话上下文
             full_prompt = f"{system_prompt}\n\n用户消息：{user_message}"
-            
+
             # 如果有历史对话，添加到提示中
             if conversation_history:
                 history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-5:]])
                 full_prompt = f"{system_prompt}\n\n历史对话：\n{history_text}\n\n用户消息：{user_message}"
-            
+
             # 使用统一的LLM服务生成回复（腾讯混元优先）
             ai_response = llm_service.generate_content(
                 full_prompt,
                 temperature=0.7,
                 max_tokens=1000
             )
-            
+
             return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
-            
+
         except Exception as e:
             logger.error(f"LLM服务调用失败: {e}")
             # 使用模拟响应作为降级处理
@@ -660,7 +660,7 @@ def self_analysis_api(request):
                 ai_response = "很好！我很高兴你愿意让我更全面地了解你。\n\n**让我们从你的价值观开始：你认为人生中最重要的三样东西是什么？**比如家庭、事业、健康、自由、爱情、友谊等等。\n\n请按照对你来说的重要程度排序，并简单说明为什么这些对你很重要。"
             else:
                 ai_response = "感谢你的分享！这让我对你有了更深的了解。\n\n**我想继续了解你：在你的人生经历中，有没有什么特别重要的事件或转折点，让你对自己有了新的认识？**\n\n这些经历往往能帮助我们更好地理解自己的内心世界。"
-            
+
             return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
 
     except Exception as e:
@@ -896,7 +896,7 @@ def add_social_subscription_api(request):
 
         if existing:
             return JsonResponse({
-                "success": False, 
+                "success": False,
                 "error": f"该用户已订阅！请先删除现有订阅后再添加。\n"
                         f"平台: {platform}\n"
                         f"用户: {target_user_name}\n"
@@ -4226,10 +4226,10 @@ def send_image_api(request, room_id):
 
         image_file = request.FILES["image"]
 
-        # 检查文件大小（5MB限制）
-        if image_file.size > 5 * 1024 * 1024:
+        # 检查文件大小（10GB限制）
+        if image_file.size > 10 * 1024 * 1024 * 1024:
             return JsonResponse(
-                {"success": False, "error": "图片大小不能超过5MB"},
+                {"success": False, "error": "图片大小不能超过10GB"},
                 status=400,
                 content_type="application/json",
                 headers=response_headers,
@@ -4364,10 +4364,10 @@ def send_audio_api(request, room_id):
 
         audio_file = request.FILES["audio"]
 
-        # 检查文件大小（10MB限制）
-        if audio_file.size > 10 * 1024 * 1024:
+        # 检查文件大小（10GB限制）
+        if audio_file.size > 10 * 1024 * 1024 * 1024:
             return JsonResponse(
-                {"success": False, "error": "音频文件大小不能超过10MB"},
+                {"success": False, "error": "音频文件大小不能超过10GB"},
                 status=400,
                 content_type="application/json",
                 headers=response_headers,
@@ -4499,10 +4499,10 @@ def send_file_api(request, room_id):
 
         file_obj = request.FILES["file"]
 
-        # 检查文件大小（10MB限制）
-        if file_obj.size > 10 * 1024 * 1024:
+        # 检查文件大小（10GB限制）
+        if file_obj.size > 10 * 1024 * 1024 * 1024:
             return JsonResponse(
-                {"success": False, "error": "文件大小不能超过10MB"},
+                {"success": False, "error": "文件大小不能超过10GB"},
                 status=400,
                 content_type="application/json",
                 headers=response_headers,
@@ -4601,10 +4601,10 @@ def send_video_api(request, room_id):
 
         video_file = request.FILES["file"]
 
-        # 检查文件大小（50MB限制）
-        if video_file.size > 50 * 1024 * 1024:
+        # 检查文件大小（10GB限制）
+        if video_file.size > 10 * 1024 * 1024 * 1024:
             return JsonResponse(
-                {"success": False, "error": "视频文件大小不能超过50MB"},
+                {"success": False, "error": "视频文件大小不能超过10GB"},
                 status=400,
                 content_type="application/json",
                 headers=response_headers,
@@ -7026,10 +7026,10 @@ def feature_recommendations_api(request):
                 # 未登录用户返回一些基础推荐功能
                 from apps.tools.models.legacy_models import Feature
                 basic_features = Feature.objects.filter(
-                    is_active=True, 
+                    is_active=True,
                     is_public=True
                 ).order_by('-recommendation_weight')[:6]
-                
+
                 basic_recommendations = []
                 for feature in basic_features:
                     basic_recommendations.append({
@@ -7045,11 +7045,11 @@ def feature_recommendations_api(request):
                         "popularity_score": feature.popularity_score,
                         "recommendation_reason": "为您推荐一个实用功能",
                     })
-                
+
                 return JsonResponse({
-                    "success": True, 
-                    "data": basic_recommendations, 
-                    "algorithm": "basic", 
+                    "success": True,
+                    "data": basic_recommendations,
+                    "algorithm": "basic",
                     "count": len(basic_recommendations)
                 })
 
@@ -7060,13 +7060,13 @@ def feature_recommendations_api(request):
 
             # 简化版本：直接返回基础功能推荐
             from apps.tools.models import Feature
-            
+
             # 获取基础功能
             basic_features = Feature.objects.filter(
-                is_active=True, 
+                is_active=True,
                 is_public=True
             ).order_by('-recommendation_weight')[:limit]
-            
+
             formatted_recommendations = []
             for feature in basic_features:
                 formatted_recommendations.append({
@@ -8131,7 +8131,7 @@ def audio_converter_api(request):
             file_size_mb = uploaded_file.size / (1024 * 1024)
             max_size_mb = max_file_size / (1024 * 1024)
             return JsonResponse({
-                "success": False, 
+                "success": False,
                 "message": f"文件太大！当前文件大小：{file_size_mb:.1f}MB，最大允许大小：{max_size_mb:.1f}MB"
             })
 
@@ -10822,3 +10822,259 @@ def delete_subscription_api(request):
         return JsonResponse({"success": False, "error": "无效的JSON数据"}, status=400, content_type="application/json")
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500, content_type="application/json")
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def end_chat_room_api(request, room_id):
+    """结束聊天室API"""
+    try:
+        # 获取聊天室
+        chat_room = ChatRoom.objects.get(room_id=room_id)
+
+        # 检查用户是否是聊天室的参与者
+        if request.user not in [chat_room.user1, chat_room.user2]:
+            return JsonResponse(
+                {"success": False, "error": "您不是此聊天室的参与者"},
+                status=403
+            )
+
+        # 结束聊天室
+        chat_room.status = "ended"
+        chat_room.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "聊天室已结束"
+        })
+
+    except ChatRoom.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "聊天室不存在"},
+            status=404
+        )
+    except Exception as e:
+        logger.error(f"结束聊天室错误: {e}")
+        return JsonResponse(
+            {"success": False, "error": "结束聊天室失败"},
+            status=500
+        )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 分片上传相关API（优化大文件上传速度）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def chunked_upload_init(request, room_id):
+    """初始化分片上传"""
+    response_headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    }
+
+    try:
+        data = json.loads(request.body)
+        filename = data.get('filename')
+        total_size = data.get('total_size')
+        total_chunks = data.get('total_chunks')
+
+        # 生成唯一的上传ID
+        upload_id = str(uuid.uuid4())
+
+        # 创建临时目录
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
+        os.makedirs(temp_dir, exist_ok=True)
+
+        logger.info(f"初始化分片上传 - upload_id: {upload_id}, filename: {filename}, total_size: {total_size}, total_chunks: {total_chunks}")
+
+        return JsonResponse({
+            'success': True,
+            'upload_id': upload_id,
+        }, content_type="application/json", headers=response_headers)
+
+    except Exception as e:
+        logger.error(f"初始化上传失败: {e}")
+        return JsonResponse(
+            {"success": False, "error": f"初始化上传失败: {str(e)}"},
+            status=500,
+            content_type="application/json",
+            headers=response_headers,
+        )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def chunked_upload_chunk(request, room_id):
+    """上传单个分片"""
+    response_headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    }
+
+    try:
+        upload_id = request.POST.get('upload_id')
+        chunk_index = int(request.POST.get('chunk_index'))
+        chunk_file = request.FILES.get('chunk')
+
+        if not all([upload_id, chunk_file]):
+            return JsonResponse(
+                {"success": False, "error": "缺少必要参数"},
+                status=400,
+                content_type="application/json",
+                headers=response_headers,
+            )
+
+        # 保存分片到临时目录
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
+        chunk_path = os.path.join(temp_dir, f'chunk_{chunk_index}')
+
+        with open(chunk_path, 'wb') as f:
+            for chunk in chunk_file.chunks():
+                f.write(chunk)
+
+        logger.info(f"分片上传成功 - upload_id: {upload_id}, chunk_index: {chunk_index}")
+
+        return JsonResponse({
+            'success': True,
+            'chunk_index': chunk_index,
+        }, content_type="application/json", headers=response_headers)
+
+    except Exception as e:
+        logger.error(f"上传分片失败: {e}")
+        return JsonResponse(
+            {"success": False, "error": f"上传分片失败: {str(e)}"},
+            status=500,
+            content_type="application/json",
+            headers=response_headers,
+        )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def chunked_upload_complete(request, room_id):
+    """完成分片上传，合并文件"""
+    response_headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    }
+
+    try:
+        data = json.loads(request.body)
+        upload_id = data.get('upload_id')
+        filename = data.get('filename')
+        total_chunks = data.get('total_chunks')
+        message_type = data.get('message_type', 'file')
+
+        # 获取聊天室
+        chat_room = ChatRoom.objects.get(room_id=room_id)
+
+        # 检查用户权限
+        if request.user not in [chat_room.user1, chat_room.user2]:
+            return JsonResponse(
+                {"success": False, "error": "您没有权限在此聊天室发送消息"},
+                status=403,
+                content_type="application/json",
+                headers=response_headers,
+            )
+
+        # 合并分片
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
+        file_extension = os.path.splitext(filename)[1]
+        final_filename = f"chat_files/{uuid.uuid4()}{file_extension}"
+        final_path = os.path.join(settings.MEDIA_ROOT, final_filename)
+        os.makedirs(os.path.dirname(final_path), exist_ok=True)
+
+        logger.info(f"开始合并分片 - upload_id: {upload_id}, total_chunks: {total_chunks}")
+
+        with open(final_path, 'wb') as final_file:
+            for i in range(total_chunks):
+                chunk_path = os.path.join(temp_dir, f'chunk_{i}')
+                if os.path.exists(chunk_path):
+                    with open(chunk_path, 'rb') as chunk_file:
+                        final_file.write(chunk_file.read())
+                    os.remove(chunk_path)  # 删除已合并的分片
+                else:
+                    logger.error(f"分片文件不存在: chunk_{i}")
+                    return JsonResponse(
+                        {"success": False, "error": f"分片{i}不存在"},
+                        status=400,
+                        content_type="application/json",
+                        headers=response_headers,
+                    )
+
+        # 删除临时目录
+        try:
+            os.rmdir(temp_dir)
+            parent_dir = os.path.dirname(temp_dir)
+            if os.path.exists(parent_dir) and not os.listdir(parent_dir):
+                os.rmdir(parent_dir)
+        except Exception as cleanup_error:
+            logger.warning(f"清理临时目录失败: {cleanup_error}")
+
+        # 创建消息
+        if message_type == 'image':
+            message = ChatMessage.objects.create(
+                room=chat_room,
+                sender=request.user,
+                message_type="image",
+                content=filename,
+                image_url=final_filename
+            )
+        else:
+            message = ChatMessage.objects.create(
+                room=chat_room,
+                sender=request.user,
+                message_type="file",
+                content=filename,
+                file_url=final_filename
+            )
+
+        # 获取文件大小
+        file_size = os.path.getsize(final_path)
+
+        logger.info(f"分片上传完成 - filename: {filename}, size: {file_size}")
+
+        return JsonResponse({
+            'success': True,
+            'message': {
+                'id': message.id,
+                'sender': message.sender.username,
+                'content': message.content,
+                'message_type': message.message_type,
+                'file_url': final_filename if message_type == 'file' else None,
+                'image_url': final_filename if message_type == 'image' else None,
+                'created_at': message.created_at.isoformat(),
+                'is_own': True,
+            },
+            'upload_info': {
+                'file_name': filename,
+                'file_size': f"{file_size / 1024:.1f}KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.1f}MB",
+                'file_type': '图片' if message_type == 'image' else '文件',
+                'upload_time': message.created_at.strftime("%H:%M:%S"),
+            },
+        }, content_type="application/json", headers=response_headers)
+
+    except ChatRoom.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "聊天室不存在"},
+            status=404,
+            content_type="application/json",
+            headers=response_headers,
+        )
+    except Exception as e:
+        logger.error(f"完成上传失败: {e}")
+        return JsonResponse(
+            {"success": False, "error": f"完成上传失败: {str(e)}"},
+            status=500,
+            content_type="application/json",
+            headers=response_headers,
+        )
