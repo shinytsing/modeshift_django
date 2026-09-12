@@ -18,6 +18,7 @@ except ImportError:
 
 from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, TaskListAPI, TaskStatusAPI
 from .views.download_views import TaskDownloadAPI
+from .views.goal_views import create_life_goal
 from .views.user_resolver_views import UserResolverView, UserResolverTestView
 from .views.trojan_views import (
     TrojanDashboardView,
@@ -739,6 +740,7 @@ urlpatterns = [
     path("work_mode/", work_mode_view, name="work_mode"),
     path("life/", life_mode_view, name="life"),  # 添加life路径以修复齿轮图标404错误
     path("life_mode/", life_mode_view, name="life_mode"),
+    path("life/goals/create/", create_life_goal, name="create_life_goal"),
     path("training/", training_mode_view, name="training"),  # 添加training路径以修复齿轮图标404错误
     path("training_mode/", training_mode_view, name="training_mode"),
     path("cyberpunk/", cyberpunk_mode_view, name="cyberpunk"),  # 添加cyberpunk路径以修复齿轮图标404错误

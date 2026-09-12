@@ -939,6 +939,17 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 
   <div class="rage-tools-grid">
+    <div class="training-card" onclick="event.stopPropagation()">
+      <div class="training-icon"><i class="fas fa-bullseye"></i></div>
+      <h3 class="training-title">记录一个生活目标</h3>
+      <p class="training-description">输入目标，立即保存到 LifeOS</p>
+      <form id="lifeGoalForm" style="display:grid;gap:.6rem;text-align:left" onclick="event.stopPropagation()">
+        <input name="title" required maxlength="200" placeholder="例如：每天散步 30 分钟" style="padding:.7rem;border-radius:8px;border:1px solid #fff8;background:#fff2;color:#fff">
+        <input name="category" required value="personal" placeholder="分类" style="padding:.7rem;border-radius:8px;border:1px solid #fff8;background:#fff2;color:#fff">
+        <button type="submit" style="padding:.7rem;border:0;border-radius:8px;background:#fff;color:#6845a5;font-weight:700;cursor:pointer">保存目标</button>
+        <small id="lifeGoalMessage" role="status"></small>
+      </form>
+    </div>
     <div class="training-card" onclick="goToLifeDiary()">
       <div class="training-icon">
         <i class="fas fa-book-open"></i>
@@ -1008,4 +1019,27 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('lifeGoalForm');
+  if (!form) return;
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = document.getElementById('lifeGoalMessage');
+    const payload = Object.fromEntries(new FormData(form));
+    try {
+      const response = await fetch('{% url "tools:create_life_goal" %}', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      message.textContent = data.message || (response.ok ? '已保存' : '保存失败');
+      message.style.color = response.ok ? '#b7ffcf' : '#ffd0d0';
+      if (response.ok) form.reset();
+    } catch (_) { message.textContent = '网络错误，请稍后再试'; message.style.color = '#ffd0d0'; }
+  });
+});
+</script>
+{% endblock %}

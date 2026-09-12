@@ -36,6 +36,7 @@ fake-useragent==2.2.0
 xmind==1.2.0
 channels==4.0.0
 daphne==4.0.0
+grpcio==1.74.0
 psutil==7.0.0
 PyYAML>=6.0
 selenium>=4.0.0
