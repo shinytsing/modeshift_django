@@ -9,7 +9,7 @@ import time
 import base64
 import requests
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -185,6 +185,24 @@ def check_boss_login_status_api(request):
     except Exception as e:
         logger.error(f"检查BOSS直聘登录状态失败: {str(e)}")
         return JsonResponse({"success": False, "error": f"检查状态失败: {str(e)}"})
+
+@login_required
+def boss_login_events_api(request):
+    """实时推送当前用户 BOSS 扫码登录状态。"""
+    def events():
+        for _ in range(60):
+            session = BOSS_QR_SESSIONS.get(request.user.id)
+            logged = False
+            if session:
+                try:
+                    logged = session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={session['qr_id']}", timeout=8).status_code == 200
+                except Exception:
+                    pass
+            yield f"data: {json.dumps({'status': 'logged_in' if logged else 'waiting_scan'})}\n\n"
+            if logged:
+                break
+            time.sleep(2)
+    return StreamingHttpResponse(events(), content_type='text/event-stream')
 
 
 @csrf_exempt
