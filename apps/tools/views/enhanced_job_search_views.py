@@ -17,6 +17,7 @@ from django.conf import settings
 from apps.tools.services.enhanced_job_delivery_service import EnhancedJobDeliveryService, JobSearchConfig
 
 logger = logging.getLogger(__name__)
+BOSS_QR_SESSIONS = {}
 
 
 @login_required
@@ -157,6 +158,16 @@ def boss_login_with_token_api(request):
 def check_boss_login_status_api(request):
     """检查BOSS直聘登录状态API"""
     try:
+        qr_session = BOSS_QR_SESSIONS.get(request.user.id)
+        if qr_session:
+            try:
+                scan = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={qr_session['qr_id']}", timeout=10)
+                if scan.status_code == 200:
+                    confirm = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_session['qr_id']}&status=1", timeout=10)
+                    if confirm.status_code == 200:
+                        return JsonResponse({'success': True, 'is_logged_in': True, 'message': 'BOSS 扫码登录成功'})
+            except Exception as qr_error:
+                logger.debug(f'扫码状态轮询失败: {qr_error}')
         from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
         
         playwright_service = BossZhipinPlaywrightService(headless=True)
@@ -201,6 +212,7 @@ def start_boss_qr_login_api(request):
                 rk = session.post('https://www.zhipin.com/wapi/zppassport/captcha/randkey', timeout=15).json()
                 qr_id = rk.get('zpData', {}).get('qrId')
                 if qr_id:
+                    BOSS_QR_SESSIONS[request.user.id] = {'session': session, 'qr_id': qr_id, 'created_at': time.time()}
                     img = session.get(f'https://www.zhipin.com/wapi/zpweixin/qrcode/getqrcode?content={qr_id}', timeout=15)
                     if img.ok:
                         qr_image = 'data:image/png;base64,' + base64.b64encode(img.content).decode()
