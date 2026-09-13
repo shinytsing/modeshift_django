@@ -19,6 +19,39 @@ from apps.tools.services.enhanced_job_delivery_service import EnhancedJobDeliver
 logger = logging.getLogger(__name__)
 BOSS_QR_SESSIONS = {}
 
+def _boss_session_dir(user_id):
+    """Return a private, durable directory for one BOSS account."""
+    path = os.path.join(getattr(settings, 'MEDIA_ROOT', 'media'), 'boss_sessions', f'user_{user_id}')
+    os.makedirs(path, mode=0o700, exist_ok=True)
+    return path
+
+def _persist_boss_session(user_id, session, qr_id):
+    """Persist cookies/QR metadata so a worker restart does not mix accounts."""
+    directory = _boss_session_dir(user_id)
+    os.chmod(directory, 0o700)
+    cookies = []
+    for c in session.cookies:
+        cookies.append({'name': c.name, 'value': c.value, 'domain': c.domain or '.zhipin.com', 'path': c.path or '/'})
+    with open(os.path.join(directory, 'cookies.json'), 'w', encoding='utf-8') as fh:
+        json.dump(cookies, fh, ensure_ascii=False)
+    with open(os.path.join(directory, 'session.json'), 'w', encoding='utf-8') as fh:
+        json.dump({'qr_id': qr_id, 'updated_at': time.time()}, fh)
+    return directory
+
+def _load_boss_session(user_id):
+    """Load a user's QR session from shared media when requests hit another worker."""
+    directory = _boss_session_dir(user_id)
+    try:
+        with open(os.path.join(directory, 'session.json'), encoding='utf-8') as fh:
+            meta = json.load(fh)
+        session = requests.Session()
+        with open(os.path.join(directory, 'cookies.json'), encoding='utf-8') as fh:
+            for c in json.load(fh):
+                session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
+        return {'session': session, 'qr_id': meta['qr_id'], 'created_at': meta.get('updated_at', time.time()), 'directory': directory}
+    except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
 
 @login_required
 def enhanced_job_search_launcher(request):
@@ -158,13 +191,14 @@ def boss_login_with_token_api(request):
 def check_boss_login_status_api(request):
     """检查BOSS直聘登录状态API"""
     try:
-        qr_session = BOSS_QR_SESSIONS.get(request.user.id)
+        qr_session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
         if qr_session:
             try:
                 scan = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={qr_session['qr_id']}", timeout=10)
                 if scan.status_code == 200:
                     confirm = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_session['qr_id']}&status=1", timeout=10)
                     if confirm.status_code == 200:
+                        _persist_boss_session(request.user.id, qr_session['session'], qr_session['qr_id'])
                         return JsonResponse({'success': True, 'is_logged_in': True, 'message': 'BOSS 扫码登录成功'})
             except Exception as qr_error:
                 logger.debug(f'扫码状态轮询失败: {qr_error}')
@@ -191,7 +225,9 @@ def boss_login_events_api(request):
     """实时推送当前用户 BOSS 扫码登录状态。"""
     def events():
         for _ in range(60):
-            session = BOSS_QR_SESSIONS.get(request.user.id)
+            session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
+            if session:
+                BOSS_QR_SESSIONS[request.user.id] = session
             logged = False
             if session:
                 try:
@@ -230,7 +266,8 @@ def start_boss_qr_login_api(request):
                 rk = session.post('https://www.zhipin.com/wapi/zppassport/captcha/randkey', timeout=15).json()
                 qr_id = rk.get('zpData', {}).get('qrId')
                 if qr_id:
-                    BOSS_QR_SESSIONS[request.user.id] = {'session': session, 'qr_id': qr_id, 'created_at': time.time()}
+                    directory = _persist_boss_session(request.user.id, session, qr_id)
+                    BOSS_QR_SESSIONS[request.user.id] = {'session': session, 'qr_id': qr_id, 'created_at': time.time(), 'directory': directory}
                     img = session.get(f'https://www.zhipin.com/wapi/zpweixin/qrcode/getqrcode?content={qr_id}', timeout=15)
                     if img.ok:
                         qr_image = 'data:image/png;base64,' + base64.b64encode(img.content).decode()
