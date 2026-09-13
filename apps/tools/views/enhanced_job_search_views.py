@@ -48,9 +48,48 @@ def _load_boss_session(user_id):
         with open(os.path.join(directory, 'cookies.json'), encoding='utf-8') as fh:
             for c in json.load(fh):
                 session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
-        return {'session': session, 'qr_id': meta['qr_id'], 'created_at': meta.get('updated_at', time.time()), 'directory': directory}
+        return {'session': session, 'qr_id': meta['qr_id'], 'user_id': user_id, 'created_at': meta.get('updated_at', time.time()), 'directory': directory}
     except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
         return None
+
+def _boss_payload(response):
+    """Decode BOSS's JSON envelope without treating HTTP 200 as success."""
+    try:
+        payload = response.json()
+    except (ValueError, requests.exceptions.JSONDecodeError):
+        return {}, 'error'
+    data = payload.get('zpData') or payload.get('data') or {}
+    code = payload.get('code', payload.get('resCode', payload.get('statusCode')))
+    # BOSS uses code=0 for a valid response; some deployments omit code.
+    valid = code in (None, 0, '0', True)
+    raw = data.get('status', data.get('scanStatus', data.get('qrStatus', payload.get('status')))) if isinstance(data, dict) else payload.get('status')
+    text = str(raw).lower() if raw is not None else ''
+    if any(x in text for x in ('expire', 'invalid', 'timeout')) or raw in (3, '3', -1, '-1'):
+        state = 'expired'
+    elif any(x in text for x in ('confirm', 'login', 'success')) or raw in (2, '2'):
+        state = 'confirmed'
+    elif any(x in text for x in ('scan', 'read')) or raw in (1, '1'):
+        state = 'scanned'
+    elif valid and response.status_code == 200:
+        state = 'waiting_scan'
+    else:
+        state = 'error'
+    return payload, state
+
+def _boss_qr_state(qr_session):
+    """Run the QR state machine and return (state, response payload)."""
+    session, qr_id = qr_session['session'], qr_session['qr_id']
+    scan = session.get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={qr_id}", timeout=10)
+    scan_payload, state = _boss_payload(scan)
+    if state in ('scanned', 'confirmed'):
+        confirm = session.get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_id}&status=1", timeout=10)
+        confirm_payload, confirm_state = _boss_payload(confirm)
+        if confirm_state == 'confirmed' or (confirm.status_code == 200 and (confirm_payload.get('code') in (0, '0', None))):
+            _persist_boss_session(qr_session.get('user_id'), session, qr_id)
+            return 'confirmed', confirm_payload
+        if confirm_state == 'expired':
+            return 'expired', confirm_payload
+    return state, scan_payload
 
 
 @login_required
@@ -194,12 +233,12 @@ def check_boss_login_status_api(request):
         qr_session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
         if qr_session:
             try:
-                scan = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={qr_session['qr_id']}", timeout=10)
-                if scan.status_code == 200:
-                    confirm = qr_session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_session['qr_id']}&status=1", timeout=10)
-                    if confirm.status_code == 200:
-                        _persist_boss_session(request.user.id, qr_session['session'], qr_session['qr_id'])
-                        return JsonResponse({'success': True, 'is_logged_in': True, 'message': 'BOSS 扫码登录成功'})
+                state, _ = _boss_qr_state(qr_session)
+                if state == 'confirmed':
+                    return JsonResponse({'success': True, 'is_logged_in': True, 'qr_status': state, 'message': 'BOSS 扫码登录成功'})
+                if state == 'expired':
+                    return JsonResponse({'success': True, 'is_logged_in': False, 'qr_status': state, 'message': '二维码已过期，请重新获取'})
+                return JsonResponse({'success': True, 'is_logged_in': False, 'qr_status': state, 'message': '已扫码，等待手机确认' if state == 'scanned' else '等待扫码'})
             except Exception as qr_error:
                 logger.debug(f'扫码状态轮询失败: {qr_error}')
         from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
@@ -228,14 +267,14 @@ def boss_login_events_api(request):
             session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
             if session:
                 BOSS_QR_SESSIONS[request.user.id] = session
-            logged = False
+            state = 'waiting_scan'
             if session:
                 try:
-                    logged = session['session'].get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={session['qr_id']}", timeout=8).status_code == 200
+                    state, _ = _boss_qr_state(session)
                 except Exception:
                     pass
-            yield f"data: {json.dumps({'status': 'logged_in' if logged else 'waiting_scan'})}\n\n"
-            if logged:
+            yield f"data: {json.dumps({'status': 'logged_in' if state == 'confirmed' else state}, ensure_ascii=False)}\n\n"
+            if state in ('confirmed', 'expired'):
                 break
             time.sleep(2)
     return StreamingHttpResponse(events(), content_type='text/event-stream')
@@ -265,7 +304,7 @@ def start_boss_qr_login_api(request):
                 qr_id = rk.get('zpData', {}).get('qrId')
                 if qr_id:
                     directory = _persist_boss_session(request.user.id, session, qr_id)
-                    BOSS_QR_SESSIONS[request.user.id] = {'session': session, 'qr_id': qr_id, 'created_at': time.time(), 'directory': directory}
+                    BOSS_QR_SESSIONS[request.user.id] = {'session': session, 'qr_id': qr_id, 'user_id': request.user.id, 'created_at': time.time(), 'directory': directory}
                     img = session.get(f'https://www.zhipin.com/wapi/zpweixin/qrcode/getqrcode?content={qr_id}', timeout=15)
                     if img.ok:
                         qr_image = 'data:image/png;base64,' + base64.b64encode(img.content).decode()

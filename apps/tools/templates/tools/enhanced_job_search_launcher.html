@@ -1013,7 +1013,7 @@ async function startQRLogin() {
         if (result.qr_code_url) showQrLogin(result.qr_code_url);
         else showIframeLogin(result.login_url);
         const events = new EventSource('/tools/job-search/api/boss-login-events/');
-        events.onmessage = (event) => { const status = JSON.parse(event.data).status; updateProgressText(status === 'logged_in' ? '扫码登录成功，可以开始投递' : '等待扫码...'); if (status === 'logged_in') events.close(); };
+        events.onmessage = (event) => { const status = JSON.parse(event.data).status; const labels = {waiting_scan:'等待扫码...', scanned:'已扫码，请在 BOSS App 内确认登录', confirmed:'登录成功，可以开始投递', expired:'二维码已过期，请重新生成'}; updateProgressText(labels[status] || '正在检查登录状态...'); if (status === 'logged_in' || status === 'confirmed' || status === 'expired') events.close(); };
         
         // 开始轮询登录状态
         return await pollLoginStatus();
