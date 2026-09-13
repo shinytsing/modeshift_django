@@ -983,6 +983,8 @@ async function startLoginProcess(platformId, method) {
             
             // 显示启动按钮
             document.getElementById('launchButton').style.display = 'flex';
+            // 登录成功后自动进入搜索/投递任务
+            startDelivery();
         } else {
             showError(response.error || '登录失败');
         }
