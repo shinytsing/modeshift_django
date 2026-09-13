@@ -354,7 +354,7 @@ def check_boss_login_status_api(request):
         qr_session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
         if qr_session:
             try:
-                state, _ = _boss_qr_state(qr_session)
+                state, _ = (_playwright_qr_state(qr_session) if qr_session.get('mode') == 'playwright' else _boss_qr_state(qr_session))
                 if state == 'confirmed':
                     return JsonResponse({'success': True, 'is_logged_in': True, 'qr_status': state, 'message': 'BOSS 扫码登录成功'})
                 if state == 'expired':
@@ -397,7 +397,7 @@ def boss_login_events_api(request):
             state = 'waiting_scan'
             if session:
                 try:
-                    state, _ = _boss_qr_state(session)
+                    state, _ = (_playwright_qr_state(session) if session.get('mode') == 'playwright' else _boss_qr_state(session))
                 except Exception:
                     pass
             yield f"data: {json.dumps({'status': 'logged_in' if state == 'confirmed' else state}, ensure_ascii=False)}\n\n"
