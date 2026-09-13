@@ -656,7 +656,12 @@ body {
             请选择登录方式，系统将自动检测登录状态
         </p>
         <div class="login-methods" id="loginMethods">
-            <!-- 登录方式将通过JavaScript动态加载 -->
+            <button type="button" class="login-method-btn" data-platform="boss" data-method="qr" onclick="selectLoginMethod('boss','qr')">
+                <div class="login-method-icon">🔳</div><div class="login-method-text">扫码登录</div>
+            </button>
+            <button type="button" class="login-method-btn" data-platform="boss" data-method="phone" onclick="selectLoginMethod('boss','phone')">
+                <div class="login-method-icon">📱</div><div class="login-method-text">账号/手机号登录</div>
+            </button>
         </div>
     </div>
 
