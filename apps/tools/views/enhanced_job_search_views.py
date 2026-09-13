@@ -9,6 +9,7 @@ import time
 import base64
 import requests
 import urllib.parse
+import threading
 from django.shortcuts import render
 from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,6 +20,8 @@ from apps.tools.services.enhanced_job_delivery_service import EnhancedJobDeliver
 
 logger = logging.getLogger(__name__)
 BOSS_QR_SESSIONS = {}
+_PLAYWRIGHT_QR_CONTEXTS = {}
+_PLAYWRIGHT_QR_LOCK = threading.RLock()
 
 def _boss_session_dir(user_id):
     """Return a private, durable directory for one BOSS account."""
@@ -54,92 +57,98 @@ def _load_boss_session(user_id):
     except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
         return None
 
-def _playwright_qr_context(user_id):
-    """Create a BOSS QR session inside a real browser context.
+def _playwright_launch_options():
+    return {"headless": True, "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled"]}
 
-    BOSS binds the QR ticket to browser cookies and JS state.  Keeping the
-    randkey and QR image request in this context matches the public clients and
-    avoids the unreliable server-side requests-only flow.
-    """
+
+def _close_playwright_qr_context(user_id):
+    """Release a live QR context only after success, expiry, or cancellation."""
+    with _PLAYWRIGHT_QR_LOCK:
+        live = _PLAYWRIGHT_QR_CONTEXTS.pop(user_id, None)
+    if not live:
+        return
+    for obj in (live.get("context"), live.get("browser")):
+        try: obj.close()
+        except Exception: pass
+    try: live.get("playwright").stop()
+    except Exception: pass
+
+
+def _playwright_qr_context(user_id):
+    """Generate QR in a live browser context kept alive through mobile approval."""
     from playwright.sync_api import sync_playwright
     directory = _boss_session_dir(user_id)
-    state_file = os.path.join(directory, 'storage_state.json')
-    login_url = 'https://www.zhipin.com/web/user/?ka=header-login'
-    with sync_playwright() as pw:
-        launch_options = {'headless': True, 'args': ['--no-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']}
-        # The production image ships system Chromium rather than Playwright's
-        # downloaded bundle.
-        if os.path.exists('/usr/bin/chromium'):
-            launch_options['executable_path'] = '/usr/bin/chromium'
-        browser = pw.chromium.launch(**launch_options)
+    state_file = os.path.join(directory, "storage_state.json")
+    login_url = "https://www.zhipin.com/web/user/?ka=header-login"
+    with _PLAYWRIGHT_QR_LOCK:
+        _close_playwright_qr_context(user_id)
+        pw = sync_playwright().start()
+        options = _playwright_launch_options()
+        if os.path.exists("/usr/bin/chromium"):
+            options["executable_path"] = "/usr/bin/chromium"
+        browser = pw.chromium.launch(**options)
         context = browser.new_context(storage_state=state_file if os.path.exists(state_file) else None,
-                                      user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
-                                      locale='zh-CN')
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36", locale="zh-CN")
         page = context.new_page()
-        page.goto(login_url, wait_until='domcontentloaded', timeout=30000)
+        page.goto(login_url, wait_until="domcontentloaded", timeout=30000)
         result = page.evaluate("""async () => {
           const r = await fetch('/wapi/zppassport/captcha/randkey', {credentials:'include'});
           const j = await r.json();
           const id = j?.zpData?.qrId || j?.data?.qrId || j?.qrId;
           if (!id) throw new Error('BOSS 未返回二维码标识');
           const q = await fetch('/wapi/zpweixin/qrcode/getqrcode?content=' + encodeURIComponent(id), {credentials:'include'});
-          const b = await q.arrayBuffer();
-          let s = ''; for (const x of new Uint8Array(b)) s += String.fromCharCode(x);
+          if (!q.ok) throw new Error('BOSS 二维码图片请求失败: ' + q.status);
+          const b = await q.arrayBuffer(); let s = '';
+          for (const x of new Uint8Array(b)) s += String.fromCharCode(x);
           return {qr_id:id, qr_code_url:'data:image/png;base64,' + btoa(s)};
         }""")
         context.storage_state(path=state_file)
-        _persist_boss_session(user_id, requests.Session(), result['qr_id'])
-        with open(os.path.join(directory, 'session.json'), 'w', encoding='utf-8') as fh:
-            json.dump({'qr_id': result['qr_id'], 'mode': 'playwright', 'state_file': state_file, 'updated_at': time.time()}, fh)
-        browser.close()
-    return {'qr_id': result['qr_id'], 'qr_code_url': result['qr_code_url'], 'user_id': user_id,
-            'directory': directory, 'state_file': state_file, 'mode': 'playwright', 'created_at': time.time()}
+        _PLAYWRIGHT_QR_CONTEXTS[user_id] = {"playwright": pw, "browser": browser, "context": context,
+            "page": page, "qr_id": result["qr_id"], "created_at": time.time(), "state_file": state_file}
+        with open(os.path.join(directory, "session.json"), "w", encoding="utf-8") as fh:
+            json.dump({"qr_id": result["qr_id"], "mode": "playwright", "state_file": state_file,
+                       "updated_at": time.time()}, fh)
+    return {"qr_id": result["qr_id"], "qr_code_url": result["qr_code_url"], "user_id": user_id,
+            "directory": directory, "state_file": state_file, "mode": "playwright", "created_at": time.time()}
 
 def _playwright_qr_state(qr_session):
-    """Check QR state using the same persisted browser context and cookies."""
-    from playwright.sync_api import sync_playwright
-    state_file = qr_session.get('state_file') or os.path.join(qr_session['directory'], 'storage_state.json')
-    if not os.path.exists(state_file):
-        return 'error', {}
-    with sync_playwright() as pw:
-        launch_options = {'headless': True, 'args': ['--no-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']}
-        if os.path.exists('/usr/bin/chromium'):
-            launch_options['executable_path'] = '/usr/bin/chromium'
-        browser = pw.chromium.launch(**launch_options)
-        context = browser.new_context(storage_state=state_file, user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', locale='zh-CN')
-        page = context.new_page(); page.goto('https://www.zhipin.com/web/user/?ka=header-login', wait_until='domcontentloaded', timeout=30000)
-        # Use Playwright's context request so cookies from the browser context
-        # are sent without a cross-origin fetch being blocked by the page.
-        api = context.request
-        def _get(path):
-            try:
-                response = api.get('https://www.zhipin.com' + path, headers={'Referer': 'https://www.zhipin.com/web/user/?ka=header-login'}, timeout=8000)
-            except Exception as exc:
-                logger.warning('BOSS QR poll request failed: %s', exc)
-                return {'status': 0, 'json': {}}
+    """Poll scan and confirmation through the exact context that generated QR."""
+    user_id = qr_session.get("user_id")
+    with _PLAYWRIGHT_QR_LOCK:
+        live = _PLAYWRIGHT_QR_CONTEXTS.get(user_id)
+    if not live:
+        return "error", {"message": "二维码浏览器会话已结束，请重新生成二维码"}
+    api, qr_id = live["context"].request, live["qr_id"]
+    def _get(path):
+        try:
+            response = api.get("https://www.zhipin.com" + path,
+                headers={"Referer": "https://www.zhipin.com/web/user/?ka=header-login"}, timeout=8000)
             try: body = response.json()
             except Exception: body = {}
-            return {'status': response.status, 'json': body}
-        result = {'scan': _get('/wapi/zppassport/qrcode/scan?uuid=' + urllib.parse.quote(qr_session['qr_id'])),
-                  'confirm': _get('/wapi/zppassport/qrcode/scanLogin?qrId=' + urllib.parse.quote(qr_session['qr_id']) + '&status=1')}
-        context.storage_state(path=state_file); browser.close()
-    scan, confirm = result.get('scan', {}), result.get('confirm', {})
-    payload = scan.get('json') or {}; cp = confirm.get('json') or {}
-    text = json.dumps({**payload, **cp}, ensure_ascii=False).lower()
-    if any(x in text for x in ('expired','expire','timeout','失效','过期')): return 'expired', cp or payload
-    flag = payload.get('scaned', payload.get('scanned'))
-    confirm_data = cp.get('zpData') or cp.get('data') or {}
-    confirm_code = cp.get('code', cp.get('resCode'))
-    # ``scaned`` only means that the phone read the QR.  The login edge is
-    # emitted by scanLogin and must include a token/session payload (or an
-    # explicit success message); a bare HTTP 200 is still pending approval.
-    confirm_ok = (isinstance(confirm_data, dict) and bool(confirm_data)) or any(
-        x in json.dumps(cp, ensure_ascii=False).lower() for x in ('login success', '登录成功', 'confirmed'))
-    if confirm_ok and confirm_code in (None, 0, '0', True):
-        return 'confirmed', cp or payload
-    if flag in (True, 1, '1', 'true', 'True') or any(x in text for x in ('scan','read','已扫','确认')):
-        return 'scanned', payload
-    return 'waiting_scan', payload
+            return {"status": response.status, "json": body}
+        except Exception as exc:
+            logger.warning("BOSS QR poll request failed: %s", exc)
+            return {"status": 0, "json": {}}
+    try:
+        scan = _get("/wapi/zppassport/qrcode/scan?uuid=" + urllib.parse.quote(qr_id))
+        confirm = _get("/wapi/zppassport/qrcode/scanLogin?qrId=" + urllib.parse.quote(qr_id) + "&status=1")
+        payload, cp = scan.get("json") or {}, confirm.get("json") or {}
+        text = json.dumps({**payload, **cp}, ensure_ascii=False).lower()
+        if any(x in text for x in ("expired", "expire", "timeout", "失效", "过期")):
+            _close_playwright_qr_context(user_id); return "expired", cp or payload
+        flag = payload.get("scaned", payload.get("scanned"))
+        data = cp.get("zpData") or cp.get("data") or {}
+        code = cp.get("code", cp.get("resCode"))
+        confirmed = (isinstance(data, dict) and bool(data)) or any(x in text for x in ("login success", "登录成功", "confirmed"))
+        if confirmed and code in (None, 0, "0", True):
+            live["context"].storage_state(path=live["state_file"])
+            _close_playwright_qr_context(user_id); return "confirmed", cp or payload
+        if flag in (True, 1, "1", "true", "True"):
+            return "scanned", payload
+        return "waiting_scan", payload
+    except Exception as exc:
+        logger.exception("BOSS live QR state check failed: %s", exc)
+        return "error", {"message": str(exc)}
 
 def _boss_payload(response):
     """Decode BOSS's JSON envelope without treating HTTP 200 as success."""
@@ -347,7 +356,11 @@ def check_boss_login_status_api(request):
                     return JsonResponse({'success': True, 'is_logged_in': True, 'qr_status': state, 'message': 'BOSS 扫码登录成功'})
                 if state == 'expired':
                     return JsonResponse({'success': True, 'is_logged_in': False, 'qr_status': state, 'message': '二维码已过期，请重新获取'})
-                return JsonResponse({'success': True, 'is_logged_in': False, 'qr_status': state, 'message': '已扫码，等待手机确认' if state == 'scanned' else '等待扫码'})
+                if state == 'error':
+                    return JsonResponse({'success': False, 'is_logged_in': False, 'qr_status': state,
+                                         'message': '二维码会话已断开，请重新生成二维码'})
+                return JsonResponse({'success': True, 'is_logged_in': False, 'qr_status': state,
+                                     'message': '已扫码，请在 BOSS App 内确认登录' if state == 'scanned' else '等待扫码'})
             except Exception as qr_error:
                 logger.debug(f'扫码状态轮询失败: {qr_error}')
         from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
