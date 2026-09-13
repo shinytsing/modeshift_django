@@ -36,6 +36,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y \
     libpq5 \
     curl \
+    # Playwright BOSS 浏览器自动化运行时
+    chromium \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制虚拟环境

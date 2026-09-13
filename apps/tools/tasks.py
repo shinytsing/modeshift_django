@@ -11,6 +11,18 @@ from .models import ChatRoom, UserOnlineStatus
 logger = logging.getLogger(__name__)
 
 
+@shared_task(bind=True, name="tools.run_boss_delivery_task")
+def run_boss_delivery_task(self, job_request_id):
+    """在 worker 中执行一个持久化的 BOSS 直聘任务。"""
+    try:
+        from .services.enhanced_job_delivery_service import EnhancedJobDeliveryService
+
+        return EnhancedJobDeliveryService().execute_boss_delivery(job_request_id)
+    except Exception as exc:
+        logger.exception("BOSS 投递 task 执行失败 request=%s", job_request_id)
+        return {"success": False, "error": str(exc), "request_id": job_request_id}
+
+
 @shared_task
 def cleanup_inactive_chat_rooms():
     """清理不活跃的聊天室任务 - 12小时无活动自动删除"""

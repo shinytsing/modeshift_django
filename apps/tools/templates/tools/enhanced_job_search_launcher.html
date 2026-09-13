@@ -449,6 +449,12 @@ body {
     margin-bottom: 20px;
 }
 
+.qr-countdown {
+    color: var(--geek-warning);
+    font-weight: 700;
+    margin: 12px 0;
+}
+
 .modal-input {
     width: 100%;
     padding: 15px;
@@ -522,9 +528,9 @@ body {
         <h1 class="launcher-title">
             <i class="fas fa-rocket"></i> 增强版AI一键投递系统
         </h1>
-        <p class="launcher-subtitle">🚀 融合get_jobs项目功能，支持多平台智能投递</p>
+        <p class="launcher-subtitle">🚀 基于 Playwright 的 BOSS 直聘智能投递</p>
         <p class="launcher-description">
-            支持BOSS直聘、猎聘、拉勾、智联招聘等主流平台，AI智能匹配职位，自动投递简历，提高求职效率
+            支持 BOSS 直聘扫码登录、条件筛选、持续投递与登录态持久化
         </p>
     </div>
 
@@ -536,7 +542,7 @@ body {
                 <div class="step-title">选择平台</div>
             </div>
             <div class="step-content">
-                选择要投递的招聘平台，支持多平台同时投递
+                选择 BOSS 直聘作为投递平台
             </div>
         </div>
         
@@ -567,7 +573,12 @@ body {
             <i class="fas fa-layer-group"></i> 选择投递平台
         </h3>
         <div class="platform-selection" id="platformCards">
-            <!-- 平台卡片将通过JavaScript动态加载 -->
+            <div class="platform-card selected" data-platform="boss" role="button" tabindex="0" aria-label="BOSS直聘">
+                <div class="platform-icon">🏢</div>
+                <div class="platform-name">BOSS直聘</div>
+                <div class="platform-desc">扫码登录后按筛选条件沟通职位</div>
+                <div class="platform-features">最大投递: 200 | 间隔: 3s</div>
+            </div>
         </div>
     </div>
 
@@ -579,13 +590,13 @@ body {
         
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">搜索关键词 <span class="required-mark">*</span></label>
+                <label class="form-label" for="keywords">搜索关键词 <span class="required-mark">*</span></label>
                 <input type="text" id="keywords" class="form-input" 
                        placeholder="如：Python开发、前端工程师、数据分析师" required>
             </div>
             
             <div class="form-group">
-                <label class="form-label">工作城市 <span class="required-mark">*</span></label>
+                <label class="form-label" for="city">工作城市 <span class="required-mark">*</span></label>
                 <select id="city" class="form-select" required>
                     <option value="">请选择城市</option>
                     <option value="北京">北京</option>
@@ -604,7 +615,7 @@ body {
         
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">薪资范围</label>
+                <label class="form-label" for="salary">薪资范围</label>
                 <select id="salary" class="form-select">
                     <option value="">不限</option>
                     <option value="402">3K以下</option>
@@ -618,27 +629,27 @@ body {
             </div>
             
             <div class="form-group">
-                <label class="form-label">投递数量上限</label>
+                <label class="form-label" for="maxApplications">投递数量上限</label>
                 <input type="number" id="maxApplications" class="form-input" 
                        value="50" min="1" max="200" required>
             </div>
         </div>
         
         <div class="form-group">
-            <label class="form-label">自定义招呼语</label>
+            <label class="form-label" for="greeting">自定义招呼语</label>
             <textarea id="greeting" class="form-textarea" 
                       placeholder="您好，我对这个职位很感兴趣，希望能有机会详细了解，期待您的回复。"></textarea>
         </div>
         
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">投递间隔（秒）</label>
+                <label class="form-label" for="interval">投递间隔（秒）</label>
                 <input type="number" id="interval" class="form-input" 
                        value="3" min="1" max="30" required>
             </div>
             
             <div class="form-group">
-                <label class="form-label">黑名单公司（一行一个）</label>
+                <label class="form-label" for="blacklist">黑名单公司（一行一个）</label>
                 <textarea id="blacklist" class="form-textarea" 
                           placeholder="如：某某外包公司"></textarea>
             </div>
@@ -663,9 +674,6 @@ body {
             <button type="button" class="login-method-btn" data-platform="boss" data-method="qr" onclick="selectLoginMethod('boss','qr')">
                 <div class="login-method-icon">🔳</div><div class="login-method-text">扫码登录</div>
             </button>
-            <button type="button" class="login-method-btn" data-platform="boss" data-method="phone" onclick="selectLoginMethod('boss','phone')">
-                <div class="login-method-icon">📱</div><div class="login-method-text">账号/手机号登录</div>
-            </button>
         </div>
         <button type="button" id="backToSearchButton" class="launch-button secondary" style="display:flex;margin-top:20px;">
             <i class="fas fa-arrow-left"></i><span>返回配置搜索</span>
@@ -676,6 +684,10 @@ body {
     <button type="button" id="launchButton" class="launch-button" style="display: none;">
         <i class="fas fa-rocket"></i>
         <span>启动AI投递系统</span>
+    </button>
+    <button type="button" id="stopButton" class="launch-button secondary" style="display: none;">
+        <i class="fas fa-stop"></i>
+        <span>停止投递</span>
     </button>
 
     <!-- 状态面板 -->
@@ -701,7 +713,7 @@ body {
 <script>
 // 全局状态管理
 let currentStep = 1;
-let selectedPlatforms = [];
+const selectedPlatform = 'boss';
 let loginMethod = null;
 let loginStatus = {
     isLoggedIn: false,
@@ -721,6 +733,13 @@ const STEPS = {
 let platforms = {};
 let currentTaskId = null;
 let statusCheckInterval = null;
+let bossQrModal = null;
+let bossQrCountdownTimer = null;
+let bossQrExpiresAt = 0;
+let bossWorkModal = null;
+let bossTaskModal = null;
+let bossLoginRunId = 0;
+const BOSS_QR_TTL_SECONDS = 10;
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
@@ -738,17 +757,20 @@ function initializePage() {
 
 // 设置事件监听器
 function setupEventListeners() {
+    const initialBossCard = document.querySelector('[data-platform="boss"]');
+    if (initialBossCard) initialBossCard.addEventListener('click', () => selectPlatform('boss'));
     // 启动按钮
     document.getElementById('launchButton').addEventListener('click', function(e) {
         e.preventDefault();
         handleLaunchClick();
     });
+    document.getElementById('stopButton').addEventListener('click', stopDelivery);
     document.getElementById('nextStepButton').addEventListener('click', function() {
-        if (!selectedPlatforms.length) return;
         const keywords = document.getElementById('keywords').value.trim();
         const city = document.getElementById('city').value;
         if (!keywords || !city) { updateProgressText('请先填写搜索关键词和工作城市'); return; }
         showStep(STEPS.LOGIN_CONFIG);
+        void checkLoginStatus();
     });
     document.getElementById('backToPlatformButton').addEventListener('click', () => showStep(STEPS.PLATFORM_SELECTION));
     document.getElementById('backToSearchButton').addEventListener('click', () => showStep(STEPS.SEARCH_CONFIG));
@@ -780,47 +802,22 @@ async function loadPlatformInfo() {
 // 渲染平台卡片
 function renderPlatformCards() {
     const container = document.getElementById('platformCards');
-    container.innerHTML = '';
-    
-    Object.entries(platforms).forEach(([platformId, platform]) => {
-        const card = document.createElement('div');
-        card.className = 'platform-card';
-        card.dataset.platform = platformId;
-        card.innerHTML = `
-            <div class="platform-icon">${platform.icon}</div>
-            <div class="platform-name">${platform.name}</div>
-            <div class="platform-desc">${platform.description}</div>
-            <div class="platform-features">最大投递: ${platform.max_applications} | 等待: ${platform.wait_time}s</div>
-        `;
-        
-        card.addEventListener('click', function() {
-            selectPlatform(platformId);
-        });
-        
-        container.appendChild(card);
-    });
+    const platform = platforms.boss || {icon: '🏢', name: 'BOSS直聘', description: '扫码登录后按筛选条件沟通职位', max_applications: 200, wait_time: 3};
+    container.innerHTML = `<div class="platform-card selected" data-platform="boss" role="button" tabindex="0" aria-label="BOSS直聘">
+        <div class="platform-icon">${platform.icon}</div>
+        <div class="platform-name">${platform.name}</div>
+        <div class="platform-desc">${platform.description}</div>
+        <div class="platform-features">最大投递: ${platform.max_applications} | 间隔: ${platform.wait_time}s</div>
+    </div>`;
+    container.querySelector('[data-platform="boss"]').addEventListener('click', () => selectPlatform('boss'));
 }
 
 // 选择平台
 function selectPlatform(platformId) {
-    if (selectedPlatforms.includes(platformId)) {
-        // 取消选择
-        selectedPlatforms = selectedPlatforms.filter(p => p !== platformId);
-        document.querySelector(`[data-platform="${platformId}"]`).classList.remove('selected');
-    } else {
-        // 选择平台
-        selectedPlatforms.push(platformId);
-        document.querySelector(`[data-platform="${platformId}"]`).classList.add('selected');
-    }
-    
-    console.log(`🎯 选择平台: ${selectedPlatforms}`);
-    
-    // 如果选择了平台，显示下一步
-    if (selectedPlatforms.length > 0) {
-        setTimeout(() => {
-            showStep(STEPS.SEARCH_CONFIG);
-        }, 500);
-    }
+    if (platformId !== selectedPlatform) return;
+    document.querySelector('[data-platform="boss"]').classList.add('selected');
+    console.log('🎯 已选择平台: BOSS直聘');
+    showStep(STEPS.SEARCH_CONFIG);
 }
 
 // 显示当前步骤
@@ -854,7 +851,7 @@ function showStep(step) {
             break;
         case STEPS.LOGIN_CONFIG:
             updateProgressText('步骤3: 选择登录方式');
-            checkLoginStatus();
+            showLoginMethods();
             break;
         case STEPS.TASK_RUNNING:
             updateProgressText('步骤4: 任务执行中');
@@ -864,8 +861,9 @@ function showStep(step) {
 
 // 检查登录状态
 async function checkLoginStatus() {
+    const checkRunId = bossLoginRunId;
     try {
-        const response = await fetch('/tools/job-search/api/boss-status/', {
+        const response = await fetch('/tools/job-search/api/boss-status-check/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -874,18 +872,23 @@ async function checkLoginStatus() {
         
         const result = await response.json();
         console.log('登录状态检查结果:', result);
+        if (checkRunId !== bossLoginRunId) return;
         
         if (result.success && result.is_logged_in) {
-            // 已登录，直接显示启动按钮
+            // 已登录：回填上次配置并先让用户确认，不自动启动外部投递。
             loginStatus.isLoggedIn = true;
-            loginStatus.token = result.token_info?.token;
-            updateProgressText('检测到已登录状态，可以直接启动投递');
+            showSavedLoginMethods();
+            applyLatestConfig(result.summary?.latest_config);
+            updateProgressText('检测到已保存的 BOSS 登录态');
+            showWorkConfirmation(result.summary || {});
         } else {
-            // 未登录，显示登录方式选择
+            loginStatus.isLoggedIn = false;
+            updateProgressText('未检测到有效登录态，请扫码登录');
             showLoginMethods();
         }
     } catch (error) {
         console.error('检查登录状态失败:', error);
+        loginStatus.isLoggedIn = false;
         showLoginMethods();
     }
 }
@@ -893,56 +896,124 @@ async function checkLoginStatus() {
 // 显示登录方式
 function showLoginMethods() {
     const container = document.getElementById('loginMethods');
-    container.innerHTML = '';
-    
-    // 为每个选中的平台显示登录方式
-    selectedPlatforms.forEach(platformId => {
-        const platform = platforms[platformId];
-        if (platform && platform.login_methods) {
-            platform.login_methods.forEach(method => {
-                const methodBtn = document.createElement('button');
-                methodBtn.className = 'login-method-btn';
-                methodBtn.dataset.platform = platformId;
-                methodBtn.dataset.method = method;
-                
-                let icon, text;
-                switch(method) {
-                    case 'qr':
-                        icon = 'fas fa-qrcode';
-                        text = '扫码登录';
-                        break;
-                    case 'phone':
-                        icon = 'fas fa-mobile-alt';
-                        text = '手机登录';
-                        break;
-                    case 'iframe':
-                        icon = 'fas fa-window-maximize';
-                        text = '网页登录';
-                        break;
-                }
-                
-                methodBtn.innerHTML = `
-                    <div class="login-method-icon"><i class="${icon}"></i></div>
-                    <div class="login-method-text">${text}</div>
-                `;
-                
-                methodBtn.addEventListener('click', function() {
-                    selectLoginMethod(platformId, method);
-                });
-                
-                container.appendChild(methodBtn);
-            });
-        }
+    container.innerHTML = `<button type="button" class="login-method-btn" data-platform="boss" data-method="qr">
+        <div class="login-method-icon">🔳</div><div class="login-method-text">未检测到有效登录态，扫码登录 BOSS 直聘</div>
+    </button>`;
+    container.querySelector('[data-method="qr"]').addEventListener('click', () => selectLoginMethod('boss', 'qr'));
+}
+
+function showSavedLoginMethods() {
+    const container = document.getElementById('loginMethods');
+    container.innerHTML = `<div class="login-method-btn selected" aria-live="polite">
+        <div class="login-method-icon">✅</div><div class="login-method-text">已使用保存的 BOSS 登录态</div>
+    </div>`;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[char]));
+}
+
+function applyLatestConfig(config) {
+    if (!config || !config.keywords?.length) return;
+    const keywords = document.getElementById('keywords');
+    const city = document.getElementById('city');
+    const salary = document.getElementById('salary');
+    const maxApplications = document.getElementById('maxApplications');
+    const interval = document.getElementById('interval');
+    const greeting = document.getElementById('greeting');
+    const blacklist = document.getElementById('blacklist');
+    if (keywords) keywords.value = config.keywords.join(', ');
+    if (city && config.cities?.[0]) city.value = config.cities[0];
+    if (salary) salary.value = config.expected_salary?.[0] ? String(config.expected_salary[0]) : '';
+    if (maxApplications && config.max_applications) maxApplications.value = config.max_applications;
+    if (interval && config.interval) interval.value = config.interval;
+    if (greeting && config.greeting) greeting.value = config.greeting;
+    if (blacklist) blacklist.value = (config.blacklist || []).join('\n');
+}
+
+function showWorkConfirmation(summary) {
+    if (bossWorkModal) bossWorkModal.remove();
+    bossWorkModal = document.createElement('div');
+    bossWorkModal.className = 'modal boss-work-modal';
+    const recent = (summary.recent_applications || []).slice(0, 5);
+    const recentHtml = recent.length ? recent.map(item => `
+        <div class="result-item">
+            <div class="result-job">${escapeHtml(item.title || 'BOSS 职位')} · ${escapeHtml(item.company || '未知公司')}</div>
+            <div class="result-status">${escapeHtml(item.status || '已记录')}</div>
+        </div>`).join('') : '<div class="result-item">暂无历史投递记录</div>';
+    bossWorkModal.innerHTML = `<div class="modal-content" style="max-width:560px">
+        <h3 class="modal-title">是否开始工作？</h3>
+        <p style="color:var(--geek-text);opacity:.85">已检测到有效的 BOSS 登录态，本次可以直接使用，不需要重新扫码。</p>
+        <div class="form-grid" style="margin:16px 0">
+            <div class="result-item"><strong>历史任务</strong><br>${Number(summary.tasks_count || 0)} 次</div>
+            <div class="result-item"><strong>已投递</strong><br>${Number(summary.total_applied || 0)} 份</div>
+            <div class="result-item"><strong>找到职位</strong><br>${Number(summary.total_found || 0)} 个</div>
+            <div class="result-item"><strong>投递效果</strong><br>${Number(summary.success_rate || 0)}%</div>
+        </div>
+        <div class="result-list"><strong>最近投递</strong>${recentHtml}</div>
+        <div class="modal-buttons" style="margin-top:20px">
+            <button type="button" class="modal-btn modal-btn-primary" data-action="start">开始工作</button>
+            <button type="button" class="modal-btn modal-btn-secondary" data-action="defer">暂不开始</button>
+            <button type="button" class="modal-btn modal-btn-secondary" data-action="edit">修改筛选条件</button>
+        </div>
+    </div>`;
+    document.body.appendChild(bossWorkModal);
+    bossWorkModal.querySelector('[data-action="start"]').addEventListener('click', () => {
+        closeWorkConfirmation();
+        startDelivery();
     });
-    // 后端平台信息暂不可用时仍提供 BOSS 基础登录入口
-    if (!container.children.length) {
-        [['qr','扫码登录'],['phone','账号/手机号登录']].forEach(([method,text]) => {
-            const btn = document.createElement('button');
-            btn.className = 'login-method-btn';
-            btn.innerHTML = `<div class="login-method-icon">🔐</div><div class="login-method-text">${text}</div>`;
-            btn.addEventListener('click', () => selectLoginMethod('boss', method));
-            container.appendChild(btn);
-        });
+    bossWorkModal.querySelector('[data-action="defer"]').addEventListener('click', () => {
+        closeWorkConfirmation();
+        showSavedLoginMethods();
+        document.getElementById('launchButton').style.display = 'flex';
+        updateProgressText('已保留登录态，暂不开始投递');
+    });
+    bossWorkModal.querySelector('[data-action="edit"]').addEventListener('click', () => {
+        closeWorkConfirmation();
+        showStep(STEPS.SEARCH_CONFIG);
+        updateProgressText('可修改筛选条件，下一步会继续使用当前登录态');
+    });
+}
+
+function showTaskRunningModal(status = {}) {
+    if (bossTaskModal) bossTaskModal.remove();
+    bossTaskModal = document.createElement('div');
+    bossTaskModal.className = 'modal boss-task-modal';
+    bossTaskModal.innerHTML = `<div class="modal-content" style="max-width:560px;text-align:center">
+        <h3 class="modal-title">正在执行投递</h3>
+        <div class="progress-container" style="margin:24px 0">
+            <div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div>
+        </div>
+        <p class="boss-task-message" style="color:var(--geek-text);opacity:.9">正在启动 BOSS 投递任务…</p>
+        <div class="form-grid" style="margin-top:18px">
+            <div class="result-item"><strong>已投递</strong><br><span class="boss-task-applied">${Number(status.total_applied || 0)}</span></div>
+            <div class="result-item"><strong>找到职位</strong><br><span class="boss-task-found">${Number(status.total_found || 0)}</span></div>
+        </div>
+    </div>`;
+    document.body.appendChild(bossTaskModal);
+    updateTaskRunningModal(status);
+}
+
+function updateTaskRunningModal(status = {}) {
+    if (!bossTaskModal) return;
+    const applied = Number(status.total_applied || status.applied_count || 0);
+    const found = Number(status.total_found || status.found_count || 0);
+    const message = bossTaskModal.querySelector('.boss-task-message');
+    const appliedNode = bossTaskModal.querySelector('.boss-task-applied');
+    const foundNode = bossTaskModal.querySelector('.boss-task-found');
+    const fill = bossTaskModal.querySelector('.progress-fill');
+    if (message) message.textContent = status.message || `正在投递中… 已投递 ${applied} 份`;
+    if (appliedNode) appliedNode.textContent = String(applied);
+    if (foundNode) foundNode.textContent = String(found);
+    if (fill) fill.style.width = `${Math.min(95, Math.max(12, found ? (applied / found) * 100 : 12))}%`;
+}
+
+function closeWorkConfirmation() {
+    if (bossWorkModal) {
+        bossWorkModal.remove();
+        bossWorkModal = null;
     }
 }
 
@@ -958,34 +1029,19 @@ function selectLoginMethod(platformId, method) {
 
 // 开始登录流程
 async function startLoginProcess(platformId, method) {
-    updateProgressText(`正在启动${method === 'qr' ? '二维码' : method === 'phone' ? '手机' : '网页'}登录...`);
+    updateProgressText('正在启动 BOSS 二维码登录...');
     
     try {
-        let response;
-        
-        switch(method) {
-            case 'qr':
-                response = await startQRLogin();
-                break;
-            case 'phone':
-                response = await startPhoneLogin();
-                break;
-            case 'iframe':
-                response = await startIframeLogin();
-                break;
-        }
+        const response = await startQRLogin();
+
+        if (response.cancelled) return;
         
         if (response.success) {
             loginStatus.isLoggedIn = true;
-            loginStatus.token = response.token;
             loginStatus.method = method;
-            
-            updateProgressText('登录成功！可以开始投递');
-            
-            // 显示启动按钮
-            document.getElementById('launchButton').style.display = 'flex';
-            // 登录成功后自动进入搜索/投递任务
-            startDelivery();
+            updateProgressText('登录成功，请确认是否开始工作');
+            applyLatestConfig(response.summary?.latest_config);
+            showWorkConfirmation(response.summary || {});
         } else {
             showError(response.error || '登录失败');
         }
@@ -998,216 +1054,74 @@ async function startLoginProcess(platformId, method) {
 // 启动二维码登录
 async function startQRLogin() {
     console.log('📱 启动二维码登录');
-    
+
+    const runId = ++bossLoginRunId;
+    let result;
+    try {
+        result = await requestBossQr();
+    } catch (error) {
+        if (runId !== bossLoginRunId) return {success: false, cancelled: true};
+        throw error;
+    }
+    // 用户可能在请求返回前点击了关闭，关闭后的旧请求不能重新弹出二维码。
+    if (runId !== bossLoginRunId) return {success: false, cancelled: true};
+    showQrLogin(result.qr_code_url, result.expires_in || BOSS_QR_TTL_SECONDS);
+    // 开始轮询登录状态
+    return await pollLoginStatus(runId);
+}
+
+async function requestBossQr() {
     const response = await fetch('/tools/job-search/api/boss-qr-login/', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
         }
     });
     
     const result = await response.json();
-    
-    if (result.success && result.login_url) {
-        // 显示iframe登录页面
-        if (result.qr_code_url) showQrLogin(result.qr_code_url);
-        else showIframeLogin(result.login_url);
-        const events = new EventSource('/tools/job-search/api/boss-login-events/');
-        events.onmessage = (event) => { const status = JSON.parse(event.data).status; const labels = {waiting_scan:'等待扫码...', scanned:'已扫码，请在 BOSS App 内确认登录', confirmed:'登录成功，可以开始投递', expired:'二维码已过期，请重新生成'}; updateProgressText(labels[status] || '正在检查登录状态...'); if (status === 'logged_in' || status === 'confirmed' || status === 'expired') events.close(); };
-        
-        // 开始轮询登录状态
-        return await pollLoginStatus();
-    } else {
+    if (!response.ok || !result.success || !result.qr_code_url) {
         throw new Error(result.error || '获取登录页面失败');
     }
+    return result;
 }
 
-function showQrLogin(imageUrl) {
-    const modal = document.createElement('div'); modal.className = 'modal';
-    modal.innerHTML = `<div class="modal-content" style="max-width:420px;text-align:center"><h3 class="modal-title">扫码登录 BOSS 直聘</h3><img src="${imageUrl}" alt="BOSS 登录二维码" style="width:280px;height:280px;background:#fff;padding:12px"><p>请使用 BOSS 直聘 App 扫码，扫码后等待自动确认。</p><button class="modal-btn modal-btn-secondary" onclick="this.closest('.modal').remove()">关闭</button></div>`;
-    document.body.appendChild(modal);
-}
-
-// 启动手机登录
-async function startPhoneLogin() {
-    console.log('📞 启动手机登录');
-    
-    // 显示手机号输入界面
-    const phone = await showPhoneInput();
-    if (!phone) {
-        throw new Error('未输入手机号');
+function showQrLogin(imageUrl, expiresIn = BOSS_QR_TTL_SECONDS) {
+    if (!bossQrModal) {
+        bossQrModal = document.createElement('div');
+        bossQrModal.className = 'modal boss-qr-modal';
+        bossQrModal.innerHTML = `<div class="modal-content" style="max-width:420px;text-align:center"><h3 class="modal-title">扫码登录 BOSS 直聘</h3><img class="boss-qr-image" src="" alt="BOSS 登录二维码" style="width:280px;height:280px;background:#fff;padding:12px"><p>请使用 BOSS 直聘 App 扫码并在 App 内确认。</p><div class="qr-countdown" aria-live="polite"></div><button class="modal-btn modal-btn-secondary boss-qr-close" type="button">关闭</button></div>`;
+        bossQrModal.querySelector('.boss-qr-close').addEventListener('click', closeAllModals);
+        document.body.appendChild(bossQrModal);
     }
-    
-    // 发送验证码
-    const smsResponse = await fetch('/tools/job-search/api/boss-phone-login/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            phone: phone
-        })
-    });
-    
-    const smsResult = await smsResponse.json();
-    if (!smsResult.success) {
-        throw new Error(smsResult.error || '发送验证码失败');
-    }
-    
-    // 显示验证码输入界面
-    const code = await showCodeInput();
-    if (!code) {
-        throw new Error('未输入验证码');
-    }
-    
-    // 验证登录
-    const loginResponse = await fetch('/tools/job-search/api/boss-verify-code/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            phone: phone,
-            code: code
-        })
-    });
-    
-    return await loginResponse.json();
-}
-
-// 启动iframe登录
-async function startIframeLogin() {
-    console.log('🌐 启动iframe登录');
-    
-    const response = await fetch('/tools/job-search/api/boss-iframe-url/', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-    
-    const result = await response.json();
-    
-    if (result.success && result.iframe_url) {
-        // 显示iframe登录页面
-        showIframeLogin(result.iframe_url);
-        
-        // 开始轮询登录状态
-        return await pollLoginStatus();
-    } else {
-        throw new Error(result.error || '获取iframe登录URL失败');
-    }
-}
-
-// 显示手机号输入
-function showPhoneInput() {
-    return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 class="modal-title">
-                    <i class="fas fa-mobile-alt"></i> 手机号登录
-                </h3>
-                <input type="tel" id="phoneInput" class="modal-input" placeholder="请输入手机号">
-                <div class="modal-buttons">
-                    <button class="modal-btn modal-btn-primary" onclick="submitPhone()">发送验证码</button>
-                    <button class="modal-btn modal-btn-secondary" onclick="cancelPhone()">取消</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // 全局函数
-        window.submitPhone = function() {
-            const phone = document.getElementById('phoneInput').value.trim();
-            modal.remove();
-            resolve(phone);
-        };
-        
-        window.cancelPhone = function() {
-            modal.remove();
-            resolve(null);
-        };
-    });
-}
-
-// 显示验证码输入
-function showCodeInput() {
-    return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 class="modal-title">
-                    <i class="fas fa-sms"></i> 验证码登录
-                </h3>
-                <input type="text" id="codeInput" class="modal-input" placeholder="请输入验证码">
-                <div class="modal-buttons">
-                    <button class="modal-btn modal-btn-primary" onclick="submitCode()">确认登录</button>
-                    <button class="modal-btn modal-btn-secondary" onclick="cancelCode()">取消</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // 全局函数
-        window.submitCode = function() {
-            const code = document.getElementById('codeInput').value.trim();
-            modal.remove();
-            resolve(code);
-        };
-        
-        window.cancelCode = function() {
-            modal.remove();
-            resolve(null);
-        };
-    });
-}
-
-// 显示iframe登录
-function showIframeLogin(loginUrl) {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 800px; width: 95%; height: 80%;">
-            <h3 class="modal-title">
-                <i class="fas fa-window-maximize"></i> 网页登录
-            </h3>
-            <iframe src="${loginUrl}" style="
-                width: 100%;
-                height: calc(100% - 60px);
-                border: 1px solid var(--geek-green);
-                border-radius: 4px;
-            "></iframe>
-            <div class="modal-buttons" style="margin-top: 10px;">
-                <button class="modal-btn modal-btn-secondary" onclick="closeIframeLogin()">关闭</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // 全局函数
-    window.closeIframeLogin = function() {
-        modal.remove();
+    bossQrModal.querySelector('.boss-qr-image').src = imageUrl;
+    bossQrExpiresAt = Date.now() + (Number(expiresIn) || BOSS_QR_TTL_SECONDS) * 1000;
+    if (bossQrCountdownTimer) clearInterval(bossQrCountdownTimer);
+    const countdown = bossQrModal.querySelector('.qr-countdown');
+    const updateCountdown = () => {
+        const seconds = Math.max(0, Math.ceil((bossQrExpiresAt - Date.now()) / 1000));
+        countdown.textContent = seconds > 0 ? `二维码将在 ${seconds} 秒后自动刷新` : '正在自动刷新二维码…';
     };
+    updateCountdown();
+    bossQrCountdownTimer = setInterval(updateCountdown, 250);
 }
 
 // 轮询登录状态
-async function pollLoginStatus() {
-    const maxAttempts = 60; // 最多轮询60次（5分钟）
+async function pollLoginStatus(runId) {
+    const maxAttempts = 300; // 最多轮询300次（5分钟），二维码每10秒自动更新
     let attempts = 0;
     
     return new Promise((resolve, reject) => {
         const poll = async () => {
+            if (runId !== bossLoginRunId) {
+                resolve({success: false, cancelled: true});
+                return;
+            }
             attempts++;
             
             try {
-                const response = await fetch('/tools/job-search/api/boss-status/', {
+                const response = await fetch('/tools/job-search/api/boss-status-check/', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1215,27 +1129,56 @@ async function pollLoginStatus() {
                 });
                 
                 const result = await response.json();
+
+                if (runId !== bossLoginRunId) {
+                    resolve({success: false, cancelled: true});
+                    return;
+                }
                 
                 if (result.success && result.is_logged_in) {
                     // 登录成功
                     closeAllModals();
                     resolve({
                         success: true,
-                        token: result.token_info?.token
+                        summary: result.summary || {}
                     });
                 } else if (result.qr_status === 'scanned') {
                     updateProgressText('已扫码，请在 BOSS App 内确认登录');
-                    setTimeout(poll, 2000);
-                } else if (result.qr_status === 'expired' || attempts >= maxAttempts) {
+                    setTimeout(poll, 1000);
+                } else if (result.qr_status === 'expired') {
+                    updateProgressText('二维码已刷新，请在 10 秒内扫码');
+                    try {
+                        const refreshed = await requestBossQr();
+                        if (runId !== bossLoginRunId) {
+                            resolve({success: false, cancelled: true});
+                            return;
+                        }
+                        showQrLogin(refreshed.qr_code_url, refreshed.expires_in || BOSS_QR_TTL_SECONDS);
+                        setTimeout(poll, 500);
+                    } catch (refreshError) {
+                        console.error('二维码刷新失败:', refreshError);
+                        updateProgressText('二维码同步暂时失败，正在重试…');
+                        setTimeout(poll, 2000);
+                    }
+                } else if (attempts >= maxAttempts) {
                     // 超时
                     closeAllModals();
                     reject(new Error('登录超时，请重试'));
+                } else if (!result.success) {
+                    updateProgressText('登录状态同步中，正在重试…');
+                    setTimeout(poll, 1000);
                 } else {
                     // 继续轮询
-                    setTimeout(poll, 5000);
+                    setTimeout(poll, 1000);
                 }
             } catch (error) {
-                reject(error);
+                if (attempts >= maxAttempts) {
+                    closeAllModals();
+                    reject(error);
+                } else {
+                    updateProgressText('登录状态同步中，正在重试…');
+                    setTimeout(poll, 1000);
+                }
             }
         };
         
@@ -1245,9 +1188,17 @@ async function pollLoginStatus() {
 
 // 关闭所有模态框
 function closeAllModals() {
+    bossLoginRunId += 1;
     document.querySelectorAll('.modal').forEach(modal => {
         modal.remove();
     });
+    bossWorkModal = null;
+    bossTaskModal = null;
+    bossQrModal = null;
+    if (bossQrCountdownTimer) {
+        clearInterval(bossQrCountdownTimer);
+        bossQrCountdownTimer = null;
+    }
 }
 
 // 处理启动按钮点击
@@ -1278,18 +1229,16 @@ function validateForm() {
         return false;
     }
     
-    if (selectedPlatforms.length === 0) {
-        showError('请选择至少一个投递平台');
-        return false;
-    }
-    
     return true;
 }
 
 // 开始投递
 async function startDelivery() {
+    // 无论扫码弹窗是否因轮询竞态残留，点击开始后都必须进入执行面板。
+    closeAllModals();
     showStep(STEPS.TASK_RUNNING);
     updateProgressText('正在启动投递任务...');
+    showTaskRunningModal({message: '正在启动 BOSS 投递任务…'});
     
     try {
         // 收集表单数据
@@ -1300,6 +1249,7 @@ async function startDelivery() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
             },
             body: JSON.stringify(formData)
         });
@@ -1309,14 +1259,20 @@ async function startDelivery() {
         if (result.success) {
             updateProgressText('投递任务已启动！');
             currentTaskId = result.task_id;
+            document.getElementById('stopButton').style.display = 'flex';
+            updateTaskRunningModal({message: '投递任务已启动，正在搜索职位…'});
             
             // 开始状态轮询
             startStatusPolling();
         } else {
+            if (bossTaskModal) bossTaskModal.remove();
+            bossTaskModal = null;
             showError(result.error || '启动投递任务失败');
         }
     } catch (error) {
         console.error('启动投递失败:', error);
+        if (bossTaskModal) bossTaskModal.remove();
+        bossTaskModal = null;
         showError('启动投递失败，请重试');
     }
 }
@@ -1324,10 +1280,10 @@ async function startDelivery() {
 // 收集表单数据
 function collectFormData() {
     return {
-        platforms: selectedPlatforms,
+        platforms: [selectedPlatform],
         keywords: [document.getElementById('keywords').value.trim()],
         cities: [document.getElementById('city').value],
-        expected_salary: [parseInt(document.getElementById('salary').value) || 15],
+        expected_salary: [parseInt(document.getElementById('salary').value) || 0, parseInt(document.getElementById('salary').value) || 0],
         say_hi: document.getElementById('greeting').value.trim() || '您好，我对这个职位很感兴趣，希望能有机会进一步沟通。',
         use_ai: true,
         send_img_resume: true,
@@ -1335,6 +1291,27 @@ function collectFormData() {
         interval: parseInt(document.getElementById('interval').value) || 3,
         blacklist: document.getElementById('blacklist').value.trim().split('\n').filter(item => item.trim())
     };
+}
+
+function getCookie(name) {
+    const prefix = `${name}=`;
+    return document.cookie.split(';').map(item => item.trim()).find(item => item.startsWith(prefix))?.slice(prefix.length) || '';
+}
+
+async function stopDelivery() {
+    try {
+        const response = await fetch('/tools/job-search/api/stop-enhanced/', {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCookie('csrftoken')},
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || '停止任务失败');
+        updateProgressText('BOSS 投递任务已停止');
+        document.getElementById('stopButton').style.display = 'none';
+        if (statusCheckInterval) { clearInterval(statusCheckInterval); statusCheckInterval = null; }
+    } catch (error) {
+        showError(error.message || '停止任务失败');
+    }
 }
 
 // 开始状态轮询
@@ -1350,9 +1327,10 @@ function startStatusPolling() {
             
             updateStatus(result);
             
-            if (result.status === 'completed' || result.status === 'failed') {
+            if (['completed', 'failed', 'cancelled'].includes(result.status)) {
                 clearInterval(statusCheckInterval);
                 statusCheckInterval = null;
+                document.getElementById('stopButton').style.display = 'none';
             }
         } catch (error) {
             console.error('状态检查失败:', error);
@@ -1362,12 +1340,29 @@ function startStatusPolling() {
 
 // 更新状态
 function updateStatus(status) {
-    if (status.status === 'running') {
+    if (['pending', 'processing', 'running'].includes(status.status)) {
         updateProgressText(`正在投递中... 已投递: ${status.total_applied || 0}`);
+        updateTaskRunningModal({
+            ...status,
+            message: `正在投递中… 已投递 ${status.total_applied || 0} 份，找到 ${status.total_found || 0} 个职位`,
+        });
     } else if (status.status === 'completed') {
         updateProgressText(`投递完成！成功: ${status.total_applied || 0}, 找到: ${status.total_found || 0}`);
+        updateTaskRunningModal({...status, message: `投递完成：成功 ${status.total_applied || 0} 份，找到 ${status.total_found || 0} 个职位`});
     } else if (status.status === 'failed') {
-        updateProgressText(`投递失败: ${status.error || '未知错误'}`);
+        const errorMessage = status.error || '未知错误';
+        // 任务失败后不能保留扫码弹窗，避免前后台状态错位。
+        closeAllModals();
+        if (String(errorMessage).includes('登录态已失效')) {
+            loginStatus.isLoggedIn = false;
+            showStep(STEPS.LOGIN_CONFIG);
+            showLoginMethods();
+            updateProgressText('BOSS 登录态已失效，请重新扫码登录');
+        } else {
+            updateProgressText(`投递失败: ${errorMessage}`);
+        }
+    } else if (status.status === 'cancelled') {
+        updateProgressText('BOSS 投递任务已停止');
     }
     
     // 更新结果列表
@@ -1385,7 +1380,7 @@ function updateResultsList(results) {
         const item = document.createElement('div');
         item.className = 'result-item';
         item.innerHTML = `
-            <div class="result-job">${platforms[platform]?.name || platform} - ${result.applied_count || 0} 份投递</div>
+            <div class="result-job">BOSS直聘 - ${result.applied_count || 0} 份沟通</div>
             <div class="result-status ${result.success ? 'success' : 'failed'}">
                 ${result.success ? '投递成功' : '投递失败'}
             </div>

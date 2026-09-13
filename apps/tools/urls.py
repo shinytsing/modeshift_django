@@ -69,13 +69,8 @@ from .views.enhanced_job_search_views import (
     get_enhanced_job_search_status_api,
     stop_enhanced_job_search_api,
     get_platform_info_api,
-    boss_login_with_token_api,
     check_boss_login_status_api,
-    boss_login_events_api,
     start_boss_qr_login_api,
-    start_boss_phone_login_api,
-    verify_boss_phone_code_api,
-    get_boss_iframe_login_url_api,
 )
 from .views.cookie_management_views import (
     save_cookies_api,
@@ -896,13 +891,8 @@ urlpatterns = [
     path("job-search/api/status-enhanced/", get_enhanced_job_search_status_api, name="get_enhanced_job_search_status_api"),
     path("job-search/api/stop-enhanced/", stop_enhanced_job_search_api, name="stop_enhanced_job_search_api"),
     path("job-search/api/platform-info/", get_platform_info_api, name="get_platform_info_api"),
-    path("job-search/api/boss-token-login/", boss_login_with_token_api, name="boss_login_with_token_api"),
     path("job-search/api/boss-status-check/", check_boss_login_status_api, name="check_boss_login_status_api"),
-    path("job-search/api/boss-login-events/", boss_login_events_api, name="boss_login_events_api"),
     path("job-search/api/boss-qr-login/", start_boss_qr_login_api, name="start_boss_qr_login_api"),
-    path("job-search/api/boss-phone-login/", start_boss_phone_login_api, name="start_boss_phone_login_api"),
-    path("job-search/api/boss-verify-code/", verify_boss_phone_code_api, name="verify_boss_phone_code_api"),
-    path("job-search/api/boss-clear-token/", boss_clear_token_api, name="boss_clear_token_api"),
     
     # Java Job项目集成路由
     path("java-job/launcher/", java_job_launcher, name="java_job_launcher"),

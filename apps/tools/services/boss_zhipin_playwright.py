@@ -6,9 +6,11 @@ Boss直聘Playwright服务 - 替代Selenium
 import logging
 import time
 import random
+import os
 from typing import Dict, Optional, Any, List
 
 from django.core.cache import cache
+from django.conf import settings
 try:
     from playwright.sync_api import sync_playwright, Browser, Page
 except ModuleNotFoundError:  # Playwright is optional for deployments that do not use job scraping.
@@ -21,6 +23,13 @@ from .cookie_manager import cookie_manager
 from .proxy_pool_service import proxy_pool
 
 logger = logging.getLogger(__name__)
+
+# 扫码建立会话和后台投递必须使用同一浏览器身份，不能每次随机 UA。
+# 否则 BOSS 可能把同一组 Cookie 识别为来自另一台设备而要求重新登录。
+BOSS_BROWSER_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
 
 
 class BossZhipinPlaywrightService:
@@ -177,7 +186,6 @@ class BossZhipinPlaywrightService:
                 '--disable-extensions',
                 '--disable-plugins',
                 '--disable-images',
-                '--disable-javascript',
                 '--no-first-run',
                 '--no-default-browser-check',
                 '--disable-default-apps',
@@ -228,22 +236,39 @@ class BossZhipinPlaywrightService:
                 '--disable-gpu-process-crash-limit',
                 '--disable-gpu-watchdog',
                 '--disable-gpu-driver-bug-workarounds',
-                # 随机化User-Agent
-                f'--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{random.randint(110, 120)}.0.0.0 Safari/537.36'
             ]
             
             # 启动浏览器
-            self.browser = self.playwright.chromium.launch(
-                headless=self.headless,
-                args=browser_args,
-                proxy=proxy_config
-            )
+            launch_options = {
+                'headless': self.headless,
+                'args': browser_args,
+                'proxy': proxy_config,
+            }
+            if os.path.exists('/usr/bin/chromium'):
+                launch_options['executable_path'] = '/usr/bin/chromium'
+            self.browser = self.playwright.chromium.launch(**launch_options)
             
             # 创建页面并复用用户登录态（容器重启后仍保留 Cookie）
-            state_dir = os.path.join(os.getenv('MEDIA_ROOT', '/app/media'), 'boss_sessions')
-            os.makedirs(state_dir, exist_ok=True)
-            state_file = os.path.join(state_dir, 'user_%s.json' % getattr(self, '_user_id', 'default'))
-            context = self.browser.new_context(storage_state=state_file if os.path.exists(state_file) else None)
+            state_dir = os.path.join(
+                str(getattr(settings, 'MEDIA_ROOT', os.getenv('MEDIA_ROOT', '/app/media'))),
+                'boss_sessions',
+                'user_%s' % getattr(self, '_user_id', 'default'),
+            )
+            os.makedirs(state_dir, mode=0o700, exist_ok=True)
+            os.chmod(state_dir, 0o700)
+            state_file = os.path.join(state_dir, 'storage_state.json')
+            # 兼容旧版本留下的平铺文件，新的扫码登录统一使用 user_<id>/storage_state.json。
+            legacy_state_file = os.path.join(
+                os.path.dirname(state_dir), 'user_%s.json' % getattr(self, '_user_id', 'default')
+            )
+            storage_state = state_file if os.path.exists(state_file) else (
+                legacy_state_file if os.path.exists(legacy_state_file) else None
+            )
+            context = self.browser.new_context(
+                storage_state=storage_state,
+                user_agent=BOSS_BROWSER_USER_AGENT,
+                locale="zh-CN",
+            )
             self.page = context.new_page()
             self._storage_state_file = state_file
             
@@ -1261,7 +1286,6 @@ class BossZhipinPlaywrightService:
                 '.login-btn',
                 'button:has-text("登录")',
                 'a:has-text("登录")',
-                '//li[@class="nav-figure"]',  # Java项目的登录按钮定位器
                 '//div[@class="btns"]'  # Java项目的登录按钮容器
             ]
             
@@ -1280,6 +1304,7 @@ class BossZhipinPlaywrightService:
                 '.user-name', '.geek-name', '.profile-name',
                 '.user-avatar', '.geek-avatar', '.profile-avatar',
                 '.nav-user', '.user-menu', '.profile-menu',
+                '.nav-figure', 'li.nav-figure',  # BOSS 登录后的头像入口
                 
                 # 功能按钮相关
                 'button:has-text("立即沟通")', 'button:has-text("投递简历")',

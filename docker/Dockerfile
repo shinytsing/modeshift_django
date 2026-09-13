@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libfreetype6-dev \
     zlib1g-dev \
+    # Playwright BOSS 浏览器自动化运行时
+    chromium \
     # 音频处理依赖
     libsndfile1 \
     # 网络工具

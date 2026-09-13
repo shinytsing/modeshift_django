@@ -44,7 +44,7 @@ class UserCookie(models.Model):
             return {}
     
     def get_playwright_cookies(self):
-        """获取 Playwright 格式的 cookies"""
+        """获取 BOSS Playwright 格式的 cookies。"""
         cookies_dict = self.get_cookies_dict()
         playwright_cookies = []
         
@@ -52,7 +52,7 @@ class UserCookie(models.Model):
             playwright_cookies.append({
                 'name': name,
                 'value': value,
-                'domain': '.zhipin.com' if self.platform == 'boss' else '.lagou.com',
+                'domain': '.zhipin.com',
                 'path': '/',
                 'httpOnly': False,
                 'secure': False,
@@ -96,6 +96,12 @@ class CookieSession(models.Model):
         verbose_name = "Cookie 会话"
         verbose_name_plural = "Cookie 会话"
         ordering = ['-last_used']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'platform'],
+                name='unique_cookie_session_user_platform',
+            ),
+        ]
     
     def __str__(self):
         return f"{self.user.username} - {self.platform} - {self.session_id}"

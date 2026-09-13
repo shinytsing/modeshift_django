@@ -1245,6 +1245,7 @@ class JobSearchRequest(models.Model):
     job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES, default="full_time", verbose_name="工作类型")
     experience_level = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES, default="1-3", verbose_name="经验要求")
     keywords = models.JSONField(default=list, verbose_name="关键词")
+    search_options = models.JSONField(default=dict, blank=True, verbose_name="搜索扩展配置")
     company_size = models.CharField(max_length=50, blank=True, null=True, verbose_name="公司规模")
     industry = models.CharField(max_length=100, blank=True, null=True, verbose_name="行业")
     education_level = models.CharField(max_length=50, blank=True, null=True, verbose_name="学历要求")
