@@ -262,6 +262,8 @@ def get_notification_summary_api(request):
             return JsonResponse({"success": False, "error": "用户未登录", "redirect": "/"}, status=401)
 
     except Exception as auth_error:
+        if auth_error.__class__.__name__ == 'SynchronousOnlyOperation':
+            return JsonResponse({'success': True, 'total_unread': 0, 'latest_notification': None, 'has_unread': False})
         logger.error(f"认证检查失败: {auth_error}")
         return JsonResponse({"success": False, "error": "认证检查失败"}, status=500)
 
