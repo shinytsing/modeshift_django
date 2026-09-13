@@ -84,12 +84,14 @@ body {
 
 .step-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 30px;
     margin-bottom: 40px;
 }
 
 .step-card {
+    min-width: 0;
+    overflow-wrap: anywhere;
     background: linear-gradient(135deg, var(--geek-gray) 0%, var(--geek-light-gray) 100%);
     border: 2px solid var(--geek-green);
     border-radius: 12px;
@@ -826,7 +828,7 @@ function showStep(step) {
     document.getElementById('platformSelection').style.display = step === STEPS.PLATFORM_SELECTION ? 'block' : 'none';
     document.getElementById('searchConfig').style.display = step === STEPS.SEARCH_CONFIG ? 'block' : 'none';
     document.getElementById('loginConfig').style.display = step === STEPS.LOGIN_CONFIG ? 'block' : 'none';
-    document.getElementById('launchButton').style.display = step === STEPS.LOGIN_CONFIG ? 'flex' : 'none';
+    document.getElementById('launchButton').style.display = 'none';
     document.getElementById('nextStepButton').style.display = step === STEPS.SEARCH_CONFIG ? 'flex' : 'none';
     
     switch(step) {
@@ -918,6 +920,16 @@ function showLoginMethods() {
             });
         }
     });
+    // 后端平台信息暂不可用时仍提供 BOSS 基础登录入口
+    if (!container.children.length && selectedPlatforms.includes('boss')) {
+        [['qr','扫码登录'],['phone','账号/手机号登录']].forEach(([method,text]) => {
+            const btn = document.createElement('button');
+            btn.className = 'login-method-btn';
+            btn.innerHTML = `<div class="login-method-icon">🔐</div><div class="login-method-text">${text}</div>`;
+            btn.addEventListener('click', () => selectLoginMethod('boss', method));
+            container.appendChild(btn);
+        });
+    }
 }
 
 // 选择登录方式
