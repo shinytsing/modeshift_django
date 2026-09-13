@@ -58,6 +58,12 @@ def _boss_payload(response):
         payload = response.json()
     except (ValueError, requests.exceptions.JSONDecodeError):
         return {}, 'error'
+    # The QR endpoints do not consistently use the normal zpData envelope.
+    # In particular /qrcode/scan returns {"scaned": true} at the top level.
+    if payload.get('scaned') is True or payload.get('scanned') is True:
+        return payload, 'scanned'
+    if str(payload.get('msg', '')).lower() in ('timeout', 'expired', 'invalid'):
+        return payload, 'expired'
     data = payload.get('zpData') or payload.get('data') or {}
     code = payload.get('code', payload.get('resCode', payload.get('statusCode')))
     # BOSS uses code=0 for a valid response; some deployments omit code.
@@ -91,8 +97,13 @@ def _boss_qr_state(qr_session):
         return 'expired', confirm_payload or scan_payload
     # A bare HTTP 200 is only a waiting response. Successful scanLogin has a
     # populated data envelope and must be persisted for this user.
-    if (confirm.status_code == 200 and confirm_payload.get('code') in (0, '0', None)
-            and isinstance(confirm_data, dict) and confirm_data):
+    # Open-source implementations treat a 200 scanLogin response as the
+    # approval edge, even when BOSS returns an empty zpData object.  The
+    # endpoint is a stateful session call; the session cookies are the
+    # authoritative result.
+    if (state in ('scanned', 'confirmed') and confirm.status_code == 200
+            and confirm_payload.get('code') in (0, '0', None)
+            and (isinstance(confirm_data, dict) and confirm_data or confirm_payload.get('scaned') is True)):
         _persist_boss_session(qr_session.get('user_id'), session, qr_id)
         return 'confirmed', confirm_payload
     if state in ('scanned', 'confirmed'):
@@ -308,7 +319,13 @@ def start_boss_qr_login_api(request):
             qr_image = None
             try:
                 session = requests.Session()
-                session.headers.update({'User-Agent': 'Mozilla/5.0', 'Referer': login_url})
+                session.headers.update({
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152 Safari/537.36',
+                    'Referer': login_url,
+                    'Origin': 'https://www.zhipin.com',
+                    'Accept': 'application/json, text/plain, */*',
+                    'X-Requested-With': 'XMLHttpRequest',
+                })
                 rk = session.post('https://www.zhipin.com/wapi/zppassport/captcha/randkey', timeout=15).json()
                 qr_id = rk.get('zpData', {}).get('qrId')
                 if qr_id:
