@@ -92,11 +92,11 @@ def _playwright_qr_context(user_id):
         page = context.new_page()
         page.goto(login_url, wait_until="domcontentloaded", timeout=30000)
         result = page.evaluate("""async () => {
-          const r = await fetch('/wapi/zppassport/captcha/randkey', {credentials:'include'});
+          const r = await fetch('https://www.zhipin.com/wapi/zppassport/captcha/randkey', {credentials:'include'});
           const j = await r.json();
           const id = j?.zpData?.qrId || j?.data?.qrId || j?.qrId;
           if (!id) throw new Error('BOSS 未返回二维码标识');
-          const q = await fetch('/wapi/zpweixin/qrcode/getqrcode?content=' + encodeURIComponent(id), {credentials:'include'});
+          const q = await fetch('https://www.zhipin.com/wapi/zpweixin/qrcode/getqrcode?content=' + encodeURIComponent(id), {credentials:'include'});
           if (!q.ok) throw new Error('BOSS 二维码图片请求失败: ' + q.status);
           const b = await q.arrayBuffer(); let s = '';
           for (const x of new Uint8Array(b)) s += String.fromCharCode(x);
