@@ -271,7 +271,9 @@ def check_boss_login_status_api(request):
 def boss_login_events_api(request):
     """实时推送当前用户 BOSS 扫码登录状态。"""
     def events():
-        for _ in range(60):
+        # Gunicorn's sync worker must not be held by a long lived stream;
+        # the browser's status poll provides the durable real-time loop.
+        for _ in range(1):
             session = BOSS_QR_SESSIONS.get(request.user.id) or _load_boss_session(request.user.id)
             if session:
                 BOSS_QR_SESSIONS[request.user.id] = session
@@ -284,7 +286,6 @@ def boss_login_events_api(request):
             yield f"data: {json.dumps({'status': 'logged_in' if state == 'confirmed' else state}, ensure_ascii=False)}\n\n"
             if state in ('confirmed', 'expired'):
                 break
-            time.sleep(2)
     return StreamingHttpResponse(events(), content_type='text/event-stream')
 
 
