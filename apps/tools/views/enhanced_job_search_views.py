@@ -77,18 +77,26 @@ def _boss_payload(response):
     return payload, state
 
 def _boss_qr_state(qr_session):
-    """Run the QR state machine and return (state, response payload)."""
+    """Poll both endpoints; scanLogin is authoritative after app approval."""
     session, qr_id = qr_session['session'], qr_session['qr_id']
     scan = session.get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid={qr_id}", timeout=10)
     scan_payload, state = _boss_payload(scan)
+    # Some BOSS deployments leave /scan at status=0 after the mobile app
+    # approves. Always call scanLogin so the approval is not missed.
+    confirm = session.get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_id}&status=1", timeout=10)
+    confirm_payload, confirm_state = _boss_payload(confirm)
+    confirm_data = confirm_payload.get('zpData') or confirm_payload.get('data') or {}
+    logger.info("BOSS QR poll user=%s scan=%s confirm=%s", qr_session.get('user_id'), state, confirm_state)
+    if state == 'expired' or confirm_state == 'expired':
+        return 'expired', confirm_payload or scan_payload
+    # A bare HTTP 200 is only a waiting response. Successful scanLogin has a
+    # populated data envelope and must be persisted for this user.
+    if (confirm.status_code == 200 and confirm_payload.get('code') in (0, '0', None)
+            and isinstance(confirm_data, dict) and confirm_data):
+        _persist_boss_session(qr_session.get('user_id'), session, qr_id)
+        return 'confirmed', confirm_payload
     if state in ('scanned', 'confirmed'):
-        confirm = session.get(f"https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId={qr_id}&status=1", timeout=10)
-        confirm_payload, confirm_state = _boss_payload(confirm)
-        if confirm_state == 'confirmed' or (confirm.status_code == 200 and (confirm_payload.get('code') in (0, '0', None))):
-            _persist_boss_session(qr_session.get('user_id'), session, qr_id)
-            return 'confirmed', confirm_payload
-        if confirm_state == 'expired':
-            return 'expired', confirm_payload
+        return 'scanned', scan_payload
     return state, scan_payload
 
 
