@@ -998,6 +998,7 @@ async function startQRLogin() {
     
     const response = await fetch('/tools/job-search/api/boss-qr-login/', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
         }
