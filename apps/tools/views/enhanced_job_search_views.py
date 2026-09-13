@@ -121,14 +121,10 @@ def _playwright_qr_state(qr_session):
     qr_id = live["qr_id"]
     def _get(path):
         try:
-            # Run the poll from the original BOSS page itself.  This keeps the
-            # same JS runtime, origin, cookies and browser context as QR scan.
-            return live["page"].evaluate("""async (path) => {
-              const r = await fetch(path, {credentials: 'include'});
-              let body = {};
-              try { body = await r.json(); } catch (_) {}
-              return {status: r.status, json: body};
-            }""", path)
+            response = live["context"].request.get(path, headers={'Referer': 'https://www.zhipin.com/web/user/?ka=header-login'}, timeout=8000)
+            try: body = response.json()
+            except Exception: body = {}
+            return {'status': response.status, 'json': body}
         except Exception as exc:
             logger.warning("BOSS QR poll request failed: %s", exc)
             return {"status": 0, "json": {}}
