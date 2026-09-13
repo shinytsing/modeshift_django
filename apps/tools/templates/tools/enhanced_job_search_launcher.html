@@ -645,6 +645,9 @@ body {
         <button type="button" id="nextStepButton" class="launch-button" style="display:flex;margin-top:20px;">
             <i class="fas fa-arrow-right"></i><span>下一步：登录验证</span>
         </button>
+        <button type="button" id="backToPlatformButton" class="launch-button secondary" style="display:flex;margin-top:10px;">
+            <i class="fas fa-arrow-left"></i><span>返回选择平台</span>
+        </button>
     </div>
 
     <!-- 登录方式选择 -->
@@ -663,6 +666,9 @@ body {
                 <div class="login-method-icon">📱</div><div class="login-method-text">账号/手机号登录</div>
             </button>
         </div>
+        <button type="button" id="backToSearchButton" class="launch-button secondary" style="display:flex;margin-top:20px;">
+            <i class="fas fa-arrow-left"></i><span>返回配置搜索</span>
+        </button>
     </div>
 
     <!-- 启动按钮 -->
@@ -743,6 +749,8 @@ function setupEventListeners() {
         if (!keywords || !city) { updateProgressText('请先填写搜索关键词和工作城市'); return; }
         showStep(STEPS.LOGIN_CONFIG);
     });
+    document.getElementById('backToPlatformButton').addEventListener('click', () => showStep(STEPS.PLATFORM_SELECTION));
+    document.getElementById('backToSearchButton').addEventListener('click', () => showStep(STEPS.SEARCH_CONFIG));
 }
 
 // 加载平台信息
