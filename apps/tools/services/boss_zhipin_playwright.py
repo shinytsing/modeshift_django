@@ -2363,6 +2363,7 @@ class BossZhipinPlaywrightService:
     def get_login_page_url(self, user_id: int) -> Dict:
         """获取Boss直聘登录页面URL"""
         try:
+            self._user_id = user_id
             # 检查缓存
             cache_key = f"boss_login_url_{user_id}"
             cached_result = cache.get(cache_key)
