@@ -6,6 +6,8 @@ import json
 import logging
 import os
 import time
+import base64
+import requests
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -192,11 +194,23 @@ def start_boss_qr_login_api(request):
             login_url = result.get('login_url')
             
             # 这里可以返回二维码图片URL或者登录页面URL
+            qr_image = None
+            try:
+                session = requests.Session()
+                session.headers.update({'User-Agent': 'Mozilla/5.0', 'Referer': login_url})
+                rk = session.post('https://www.zhipin.com/wapi/zppassport/captcha/randkey', timeout=15).json()
+                qr_id = rk.get('zpData', {}).get('qrId')
+                if qr_id:
+                    img = session.get(f'https://www.zhipin.com/wapi/zpweixin/qrcode/getqrcode?content={qr_id}', timeout=15)
+                    if img.ok:
+                        qr_image = 'data:image/png;base64,' + base64.b64encode(img.content).decode()
+            except Exception as qr_error:
+                logger.warning(f'获取BOSS真实二维码失败: {qr_error}')
             return JsonResponse({
                 "success": True,
                 "message": "二维码登录已启动",
                 "login_url": login_url,
-                "qr_code_url": f"/tools/job-search/api/boss-qr-code/{request.user.id}/"
+                "qr_code_url": qr_image,
             })
         else:
             return JsonResponse(result)
