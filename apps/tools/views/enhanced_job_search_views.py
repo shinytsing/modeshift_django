@@ -45,6 +45,7 @@ def _load_boss_session(user_id):
         with open(os.path.join(directory, 'session.json'), encoding='utf-8') as fh:
             meta = json.load(fh)
         session = requests.Session()
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152.0.0.0 Safari/537.36', 'Referer': 'https://www.zhipin.com/', 'Origin': 'https://www.zhipin.com', 'Accept': 'application/json, text/plain, */*', 'X-Requested-With': 'XMLHttpRequest'})
         with open(os.path.join(directory, 'cookies.json'), encoding='utf-8') as fh:
             for c in json.load(fh):
                 session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
