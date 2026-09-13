@@ -1222,7 +1222,10 @@ async function pollLoginStatus() {
                         success: true,
                         token: result.token_info?.token
                     });
-                } else if (attempts >= maxAttempts) {
+                } else if (result.qr_status === 'scanned') {
+                    updateProgressText('已扫码，请在 BOSS App 内确认登录');
+                    setTimeout(poll, 2000);
+                } else if (result.qr_status === 'expired' || attempts >= maxAttempts) {
                     // 超时
                     closeAllModals();
                     reject(new Error('登录超时，请重试'));
