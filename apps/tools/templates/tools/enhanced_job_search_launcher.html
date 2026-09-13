@@ -4,7 +4,8 @@
 {% block title %}增强版AI一键投递系统 - QAToolBox{% endblock %}
 
 {% block extra_css %}
-<style>
+    <style>
+        .required-mark { color: #ff4d6d; font-weight: 700; margin-left: 4px; }
 /* 极客风格主题 */
 :root {
     --geek-green: #00ff41;
@@ -578,13 +579,13 @@ body {
         
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">搜索关键词</label>
+                <label class="form-label">搜索关键词 <span class="required-mark">*</span></label>
                 <input type="text" id="keywords" class="form-input" 
                        placeholder="如：Python开发、前端工程师、数据分析师" required>
             </div>
             
             <div class="form-group">
-                <label class="form-label">工作城市</label>
+                <label class="form-label">工作城市 <span class="required-mark">*</span></label>
                 <select id="city" class="form-select" required>
                     <option value="">请选择城市</option>
                     <option value="北京">北京</option>
