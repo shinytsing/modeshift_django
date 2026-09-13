@@ -239,8 +239,13 @@ class BossZhipinPlaywrightService:
                 proxy=proxy_config
             )
             
-            # 创建页面
-            self.page = self.browser.new_page()
+            # 创建页面并复用用户登录态（容器重启后仍保留 Cookie）
+            state_dir = os.path.join(os.getenv('MEDIA_ROOT', '/app/media'), 'boss_sessions')
+            os.makedirs(state_dir, exist_ok=True)
+            state_file = os.path.join(state_dir, 'user_%s.json' % getattr(self, '_user_id', 'default'))
+            context = self.browser.new_context(storage_state=state_file if os.path.exists(state_file) else None)
+            self.page = context.new_page()
+            self._storage_state_file = state_file
             
             # 反检测设置
             if self.anti_detection_service:
@@ -1801,6 +1806,7 @@ class BossZhipinPlaywrightService:
     def check_login_status(self, user_id: int) -> Dict:
         """检查登录状态 - 多种方式检测"""
         try:
+            self._user_id = user_id
             import asyncio
             
             # 检查是否在asyncio循环中
