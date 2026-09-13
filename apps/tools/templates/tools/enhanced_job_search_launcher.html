@@ -921,7 +921,7 @@ function showLoginMethods() {
         }
     });
     // 后端平台信息暂不可用时仍提供 BOSS 基础登录入口
-    if (!container.children.length && selectedPlatforms.includes('boss')) {
+    if (!container.children.length) {
         [['qr','扫码登录'],['phone','账号/手机号登录']].forEach(([method,text]) => {
             const btn = document.createElement('button');
             btn.className = 'login-method-btn';
