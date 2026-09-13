@@ -6,7 +6,10 @@ from datetime import datetime
 
 import defusedxml.ElementTree as ET
 import defusedxml.minidom as minidom
-import xmind
+try:
+    import xmind
+except ModuleNotFoundError:  # Optional export dependency; page routes do not require it.
+    xmind = None
 from django.conf import settings
 from django.http import FileResponse, JsonResponse
 from rest_framework import status

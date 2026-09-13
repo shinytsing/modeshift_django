@@ -640,6 +640,9 @@ body {
                           placeholder="如：某某外包公司"></textarea>
             </div>
         </div>
+        <button type="button" id="nextStepButton" class="launch-button" style="display:flex;margin-top:20px;">
+            <i class="fas fa-arrow-right"></i><span>下一步：登录验证</span>
+        </button>
     </div>
 
     <!-- 登录方式选择 -->
@@ -725,6 +728,13 @@ function setupEventListeners() {
     document.getElementById('launchButton').addEventListener('click', function(e) {
         e.preventDefault();
         handleLaunchClick();
+    });
+    document.getElementById('nextStepButton').addEventListener('click', function() {
+        if (!selectedPlatforms.length) return;
+        const keywords = document.getElementById('keywords').value.trim();
+        const city = document.getElementById('city').value;
+        if (!keywords || !city) { updateProgressText('请先填写搜索关键词和工作城市'); return; }
+        showStep(STEPS.LOGIN_CONFIG);
     });
 }
 
@@ -817,6 +827,7 @@ function showStep(step) {
     document.getElementById('searchConfig').style.display = step === STEPS.SEARCH_CONFIG ? 'block' : 'none';
     document.getElementById('loginConfig').style.display = step === STEPS.LOGIN_CONFIG ? 'block' : 'none';
     document.getElementById('launchButton').style.display = step === STEPS.LOGIN_CONFIG ? 'flex' : 'none';
+    document.getElementById('nextStepButton').style.display = step === STEPS.SEARCH_CONFIG ? 'flex' : 'none';
     
     switch(step) {
         case STEPS.PLATFORM_SELECTION:

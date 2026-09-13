@@ -9,7 +9,11 @@ import random
 from typing import Dict, Optional, Any, List
 
 from django.core.cache import cache
-from playwright.sync_api import sync_playwright, Browser, Page
+try:
+    from playwright.sync_api import sync_playwright, Browser, Page
+except ModuleNotFoundError:  # Playwright is optional for deployments that do not use job scraping.
+    sync_playwright = None
+    Browser = Page = Any
 from .anti_detection_service import AntiDetectionService
 from .security_bypass_service import SecurityBypassService
 from .simple_security_bypass import SimpleSecurityBypassService
