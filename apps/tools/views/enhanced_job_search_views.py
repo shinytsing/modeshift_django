@@ -133,9 +133,10 @@ def _playwright_qr_state(qr_session):
             logger.warning("BOSS QR poll request failed: %s", exc)
             return {"status": 0, "json": {}}
     try:
-        scan = _get("/wapi/zppassport/qrcode/scan?uuid=" + urllib.parse.quote(qr_id))
-        confirm = _get("/wapi/zppassport/qrcode/scanLogin?qrId=" + urllib.parse.quote(qr_id) + "&status=1")
+        scan = _get("https://www.zhipin.com/wapi/zppassport/qrcode/scan?uuid=" + urllib.parse.quote(qr_id))
+        confirm = _get("https://www.zhipin.com/wapi/zppassport/qrcode/scanLogin?qrId=" + urllib.parse.quote(qr_id) + "&status=1")
         payload, cp = scan.get("json") or {}, confirm.get("json") or {}
+        logger.info("BOSS QR raw response user=%s scan_http=%s scan_payload=%s confirm_http=%s confirm_payload=%s", user_id, scan.get("status"), json.dumps(payload, ensure_ascii=False)[:1000], confirm.get("status"), json.dumps(cp, ensure_ascii=False)[:1000])
         text = json.dumps({**payload, **cp}, ensure_ascii=False).lower()
         if any(x in text for x in ("expired", "expire", "timeout", "失效", "过期")):
             _close_playwright_qr_context(user_id); return "expired", cp or payload
