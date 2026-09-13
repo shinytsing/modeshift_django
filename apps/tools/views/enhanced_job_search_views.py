@@ -60,7 +60,7 @@ def _boss_payload(response):
         return {}, 'error'
     # The QR endpoints do not consistently use the normal zpData envelope.
     # In particular /qrcode/scan returns {"scaned": true} at the top level.
-    if payload.get('scaned') is True or payload.get('scanned') is True:
+    if payload.get('scaned') in (True, 1, '1', 'true', 'True') or payload.get('scanned') in (True, 1, '1', 'true', 'True'):
         return payload, 'scanned'
     if str(payload.get('msg', '')).lower() in ('timeout', 'expired', 'invalid'):
         return payload, 'expired'
@@ -102,8 +102,7 @@ def _boss_qr_state(qr_session):
     # endpoint is a stateful session call; the session cookies are the
     # authoritative result.
     if (state in ('scanned', 'confirmed') and confirm.status_code == 200
-            and confirm_payload.get('code') in (0, '0', None)
-            and (isinstance(confirm_data, dict) and confirm_data or confirm_payload.get('scaned') is True)):
+            and confirm_payload.get('code') in (0, '0', None)):
         _persist_boss_session(qr_session.get('user_id'), session, qr_id)
         return 'confirmed', confirm_payload
     if state in ('scanned', 'confirmed'):
