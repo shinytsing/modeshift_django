@@ -56,7 +56,7 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1,web,192.168.27.128,shenyiqing.xyz,www.shenyiqing.xyz
     command: >-
-      sh -c "python manage.py migrate --noinput &&
+      sh -c "python manage.py migrate --noinput --run-syncdb &&
       exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120
       --max-requests 1000 --max-requests-jitter 100 wsgi:application"
     volumes:

@@ -114,16 +114,15 @@ main() {
     echo "QATOOLBOX_IMAGE is required; deploy through the GitHub Actions image-build workflow." >&2
     exit 1
   fi
-  if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
-    echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required to pull the private production image." >&2
-    exit 1
-  fi
-
   echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
   export QATOOLBOX_IMAGE
   if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
     echo "==> Reusing cached image $QATOOLBOX_IMAGE"
   else
+    if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
+      echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required when the image is not cached." >&2
+      exit 1
+    fi
     local login_attempt login_succeeded pull_attempt pull_succeeded
     login_succeeded=false
     echo "==> Logging in to GitHub Container Registry"

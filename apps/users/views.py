@@ -99,8 +99,6 @@ def register_view(request):
                     messages.error(request, "密码必须大于8位。", extra_tags="password")
                 elif has_repeated_characters(password):
                     messages.error(request, "密码不能包含连续重复的字符。", extra_tags="password")
-                elif has_consecutive_characters(password):
-                    messages.error(request, "密码不能是完全连续的字符。", extra_tags="password")
                 elif not has_two_different_character_types(password):
                     messages.error(request, "密码必须包含至少两种不同的字符类型（如字母和数字）。", extra_tags="password")
                 else:
@@ -1253,7 +1251,7 @@ def user_login_api(request):
             return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
 
     except Exception as e:
-        return JsonResponse({"success": False, "message": f"登录失败: {str(e)}"}, status=500)
+        return JsonResponse({"success": False, "message": "登录暂时无法完成，请稍后再试"}, status=500)
 
 
 # 用户注册API
@@ -1271,10 +1269,10 @@ def user_register_api(request):
             return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
 
         if User.objects.filter(username=username).exists():
-            return JsonResponse({"success": False, "message": "用户名已存在"}, status=400)
+            return JsonResponse({"success": False, "message": "该用户名已被使用，请换一个"}, status=400)
 
         if len(password) < 8:
-            return JsonResponse({"success": False, "message": "密码必须大于8位"}, status=400)
+            return JsonResponse({"success": False, "message": "密码长度不足，请使用至少8位密码"}, status=400)
 
         user = User.objects.create_user(username=username, password=password, email=email)
 
@@ -1307,7 +1305,7 @@ def user_register_api(request):
         })
 
     except Exception as e:
-        return JsonResponse({"success": False, "message": f"注册失败: {str(e)}"}, status=500)
+        return JsonResponse({"success": False, "message": "注册暂时无法完成，请检查填写内容后重试"}, status=500)
 
 
 # 用户资料API
