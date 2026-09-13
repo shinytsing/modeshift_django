@@ -1,6 +1,8 @@
 """
 生产环境配置 - 与开发环境完全一致，都使用PostgreSQL数据库
 """
+import os
+os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
 
 from .base import *
 
