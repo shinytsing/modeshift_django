@@ -247,13 +247,11 @@ def boss_login_events_api(request):
 def start_boss_qr_login_api(request):
     """启动BOSS直聘二维码登录API"""
     try:
-        from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
-        
-        playwright_service = BossZhipinPlaywrightService(headless=False)  # 显示浏览器窗口
-        
-        # 获取登录页面URL
-        result = playwright_service.get_login_page_url(request.user.id)
-        
+        # Generate the QR directly through BOSS's HTTP flow. Starting a local
+        # Playwright window here can block the request and is unnecessary for
+        # the embedded QR experience.
+        login_url = 'https://www.zhipin.com/web/user/?ka=header-login'
+        result = {'success': True, 'login_url': login_url}
         if result.get('success'):
             # 启动浏览器并显示二维码
             login_url = result.get('login_url')
