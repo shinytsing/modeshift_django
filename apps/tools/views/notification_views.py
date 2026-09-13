@@ -3,6 +3,7 @@
 """
 
 import json
+import logging
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
@@ -12,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from ..models.chat_models import ChatMessage, ChatNotification, ChatRoom
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
@@ -264,9 +267,6 @@ def get_notification_summary_api(request):
 
     try:
         # 添加调试信息
-        import logging
-
-        logger = logging.getLogger(__name__)
         logger.info(f"获取通知摘要 - 用户: {request.user.username}")
 
         # 获取聊天通知
