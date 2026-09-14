@@ -20,6 +20,7 @@ from apps.tools.services.enhanced_job_delivery_service import (
     load_boss_storage_state,
     persist_boss_storage_state,
 )
+from apps.tools.services.boss_zhipin_playwright import storage_state_has_boss_auth_cookie
 
 logger = logging.getLogger(__name__)
 BOSS_QR_SESSIONS = {}
@@ -42,6 +43,11 @@ BOSS_FP_I_STRING = (
     "fef7e750fc3a1e6327e8a880915aee9c.ae00f848beb1aa591d71d5a80dd3bd95"
 )
 BOSS_FP_KEY_B64 = "clRwXUJBK1VKK0k0IWFbbQ=="
+
+
+def _is_boss_security_verification_url(url):
+    value = (url or "").lower()
+    return any(marker in value for marker in ("security", "verify.html", "/verify", "captcha"))
 
 
 def _boss_dispatcher_fp():
@@ -157,7 +163,10 @@ def _playwright_qr_context(user_id):
 
 
 def _playwright_qr_state(user_id):
-    from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
+    from apps.tools.services.boss_zhipin_playwright import (
+        BossZhipinPlaywrightService,
+        storage_state_has_boss_auth_cookie,
+    )
 
     with _PLAYWRIGHT_QR_LOCK:
         live = _PLAYWRIGHT_QR_CONTEXTS.get(user_id)
@@ -242,9 +251,15 @@ def _playwright_qr_state(user_id):
                 (item.get("name"), item.get("domain"), item.get("path")): item.get("value")
                 for item in live["context"].cookies("https://www.zhipin.com")
             }
-            auth_cookie_names = {"wt2", "zp_at", "__zp_stoken__", "bst", "geek_zp_token"}
             changed_auth_cookie = any(
-                key[0] in auth_cookie_names and before_cookies.get(key) != value
+                key[0] in {
+                    "wt2",
+                    "zp_at",
+                    "__zp_stoken__",
+                    "bst",
+                    "geek_zp_token",
+                }
+                and before_cookies.get(key) != value
                 for key, value in after_cookies.items()
             )
             has_set_cookie = any(
@@ -271,13 +286,16 @@ def _playwright_qr_state(user_id):
                     timeout=30000,
                 )
                 live["page"].wait_for_timeout(1000)
-                confirmed = BossZhipinPlaywrightService(
+                page_validated = BossZhipinPlaywrightService(
                     headless=True,
                     anti_detection=False,
                 )._check_page_login_status(live["page"])
+                confirmed = page_validated or changed_auth_cookie
                 logger.warning(
-                    "BOSS QR final page validation user=%s logged_in=%s url=%s",
+                    "BOSS QR final validation user=%s page_logged_in=%s cookie_logged_in=%s confirmed=%s url=%s",
                     user_id,
+                    page_validated,
+                    changed_auth_cookie,
                     confirmed,
                     live["page"].url,
                 )
@@ -285,9 +303,11 @@ def _playwright_qr_state(user_id):
                 logger.warning("BOSS QR dispatcher 未返回最终登录 Cookie，继续等待而不保存假登录态")
         if confirmed and code in (None, 0, "0", True):
             storage_state = live["context"].storage_state()
-            _persist_boss_storage_state(user_id, storage_state, qr_id)
-            _close_playwright_qr_context(user_id)
-            return "confirmed", confirm or scan
+            if storage_state_has_boss_auth_cookie(storage_state):
+                _persist_boss_storage_state(user_id, storage_state, qr_id)
+                _close_playwright_qr_context(user_id)
+                return "confirmed", confirm or scan
+            logger.warning("BOSS QR 已确认但 storage state 中未发现认证 Cookie user=%s", user_id)
         if scanned or scan_confirmed:
             return "scanned", scan
         return "waiting_scan", scan
@@ -383,14 +403,21 @@ def check_boss_login_status_api(request):
             })
 
         from apps.tools.services.boss_zhipin_playwright import BossZhipinPlaywrightService
+        saved_state = load_boss_storage_state(request.user.id)
         result = BossZhipinPlaywrightService(headless=True, anti_detection=False).check_login_status(request.user.id)
-        is_logged_in = result.get("is_logged_in", False)
-        if result.get("success") and not is_logged_in:
+        security_verification = _is_boss_security_verification_url(result.get("current_url"))
+        cookie_logged_in = storage_state_has_boss_auth_cookie(saved_state) and not security_verification
+        is_logged_in = result.get("is_logged_in", False) or cookie_logged_in
+        if result.get("success") and not is_logged_in and not security_verification:
             CookieSession.objects.filter(user=request.user, platform="boss").update(is_active=False)
+        message = result.get("message", "检查登录状态")
+        if security_verification:
+            message = "BOSS 返回安全验证，请先在 BOSS 页面完成验证后再执行任务"
         return response_with_summary({
-            "success": result.get("success", False),
+            "success": result.get("success", False) or cookie_logged_in,
             "is_logged_in": is_logged_in,
-            "message": result.get("message", "检查登录状态"),
+            "message": "已检测到 BOSS 登录态 Cookie" if cookie_logged_in and not result.get("is_logged_in") else message,
+            "security_verification": security_verification,
             "token_info": {},
             "current_url": result.get("current_url", ""),
         })

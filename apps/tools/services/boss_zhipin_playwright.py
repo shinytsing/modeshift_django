@@ -30,6 +30,24 @@ BOSS_BROWSER_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+BOSS_AUTH_COOKIE_NAMES = frozenset({
+    "wt2",
+    "zp_at",
+    "__zp_stoken__",
+    "bst",
+    "geek_zp_token",
+})
+
+
+def storage_state_has_boss_auth_cookie(storage_state: Optional[Dict[str, Any]]) -> bool:
+    """判断 Playwright storage state 是否包含 BOSS 登录认证 Cookie。"""
+    if not isinstance(storage_state, dict):
+        return False
+    return any(
+        cookie.get("name") in BOSS_AUTH_COOKIE_NAMES and bool(cookie.get("value"))
+        for cookie in storage_state.get("cookies", [])
+        if isinstance(cookie, dict)
+    )
 
 
 class BossZhipinPlaywrightService:

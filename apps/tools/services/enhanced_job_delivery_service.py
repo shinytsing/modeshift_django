@@ -20,7 +20,7 @@ from django.db import close_old_connections, transaction
 from django.utils import timezone
 
 from apps.tools.models import CookieSession, JobApplication, JobSearchRequest
-from .boss_zhipin_playwright import BossZhipinPlaywrightService
+from .boss_zhipin_playwright import BossZhipinPlaywrightService, storage_state_has_boss_auth_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +319,19 @@ class EnhancedJobDeliveryService:
         try:
             browser.page.goto(f"{browser.base_url}/web/geek/jobs", wait_until="domcontentloaded", timeout=30000)
             browser.page.wait_for_timeout(1000)
-            if not browser._check_page_login_status(browser.page):
+            page_logged_in = browser._check_page_login_status(browser.page)
+            current_url = (browser.page.url or "").lower()
+            security_verification = any(
+                marker in current_url for marker in ("security", "verify.html", "/verify", "captcha")
+            )
+            if not page_logged_in and security_verification:
+                return {
+                    "success": False,
+                    "error": "BOSS 返回安全验证，请先在 BOSS 页面完成验证后再执行任务",
+                    "applied_count": 0,
+                    "found_count": 0,
+                }
+            if not page_logged_in and not storage_state_has_boss_auth_cookie(load_boss_storage_state(user_id)):
                 deactivate_boss_storage_state(user_id)
                 return {"success": False, "error": "BOSS 登录态已失效，请重新扫码", "applied_count": 0, "found_count": 0}
 
