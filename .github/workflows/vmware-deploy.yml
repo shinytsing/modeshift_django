@@ -120,11 +120,11 @@ jobs:
         id: bundle
         shell: bash
         run: |
-          echo "compose=$(base64 -w0 docker/docker-compose.vm.yml)" >> "$GITHUB_OUTPUT"
-          echo "script=$(base64 -w0 scripts/deploy-vm.sh)" >> "$GITHUB_OUTPUT"
+          echo "compose=$(base64 -w0 docker/docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
+          echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
 
   deploy:
-    name: Pull and start Docker application on VMware
+    name: Pull and start public Docker application on VMware
     needs: build_image
     runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 45
@@ -142,17 +142,15 @@ jobs:
           DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
         run: |
           mkdir -p docker scripts
-          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > docker/docker-compose.vm.yml
-          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > scripts/deploy-vm.sh
-          chmod +x scripts/deploy-vm.sh
+          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > docker/docker-compose.prod.yml
+          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > scripts/deploy-public-vm.sh
+          chmod +x scripts/deploy-public-vm.sh
 
-      - name: Deploy cached image and start application
-        env:
-          QATOOLBOX_SKIP_GIT_SYNC: "true"
-        run: bash scripts/deploy-vm.sh
+      - name: Deploy cached image to the public entrypoint
+        run: bash scripts/deploy-public-vm.sh
 
       - name: Verify deployed health contract
-        run: curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/
+        run: curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8080/health/
 
   notify:
     name: Email final pipeline result
@@ -194,7 +192,7 @@ jobs:
           results = {
               "质量门禁（格式化、API、UI）": os.environ["QA_RESULT"],
               "构建并推送镜像": os.environ["BUILD_RESULT"],
-              "VM拉取、部署与健康检查": os.environ["DEPLOY_RESULT"],
+              "VM公网入口拉取、部署与健康检查": os.environ["DEPLOY_RESULT"],
           }
           succeeded = all(value == "success" for value in results.values())
           label = "成功" if succeeded else "失败"

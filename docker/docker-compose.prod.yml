@@ -42,6 +42,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.prod
+    image: ${QATOOLBOX_IMAGE:-ghcr.io/shinytsing/modeshift_django:main}
     container_name: modeshift_web
     env_file: ../.env
     environment:
@@ -53,6 +54,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - REDIS_URL=redis://:redis123@redis:6379/0
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1,web,192.168.27.128,shenyiqing.xyz,www.shenyiqing.xyz
     command: >-
