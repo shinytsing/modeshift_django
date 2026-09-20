@@ -11,7 +11,6 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   qa:
@@ -73,84 +72,22 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  build_image:
-    name: Build and publish cached production image
-    needs: qa
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    outputs:
-      image: ${{ steps.image.outputs.ref }}
-      compose_bundle: ${{ steps.bundle.outputs.compose }}
-      deploy_script_bundle: ${{ steps.bundle.outputs.script }}
-
-    steps:
-      - name: Check out the triggering revision
-        uses: actions/checkout@v5
-
-      - name: Set image reference
-        id: image
-        shell: bash
-        run: echo "ref=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and publish production image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile.prod
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ steps.image.outputs.ref }}
-            ghcr.io/${{ github.repository }}:main
-          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          cache-from: type=gha,scope=qatoolbox-production
-          cache-to: type=gha,mode=max,scope=qatoolbox-production
-
-      - name: Package the deployment configuration
-        id: bundle
-        shell: bash
-        run: |
-          echo "compose=$(base64 -w0 docker/docker-compose.vm.yml)" >> "$GITHUB_OUTPUT"
-          echo "script=$(base64 -w0 scripts/deploy-vm.sh)" >> "$GITHUB_OUTPUT"
-
   deploy:
-    name: Pull and start Docker application on VMware
-    needs: build_image
+    name: Build and start Docker application on VMware
+    needs: qa
     runs-on: [self-hosted, linux, x64, vmware]
-    # The first pull transfers OCR/AI runtime layers to a new VMware Docker
-    # cache. Subsequent image updates reuse those layers and complete quickly.
     timeout-minutes: 45
     env:
-      QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
-      GHCR_USERNAME: ${{ github.actor }}
-      GHCR_PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      QATOOLBOX_BUILD_LOCAL: "true"
+      QATOOLBOX_SOURCE_DIR: ${{ github.workspace }}
+      QATOOLBOX_SKIP_GIT_SYNC: "true"
 
     steps:
-      - name: Restore the deployment configuration
-        shell: bash
-        env:
-          COMPOSE_BUNDLE: ${{ needs.build_image.outputs.compose_bundle }}
-          DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
-        run: |
-          mkdir -p docker scripts
-          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > docker/docker-compose.vm.yml
-          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > scripts/deploy-vm.sh
-          chmod +x scripts/deploy-vm.sh
+      - name: Check out the triggering revision on VMware
+        uses: actions/checkout@v5
 
-      - name: Deploy the packaged configuration and prebuilt image
-        env:
-          QATOOLBOX_SKIP_GIT_SYNC: "true"
+      - name: Build and start from the VMware Docker cache
         run: bash scripts/deploy-vm.sh
 
       - name: Verify deployed health contract
@@ -159,7 +96,7 @@ jobs:
 
   notify:
     name: Email final pipeline result
-    needs: [qa, build_image, deploy]
+    needs: [qa, deploy]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -172,7 +109,6 @@ jobs:
       DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
       NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
       QA_RESULT: ${{ needs.qa.result }}
-      BUILD_RESULT: ${{ needs.build_image.result }}
       DEPLOY_RESULT: ${{ needs.deploy.result }}
       SOURCE_SHA: ${{ github.sha }}
       SOURCE_REPOSITORY: ${{ github.repository }}
@@ -196,8 +132,7 @@ jobs:
 
           results = {
               "质量门禁（格式化、API、UI）": os.environ["QA_RESULT"],
-              "构建并推送镜像": os.environ["BUILD_RESULT"],
-              "部署与健康检查": os.environ["DEPLOY_RESULT"],
+              "VM本地构建、部署与健康检查": os.environ["DEPLOY_RESULT"],
           }
           succeeded = all(value == "success" for value in results.values())
           label = "成功" if succeeded else "失败"

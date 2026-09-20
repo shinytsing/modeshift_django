@@ -5,6 +5,7 @@ set -Eeuo pipefail
 REPOSITORY_URL="${1:-https://github.com/shinytsing/modeshift_django.git}"
 PROJECT_DIR="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
 APP_PORT="${APP_PORT:-8000}"
+SOURCE_DIR="${QATOOLBOX_SOURCE_DIR:-}"
 
 if ! command -v apt-get >/dev/null; then
   echo "This script supports an Ubuntu/Debian VMware guest only." >&2
@@ -30,6 +31,28 @@ install_docker() {
 }
 
 sync_project() {
+  if [[ -n "$SOURCE_DIR" ]]; then
+    if [[ ! -d "$SOURCE_DIR" ]]; then
+      echo "QATOOLBOX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
+      exit 1
+    fi
+
+    # The self-hosted runner checks out the triggering revision. Copy only
+    # application source into the persistent deployment directory, preserving
+    # .env.vm, Docker volumes, and runtime logs on the VM.
+    echo "==> Syncing checked-out source into $PROJECT_DIR"
+    mkdir -p "$PROJECT_DIR"
+    tar \
+      --exclude='./.git' \
+      --exclude='./.env' \
+      --exclude='./.env.*' \
+      --exclude='./media' \
+      --exclude='./logs' \
+      --exclude='./docker/logs' \
+      -C "$SOURCE_DIR" -cf - . | tar -C "$PROJECT_DIR" -xf -
+    return
+  fi
+
   if [[ "${QATOOLBOX_SKIP_GIT_SYNC:-false}" == "true" ]]; then
     # GitHub Actions already supplied this minimal deployment bundle as an
     # artifact. Avoid a second GitHub fetch on the VMware runner, whose
@@ -125,52 +148,57 @@ main() {
       -f "$PROJECT_DIR/docker/docker-compose.vm.yml" "$@"
   }
 
-  if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
-    echo "QATOOLBOX_IMAGE is required; deploy through the GitHub Actions image-build workflow." >&2
-    exit 1
-  fi
-  echo "==> Pulling and starting prebuilt QAToolBox image $QATOOLBOX_IMAGE"
-  export QATOOLBOX_IMAGE
-  if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
-    echo "==> Reusing cached image $QATOOLBOX_IMAGE"
+  if [[ "${QATOOLBOX_BUILD_LOCAL:-false}" == "true" ]]; then
+    echo "==> Building QAToolBox image locally with the VM Docker cache"
+    compose build web
   else
-    if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
-      echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required when the image is not cached." >&2
+    if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
+      echo "QATOOLBOX_IMAGE is required unless QATOOLBOX_BUILD_LOCAL=true." >&2
       exit 1
     fi
-    local login_attempt login_succeeded pull_attempt pull_succeeded
-    login_succeeded=false
-    echo "==> Logging in to GitHub Container Registry"
-    for login_attempt in {1..4}; do
-      if printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
-        --username "$GHCR_USERNAME" --password-stdin; then
-        login_succeeded=true
-        break
+    echo "==> Pulling prebuilt QAToolBox image $QATOOLBOX_IMAGE"
+    export QATOOLBOX_IMAGE
+    if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
+      echo "==> Reusing cached image $QATOOLBOX_IMAGE"
+    else
+      if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
+        echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required when the image is not cached." >&2
+        exit 1
       fi
-      if [[ "$login_attempt" -lt 4 ]]; then
-        echo "Registry login attempt $login_attempt failed; retrying shortly..." >&2
-        sleep $((login_attempt * 5))
+      local login_attempt login_succeeded pull_attempt pull_succeeded
+      login_succeeded=false
+      echo "==> Logging in to GitHub Container Registry"
+      for login_attempt in {1..4}; do
+        if printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
+          --username "$GHCR_USERNAME" --password-stdin; then
+          login_succeeded=true
+          break
+        fi
+        if [[ "$login_attempt" -lt 4 ]]; then
+          echo "Registry login attempt $login_attempt failed; retrying shortly..." >&2
+          sleep $((login_attempt * 5))
+        fi
+      done
+      if [[ "$login_succeeded" != "true" ]]; then
+        echo "Unable to log in to ghcr.io after 4 attempts." >&2
+        exit 1
       fi
-    done
-    if [[ "$login_succeeded" != "true" ]]; then
-      echo "Unable to log in to ghcr.io after 4 attempts." >&2
-      exit 1
-    fi
 
-    pull_succeeded=false
-    for pull_attempt in {1..4}; do
-      if compose pull web; then
-        pull_succeeded=true
-        break
+      pull_succeeded=false
+      for pull_attempt in {1..4}; do
+        if compose pull web; then
+          pull_succeeded=true
+          break
+        fi
+        if [[ "$pull_attempt" -lt 4 ]]; then
+          echo "Image pull attempt $pull_attempt failed; retrying shortly..." >&2
+          sleep $((pull_attempt * 5))
+        fi
+      done
+      if [[ "$pull_succeeded" != "true" ]]; then
+        echo "Unable to pull $QATOOLBOX_IMAGE after 4 attempts." >&2
+        exit 1
       fi
-      if [[ "$pull_attempt" -lt 4 ]]; then
-        echo "Image pull attempt $pull_attempt failed; retrying shortly..." >&2
-        sleep $((pull_attempt * 5))
-      fi
-    done
-    if [[ "$pull_succeeded" != "true" ]]; then
-      echo "Unable to pull $QATOOLBOX_IMAGE after 4 attempts." >&2
-      exit 1
     fi
   fi
 
