@@ -72,6 +72,32 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Package source for VMware local build
+        shell: bash
+        run: |
+          tar \
+            --exclude='./.git' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./venv' \
+            --exclude='./.venv' \
+            --exclude='./media' \
+            --exclude='./java_job' \
+            --exclude='./node_modules' \
+            --exclude='./*/node_modules' \
+            --exclude='./docs' \
+            --exclude='./qa' \
+            --exclude='*.pyc' \
+            --exclude='__pycache__' \
+            -czf "$RUNNER_TEMP/modeshift-deploy-source.tar.gz" .
+
+      - name: Upload source for VMware local build
+        uses: actions/upload-artifact@v6
+        with:
+          name: modeshift-deploy-source
+          path: ${{ runner.temp }}/modeshift-deploy-source.tar.gz
+          retention-days: 1
+
   deploy:
     name: Build and start Docker application on VMware
     needs: qa
@@ -80,19 +106,25 @@ jobs:
     env:
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       QATOOLBOX_BUILD_LOCAL: "true"
-      QATOOLBOX_SOURCE_URL: https://github.com/${{ github.repository }}/archive/${{ github.sha }}.tar.gz
 
     steps:
-      - name: Download the triggering revision and build locally
+      - name: Download source artifact on VMware
+        uses: actions/download-artifact@v6
+        with:
+          name: modeshift-deploy-source
+          path: ${{ runner.temp }}/modeshift-deploy-source-package
+
+      - name: Build and start from the VMware Docker cache
         shell: bash
         run: |
           set -euo pipefail
           deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
-          mkdir -p "$deploy_dir/scripts"
-          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/scripts/deploy-vm.sh" \
-            -o "$deploy_dir/scripts/deploy-vm.sh"
-          chmod +x "$deploy_dir/scripts/deploy-vm.sh"
-          QATOOLBOX_DIR="$deploy_dir" bash "$deploy_dir/scripts/deploy-vm.sh"
+          source_dir="$RUNNER_TEMP/modeshift-deploy-source"
+          mkdir -p "$source_dir"
+          tar -xzf "$RUNNER_TEMP/modeshift-deploy-source-package/modeshift-deploy-source.tar.gz" -C "$source_dir"
+          chmod +x "$source_dir/scripts/deploy-vm.sh"
+          QATOOLBOX_DIR="$deploy_dir" QATOOLBOX_SOURCE_DIR="$source_dir" \
+            bash "$source_dir/scripts/deploy-vm.sh"
 
       - name: Verify deployed health contract
         run: curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/

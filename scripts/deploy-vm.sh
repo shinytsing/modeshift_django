@@ -6,7 +6,6 @@ REPOSITORY_URL="${1:-https://github.com/shinytsing/modeshift_django.git}"
 PROJECT_DIR="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
 APP_PORT="${APP_PORT:-8000}"
 SOURCE_DIR="${QATOOLBOX_SOURCE_DIR:-}"
-SOURCE_URL="${QATOOLBOX_SOURCE_URL:-}"
 
 if ! command -v apt-get >/dev/null; then
   echo "This script supports an Ubuntu/Debian VMware guest only." >&2
@@ -49,15 +48,6 @@ sync_source_tree() {
 }
 
 sync_project() {
-  if [[ -n "$SOURCE_URL" ]]; then
-    local source_tmp
-    source_tmp="$(mktemp -d)"
-    curl -fsSL "$SOURCE_URL" | tar -xz -C "$source_tmp" --strip-components=1
-    sync_source_tree "$source_tmp"
-    rm -rf "$source_tmp"
-    return
-  fi
-
   if [[ -n "$SOURCE_DIR" ]]; then
     if [[ ! -d "$SOURCE_DIR" ]]; then
       echo "QATOOLBOX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
