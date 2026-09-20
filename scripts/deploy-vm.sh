@@ -67,7 +67,10 @@ sync_project() {
 
     echo "==> Updating deployment configuration in $PROJECT_DIR"
     mkdir -p "$PROJECT_DIR/docker"
-    install -m 0644 "$source_compose" "$PROJECT_DIR/docker/docker-compose.vm.yml"
+    target_compose="$PROJECT_DIR/docker/docker-compose.vm.yml"
+    if [[ "$source_compose" != "$target_compose" ]]; then
+      install -m 0644 "$source_compose" "$target_compose"
+    fi
     return
   fi
 

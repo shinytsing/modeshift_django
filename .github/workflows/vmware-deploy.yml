@@ -73,25 +73,67 @@ jobs:
           retention-days: 14
 
   deploy:
-    name: Build and start Docker application on VMware
+    name: Build and start Docker application on VMware over SSH
     needs: qa
-    runs-on: [self-hosted, linux, x64, vmware]
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       QATOOLBOX_BUILD_LOCAL: "true"
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
     steps:
-      - name: Update the persistent VMware checkout and build locally
+      - name: Check out the triggering revision
+        uses: actions/checkout@v5
+
+      - name: Configure SSH access to VMware
         shell: bash
         run: |
-          deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
-          git -C "$deploy_dir" pull --ff-only
-          QATOOLBOX_DIR="$deploy_dir" bash "$deploy_dir/scripts/deploy-vm.sh"
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SERVER_SSH_KEY" > "$HOME/.ssh/modeshift_deploy"
+          chmod 600 "$HOME/.ssh/modeshift_deploy"
+          ssh-keyscan -p "${SERVER_PORT:-22}" -H "$SERVER_HOST" >> "$HOME/.ssh/known_hosts"
 
-      - name: Verify deployed health contract
+      - name: Sync source to the persistent VMware directory
+        shell: bash
         run: |
-          curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/
+          set -euo pipefail
+          ssh_cmd=(ssh -i "$HOME/.ssh/modeshift_deploy" -p "${SERVER_PORT:-22}" -o BatchMode=yes)
+          ssh_target="${SERVER_USER:-root}@${SERVER_HOST}"
+          "${ssh_cmd[@]}" "$ssh_target" 'mkdir -p "$HOME/modeshift_django"'
+          tar \
+            --exclude='./.git' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./media' \
+            --exclude='./logs' \
+            --exclude='./docker/logs' \
+            -czf - . | "${ssh_cmd[@]}" "$ssh_target" 'tar -xzf - -C "$HOME/modeshift_django"'
+
+      - name: Build and start from the VMware Docker cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh_cmd=(ssh -i "$HOME/.ssh/modeshift_deploy" -p "${SERVER_PORT:-22}" -o BatchMode=yes)
+          ssh_target="${SERVER_USER:-root}@${SERVER_HOST}"
+          printf '%s\n' "$DEEPSEEK_API_KEY" | "${ssh_cmd[@]}" "$ssh_target" '
+            IFS= read -r DEEPSEEK_API_KEY
+            export DEEPSEEK_API_KEY
+            QATOOLBOX_BUILD_LOCAL=true QATOOLBOX_SKIP_GIT_SYNC=true \
+              bash "$HOME/modeshift_django/scripts/deploy-vm.sh"
+          '
+
+      - name: Verify deployed health contract on VMware
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh_cmd=(ssh -i "$HOME/.ssh/modeshift_deploy" -p "${SERVER_PORT:-22}" -o BatchMode=yes)
+          ssh_target="${SERVER_USER:-root}@${SERVER_HOST}"
+          "${ssh_cmd[@]}" "$ssh_target" 'curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8000/health/'
 
   notify:
     name: Email final pipeline result
