@@ -80,15 +80,14 @@ jobs:
     env:
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       QATOOLBOX_BUILD_LOCAL: "true"
-      QATOOLBOX_SOURCE_DIR: ${{ github.workspace }}
-      QATOOLBOX_SKIP_GIT_SYNC: "true"
 
     steps:
-      - name: Check out the triggering revision on VMware
-        uses: actions/checkout@v5
-
-      - name: Build and start from the VMware Docker cache
-        run: bash scripts/deploy-vm.sh
+      - name: Update the persistent VMware checkout and build locally
+        shell: bash
+        run: |
+          deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
+          git -C "$deploy_dir" pull --ff-only
+          QATOOLBOX_DIR="$deploy_dir" bash "$deploy_dir/scripts/deploy-vm.sh"
 
       - name: Verify deployed health contract
         run: |
