@@ -104,6 +104,27 @@ if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
     echo "DeepSeek API key is missing inside the public web container." >&2
     exit 1
   fi
+  compose exec -T web python - <<'PY'
+import os
+import requests
+
+key = os.environ.get("DEEPSEEK_API_KEY", "")
+print(f"DeepSeek key check: present={bool(key)}, length={len(key)}, prefix={key[:3]}")
+try:
+    response = requests.post(
+        "https://api.deepseek.com/v1/chat/completions",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        json={
+            "model": "deepseek-chat",
+            "messages": [{"role": "user", "content": "test"}],
+            "max_tokens": 1,
+        },
+        timeout=10,
+    )
+    print(f"DeepSeek preflight HTTP status: {response.status_code}")
+except Exception as exc:
+    print(f"DeepSeek preflight error: {type(exc).__name__}: {exc}")
+PY
   if ! compose exec -T web python -c \
     'from apps.tools.services.llm_service import DeepSeekService; raise SystemExit(0 if DeepSeekService().is_available() else 1)'; then
     echo "DeepSeek API key is present but the public web container cannot use DeepSeek." >&2
