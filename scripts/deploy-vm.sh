@@ -133,10 +133,26 @@ write_environment() {
   # the exported value directly so key rotation works without recreating the
   # VM's environment file.
   if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
-    if ! grep -q '^DEEPSEEK_API_KEY=' "$PROJECT_DIR/.env.vm"; then
-      umask 077
-      printf 'DEEPSEEK_API_KEY=%s\n' "$DEEPSEEK_API_KEY" >> "$PROJECT_DIR/.env.vm"
-    fi
+    umask 077
+    local env_file env_tmp
+    env_file="$PROJECT_DIR/.env.vm"
+    env_tmp="$(mktemp "$PROJECT_DIR/.env.vm.XXXXXX")"
+    DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" awk '
+      BEGIN { replaced = 0; value = ENVIRON["DEEPSEEK_API_KEY"] }
+      /^DEEPSEEK_API_KEY=/ {
+        if (!replaced) {
+          print "DEEPSEEK_API_KEY=" value
+          replaced = 1
+        }
+        next
+      }
+      { print }
+      END {
+        if (!replaced) print "DEEPSEEK_API_KEY=" value
+      }
+    ' "$env_file" > "$env_tmp"
+    chmod 600 "$env_tmp"
+    mv "$env_tmp" "$env_file"
     echo "==> DeepSeek API key supplied to deployment"
   elif ! grep -q '^DEEPSEEK_API_KEY=[^[:space:]]' "$PROJECT_DIR/.env.vm"; then
     echo "==> DeepSeek API key not supplied; DeepSeek features remain disabled"
@@ -259,6 +275,14 @@ main() {
       if [[ -n "${DEEPSEEK_API_KEY:-}" ]] && ! compose exec -T web sh -c 'test -n "${DEEPSEEK_API_KEY:-}"'; then
         echo "DeepSeek API key was supplied but is missing inside the web container." >&2
         exit 1
+      fi
+      if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
+        if ! compose exec -T web python -c \
+          'from apps.tools.services.llm_service import DeepSeekService; raise SystemExit(0 if DeepSeekService().is_available() else 1)'; then
+          echo "DeepSeek API key is present but the live container cannot use DeepSeek." >&2
+          exit 1
+        fi
+        echo "DeepSeek API connectivity verified"
       fi
       echo "Logs: cd $PROJECT_DIR && ${docker_command[*]} compose --env-file .env.vm -f docker/docker-compose.vm.yml logs -f web"
       exit 0
