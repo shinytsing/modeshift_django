@@ -94,6 +94,21 @@ write_environment() {
       printf 'APP_PORT=%s\n' "$APP_PORT"
     } > "$PROJECT_DIR/.env.vm"
   fi
+
+  # The GitHub Actions deploy job supplies this value as a masked environment
+  # variable. Keep a local copy for manual restarts, while Compose also reads
+  # the exported value directly so key rotation works without recreating the
+  # VM's environment file.
+  if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
+    if ! grep -q '^DEEPSEEK_API_KEY=' "$PROJECT_DIR/.env.vm"; then
+      umask 077
+      printf 'DEEPSEEK_API_KEY=%s\n' "$DEEPSEEK_API_KEY" >> "$PROJECT_DIR/.env.vm"
+    fi
+    echo "==> DeepSeek API key supplied to deployment"
+  elif ! grep -q '^DEEPSEEK_API_KEY=[^[:space:]]' "$PROJECT_DIR/.env.vm"; then
+    echo "==> DeepSeek API key not supplied; DeepSeek features remain disabled"
+  fi
+  chmod 600 "$PROJECT_DIR/.env.vm"
 }
 
 main() {
@@ -203,6 +218,10 @@ main() {
     if curl -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
       echo
       echo "Deployment succeeded. Open: http://${vm_ip}:${APP_PORT}"
+      if [[ -n "${DEEPSEEK_API_KEY:-}" ]] && ! compose exec -T web sh -c 'test -n "${DEEPSEEK_API_KEY:-}"'; then
+        echo "DeepSeek API key was supplied but is missing inside the web container." >&2
+        exit 1
+      fi
       echo "Logs: cd $PROJECT_DIR && ${docker_command[*]} compose --env-file .env.vm -f docker/docker-compose.vm.yml logs -f web"
       exit 0
     fi

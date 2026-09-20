@@ -134,6 +134,7 @@ jobs:
       QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
       GHCR_USERNAME: ${{ github.actor }}
       GHCR_PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
     steps:
       - name: Restore the deployment configuration

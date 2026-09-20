@@ -165,6 +165,11 @@ DATABASES = {
 # Redis缓存配置
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 
+# AI provider credentials are injected by Compose. Expose the same setting
+# name used by the base settings so views and services behave consistently in
+# both production settings modules.
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
