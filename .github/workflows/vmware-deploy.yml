@@ -141,13 +141,16 @@ jobs:
           COMPOSE_BUNDLE: ${{ needs.build_image.outputs.compose_bundle }}
           DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
         run: |
-          mkdir -p docker scripts
-          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > docker/docker-compose.prod.yml
-          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > scripts/deploy-public-vm.sh
-          chmod +x scripts/deploy-public-vm.sh
+          deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
+          mkdir -p "$deploy_dir/docker" "$deploy_dir/scripts"
+          printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > "$deploy_dir/docker/docker-compose.prod.yml"
+          printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > "$deploy_dir/scripts/deploy-public-vm.sh"
+          chmod +x "$deploy_dir/scripts/deploy-public-vm.sh"
 
       - name: Deploy cached image to the public entrypoint
-        run: bash scripts/deploy-public-vm.sh
+        run: |
+          deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
+          QATOOLBOX_DIR="$deploy_dir" bash "$deploy_dir/scripts/deploy-public-vm.sh"
 
       - name: Verify deployed health contract
         run: curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8080/health/
