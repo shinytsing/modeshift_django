@@ -81,6 +81,7 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.ref }}
       compose_bundle: ${{ steps.bundle.outputs.compose }}
+      nginx_bundle: ${{ steps.bundle.outputs.nginx }}
       deploy_script_bundle: ${{ steps.bundle.outputs.script }}
 
     steps:
@@ -121,6 +122,7 @@ jobs:
         shell: bash
         run: |
           echo "compose=$(base64 -w0 docker/docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
+          echo "nginx=$(base64 -w0 docker/nginx.prod.conf)" >> "$GITHUB_OUTPUT"
           echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
 
   deploy:
@@ -139,11 +141,13 @@ jobs:
         shell: bash
         env:
           COMPOSE_BUNDLE: ${{ needs.build_image.outputs.compose_bundle }}
+          NGINX_BUNDLE: ${{ needs.build_image.outputs.nginx_bundle }}
           DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
         run: |
           deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
           mkdir -p "$deploy_dir/docker" "$deploy_dir/scripts"
           printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > "$deploy_dir/docker/docker-compose.prod.yml"
+          printf '%s' "$NGINX_BUNDLE" | base64 --decode > "$deploy_dir/docker/nginx.prod.conf"
           printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > "$deploy_dir/scripts/deploy-public-vm.sh"
           chmod +x "$deploy_dir/scripts/deploy-public-vm.sh"
 

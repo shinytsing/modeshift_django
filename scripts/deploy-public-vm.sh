@@ -5,6 +5,7 @@ set -Eeuo pipefail
 PROJECT_DIR="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
 COMPOSE_FILE="$PROJECT_DIR/docker/docker-compose.prod.yml"
 ENV_FILE="$PROJECT_DIR/.env"
+VM_ENV_FILE="$PROJECT_DIR/.env.vm"
 APP_PORT="${APP_PORT:-8080}"
 
 if [[ ! -f "$COMPOSE_FILE" ]]; then
@@ -12,9 +13,46 @@ if [[ ! -f "$COMPOSE_FILE" ]]; then
   exit 1
 fi
 if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Production environment file not found: $ENV_FILE" >&2
-  exit 1
+  if [[ -f "$VM_ENV_FILE" ]]; then
+    echo "==> Reusing the existing VM environment as the production environment"
+    umask 077
+    cp "$VM_ENV_FILE" "$ENV_FILE"
+  elif [[ -f "$PROJECT_DIR/.env.production" ]]; then
+    echo "==> Reusing the existing production environment"
+    umask 077
+    cp "$PROJECT_DIR/.env.production" "$ENV_FILE"
+  else
+    echo "==> Creating a minimal production environment"
+    umask 077
+    {
+      printf 'DJANGO_SECRET_KEY=%s\n' "$(openssl rand -hex 48)"
+      printf 'ALLOWED_HOSTS=localhost,127.0.0.1,web,shenyiqing.xyz,www.shenyiqing.xyz\n'
+    } > "$ENV_FILE"
+  fi
 fi
+
+if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
+  umask 077
+  env_tmp="$(mktemp "$PROJECT_DIR/.env.XXXXXX")"
+  DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" awk '
+    BEGIN { replaced = 0; value = ENVIRON["DEEPSEEK_API_KEY"] }
+    /^DEEPSEEK_API_KEY=/ {
+      if (!replaced) {
+        print "DEEPSEEK_API_KEY=" value
+        replaced = 1
+      }
+      next
+    }
+    { print }
+    END {
+      if (!replaced) print "DEEPSEEK_API_KEY=" value
+    }
+  ' "$ENV_FILE" > "$env_tmp"
+  chmod 600 "$env_tmp"
+  mv "$env_tmp" "$ENV_FILE"
+  echo "==> DeepSeek API key supplied to public production environment"
+fi
+chmod 600 "$ENV_FILE"
 if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
   echo "QATOOLBOX_IMAGE is required." >&2
   exit 1
