@@ -6,6 +6,7 @@ REPOSITORY_URL="${1:-https://github.com/shinytsing/modeshift_django.git}"
 PROJECT_DIR="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
 APP_PORT="${APP_PORT:-8000}"
 SOURCE_DIR="${QATOOLBOX_SOURCE_DIR:-}"
+SOURCE_URL="${QATOOLBOX_SOURCE_URL:-}"
 
 if ! command -v apt-get >/dev/null; then
   echo "This script supports an Ubuntu/Debian VMware guest only." >&2
@@ -30,26 +31,42 @@ install_docker() {
   "${SUDO[@]}" usermod -aG docker "${SUDO_USER:-$USER}" || true
 }
 
+sync_source_tree() {
+  local source_dir="$1"
+
+  # Copy only application source into the persistent deployment directory,
+  # preserving .env.vm, Docker volumes, and runtime logs on the VM.
+  echo "==> Syncing source into $PROJECT_DIR"
+  mkdir -p "$PROJECT_DIR"
+  tar \
+    --exclude='./.git' \
+    --exclude='./.env' \
+    --exclude='./.env.*' \
+    --exclude='./media' \
+    --exclude='./logs' \
+    --exclude='./docker/logs' \
+    -C "$source_dir" -cf - . | tar -C "$PROJECT_DIR" -xf -
+}
+
 sync_project() {
+  if [[ -n "$SOURCE_URL" ]]; then
+    local source_tmp
+    source_tmp="$(mktemp -d)"
+    curl -fsSL "$SOURCE_URL" | tar -xz -C "$source_tmp" --strip-components=1
+    sync_source_tree "$source_tmp"
+    rm -rf "$source_tmp"
+    return
+  fi
+
   if [[ -n "$SOURCE_DIR" ]]; then
     if [[ ! -d "$SOURCE_DIR" ]]; then
       echo "QATOOLBOX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
       exit 1
     fi
 
-    # The self-hosted runner checks out the triggering revision. Copy only
-    # application source into the persistent deployment directory, preserving
-    # .env.vm, Docker volumes, and runtime logs on the VM.
+    # The self-hosted runner can provide a local checkout when available.
     echo "==> Syncing checked-out source into $PROJECT_DIR"
-    mkdir -p "$PROJECT_DIR"
-    tar \
-      --exclude='./.git' \
-      --exclude='./.env' \
-      --exclude='./.env.*' \
-      --exclude='./media' \
-      --exclude='./logs' \
-      --exclude='./docker/logs' \
-      -C "$SOURCE_DIR" -cf - . | tar -C "$PROJECT_DIR" -xf -
+    sync_source_tree "$SOURCE_DIR"
     return
   fi
 
