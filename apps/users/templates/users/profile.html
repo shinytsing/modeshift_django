@@ -278,8 +278,8 @@
             </button>
         </div>
         <div class="qr-body">
-            <img src="/media/vx.jpg" alt="微信二维码" class="qr-image">
-            <p>扫描二维码添加微信好友</p>
+            <img src="{% static 'img/wechat-contact.jpg' %}" alt="高杰微信二维码" class="qr-image">
+            <p>扫一扫添加微信好友</p>
         </div>
     </div>
 </div>
@@ -944,6 +944,7 @@
     border-radius: 10px;
     margin-bottom: 1rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
 }
 
 .qr-body p {
