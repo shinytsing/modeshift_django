@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
 import requests
@@ -23,9 +24,39 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+@never_cache
 def test_case_generator(request):
     """测试用例生成器页面"""
-    return render(request, "tools/test_case_generator.html")
+    return render(request, "tools/test_case_generator_entry.html")
+
+
+@login_required
+@never_cache
+def test_case_channel(request, channel):
+    """Independent manual/API/UI testcase workspace."""
+    if channel not in {"manual", "api", "ui"}:
+        from django.http import Http404
+        raise Http404("未知测试用例通道")
+    template = {
+        "manual": "tools/test_case_manual.html",
+        "api": "tools/test_case_api.html",
+        "ui": "tools/test_case_ui.html",
+    }[channel]
+    return render(request, template, {"workspace_channel": channel})
+
+
+@login_required
+@never_cache
+def test_case_execution_reports(request):
+    """Dedicated execution-report workspace; report details are loaded by execution id."""
+    return render(request, "tools/test_case_execution_report.html", {"workspace_channel": "report"})
+
+
+@login_required
+@never_cache
+def test_case_execution_runner(request):
+    """Run one API/UI execution in a dedicated browser page."""
+    return render(request, "tools/test_case_execution_runner.html")
 
 
 @login_required
@@ -439,5 +470,3 @@ def _paragraph_based_parse(content):
     except Exception as e:
         logger.error(f"段落解析失败: {e}")
         return [{"title": "🧠 AI深度分析", "content": content}]
-
-

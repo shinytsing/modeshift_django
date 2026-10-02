@@ -64,8 +64,10 @@ logs/
 
 # Documentation
 docs/
+!docs/
 *.md
 README*
+!docs/MODESHIFT_PRODUCT_GUIDE.md
 
 # Tests
 tests/

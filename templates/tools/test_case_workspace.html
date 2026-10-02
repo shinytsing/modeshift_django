@@ -1,0 +1,220 @@
+<div class="case-workspace" data-channel="{{ workspace_channel }}">
+    <div class="workspace-topbar">
+        <a href="{% url 'tools:test_case_generator' %}" class="workspace-back">← 返回生成入口</a>
+        <nav class="workspace-nav" aria-label="测试用例页面导航">
+            <a href="{% url 'tools:test_case_manual' %}" data-nav-channel="manual">人工用例</a>
+            <a href="{% url 'tools:test_case_api' %}" data-nav-channel="api">API 自动化</a>
+            <a href="{% url 'tools:test_case_ui' %}" data-nav-channel="ui">UI 自动化</a>
+            <a href="{% url 'tools:test_case_reports' %}" data-nav-channel="report">执行报告</a>
+        </nav>
+    </div>
+    <header class="workspace-header">
+        <span class="workspace-kicker">MODE SHIFT / TEST WORKSPACE</span>
+        <h1 id="workspaceTitle"></h1>
+        <p id="workspaceDescription"></p>
+    </header>
+    <div id="workspaceMessage" class="workspace-message" role="status" aria-live="polite"></div>
+
+    <section id="manualWorkspace" class="workspace-card" hidden>
+        <div class="workspace-card-head"><div><span class="workspace-label">PMD</span><h2>人工执行用例</h2></div><div class="workspace-actions"><button type="button" class="workspace-button" data-action="copy-manual">复制内容</button><button type="button" class="workspace-button" data-action="download-manual">导出 Markdown</button><button type="button" class="workspace-button" data-action="download-txt">下载 TXT</button><button type="button" class="workspace-button" data-action="download-xmind">下载 XMind</button><button type="button" class="workspace-button" data-action="download-feishu">下载飞书格式</button></div></div>
+        <div id="manualMeta" class="workspace-meta"></div>
+        <textarea id="manualEditor" class="workspace-document" aria-label="人工执行用例内容"></textarea>
+    </section>
+
+    <section id="automationWorkspace" class="workspace-card" hidden>
+        <div class="workspace-card-head"><div><span id="automationLabel" class="workspace-label"></span><h2 id="automationHeading"></h2></div><button type="button" id="generateAutomationBtn" class="workspace-button workspace-button-primary">生成自动化用例</button></div>
+        <div class="workspace-grid">
+            <label>生成模型<select id="automationModel"><option value="">读取中…</option></select></label>
+            <label>执行目标<input id="automationTarget" type="url" value="http://127.0.0.1:8081"></label>
+            <label>最多执行<input id="automationMaxCases" type="number" min="1" max="10" value="5"></label>
+        </div>
+        <label class="workspace-check" id="mutationOption"><input id="automationAllowMutations" type="checkbox">允许 API 写操作</label>
+        <div id="automationStatus" class="workspace-meta"></div>
+        <pre id="automationDocument" class="workspace-document workspace-pre">尚未生成自动化用例。点击右上角按钮，让 DeepSeek 只生成当前通道的可执行用例。</pre>
+        <div class="workspace-actions"><button type="button" id="executeAutomationBtn" class="workspace-button workspace-button-primary" disabled>执行当前通道</button><a href="{% url 'tools:test_case_reports' %}" class="workspace-button">查看执行报告</a></div>
+        <div id="automationReport" class="workspace-report" hidden></div>
+    </section>
+
+    <section id="reportWorkspace" class="workspace-card" hidden>
+        <div class="workspace-card-head"><div><span class="workspace-label">RESULTS</span><h2>执行报告</h2></div><button type="button" class="workspace-button" data-action="clear-reports">清空本地报告</button></div>
+        <div id="reportList" class="workspace-report-list"></div>
+    </section>
+</div>
+
+<script src="https://unpkg.com/axios@1.7.9/dist/axios.min.js"></script>
+
+<style>
+    .case-workspace{max-width:1180px;margin:24px auto;padding:24px;color:#f5f7fb;background:#14171d;border:1px solid #2f3744;border-radius:18px;box-shadow:0 0 24px rgba(0,255,136,.12);font-family:JetBrains Mono,Fira Code,Consolas,monospace}
+    .workspace-topbar{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid #2b333f;padding-bottom:16px}.workspace-back,.workspace-nav a{color:#9ee7c2;text-decoration:none}.workspace-nav{display:flex;gap:8px;flex-wrap:wrap}.workspace-nav a{padding:8px 12px;border:1px solid #344151;border-radius:999px}.workspace-nav a.active{color:#07120c;background:#00ff88;border-color:#00ff88}.workspace-header{padding:32px 8px 20px}.workspace-kicker,.workspace-label{color:#00ff88;font-size:.78rem;letter-spacing:1.5px}.workspace-header h1{margin:8px 0;color:#fff}.workspace-header p,.workspace-meta{color:#aeb9c8}.workspace-card{padding:20px;background:#1b2028;border:1px solid #344151;border-radius:14px}.workspace-card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}.workspace-card-head h2{margin:6px 0;color:#fff}.workspace-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border:1px solid #516176;border-radius:8px;background:transparent;color:#dce5ef;text-decoration:none;cursor:pointer}.workspace-button-primary{background:#00c878;border-color:#00ff88;color:#06130c;font-weight:700}.workspace-button:disabled{opacity:.45;cursor:not-allowed}.workspace-grid{display:grid;grid-template-columns:2fr 2fr 1fr;gap:12px;margin-bottom:12px}.workspace-grid label{display:grid;gap:6px;color:#aeb9c8;font-size:.85rem}.workspace-grid input,.workspace-grid select,.workspace-document{width:100%;border:1px solid #394655;border-radius:8px;background:#0e1116;color:#f5f7fb;padding:10px;font:inherit}.workspace-check{display:flex;gap:8px;align-items:center;color:#aeb9c8;margin:10px 0}.workspace-document{min-height:520px;resize:vertical;line-height:1.65}.workspace-pre{white-space:pre-wrap;overflow:auto}.workspace-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.workspace-message{min-height:26px;color:#ffd166;margin-bottom:12px}.workspace-report,.workspace-report-list{display:grid;gap:10px;margin-top:16px}.workspace-report-item{padding:14px;border:1px solid #344151;border-radius:10px;background:#10141a}.workspace-report-item.passed{border-color:#00c878}.workspace-report-item.failed{border-color:#ff6675}.workspace-report-item.skipped{border-color:#d6ad4d}.workspace-report-item pre{white-space:pre-wrap;color:#aeb9c8;max-height:260px;overflow:auto}.workspace-empty{padding:28px;text-align:center;color:#8996a8;border:1px dashed #3d4b5c;border-radius:10px}.workspace-report-summary{font-size:1.05rem;color:#fff}@media(max-width:760px){.workspace-grid{grid-template-columns:1fr}.case-workspace{margin:8px;padding:14px}}
+    .workspace-report-screenshot-link{display:block;margin-top:10px}.workspace-report-screenshot{display:block;width:min(720px,100%);max-height:420px;object-fit:contain;border:1px solid #394655;border-radius:8px;background:#0e1116;cursor:zoom-in}
+</style>
+
+<script>
+(() => {
+    const channel = document.querySelector('.case-workspace')?.dataset.channel || 'manual';
+    const storageKey = 'modeshift.testCaseWorkspace.v1';
+    const reportKey = 'modeshift.testCaseReports.v1';
+    const titles = {manual:'人工执行用例',api:'API 自动化用例',ui:'UI 自动化用例',report:'自动化执行报告'};
+    const descriptions = {manual:'查看和维护产品经理、测试人员使用的完整 PMD 用例。',api:'DeepSeek 只生成 API 可执行用例，执行 Agent 只接收当前 API 文档。',ui:'DeepSeek 只生成 UI 可执行用例，执行 Agent 只接收当前 UI 文档。',report:'查看 API/UI 独立执行产生的断言、响应和失败原因。'};
+    const $ = id => document.getElementById(id);
+    const readWorkspace = () => { try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; } };
+    const saveWorkspace = value => localStorage.setItem(storageKey, JSON.stringify(value));
+    const readReports = () => { try { return JSON.parse(localStorage.getItem(reportKey) || '[]'); } catch { return []; } };
+    const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    const showMessage = value => { $('workspaceMessage').textContent = value || ''; };
+    document.querySelectorAll('[data-nav-channel]').forEach(link => { if (link.dataset.navChannel === channel) link.classList.add('active'); });
+    $('workspaceTitle').textContent = titles[channel]; $('workspaceDescription').textContent = descriptions[channel];
+
+    function reportScreenshotNames(item) {
+        const names = (item.steps || []).map(step => step && step.screenshot).filter(Boolean);
+        if (!names.length) {
+            const match = String(item.reason || '').match(/截图：([^；\s]+)/);
+            if (match) names.push(match[1]);
+        }
+        return [...new Set(names)];
+    }
+
+    function renderReportScreenshots(item, executionId) {
+        if (!executionId) return '';
+        return reportScreenshotNames(item).map(filename => {
+            const url = `/tools/api/async/execution/${encodeURIComponent(executionId)}/artifact/${encodeURIComponent(filename)}/`;
+            return `<a class="workspace-report-screenshot-link" href="${escapeHtml(url)}" target="_blank" rel="noopener"><img class="workspace-report-screenshot" loading="lazy" src="${escapeHtml(url)}" alt="${escapeHtml(item.title || item.id)} 失败截图"></a>`;
+        }).join('');
+    }
+
+    function renderReport(report, target, executionId) {
+        if (!report) { target.hidden = false; target.innerHTML = '<div class="workspace-empty">暂无执行报告。</div>'; return; }
+        const summary = report.summary || {};
+        target.hidden = false;
+        target.innerHTML = `<div class="workspace-report-summary">${escapeHtml(report.requested_mode || report.channel || '')} · 通过 ${summary.passed || 0} · 失败 ${summary.failed || 0} · 跳过 ${summary.skipped || 0}</div>` + (report.cases || []).map(item => `<article class="workspace-report-item ${escapeHtml(item.status)}"><strong>${escapeHtml(item.title || item.id)}</strong><div>${escapeHtml(item.channel)} · ${escapeHtml(item.status)}</div><p>${escapeHtml(item.reason || '')}</p>${renderReportScreenshots(item, executionId)}<pre>${escapeHtml(JSON.stringify(item.steps || [], null, 2))}</pre></article>`).join('');
+    }
+
+    function renderReports() {
+        const list = $('reportList'); const reports = readReports();
+        list.innerHTML = reports.length ? reports.map(item => `<article class="workspace-report-item"><strong>${escapeHtml(item.channelLabel || item.channel)}</strong><div>${escapeHtml(item.createdAt || '')}</div><div>通过 ${item.report?.summary?.passed || 0} · 失败 ${item.report?.summary?.failed || 0} · 跳过 ${item.report?.summary?.skipped || 0}</div><button class="workspace-button" data-report-id="${escapeHtml(item.id)}">查看详情</button><div id="report-${escapeHtml(item.id)}" class="workspace-report" hidden></div></article>`).join('') : '<div class="workspace-empty">还没有执行报告。请先进入 API 或 UI 自动化页面。</div>';
+        reports.forEach(item => document.querySelector(`[data-report-id="${CSS.escape(item.id)}"]`)?.addEventListener('click', event => { const target = document.getElementById(`report-${item.id}`); renderReport(item.report, target, item.id); event.currentTarget.hidden = true; }));
+    }
+
+    const workspace = readWorkspace();
+    if (channel === 'manual') {
+        $('manualWorkspace').hidden = false;
+        $('manualMeta').textContent = workspace.model_id ? `生成模型：${workspace.model_id} · 来源：DeepSeek 人工文档生成` : '请先从生成入口创建人工用例。';
+        $('manualEditor').value = workspace.manual || '';
+        $('manualEditor').addEventListener('input', () => { const next = readWorkspace(); next.manual = $('manualEditor').value; saveWorkspace(next); });
+        const downloadBlob = (blob, name) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            link.rel = 'noopener';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, view: window}));
+            // Some embedded browsers ignore a synthetic click on a detached
+            // anchor. A second direct click keeps normal Chromium downloads
+            // working while the visible status tells the user what happened.
+            try { link.click(); } catch (_) { window.open(url, '_blank', 'noopener'); }
+            showMessage(`已准备下载：${name}`);
+            setTimeout(() => { link.remove(); URL.revokeObjectURL(url); }, 1500);
+        };
+        const downloadText = (content, name, type) => { if (!String(content || '').trim()) { showMessage('当前没有可导出的用例内容。'); return; } downloadBlob(new Blob([content], {type}), name); };
+        const manualText = () => $('manualEditor').value;
+        const escapeXml = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));
+        const toXmindTopics = text => { const topics = []; let current = null; String(text || '').split('\n').forEach(line => { const value = line.trim(); if (!value) return; if (value.startsWith('## ')) { current = {title: value.slice(3), children: []}; topics.push(current); } else if (value.startsWith('- ') || value.startsWith('* ')) { if (current) current.children.push(value.slice(2)); } else if (!current) { current = {title: value, children: []}; topics.push(current); } else if (current.children.length) { current.children[current.children.length - 1] += ` ${value}`; } else { current.children.push(value); } }); return topics; };
+        const toXmindXml = text => { const topics = toXmindTopics(text); const childXml = topics.map((item, index) => `<topic id="topic-${index + 1}"><title>${escapeXml(item.title)}</title>${item.children.length ? `<children><topics type="attached">${item.children.map((child, childIndex) => `<topic id="topic-${index + 1}-${childIndex + 1}"><title>${escapeXml(child)}</title></topic>`).join('')}</topics></children>` : ''}</topic>`).join(''); return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<xmap-content xmlns="urn:xmind:xmap:xmlns:content:2.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" version="2.0"><sheet id="sheet-1"><topic id="root"><title>测试用例文档</title>${childXml ? `<children><topics type="attached">${childXml}</topics></children>` : ''}</topic><relationships/></sheet></xmap-content>`; };
+        const crc32 = bytes => { let crc = 0xffffffff; for (const byte of bytes) { crc ^= byte; for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0); } return (crc ^ 0xffffffff) >>> 0; };
+        const concatBytes = chunks => { const result = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0)); let offset = 0; chunks.forEach(chunk => { result.set(chunk, offset); offset += chunk.length; }); return result; };
+        const zipStored = files => { const encoder = new TextEncoder(); const local = []; const central = []; let offset = 0; Object.entries(files).forEach(([name, content]) => { const nameBytes = encoder.encode(name); const data = encoder.encode(content); const crc = crc32(data); const localHeader = new Uint8Array(30 + nameBytes.length); const localView = new DataView(localHeader.buffer); localView.setUint32(0, 0x04034b50, true); localView.setUint16(4, 20, true); localView.setUint16(6, 0x800, true); localView.setUint16(8, 0, true); localView.setUint32(14, crc, true); localView.setUint32(18, data.length, true); localView.setUint32(22, data.length, true); localView.setUint16(26, nameBytes.length, true); localHeader.set(nameBytes, 30); local.push(localHeader, data); const centralHeader = new Uint8Array(46 + nameBytes.length); const centralView = new DataView(centralHeader.buffer); centralView.setUint32(0, 0x02014b50, true); centralView.setUint16(4, 20, true); centralView.setUint16(6, 20, true); centralView.setUint16(8, 0x800, true); centralView.setUint16(10, 0, true); centralView.setUint32(16, crc, true); centralView.setUint32(20, data.length, true); centralView.setUint32(24, data.length, true); centralView.setUint16(28, nameBytes.length, true); centralView.setUint32(42, offset, true); centralHeader.set(nameBytes, 46); central.push(centralHeader); offset += localHeader.length + data.length; }); const centralBytes = concatBytes(central); const end = new Uint8Array(22); const endView = new DataView(end.buffer); endView.setUint32(0, 0x06054b50, true); endView.setUint16(8, central.length, true); endView.setUint16(10, central.length, true); endView.setUint32(12, centralBytes.length, true); endView.setUint32(16, offset, true); return concatBytes([...local, centralBytes, end]); };
+        const toXmindZip = text => { const content = toXmindXml(text); const manifest = '<?xml version="1.0" encoding="UTF-8"?><manifest xmlns="urn:xmind:xmap:xmlns:manifest:1.0"><file-entry full-path="content.xml" media-type="text/xml"/><file-entry full-path="styles.xml" media-type="text/xml"/><file-entry full-path="meta.xml" media-type="text/xml"/><file-entry full-path="META-INF/manifest.xml" media-type="text/xml"/></manifest>'; const styles = '<?xml version="1.0" encoding="UTF-8"?><xmap-styles xmlns="urn:xmind:xmap:xmlns:style:2.0" version="2.0"><styles><style id="default" type="topic"/></styles></xmap-styles>'; const meta = '<?xml version="1.0" encoding="UTF-8"?><meta xmlns="urn:xmind:xmap:xmlns:meta:2.0" version="2.0"><Author>ModeShift</Author></meta>'; return new Blob([zipStored({'content.xml': content, 'styles.xml': styles, 'meta.xml': meta, 'META-INF/manifest.xml': manifest})], {type: 'application/vnd.xmind.workbook'}); };
+        const toFeishu = text => { let output = '# 测试用例文档\n\n> 本文档由 ModeShift 测试用例生成器生成，支持飞书导入\n\n'; text.split('\n').forEach(line => { const value = line.trim(); if (value.startsWith('## ')) output += `\n## 📋 ${value.slice(3)}\n\n`; else if (value.startsWith('- ')) output += `### ✅ ${value.slice(2)}\n\n`; else if (value.startsWith('* ')) output += `- ${value.slice(2)}\n`; else if (value) output += `${value}\n`; }); return output; };
+        const bindWorkspaceAction = (selector, handler) => {
+            const button = document.querySelector(selector);
+            if (button) button.addEventListener('click', handler);
+        };
+        bindWorkspaceAction('[data-action="copy-manual"]', async () => {
+            const content = manualText();
+            if (!content.trim()) { showMessage('当前没有可复制的用例内容。'); return; }
+            try {
+                if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+                await navigator.clipboard.writeText(content);
+            } catch (_) {
+                const helper = document.createElement('textarea');
+                helper.value = content; helper.setAttribute('readonly', '');
+                helper.style.position = 'fixed'; helper.style.opacity = '0';
+                document.body.appendChild(helper); helper.select();
+                const copied = document.execCommand('copy'); helper.remove();
+                if (!copied) { showMessage('复制失败，请手动选择内容。'); return; }
+            }
+            showMessage('内容已复制到剪贴板。');
+        });
+        bindWorkspaceAction('[data-action="download-manual"]', () => downloadText(manualText(), 'manual-test-cases.md', 'text/markdown;charset=utf-8'));
+        bindWorkspaceAction('[data-action="download-txt"]', () => downloadText(manualText(), `测试用例_${new Date().toISOString().slice(0,10)}.txt`, 'text/plain;charset=utf-8'));
+        bindWorkspaceAction('[data-action="download-xmind"]', () => { const content = manualText(); if (!content.trim()) { showMessage('当前没有可导出的用例内容。'); return; } downloadBlob(toXmindZip(content), `测试用例_${new Date().toISOString().slice(0,10)}.xmind`); });
+        bindWorkspaceAction('[data-action="download-feishu"]', () => downloadText(toFeishu(manualText()), `测试用例_${new Date().toISOString().slice(0,10)}_feishu.md`, 'text/markdown;charset=utf-8'));
+    }
+    if (channel === 'report') { $('reportWorkspace').hidden = false; renderReports(); const clearReportsButton = document.querySelector('[data-action="clear-reports"]'); if (clearReportsButton) clearReportsButton.addEventListener('click', () => { localStorage.removeItem(reportKey); renderReports(); }); }
+    if (channel === 'api' || channel === 'ui') {
+        $('automationWorkspace').hidden = false; $('automationLabel').textContent = channel.toUpperCase(); $('automationHeading').textContent = titles[channel]; $('automationTarget').value = location.origin;
+        $('mutationOption').hidden = channel !== 'api';
+        axios.get('/tools/api/llm/models/').then(({data}) => { const select = $('automationModel'); select.replaceChildren(); (data.models || []).filter(item => item.available).forEach(item => { const option = document.createElement('option'); option.value = item.id; option.textContent = item.label; select.append(option); }); if (workspace.model_id) select.value = workspace.model_id; }).catch(() => showMessage('无法读取可用模型，请返回入口页刷新。'));
+        const contentKey = channel === 'api' ? 'automation_api' : 'automation_ui';
+        const display = () => { const current = readWorkspace(); $('automationDocument').textContent = current[contentKey] || '尚未生成自动化用例。'; $('executeAutomationBtn').disabled = !current[contentKey]; }; display();
+        $('generateAutomationBtn').addEventListener('click', () => { const current = readWorkspace(); if (!current.requirement) { showMessage('请先返回生成入口填写需求并生成人工用例。'); return; } const modelId = $('automationModel').value || current.model_id; if (!modelId) { showMessage('请选择可用模型。'); return; } const button = $('generateAutomationBtn'); button.disabled = true; $('automationStatus').textContent = `DeepSeek 正在生成独立的 ${channel.toUpperCase()} 用例…`; axios.post('/tools/api/automation-cases/generate/', {requirement:current.requirement, prompt:current.prompt || current.default_prompt || '', model_id:modelId, channel, knowledge_document_ids:current.knowledge_document_ids || []}, {headers:{'X-CSRFToken':getCookie('csrftoken')}}).then(({data}) => { if (!data.success) throw new Error(data.error || '生成失败'); const next = readWorkspace(); next[contentKey] = data.content; next[`${contentKey}_sources`] = data.sources || []; saveWorkspace(next); $('automationStatus').textContent = `已生成，模型：${data.model_id}`; display(); }).catch(error => $('automationStatus').textContent = error.response?.data?.error || error.message || '自动化用例生成失败').finally(() => { button.disabled = false; }); });
+        $('executeAutomationBtn').addEventListener('click', () => {
+            const current = readWorkspace();
+            const modelId = $('automationModel').value || current.model_id;
+            const content = current[contentKey];
+            if (!content) return;
+            // Open synchronously from the user gesture so popup blockers do not
+            // prevent the dedicated execution page. The task id is attached
+            // after the background task is accepted.
+            const executionWindow = window.open('', '_blank');
+            const button = $('executeAutomationBtn');
+            button.disabled = true;
+            $('automationStatus').textContent = '执行 Agent 正在解析当前通道并执行…';
+            axios.post('/tools/api/async/execute-testcases/', {
+                test_cases: content,
+                requirement: current.requirement || '',
+                prompt: current.prompt || current.default_prompt || '',
+                target_url: $('automationTarget').value,
+                mode: channel,
+                max_cases: Number($('automationMaxCases').value || 5),
+                allow_mutations: channel === 'api' && $('automationAllowMutations').checked,
+                model_id: modelId,
+                source_channel: channel,
+            }, {headers: {'X-CSRFToken': getCookie('csrftoken')}}).then(({data}) => {
+                if (!data.success) throw new Error(data.error || '执行任务创建失败');
+                const executionId = data.execution_id;
+                const runnerUrl = `/tools/test_case_generator/execute/?execution_id=${encodeURIComponent(executionId)}&channel=${encodeURIComponent(channel)}`;
+                if (executionWindow && !executionWindow.closed) {
+                    executionWindow.location.href = runnerUrl;
+                    $('automationStatus').textContent = '已在新页面启动执行，当前页面保留用例内容。';
+                    button.disabled = false;
+                    return;
+                }
+                $('automationStatus').textContent = '浏览器阻止了新页面，请允许弹窗后重新点击执行。';
+                const timer = setInterval(() => {
+                    axios.get(`/tools/api/async/execution/${executionId}/`).then(({data: status}) => {
+                        $('automationStatus').textContent = `${status.current_step || '执行中'}（${status.progress || 0}%）`;
+                        if (status.status !== 'completed' && status.status !== 'failed') return;
+                        clearInterval(timer);
+                        button.disabled = false;
+                        if (status.report) {
+                            const reports = readReports();
+                            reports.unshift({id: executionId, channel, channelLabel: channel.toUpperCase() + ' 自动化', createdAt: new Date().toLocaleString(), report: status.report});
+                            localStorage.setItem(reportKey, JSON.stringify(reports.slice(0, 20)));
+                            renderReport(status.report, $('automationReport'), executionId);
+                        } else {
+                            $('automationStatus').textContent = status.error || '执行失败';
+                        }
+                    }).catch(() => {});
+                }, 2000);
+            }).catch(error => {
+                button.disabled = false;
+                $('automationStatus').textContent = error.response?.data?.error || error.message || '执行失败';
+            });
+        });
+    }
+    function getCookie(name) { return document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1] || ''; }
+})();
+</script>

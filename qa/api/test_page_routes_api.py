@@ -29,9 +29,23 @@ def test_test_case_generator_page_renders_from_the_deployment_template(base_url:
         )
     assert registration.status_code == 200
 
+    # Keep this contract independent of whether a reverse proxy forwards the
+    # auto-login Set-Cookie from registration; the page itself is protected.
+    with allure.step("显式登录 QA 用户以访问受保护工具页"):
+        login = http_session.post(
+            f"{base_url}/users/api/login/",
+            json={"username": username, "password": "QaTemplate123!"},
+            timeout=3,
+        )
+    assert login.status_code == 200
+
     with allure.step("在已登录会话中访问测试用例生成页面"):
         response = http_session.get(f"{base_url}/tools/test_case_generator/", allow_redirects=False, timeout=3)
 
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith("text/html")
-    assert 'id="testForm"' in response.text
+    assert 'id="requirement"' in response.text
+    assert 'id="userPrompt"' in response.text
+    assert 'id="generationModel"' in response.text
+    assert 'id="knowledgeQuery"' in response.text
+    assert 'id="generateButton"' in response.text

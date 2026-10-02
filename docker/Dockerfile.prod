@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     # Playwright BOSS 浏览器自动化运行时
     chromium \
+    fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制虚拟环境
@@ -74,6 +75,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y \
     libpq5 \
     curl \
+    # UI 自动化执行器需要 Chromium 和中文字体渲染
+    chromium \
+    fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv

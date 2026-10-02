@@ -5,6 +5,7 @@ Cookie 存储服务
 import json
 import logging
 from datetime import datetime, timedelta
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 from playwright.sync_api import sync_playwright
@@ -29,7 +30,7 @@ class CookieStorageService:
                 defaults={
                     'cookies': cookies_dict,
                     'is_active': True,
-                    'expires_at': timezone.now() + timedelta(days=7)  # 默认7天过期
+                    'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else timezone.now() + timedelta(days=7)
                 }
             )
             
@@ -37,7 +38,7 @@ class CookieStorageService:
                 # 更新现有记录
                 user_cookie.cookies = cookies_dict
                 user_cookie.is_active = True
-                user_cookie.expires_at = timezone.now() + timedelta(days=7)
+                user_cookie.expires_at = None if settings.AUTH_TOKEN_PERSIST_FOREVER else timezone.now() + timedelta(days=7)
                 user_cookie.save()
             
             logger.info(f"✅ 成功保存用户 {self.user.username} 的 {platform} cookies")

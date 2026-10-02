@@ -146,9 +146,6 @@ def food_randomizer_pure_random_api(request):
 
         # 处理meal_type过滤
         if meal_type != "all":
-            # 将'lunch'映射到'main'，因为午餐通常是主食
-            if meal_type == "lunch":
-                meal_type = "main"
             # FoodItem模型使用meal_types JSON字段，需要特殊处理
             if meal_type in ["breakfast", "lunch", "dinner", "snack"]:
                 queryset = queryset.filter(meal_types__contains=[meal_type])
@@ -264,7 +261,7 @@ def food_randomizer_pure_random_api(request):
                 "image_url": image_url,
                 "difficulty": food.difficulty,
                 "cooking_time": food.cooking_time,
-                "health_score": _calculate_food_health_score(selected_food),  # 动态计算健康评分
+                "health_score": _calculate_food_health_score(food),
                 "nutrition": {
                     "protein": food.protein,
                     "fat": food.fat,
@@ -282,6 +279,8 @@ def food_randomizer_pure_random_api(request):
                 "is_low_carb": "低碳水" in food.tags if food.tags else False,
             }
 
+        session = None
+        record_meal_type = meal_type if meal_type in {"breakfast", "lunch", "dinner", "snack"} else "lunch"
         # 构建推荐结果
         recommendation = {
             "food": food_to_dict(selected_food),
@@ -289,6 +288,7 @@ def food_randomizer_pure_random_api(request):
             "confidence": random.randint(70, 95),
             "alternatives": [food_to_dict(f) for f in alternatives],
             "generated_at": datetime.now().isoformat(),
+            "session_id": None,
             "nutrition_summary": {
                 "macronutrients": {
                     "protein": (
@@ -311,12 +311,11 @@ def food_randomizer_pure_random_api(request):
         }
 
         # 记录推荐日志 - 使用FoodHistory模型
-        recommendation["generated_at"]
         if request.user.is_authenticated:
             # 创建随机会话记录
             session = FoodRandomizationSession.objects.create(
                 user=request.user,
-                meal_type=meal_type if meal_type != "all" else "main",
+                meal_type=record_meal_type,
                 cuisine_preference=cuisine_type if cuisine_type != "all" else "mixed",
                 status="completed",
                 selected_food=selected_food,
@@ -329,7 +328,7 @@ def food_randomizer_pure_random_api(request):
                 user=request.user,
                 session=session,
                 food_item=selected_food,
-                meal_type=meal_type if meal_type != "all" else "main",
+                meal_type=record_meal_type,
                 rating=None,  # 初始没有评分
                 feedback="",
                 was_cooked=False,
@@ -341,11 +340,12 @@ def food_randomizer_pure_random_api(request):
                     user=request.user,
                     session=session,
                     food_item=alt_food,
-                    meal_type=meal_type if meal_type != "all" else "main",
+                    meal_type=record_meal_type,
                     rating=None,
                     feedback="",
                     was_cooked=False,
                 )
+            recommendation["session_id"] = session.id
 
         logger.info(f"食物随机推荐: 选择 {selected_food.name} (ID: {selected_food.id})")
 
@@ -467,11 +467,11 @@ def food_randomizer_history_api(request):
                         "cuisine": record.food_item.cuisine,
                         "meal_type": record.meal_type,
                         "calories": int(record.food_item.calories),
-                        "health_score": _calculate_food_health_score(selected_food),  # 动态计算健康评分
+                        "health_score": _calculate_food_health_score(record.food_item),
                         "rating": record.rating,
                         "selected": True,  # FoodHistory记录的都是被选择的
                         "created_at": record.created_at.isoformat(),
-                        "session_id": record.created_at.isoformat(),  # 使用创建时间作为session_id
+                        "session_id": record.session_id,
                         "image_url": image_url,
                         "nutrition_summary": {
                             "calories": record.food_item.calories,
@@ -527,33 +527,30 @@ def food_randomizer_rate_api(request):
 
         # 查找对应的推荐记录
         if session_id:
-            # 通过session_id查找记录（session_id通常是ISO格式的时间戳）
+            # 新版使用真实的 FoodRandomizationSession 主键；兼容旧版时间戳。
             try:
-                from datetime import datetime, timedelta
+                log_record = FoodHistory.objects.filter(
+                    user=request.user, session_id=int(session_id)
+                ).order_by("-created_at").first()
+            except (TypeError, ValueError):
+                log_record = None
+            if not log_record:
+                try:
+                    from datetime import datetime, timedelta
 
-                from django.utils import timezone
+                    from django.utils import timezone
 
-                # 解析session_id为datetime对象
-                session_datetime = datetime.fromisoformat(session_id.replace("Z", "+00:00"))
-                if session_datetime.tzinfo is None:
-                    session_datetime = timezone.make_aware(session_datetime)
-
-                # 查找在session时间前后1分钟内的记录（允许时间误差）
-                time_range = timedelta(minutes=1)
-                log_record = (
-                    FoodHistory.objects.filter(
-                        user=request.user, created_at__range=[session_datetime - time_range, session_datetime + time_range]
-                    )
-                    .order_by("-created_at")
-                    .first()
-                )
-
-                # 如果没找到，尝试查找用户最新的记录
-                if not log_record:
-                    log_record = FoodHistory.objects.filter(user=request.user).order_by("-created_at").first()
-
-            except (ValueError, TypeError):
-                # 如果session_id不是有效的时间格式，查找用户最新的记录
+                    session_datetime = datetime.fromisoformat(str(session_id).replace("Z", "+00:00"))
+                    if session_datetime.tzinfo is None:
+                        session_datetime = timezone.make_aware(session_datetime)
+                    time_range = timedelta(minutes=1)
+                    log_record = FoodHistory.objects.filter(
+                        user=request.user,
+                        created_at__range=[session_datetime - time_range, session_datetime + time_range],
+                    ).order_by("-created_at").first()
+                except (ValueError, TypeError):
+                    log_record = None
+            if not log_record:
                 log_record = FoodHistory.objects.filter(user=request.user).order_by("-created_at").first()
         else:
             # 查找用户最新的推荐记录

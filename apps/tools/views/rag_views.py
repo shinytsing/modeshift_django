@@ -7,15 +7,18 @@ import json
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db.models import Q
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.tools.services.llm_service import DeepSeekService
+from apps.tools.models.rag_models import RequirementDocument
 from apps.tools.services.rag_service import (
     RagInputError,
     build_testcase_prompt,
     ingest_document,
     search_chunks,
+    search_documents,
     sync_site_capabilities,
 )
 
@@ -68,6 +71,7 @@ def rag_sync_site_capabilities_api(request):
             "id": document.id,
             "title": document.title,
             "chunks": document.chunks.count(),
+            "documents": "已按模式、页面和功能模块拆分同步",
             "message": "本站能力已同步到共享 RAG 知识库",
         }
     )
@@ -79,6 +83,42 @@ def rag_search_api(request):
     try:
         sync_site_capabilities()
         results = search_chunks(request.user, request.GET.get("q", ""), int(request.GET.get("limit", 5)))
+    except (RagInputError, ValueError) as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    return JsonResponse({"results": results})
+
+
+@require_GET
+@_api_login_required
+def rag_document_detail_api(request, document_id):
+    document = RequirementDocument.objects.filter(
+        Q(id=document_id) & (Q(owner=request.user) | Q(owner__isnull=True))
+    ).first()
+    if not document:
+        return JsonResponse({"error": "文档不存在或无权查看"}, status=404)
+    return JsonResponse(
+        {
+            "id": document.id,
+            "title": document.title,
+            "source": "shared" if document.owner_id is None else "private",
+            "source_type": document.source_type,
+            "content": document.extracted_text,
+            "chunks": document.chunks.count(),
+        }
+    )
+
+
+@require_GET
+@_api_login_required
+def rag_document_search_api(request):
+    try:
+        sync_site_capabilities()
+        results = search_documents(
+            request.user,
+            request.GET.get("q", ""),
+            int(request.GET.get("limit", 10)),
+            mode=request.GET.get("mode", "").strip() or None,
+        )
     except (RagInputError, ValueError) as exc:
         return JsonResponse({"error": str(exc)}, status=400)
     return JsonResponse({"results": results})

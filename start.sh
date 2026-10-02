@@ -44,8 +44,8 @@ EOF
 echo "🌐 启动 Gunicorn 服务器..."
 exec gunicorn \
     --bind 0.0.0.0:8000 \
-    --workers 1 \
-    --timeout 300 \
+    --workers "${GUNICORN_WORKERS:-3}" \
+    --timeout "${GUNICORN_TIMEOUT:-120}" \
     --keep-alive 2 \
     --max-requests 1000 \
     --max-requests-jitter 100 \

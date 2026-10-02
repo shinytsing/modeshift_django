@@ -157,6 +157,8 @@ class AsyncTaskManager:
         batch_id: int = 0,
         total_batches: int = 1,
         user_id: str = None,
+        evidence: Optional[List[Dict[str, Any]]] = None,
+        model_id: Optional[str] = None,
     ) -> str:
         """创建新的后台任务"""
         task_id = str(uuid.uuid4())
@@ -170,6 +172,8 @@ class AsyncTaskManager:
                 "batch_id": batch_id,
                 "total_batches": total_batches,
                 "user_id": user_id,
+                "evidence": evidence or [],
+                "model_id": model_id,
                 "status": "pending",  # pending, running, completed, failed
                 "progress": 0,
                 "current_step": "等待处理",
@@ -376,16 +380,18 @@ class AsyncTaskManager:
             logger.info(f"开始使用AI服务接续生成测试用例: {task_id}")
             llm_service = get_llm_service()
             
-            # 检查可用服务
-            available_providers = llm_service.get_available_providers()
-            logger.info(f"可用AI服务: {[p.value for p in available_providers]}")
-            
-            if not available_providers:
+            task = self.tasks.get(task_id, {})
+            model_id = task.get("model_id")
+            if not model_id and not llm_service.get_available_providers():
                 logger.error(f"没有可用的AI服务: {task_id}")
                 return self._generate_maintenance_message(requirement, user_prompt)
             
-            # 使用接续生成方法
-            result = llm_service.generate_test_cases_continue(requirement, user_prompt)
+            result = llm_service.generate_test_cases(
+                requirement,
+                user_prompt,
+                model_id=model_id,
+                sources=task.get("evidence", []),
+            )
             logger.info(f"AI服务接续生成成功: {task_id}, 结果长度: {len(result)}")
             
             # 更新任务进度
@@ -399,6 +405,8 @@ class AsyncTaskManager:
             logger.error(f"AI服务接续生成失败: {task_id}, 错误: {e}")
             import traceback
             logger.error(f"详细错误信息: {traceback.format_exc()}")
+            if self.tasks.get(task_id, {}).get("model_id"):
+                raise
             return self._generate_maintenance_message(requirement, user_prompt)
 
     def _generate_maintenance_message(self, requirement: str, user_prompt: str) -> str:

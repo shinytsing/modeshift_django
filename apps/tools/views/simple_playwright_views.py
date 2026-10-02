@@ -4,6 +4,7 @@
 """
 
 from django.http import JsonResponse
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
@@ -44,7 +45,7 @@ def save_token_api(request):
             'user_id': request.user.id,
             'username': request.user.username,
             'platform': platform,
-            'expires_at': time.time() + (7 * 24 * 60 * 60),  # 7天后过期
+            'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else time.time() + (7 * 24 * 60 * 60),
             'is_valid': True
         }
         
@@ -82,7 +83,7 @@ def get_token_api(request):
         
         # 检查是否过期
         expires_at = token_data.get('expires_at', 0)
-        if time.time() > expires_at:
+        if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
             return JsonResponse({"success": False, "error": "Token已过期"})
         
         return JsonResponse({
@@ -118,7 +119,7 @@ def check_login_status_api(request):
                 
                 # 检查是否过期
                 expires_at = token_data.get('expires_at', 0)
-                if time.time() <= expires_at:
+                if not expires_at or settings.AUTH_TOKEN_PERSIST_FOREVER or time.time() <= expires_at:
                     has_token = True
                     is_valid = token_data.get('is_valid', True)
             except Exception:

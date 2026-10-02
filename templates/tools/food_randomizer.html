@@ -1674,8 +1674,8 @@ async function startRandomization() {
                 return;
             }
             
-            currentSessionId = data.recommendation.generated_at;
-            currentHistoryId = data.recommendation.generated_at;
+            currentSessionId = data.recommendation.session_id || data.recommendation.generated_at;
+            currentHistoryId = currentSessionId;
             
             // 模拟动画延迟
             setTimeout(() => {
@@ -1725,8 +1725,8 @@ async function startPureRandomization() {
                 return;
             }
             
-            currentSessionId = data.recommendation.generated_at;
-            currentHistoryId = data.recommendation.generated_at;
+            currentSessionId = data.recommendation.session_id || data.recommendation.generated_at;
+            currentHistoryId = currentSessionId;
             
             // 模拟动画延迟
             setTimeout(() => {

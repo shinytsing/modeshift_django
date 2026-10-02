@@ -182,7 +182,7 @@
             51%, 100% { opacity: 0; }
         }
 
-        textarea, input[type="text"] {
+        textarea, input[type="text"], input[type="search"] {
             width: 100%;
             padding: 20px;
             border: 2px solid var(--border-color);
@@ -196,7 +196,19 @@
             position: relative;
         }
 
-        textarea:focus, input[type="text"]:focus {
+        input[type="search"] {
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="search"]::-webkit-search-decoration,
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-results-button,
+        input[type="search"]::-webkit-search-results-decoration {
+            -webkit-appearance: none;
+        }
+
+        textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: var(--glow-shadow);
@@ -344,6 +356,51 @@
             justify-content: center;
             margin: 30px 0;
             flex-wrap: wrap;
+        }
+
+        .generation-options {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            min-width: min(100%, 420px);
+            padding: 12px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .generation-options .model-picker {
+            flex: 1 1 280px;
+            min-width: 0;
+        }
+
+        .generation-options label {
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .generation-options select {
+            width: 100%;
+            min-height: 46px;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font: inherit;
+        }
+
+        .generation-options select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-shadow);
+        }
+
+        .generation-options .model-status {
+            margin-top: 6px;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            line-height: 1.35;
         }
 
         /* 进度条样式 */
@@ -546,6 +603,12 @@
                 flex-direction: column;
                 align-items: center;
             }
+
+            .generation-options {
+                width: 100%;
+                align-items: stretch;
+                flex-direction: column;
+            }
             
             button {
                 width: 100%;
@@ -643,6 +706,156 @@
             color: var(--primary-color);
             font-size: 16px;
         }
+
+        .knowledge-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin: 10px 0;
+            background: var(--bg-tertiary);
+        }
+
+        #knowledgeHeading {
+            display: block;
+            margin: 0 0 10px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #knowledgeHeading::after {
+            content: ' ▸';
+            color: var(--primary-color);
+            animation: blink 1s infinite;
+        }
+
+        #knowledgeSearch {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #knowledgeSearchBtn {
+            flex: 0 0 auto;
+            min-height: 46px;
+            padding: 10px 22px;
+        }
+
+        #knowledgeSearchStatus { min-height: 24px; margin: 10px 0; color: var(--text-secondary); }
+        #knowledgeResults { display: grid; gap: 12px; }
+        .knowledge-card {
+            display: grid;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .knowledge-card:hover { border-color: var(--primary-color); box-shadow: var(--glow-shadow); transform: translateY(-2px); }
+        .knowledge-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .knowledge-card-title { color: var(--text-primary); font-size: 1rem; }
+        .knowledge-card-source { color: var(--primary-color); font-size: 0.78rem; }
+        .knowledge-card-snippet {
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+        }
+        .knowledge-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .knowledge-card button, #knowledgeDetailModal button { width: fit-content; }
+        .knowledge-card .btn-use { padding: 9px 16px; font-size: 0.9rem; }
+        .knowledge-selection-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .knowledge-selection-summary[hidden] { display: none; }
+        .knowledge-selection-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border: 1px solid rgba(0, 255, 136, 0.45);
+            border-radius: 999px;
+            color: var(--primary-color);
+            background: rgba(0, 255, 136, 0.08);
+        }
+        .knowledge-selection-chip button { padding: 0; border: 0; background: transparent; color: var(--primary-color); box-shadow: none; font-size: 0.9rem; }
+        #prompt.prompt-drop-target.drag-over { border-color: var(--primary-color); box-shadow: var(--glow-shadow); }
+        .prompt-drop-hint { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; }
+        .knowledge-modal[hidden] { display: none; }
+        .knowledge-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.78);
+        }
+        .knowledge-modal-panel {
+            width: min(900px, 100%);
+            max-height: min(760px, 90vh);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--primary-color);
+            border-radius: 16px;
+            box-shadow: var(--glow-shadow-strong);
+        }
+        .knowledge-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+        .knowledge-modal-header h3 { color: var(--primary-color); font-size: 1.2rem; }
+        .knowledge-modal-close { padding: 6px 12px; font-size: 0.9rem; }
+        #knowledgeDetailMeta { color: var(--text-secondary); font-size: 0.85rem; }
+        #knowledgeDetailContent {
+            min-height: 160px;
+            overflow: auto;
+            padding: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .knowledge-modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+        .execution-panel {
+            margin-top: 18px;
+            padding: 18px;
+            border: 1px solid rgba(0, 255, 136, 0.45);
+            border-radius: 12px;
+            background: rgba(0, 255, 136, 0.04);
+        }
+        .execution-panel[hidden] { display: none; }
+        .execution-panel h3 { color: var(--primary-color); margin-bottom: 8px; }
+        .execution-panel-intro { color: var(--text-secondary); margin-bottom: 14px; line-height: 1.6; }
+        .execution-options { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(100px, 0.6fr); gap: 12px; align-items: end; }
+        .execution-options label { color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 6px; }
+        .execution-options input, .execution-options select { width: 100%; }
+        .execution-safety { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--text-secondary); font-size: 0.9rem; }
+        .execution-safety input { accent-color: var(--primary-color); }
+        .execution-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        #executionStatus { min-height: 24px; margin-top: 12px; color: var(--text-secondary); }
+        .execution-report { margin-top: 14px; display: grid; gap: 10px; }
+        .execution-report[hidden] { display: none; }
+        .execution-summary { color: var(--text-primary); font-weight: 600; }
+        .execution-case { padding: 12px; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-tertiary); }
+        .execution-case-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .execution-case-title { color: var(--text-primary); }
+        .execution-case-meta { color: var(--text-secondary); font-size: 0.82rem; }
+        .execution-case-reason { margin-top: 6px; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; }
+        .execution-case.passed { border-color: rgba(0, 255, 136, 0.55); }
+        .execution-case.failed { border-color: rgba(255, 88, 88, 0.75); }
+        .execution-case.skipped { border-color: rgba(255, 193, 7, 0.65); }
+        @media (max-width: 760px) { .execution-options { grid-template-columns: 1fr; } }
     </style>
 {% endblock %}
 {% block content %}
@@ -656,6 +869,20 @@
         </div>
 
         <form id="testForm">
+            <section class="form-group" aria-labelledby="knowledgeHeading">
+                <h2 id="knowledgeHeading">知识库参考文档（可选）</h2>
+                <label for="knowledgeSearch">搜索知识库</label>
+                <div class="terminal-input">
+                    <input id="knowledgeSearch" type="search" placeholder="输入功能名、模块或知识点">
+                    <button type="button" id="knowledgeSearchBtn" class="btn-outline">搜索</button>
+                </div>
+                <div id="knowledgeSearchStatus" role="status" aria-live="polite"></div>
+                <div id="knowledgeResults" aria-label="知识库搜索结果"></div>
+                <div id="knowledgeSelectionSummary" class="knowledge-selection-summary" hidden aria-live="polite">
+                    <span>已加入本次提示词：</span>
+                    <span id="knowledgeSelectionList"></span>
+                </div>
+            </section>
             <div class="form-group">
                 <label for="requirement">产品需求</label>
                 <div class="terminal-input">
@@ -671,8 +898,10 @@
                 <label for="prompt">自定义提示词</label>
                 <textarea
                     id="prompt"
+                    class="prompt-drop-target"
                     placeholder="请输入自定义提示词（使用{requirement}作为需求占位符），例如：根据{requirement}生成详细的测试用例..."
                 ></textarea>
+                <div class="prompt-drop-hint">可将上方搜索结果卡片拖入此处，或打开卡片后点击“加入提示词”。</div>
                 <div class="hint">
                     提示：留空将使用默认提示词模板，生成包含多级结构的测试用例
                 </div>
@@ -694,6 +923,15 @@
             </div>
 
                     <div class="action-buttons">
+            <div class="generation-options" aria-label="生成选项">
+                <div class="model-picker">
+                    <label for="modelSelect">生成模型</label>
+                    <select id="modelSelect" required aria-describedby="modelStatus">
+                        <option value="">正在读取可用模型…</option>
+                    </select>
+                    <div class="model-status" id="modelStatus" role="status">正在读取当前可用模型…</div>
+                </div>
+            </div>
             <button type="button" id="resetBtn" class="btn-outline">
                 <i class="fas fa-undo"></i> 重置
             </button>
@@ -705,6 +943,20 @@
             </button>
         </div>
         </form>
+
+        <div id="knowledgeDetailModal" class="knowledge-modal" hidden aria-hidden="true">
+            <div class="knowledge-modal-panel" role="dialog" aria-modal="true" aria-labelledby="knowledgeDetailTitle">
+                <div class="knowledge-modal-header">
+                    <h3 id="knowledgeDetailTitle">文档详情</h3>
+                    <button type="button" class="btn-outline knowledge-modal-close" id="knowledgeDetailClose">关闭</button>
+                </div>
+                <div id="knowledgeDetailMeta"></div>
+                <div id="knowledgeDetailContent">正在加载文档内容…</div>
+                <div class="knowledge-modal-actions">
+                    <button type="button" class="btn-outline" id="knowledgeDetailUse">加入提示词</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 进度条容器 -->
         <div id="progressContainer" class="progress-container">
@@ -730,6 +982,38 @@
                 </div>
             </div>
             <div class="test-case-display" id="testCaseDisplay"></div>
+            <section id="executionPanel" class="execution-panel" hidden aria-labelledby="executionHeading">
+                <h3 id="executionHeading">自动化执行</h3>
+                <p class="execution-panel-intro">原始生成结果仍作为人工执行（PMD）用例保留；点击下面按钮后，大模型会筛选出可执行的 API/UI 用例并生成执行报告，无法安全转换的用例会标记为人工执行。</p>
+                <div class="execution-options">
+                    <div>
+                        <label for="executionTargetUrl">执行目标</label>
+                        <input id="executionTargetUrl" type="url" placeholder="http://127.0.0.1:8081" value="http://127.0.0.1:8081">
+                    </div>
+                    <div>
+                        <label for="executionMode">自动化类型</label>
+                        <select id="executionMode">
+                            <option value="auto">自动识别 API / UI</option>
+                            <option value="api">仅 API 自动化</option>
+                            <option value="ui">仅 UI 自动化</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="executionMaxCases">最多执行</label>
+                        <input id="executionMaxCases" type="number" min="1" max="30" value="10">
+                    </div>
+                </div>
+                <label class="execution-safety" for="executionAllowMutations">
+                    <input id="executionAllowMutations" type="checkbox">
+                    允许 API 写操作（POST / PUT / PATCH / DELETE）；不勾选时写操作只报告为跳过
+                </label>
+                <div class="execution-actions">
+                    <button type="button" class="btn-primary" id="executeGeneratedBtn"><i class="fas fa-play"></i> 执行自动化用例</button>
+                    <button type="button" class="btn-outline" id="stopExecutionBtn" hidden><i class="fas fa-stop"></i> 停止执行</button>
+                </div>
+                <div id="executionStatus" role="status" aria-live="polite"></div>
+                <div id="executionReport" class="execution-report" hidden></div>
+            </section>
             <div class="action-buttons">
                 <button class="btn-outline" id="copyBtn">
                     <i class="fas fa-copy"></i> 复制内容
@@ -832,7 +1116,11 @@
 请严格按照上述格式生成完整、充足的测试用例，确保数量和质量都满足要求。`;
 
         let currentTaskId = null;
+        let currentExecutionId = null;
+        const selectedKnowledgeDocuments = new Map();
+        let activeKnowledgeDocument = null;
         let statusCheckInterval = null;
+        let executionStatusInterval = null;
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -846,6 +1134,7 @@
             
             // 显示在线状态
             showMessage('系统已就绪，准备接受任务', 'success');
+            loadModelCatalog();
         }
 
         function bindEvents() {
@@ -862,6 +1151,147 @@
             document.getElementById('downloadTxtBtn').addEventListener('click', downloadTxtContent);
             document.getElementById('downloadXmindBtn').addEventListener('click', downloadXmindFile);
             document.getElementById('downloadFeishuBtn').addEventListener('click', downloadFeishuFile);
+            document.getElementById('executeGeneratedBtn').addEventListener('click', startGeneratedExecution);
+            document.getElementById('stopExecutionBtn').addEventListener('click', stopGeneratedExecution);
+            document.getElementById('knowledgeSearchBtn').addEventListener('click', searchKnowledgeDocuments);
+            document.getElementById('knowledgeSearch').addEventListener('keydown', event => {
+                if (event.key === 'Enter') { event.preventDefault(); searchKnowledgeDocuments(); }
+            });
+            const promptDropZone = document.getElementById('prompt');
+            promptDropZone.addEventListener('dragover', event => {
+                event.preventDefault();
+                promptDropZone.classList.add('drag-over');
+            });
+            promptDropZone.addEventListener('dragleave', () => promptDropZone.classList.remove('drag-over'));
+            promptDropZone.addEventListener('drop', event => {
+                event.preventDefault();
+                promptDropZone.classList.remove('drag-over');
+                try { useKnowledgeDocument(JSON.parse(event.dataTransfer.getData('application/json'))); } catch (_) {}
+            });
+            document.getElementById('knowledgeDetailClose').addEventListener('click', closeKnowledgeDocument);
+            document.getElementById('knowledgeDetailUse').addEventListener('click', () => {
+                if (activeKnowledgeDocument) useKnowledgeDocument(activeKnowledgeDocument);
+            });
+            document.getElementById('knowledgeDetailModal').addEventListener('click', event => {
+                if (event.target.id === 'knowledgeDetailModal') closeKnowledgeDocument();
+            });
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape') closeKnowledgeDocument();
+            });
+        }
+
+        function loadModelCatalog() {
+            const select = document.getElementById('modelSelect');
+            axios.get('/tools/api/llm/models/').then(({data}) => {
+                select.replaceChildren();
+                (data.models || []).filter(model => model.available).forEach(model => {
+                    const option = document.createElement('option'); option.value = model.id; option.textContent = `${model.label} — ${model.description}`; select.append(option);
+                });
+                document.getElementById('modelStatus').textContent = select.options.length ? '仅显示当前可用模型；云服务按密钥配置显示，本机模型按 Ollama 目录显示。' : '没有可用模型，请先配置 DeepSeek 等服务端密钥或启动 Ollama。';
+                if (!select.options.length) select.add(new Option('暂无可用模型', ''));
+            }).catch(() => {
+                select.replaceChildren(new Option('模型目录加载失败', ''));
+                document.getElementById('modelStatus').textContent = '无法读取模型目录，请刷新页面或联系管理员。';
+            });
+        }
+
+        function searchKnowledgeDocuments() {
+            const query = document.getElementById('knowledgeSearch').value.trim();
+            const statusEl = document.getElementById('knowledgeSearchStatus');
+            const results = document.getElementById('knowledgeResults');
+            if (!query) { statusEl.textContent = '请输入要搜索的模块或知识点。'; return; }
+            statusEl.textContent = '正在搜索…'; results.replaceChildren();
+            axios.get('/tools/api/rag/documents/search/', {params: {q: query}}).then(({data}) => {
+                results.replaceChildren();
+                const documents = data.results || [];
+                documents.forEach(doc => {
+                    const card = document.createElement('article'); card.className = 'knowledge-card'; card.draggable = true;
+                    card.addEventListener('dragstart', event => event.dataTransfer.setData('application/json', JSON.stringify(doc)));
+                    card.addEventListener('click', () => openKnowledgeDocument(doc));
+                    const header = document.createElement('div'); header.className = 'knowledge-card-header';
+                    const title = document.createElement('strong'); title.className = 'knowledge-card-title'; title.textContent = doc.title;
+                    const origin = document.createElement('small'); origin.className = 'knowledge-card-source'; origin.textContent = doc.source === 'shared' ? '共享知识库' : '我的知识库';
+                    header.append(title, origin);
+                    const snippet = document.createElement('p'); snippet.textContent = doc.snippet;
+                    snippet.className = 'knowledge-card-snippet';
+                    const actions = document.createElement('div'); actions.className = 'knowledge-card-actions';
+                    const detailButton = document.createElement('button'); detailButton.type = 'button'; detailButton.className = 'btn-outline'; detailButton.textContent = '查看详情';
+                    detailButton.addEventListener('click', event => { event.stopPropagation(); openKnowledgeDocument(doc); });
+                    const useButton = document.createElement('button'); useButton.type = 'button'; useButton.className = 'btn-primary btn-use'; useButton.textContent = '加入提示词';
+                    useButton.addEventListener('click', event => { event.stopPropagation(); useKnowledgeDocument(doc); });
+                    actions.append(detailButton, useButton);
+                    card.append(header, snippet, actions); results.append(card);
+                });
+                statusEl.textContent = documents.length ? `找到 ${documents.length} 篇文档，点击卡片查看详情，可拖入提示词或加入引用。` : '没有匹配文档。';
+            }).catch(error => { statusEl.textContent = error.response?.data?.error || '搜索失败，请稍后重试。'; });
+        }
+
+        function openKnowledgeDocument(doc) {
+            if (!doc || !Number.isInteger(Number(doc.id))) return;
+            activeKnowledgeDocument = doc;
+            const modal = document.getElementById('knowledgeDetailModal');
+            document.getElementById('knowledgeDetailTitle').textContent = doc.title || '文档详情';
+            document.getElementById('knowledgeDetailMeta').textContent = '正在加载文档信息…';
+            document.getElementById('knowledgeDetailContent').textContent = '正在加载文档内容…';
+            modal.hidden = false;
+            modal.setAttribute('aria-hidden', 'false');
+            axios.get(`/tools/api/rag/documents/${Number(doc.id)}/`).then(({data}) => {
+                activeKnowledgeDocument = {...doc, ...data};
+                document.getElementById('knowledgeDetailTitle').textContent = data.title || '文档详情';
+                document.getElementById('knowledgeDetailMeta').textContent = `${data.source === 'shared' ? '共享知识库' : '我的知识库'} · ${data.source_type || '文档'} · ${data.chunks || 0} 个分块`;
+                document.getElementById('knowledgeDetailContent').textContent = data.content || '该文档没有可展示的文本内容。';
+            }).catch(error => {
+                document.getElementById('knowledgeDetailMeta').textContent = '';
+                document.getElementById('knowledgeDetailContent').textContent = error.response?.data?.error || '文档详情加载失败，请稍后重试。';
+            });
+        }
+
+        function closeKnowledgeDocument() {
+            const modal = document.getElementById('knowledgeDetailModal');
+            if (!modal || modal.hidden) return;
+            modal.hidden = true;
+            modal.setAttribute('aria-hidden', 'true');
+            activeKnowledgeDocument = null;
+        }
+
+        function useKnowledgeDocument(doc) {
+            if (!doc || !Number.isInteger(Number(doc.id))) return;
+            const id = Number(doc.id);
+            const title = String(doc.title || '知识文档');
+            selectedKnowledgeDocuments.set(id, {id, title});
+            const prompt = document.getElementById('prompt');
+            const marker = `【知识库参考文档：${title}】\n请结合该文档中与当前需求相关的实际功能、流程和约束生成测试用例。`;
+            if (!prompt.value.includes(`【知识库参考文档：${title}】`)) {
+                prompt.value = `${prompt.value.trim()}${prompt.value.trim() ? '\n\n' : ''}${marker}`;
+            }
+            renderKnowledgeSelection();
+            closeKnowledgeDocument();
+            prompt.focus();
+        }
+
+        function removeKnowledgeDocument(documentId) {
+            const selectedDoc = selectedKnowledgeDocuments.get(Number(documentId));
+            selectedKnowledgeDocuments.delete(Number(documentId));
+            if (selectedDoc) {
+                const prompt = document.getElementById('prompt');
+                const marker = `【知识库参考文档：${selectedDoc.title}】\n请结合该文档中与当前需求相关的实际功能、流程和约束生成测试用例。`;
+                prompt.value = prompt.value.replace(marker, '').replace(/\n{3,}/g, '\n\n').trim();
+            }
+            renderKnowledgeSelection();
+        }
+
+        function renderKnowledgeSelection() {
+            const summary = document.getElementById('knowledgeSelectionSummary');
+            const list = document.getElementById('knowledgeSelectionList');
+            list.replaceChildren();
+            summary.hidden = selectedKnowledgeDocuments.size === 0;
+            selectedKnowledgeDocuments.forEach(selectedDoc => {
+                const chip = document.createElement('span'); chip.className = 'knowledge-selection-chip';
+                const label = document.createElement('span'); label.textContent = selectedDoc.title;
+                const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.setAttribute('aria-label', `移除 ${selectedDoc.title} 的引用`); remove.title = '移除引用';
+                remove.addEventListener('click', () => removeKnowledgeDocument(selectedDoc.id));
+                chip.append(label, remove); list.append(chip);
+            });
         }
 
         function handleFormSubmit(e) {
@@ -887,10 +1317,14 @@
         function createAsyncTask(requirement, prompt) {
             const csrfToken = getCookie('csrftoken');
             const finalPrompt = prompt || document.getElementById('defaultPromptText').value;
+            const modelId = document.getElementById('modelSelect').value;
+            if (!modelId) { showMessage('请先选择可用模型', 'error'); return; }
             
             axios.post('/tools/api/async/generate-testcases/', {
                 requirement: requirement,
-                prompt: finalPrompt
+                prompt: finalPrompt,
+                model_id: modelId,
+                knowledge_document_ids: Array.from(selectedKnowledgeDocuments.keys())
             }, {
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -951,7 +1385,7 @@
                     statusCheckInterval = null;
                     
                     if (task.status === 'completed') {
-                        showResult(task.result);
+                        showResult(task.result, task.sources || [], task.selected_model || '');
                         showMessage('测试用例生成完成！', 'success');
                         // 通知由异步任务管理器自动创建，不需要手动发送
                     } else {
@@ -978,7 +1412,7 @@
             }
         }
 
-        function showResult(result) {
+        function showResult(result, sources = [], selectedModel = '') {
             document.getElementById('resultContainer').classList.add('active');
             document.getElementById('progressContainer').classList.remove('active');
             
@@ -990,14 +1424,27 @@
                 .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-color);">$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em style="color: var(--secondary-color);">$1</em>')
                 .replace(/\n/g, '<br>');
+            const provenance = document.createElement('section'); provenance.id = 'generationProvenance';
+            const heading = document.createElement('h3'); heading.textContent = `实际使用模型：${selectedModel || '未提供'}`; provenance.append(heading);
+            const sourceList = document.createElement('ul');
+            sources.forEach(source => { const item = document.createElement('li'); item.textContent = `${source.document}#分块${source.sequence}`; sourceList.append(item); });
+            if (sources.length) { const label = document.createElement('p'); label.textContent = '引用知识库来源：'; provenance.append(label, sourceList); }
+            testCaseDisplay.prepend(provenance);
             
             // 显示下载按钮
             document.getElementById('downloadTxtBtn').style.display = 'flex';
             document.getElementById('downloadXmindBtn').style.display = 'flex';
             document.getElementById('downloadFeishuBtn').style.display = 'flex';
+            document.getElementById('executionPanel').hidden = false;
+            document.getElementById('executionStatus').textContent = '原始用例已保留；可以选择目标后执行其中可自动化的 API/UI 用例。';
+            document.getElementById('executionReport').hidden = true;
+            document.getElementById('executionReport').replaceChildren();
+            document.getElementById('executionTargetUrl').value = window.location.origin;
             
             // 保存结果到全局变量供下载使用
             window.currentTestResult = result;
+            window.currentTestRequirement = document.getElementById('requirement').value.trim();
+            window.currentTestPrompt = document.getElementById('prompt').value.trim() || document.getElementById('defaultPromptText').value;
             
             // 显示任务完成信息
             showMessage('🎉 测试用例生成完成！可以下载多种格式文件', 'success');
@@ -1014,6 +1461,11 @@
             document.getElementById('downloadTxtBtn').style.display = 'none';
             document.getElementById('downloadXmindBtn').style.display = 'none';
             document.getElementById('downloadFeishuBtn').style.display = 'none';
+            document.getElementById('executionPanel').hidden = true;
+            document.getElementById('executionReport').hidden = true;
+            document.getElementById('executionReport').replaceChildren();
+            document.getElementById('executionStatus').textContent = '';
+            document.getElementById('stopExecutionBtn').hidden = true;
             
             hideMessage();
             
@@ -1021,8 +1473,104 @@
                 clearInterval(statusCheckInterval);
                 statusCheckInterval = null;
             }
-            
+            if (executionStatusInterval) {
+                clearInterval(executionStatusInterval);
+                executionStatusInterval = null;
+            }
+
             currentTaskId = null;
+            currentExecutionId = null;
+        }
+
+        function startGeneratedExecution() {
+            const testCases = window.currentTestResult;
+            const modelId = document.getElementById('modelSelect').value;
+            const targetUrl = document.getElementById('executionTargetUrl').value.trim();
+            const mode = document.getElementById('executionMode').value;
+            const maxCases = Number(document.getElementById('executionMaxCases').value || 10);
+            const allowMutations = document.getElementById('executionAllowMutations').checked;
+            if (!testCases) { showMessage('请先生成测试用例，再执行自动化', 'error'); return; }
+            if (!modelId) { showMessage('请先选择执行模型', 'error'); return; }
+            if (!targetUrl) { showMessage('请输入执行目标地址', 'error'); return; }
+            const button = document.getElementById('executeGeneratedBtn');
+            button.disabled = true;
+            button.innerHTML = '<div class="spinner"></div> 创建执行任务中...';
+            document.getElementById('executionStatus').textContent = '正在让大模型区分人工、API 和 UI 用例…';
+            document.getElementById('executionReport').hidden = true;
+            axios.post('/tools/api/async/execute-testcases/', {
+                test_cases: testCases,
+                requirement: window.currentTestRequirement || '',
+                prompt: window.currentTestPrompt || '',
+                target_url: targetUrl,
+                mode,
+                max_cases: maxCases,
+                allow_mutations: allowMutations,
+                model_id: modelId
+            }, {headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'}})
+                .then(response => {
+                    if (!response.data.success) throw new Error(response.data.error || '执行任务创建失败');
+                    currentExecutionId = response.data.execution_id;
+                    document.getElementById('stopExecutionBtn').hidden = false;
+                    startExecutionStatusCheck();
+                })
+                .catch(error => {
+                    document.getElementById('executionStatus').textContent = error.response?.data?.error || error.message || '执行任务创建失败';
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-play"></i> 执行自动化用例';
+                });
+        }
+
+        function startExecutionStatusCheck() {
+            if (executionStatusInterval) clearInterval(executionStatusInterval);
+            checkExecutionStatus();
+            executionStatusInterval = setInterval(checkExecutionStatus, 2000);
+        }
+
+        function checkExecutionStatus() {
+            if (!currentExecutionId) return;
+            axios.get(`/tools/api/async/execution/${currentExecutionId}/`).then(({data}) => {
+                document.getElementById('executionStatus').textContent = `${data.current_step || '执行中'}（${data.progress || 0}%）`;
+                if (data.status === 'completed') {
+                    clearInterval(executionStatusInterval); executionStatusInterval = null;
+                    document.getElementById('stopExecutionBtn').hidden = true;
+                    renderExecutionReport(data.report);
+                } else if (data.status === 'failed' || data.status === 'cancelled') {
+                    clearInterval(executionStatusInterval); executionStatusInterval = null;
+                    document.getElementById('stopExecutionBtn').hidden = true;
+                    document.getElementById('executionStatus').textContent = data.error || data.current_step || '自动化执行失败';
+                }
+            }).catch(() => { document.getElementById('executionStatus').textContent = '正在等待执行结果…'; });
+        }
+
+        function stopGeneratedExecution() {
+            if (!currentExecutionId) return;
+            axios.post(`/tools/api/async/execution/${currentExecutionId}/stop/`, {}, {headers: {'X-CSRFToken': getCookie('csrftoken')}})
+                .then(() => {
+                    document.getElementById('executionStatus').textContent = '已请求停止自动化任务';
+                    document.getElementById('stopExecutionBtn').hidden = true;
+                });
+        }
+
+        function renderExecutionReport(report) {
+            const container = document.getElementById('executionReport');
+            container.replaceChildren();
+            container.hidden = false;
+            const summary = report?.summary || {};
+            const summaryEl = document.createElement('div'); summaryEl.className = 'execution-summary';
+            summaryEl.textContent = `执行完成：共 ${summary.total || 0} 条，通过 ${summary.passed || 0}，失败 ${summary.failed || 0}，人工/跳过 ${summary.skipped || 0}`;
+            container.append(summaryEl);
+            (report?.cases || []).forEach(item => {
+                const card = document.createElement('article'); card.className = `execution-case ${item.status || 'skipped'}`;
+                const head = document.createElement('div'); head.className = 'execution-case-head';
+                const title = document.createElement('strong'); title.className = 'execution-case-title'; title.textContent = `${item.id} · ${item.title}`;
+                const meta = document.createElement('span'); meta.className = 'execution-case-meta'; meta.textContent = `${item.channel === 'manual' ? '人工执行（PMD）' : item.channel === 'api' ? 'API 自动化' : 'UI 自动化'} · ${item.status}`;
+                head.append(title, meta); card.append(head);
+                if (item.reason) { const reason = document.createElement('div'); reason.className = 'execution-case-reason'; reason.textContent = item.reason; card.append(reason); }
+                container.append(card);
+            });
+            document.getElementById('executionStatus').textContent = '自动化报告已生成；未能安全转换的用例仍保留为人工执行。';
         }
 
         function copyContent() {

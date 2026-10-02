@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}测试用例生成入口 - ModeShift{% endblock %}
+{% block content %}
+<main class="generator-entry">
+    <div class="entry-topbar">
+        <a href="/" class="entry-back">← 返回 ModeShift</a>
+        <div class="entry-topbar-actions"><span class="entry-kicker">MODE SHIFT / TEST CASE GENERATOR</span><a href="{% url 'tools:task_manager' %}" target="_blank" rel="noopener" class="entry-button">任务管理器</a></div>
+    </div>
+    <header class="entry-header">
+        <p class="entry-eyebrow">DEEPSEEK TEST DESIGN AGENT</p>
+        <h1>测试用例生成工作台</h1>
+        <p>先让 DeepSeek 生成一份完整的人工用例，再分别进入 API、UI 自动化工作区生成和执行对应通道的用例。</p>
+    </header>
+
+    <section class="entry-layout">
+        <form id="generationForm" class="entry-card">
+            <div class="entry-card-head"><div><span class="entry-label">01 / INPUT</span><h2>描述测试目标</h2></div><span id="generationStatus" class="entry-status"></span></div>
+            <label>产品需求<textarea id="requirement" required placeholder="例如：用户可以使用手机号和密码登录，登录成功后进入首页，失败时展示错误提示。"></textarea></label>
+            <label>补充 Prompt<textarea id="userPrompt" placeholder="保留你自己的补充 Prompt；不填写时使用系统默认规则，不会把默认内容写回这里。"></textarea></label>
+            <details class="default-prompt-panel">
+                <summary>查看或编辑原始默认 Prompt</summary>
+                <p class="entry-help">补充 Prompt 留空时使用这个模板；两份内容分别保存，默认模板不会覆盖你的补充 Prompt。</p>
+                <textarea id="defaultPromptText" aria-label="原始默认 Prompt">作为资深测试工程师，请根据以下产品需求生成完整的测试用例：
+
+## 重要要求
+⚠️ **绝对禁止使用"此处省略"、"等等"、"..."等任何形式的省略表述**
+⚠️ **必须生成足够数量的测试用例，不能因为长度限制而减少**
+⚠️ **优先保证完整性和数量，速度其次**
+⚠️ **每个用例都必须完整，不能中途截断**
+⚠️ **严格按照指定格式输出，不要乱**
+
+## 测试用例要求
+1. **功能测试**：核心功能、主要业务流程、数据处理
+2. **界面测试**：关键UI交互、用户体验、页面跳转
+3. **异常测试**：重要错误处理、边界条件、异常流程
+4. **安全测试**：基本数据安全、权限控制、输入验证
+5. **性能测试**：基本性能指标、响应时间
+6. **兼容性测试**：浏览器兼容、设备兼容、版本兼容
+
+## 用例结构（每个用例必须包含）
+- **用例ID**：TC-模块-序号（如：TC-登录-001）
+- **用例标题**：简洁明确的功能描述
+- **测试场景**：具体的业务场景
+- **前置条件**：系统状态、数据准备
+- **测试步骤**：详细的操作步骤（1.2.3...）
+- **预期结果**：具体的验证点
+- **优先级**：P0/P1/P2（P0最高）
+- **测试类型**：功能/界面/异常/安全/性能
+
+## 数量要求（必须满足）
+- **每个测试维度至少10个用例，推荐15-20个**
+- **总用例数量至少100个，推荐120-150个**
+- **测试维度包括：功能测试、界面测试、异常测试、安全测试、性能测试、兼容性测试**
+- **用例分布：正向60% + 异常25% + 边界15%**
+- **必须覆盖所有核心功能和关键场景**
+- **优先保证数量和质量，生成时间可以适当延长**
+
+## 输出格式（严格按照此格式）
+```
+# 测试用例文档
+
+## 模块1：[模块名称]
+### TC-001：[用例标题]
+**测试场景**：[具体场景]
+**前置条件**：[系统状态和数据准备]
+**测试步骤**：
+1. [步骤1]
+2. [步骤2]
+3. [步骤3]
+**预期结果**：[具体验证点]
+**优先级**：P0/P1/P2
+**测试类型**：[功能/界面/异常/安全/性能]
+
+### TC-002：[用例标题]
+[同上格式]
+
+...（继续该模块的其他用例）
+
+## 模块2：[模块名称]
+### TC-XXX：[用例标题]
+[同上格式]
+
+...（继续其他模块）
+
+## 总结
+- 总用例数量：[数字]个
+- 功能模块数量：[数字]个
+- 测试覆盖情况：[覆盖的功能点]
+- 测试类型分布：[正向/异常/边界测试分布]
+```
+
+## 完整性保证
+- 每个用例必须包含完整的测试步骤
+- 预期结果必须具体可验证
+- 不能使用任何省略表述
+- 严格按照格式输出，不要乱
+- 最后必须有总结部分
+
+产品需求：{requirement}
+
+请严格按照上述格式生成完整、充足的测试用例，确保数量和质量都满足要求。</textarea>
+            </details>
+            <label>人工用例生成模型<select id="generationModel"><option value="">读取中…</option></select></label>
+            <button type="submit" id="generateButton" class="entry-button entry-button-primary">开始生成</button>
+        </form>
+
+        <aside class="entry-card knowledge-card">
+            <div class="entry-card-head"><div><span class="entry-label">02 / CONTEXT</span><h2>知识库文档</h2></div><span id="selectedCount" class="entry-status">未选择</span></div>
+            <div class="knowledge-search"><input id="knowledgeQuery" placeholder="搜索功能、模块或知识点"><select id="knowledgeMode" aria-label="按模式筛选"><option value="">全部模式</option><option value="极客模式">极客模式</option><option value="生活模式">生活模式</option><option value="训练模式">训练模式</option><option value="狂暴模式">狂暴模式</option><option value="Emo 模式">Emo 模式</option><option value="账号与系统">账号与系统</option></select><button type="button" id="knowledgeSearchButton" class="entry-button">搜索</button></div>
+            <p class="entry-help">先按四个模式缩小范围，再搜索具体页面或功能模块；结果只作为本次生成的事实依据。</p>
+            <div id="knowledgeResults" class="knowledge-results"><div class="entry-empty">输入关键词后搜索知识库。</div></div>
+            <div id="selectedDocuments" class="selected-documents"></div>
+        </aside>
+    </section>
+
+    <section id="progressContainer" class="entry-card progress-card" hidden aria-live="polite">
+        <div class="entry-card-head">
+            <div><span class="entry-label">GENERATION PROGRESS</span><h2 id="progressTitle">任务处理中…</h2></div>
+            <span id="progressPercentage" class="progress-percentage">0%</span>
+        </div>
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="测试用例生成进度">
+            <div id="progressFill" class="progress-fill" style="width:0%"></div>
+        </div>
+        <p id="progressStep" class="progress-step">准备中…</p>
+    </section>
+
+    <dialog id="knowledgeDetailDialog" class="knowledge-dialog">
+        <div class="entry-card-head"><div><span class="entry-label">DOCUMENT DETAIL</span><h2 id="knowledgeDetailTitle">知识库文档</h2></div><button type="button" id="closeKnowledgeDetail" class="entry-button">关闭</button></div>
+        <p id="knowledgeDetailMeta" class="entry-help"></p>
+        <pre id="knowledgeDetailContent" class="knowledge-detail-content"></pre>
+    </dialog>
+
+    <section id="resultCard" class="entry-card result-card" hidden>
+        <div class="entry-card-head"><div><span class="entry-label">03 / WORKSPACES</span><h2>已生成，选择一个独立工作区继续</h2></div><span id="resultMeta" class="entry-status"></span></div>
+        <div class="workspace-links">
+            <a href="{% url 'tools:test_case_manual' %}"><strong>人工执行用例</strong><span>查看、编辑和导出完整 PMD 用例</span></a>
+            <a href="{% url 'tools:test_case_api' %}"><strong>API 自动化</strong><span>单独生成 API 文档并交给执行 Agent</span></a>
+            <a href="{% url 'tools:test_case_ui' %}"><strong>UI 自动化</strong><span>单独生成 UI 文档并交给执行 Agent</span></a>
+            <a href="{% url 'tools:test_case_reports' %}"><strong>执行报告</strong><span>查看每次 API/UI 执行的断言结果</span></a>
+        </div>
+    </section>
+</main>
+
+<style>
+    .generator-entry{max-width:1200px;margin:24px auto;padding:24px;color:#f5f7fb;background:#14171d;border:1px solid #2f3744;border-radius:18px;box-shadow:0 0 24px rgba(0,255,136,.12);font-family:JetBrains Mono,Fira Code,Consolas,monospace}.entry-topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #2b333f;padding-bottom:16px}.entry-topbar-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.entry-back{color:#9ee7c2;text-decoration:none}.entry-kicker,.entry-label,.entry-eyebrow{color:#00ff88;font-size:.78rem;letter-spacing:1.4px}.entry-header{padding:34px 8px 22px}.entry-header h1{margin:8px 0;color:#fff}.entry-header p{max-width:780px;color:#aeb9c8;line-height:1.7}.entry-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.entry-card{padding:20px;background:#1b2028;border:1px solid #344151;border-radius:14px}.entry-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}.entry-card h2{margin:6px 0;color:#fff;font-size:1.2rem}.entry-status{color:#aeb9c8;font-size:.82rem}.entry-card label{display:grid;gap:7px;margin:14px 0;color:#aeb9c8;font-size:.87rem}.entry-card textarea,.entry-card input,.entry-card select,.default-prompt-panel textarea{width:100%;box-sizing:border-box;border:1px solid #394655;border-radius:8px;background:#0e1116;color:#f5f7fb;padding:11px;font:inherit}.entry-card textarea{min-height:150px;resize:vertical;line-height:1.6}.default-prompt-panel{margin:14px 0;padding:12px;border:1px solid #394655;border-radius:8px;color:#aeb9c8}.default-prompt-panel summary{cursor:pointer;color:#dce5ef}.default-prompt-panel textarea{min-height:350px;resize:vertical;line-height:1.6}.progress-card{margin-top:16px}.progress-percentage{color:#00ff88;font-size:1.1rem;font-weight:700}.progress-bar{width:100%;height:18px;background:#0e1116;border:1px solid #394655;border-radius:999px;overflow:hidden}.progress-fill{height:100%;background:linear-gradient(90deg,#00c878,#00ff88);border-radius:999px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}.progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:progressShimmer 2s infinite}.progress-step{margin:12px 0 0;color:#aeb9c8;font-size:.88rem;line-height:1.5}.progress-card.failed{border-color:#ff6875}.progress-card.failed .progress-percentage,.progress-card.failed .progress-step{color:#ff9aa5}.progress-card.completed{border-color:#00c878}.progress-card.completed #progressTitle{color:#00ff88}@keyframes progressShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}.entry-button{min-height:38px;padding:8px 14px;border:1px solid #516176;border-radius:8px;background:transparent;color:#dce5ef;cursor:pointer}.entry-button-primary{background:#00c878;border-color:#00ff88;color:#06130c;font-weight:700}.entry-button:disabled{opacity:.5;cursor:not-allowed}.knowledge-search{display:grid;grid-template-columns:1fr 1.1fr auto;gap:8px}.entry-help{color:#8996a8;font-size:.8rem;line-height:1.55}.knowledge-results,.selected-documents{display:grid;gap:8px;margin-top:12px;max-height:360px;overflow:auto}.knowledge-item,.selected-item{padding:12px;border:1px solid #344151;border-radius:9px;background:#10141a}.knowledge-item{cursor:pointer}.knowledge-item:hover{border-color:#00c878}.knowledge-item strong{display:block;color:#fff}.knowledge-item small,.knowledge-item p{display:block;color:#8996a8;margin:6px 0 0;line-height:1.5}.knowledge-item button{margin-top:9px}.entry-empty{padding:22px;text-align:center;color:#8996a8;border:1px dashed #3d4b5c;border-radius:9px}.selected-item{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#dce5ef}.selected-item button{border:0;background:transparent;color:#ff9aa5;cursor:pointer}.knowledge-dialog{width:min(760px,calc(100vw - 32px));max-height:80vh;padding:20px;color:#f5f7fb;background:#1b2028;border:1px solid #00c878;border-radius:14px}.knowledge-dialog::backdrop{background:rgba(0,0,0,.72)}.knowledge-detail-content{max-height:55vh;overflow:auto;white-space:pre-wrap;color:#dce5ef;background:#0e1116;border:1px solid #394655;border-radius:8px;padding:14px;line-height:1.6}.result-card{margin-top:16px}.workspace-links{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.workspace-links a{display:grid;gap:8px;padding:16px;border:1px solid #344151;border-radius:10px;color:#dce5ef;text-decoration:none;background:#10141a}.workspace-links a:hover{border-color:#00c878;transform:translateY(-1px)}.workspace-links strong{color:#fff}.workspace-links span{color:#8996a8;font-size:.8rem;line-height:1.5}@media(max-width:850px){.entry-layout{grid-template-columns:1fr}.workspace-links{grid-template-columns:1fr 1fr}}@media(max-width:560px){.generator-entry{margin:8px;padding:14px}.workspace-links{grid-template-columns:1fr}}
+</style>
+
+<script src="https://unpkg.com/axios@1.7.9/dist/axios.min.js"></script>
+<script>
+(() => {
+    const workspaceKey = 'modeshift.testCaseWorkspace.v1';
+    const $ = id => document.getElementById(id);
+    const readWorkspace = () => { try { return JSON.parse(localStorage.getItem(workspaceKey) || '{}'); } catch { return {}; } };
+    const saveWorkspace = workspace => localStorage.setItem(workspaceKey, JSON.stringify(workspace));
+    const selected = new Map();
+    let statusTimer = null;
+    const getCookie = name => document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1] || '';
+    const showStatus = text => { $('generationStatus').textContent = text || ''; };
+    const renderSelected = () => {
+        $('selectedCount').textContent = selected.size ? `已选择 ${selected.size} 篇` : '未选择';
+        $('selectedDocuments').innerHTML = Array.from(selected.values()).map(item => `<div class="selected-item"><span>${escapeHtml(item.title)}</span><button type="button" data-remove-doc="${item.id}">移除</button></div>`).join('');
+        $('selectedDocuments').querySelectorAll('[data-remove-doc]').forEach(button => button.addEventListener('click', () => { selected.delete(Number(button.dataset.removeDoc)); renderSelected(); }));
+    };
+    const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    const renderResults = results => {
+        $('knowledgeResults').innerHTML = results.length ? results.map(item => `<article class="knowledge-item" data-open-doc="${item.id}"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.source || '知识库')} · 匹配度 ${Number(item.score || 0).toFixed(2)}</small><p>${escapeHtml(item.snippet || '')}</p><button type="button" class="entry-button" data-add-doc="${item.id}">${selected.has(Number(item.id)) ? '已添加' : '添加到生成上下文'}</button></article>`).join('') : '<div class="entry-empty">没有找到匹配文档。</div>';
+        $('knowledgeResults').querySelectorAll('[data-add-doc]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); const id = Number(button.dataset.addDoc); const item = results.find(result => Number(result.id) === id); if (item) selected.set(id, item); renderSelected(); renderResults(results); }));
+        $('knowledgeResults').querySelectorAll('[data-open-doc]').forEach(card => card.addEventListener('click', () => { const id = Number(card.dataset.openDoc); axios.get(`/tools/api/rag/documents/${id}/`).then(({data}) => { $('knowledgeDetailTitle').textContent = data.title; $('knowledgeDetailMeta').textContent = `${data.source || '知识库'} · ${data.source_type || 'document'} · ${data.chunks || 0} 个分块`; $('knowledgeDetailContent').textContent = data.content || '文档暂无正文'; $('knowledgeDetailDialog').showModal(); }).catch(error => { $('knowledgeDetailContent').textContent = error.response?.data?.error || '无法读取文档详情'; $('knowledgeDetailDialog').showModal(); }); }));
+    };
+    $('knowledgeSearchButton').addEventListener('click', () => {
+        const query = $('knowledgeQuery').value.trim(); if (!query) return;
+        $('knowledgeSearchButton').disabled = true; $('knowledgeResults').innerHTML = '<div class="entry-empty">搜索中…</div>';
+        const mode = $('knowledgeMode').value; const modeQuery = mode ? `&mode=${encodeURIComponent(mode)}` : '';
+        axios.get(`/tools/api/rag/documents/search/?q=${encodeURIComponent(query)}&limit=10${modeQuery}`).then(({data}) => renderResults(data.results || [])).catch(error => { $('knowledgeResults').innerHTML = `<div class="entry-empty">${escapeHtml(error.response?.data?.error || '知识库搜索失败')}</div>`; }).finally(() => { $('knowledgeSearchButton').disabled = false; });
+    });
+    $('knowledgeQuery').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('knowledgeSearchButton').click(); } });
+    $('closeKnowledgeDetail').addEventListener('click', () => $('knowledgeDetailDialog').close());
+    $('knowledgeDetailDialog').addEventListener('click', event => { if (event.target === $('knowledgeDetailDialog')) $('knowledgeDetailDialog').close(); });
+    axios.get('/tools/api/llm/models/').then(({data}) => { const select = $('generationModel'); select.replaceChildren(); (data.models || []).filter(item => item.available).forEach(item => { const option = document.createElement('option'); option.value = item.id; option.textContent = item.label; select.append(option); }); if (!select.options.length) throw new Error('没有可用模型'); }).catch(() => showStatus('没有读取到可用模型，请检查模型配置。'));
+
+    const updateProgress = task => {
+        const progress = Math.max(0, Math.min(100, Number(task.progress) || 0));
+        $('progressFill').style.width = `${progress}%`;
+        $('progressPercentage').textContent = `${progress}%`;
+        $('progressFill').parentElement.setAttribute('aria-valuenow', String(progress));
+        $('progressStep').textContent = task.current_step ? `当前步骤：${task.current_step}` : '后台任务处理中…';
+        if (task.status === 'completed') { $('progressTitle').textContent = '生成完成'; $('progressContainer').classList.add('completed'); }
+        if (task.status === 'failed') { $('progressTitle').textContent = '生成失败'; $('progressContainer').classList.add('failed'); $('progressStep').textContent = task.error || '后台任务执行失败'; }
+    };
+    const showProgress = () => { $('progressContainer').hidden = false; $('progressContainer').classList.remove('failed', 'completed'); $('progressTitle').textContent = '任务处理中…'; $('progressFill').style.width = '0%'; $('progressPercentage').textContent = '0%'; $('progressFill').parentElement.setAttribute('aria-valuenow', '0'); $('progressStep').textContent = '任务已创建，等待后台处理…'; };
+
+    $('generationForm').addEventListener('submit', event => {
+        event.preventDefault();
+        const requirement = $('requirement').value.trim(); const prompt = $('userPrompt').value.trim(); const defaultPrompt = $('defaultPromptText').value.trim(); const modelId = $('generationModel').value;
+        if (!requirement || !modelId) { showStatus('请填写需求并选择可用模型；补充 Prompt 可以留空。'); return; }
+        if (!prompt && !defaultPrompt) { showStatus('请填写补充 Prompt 或保留原始默认 Prompt。'); return; }
+        const button = $('generateButton'); button.disabled = true; showProgress(); showStatus('正在创建 DeepSeek 生成任务…');
+        axios.post('/tools/api/async/generate-testcases/', {requirement, prompt:prompt || defaultPrompt, model_id:modelId, knowledge_document_ids:Array.from(selected.keys())}, {headers:{'X-CSRFToken':getCookie('csrftoken')}}).then(({data}) => {
+            if (!data.success) throw new Error(data.error || '任务创建失败');
+            return new Promise((resolve, reject) => { const started = Date.now(); const poll = () => axios.get(`/tools/api/async/task/${data.task_id}/`).then(({data:task}) => { updateProgress(task); showStatus(`${task.current_step || '生成中'}（${task.progress || 0}%）`); if (task.status === 'completed') return resolve(task); if (task.status === 'failed') return reject(new Error(task.error || '生成失败')); if (Date.now() - started > 15 * 60 * 1000) return reject(new Error('生成超时，请查看后台任务状态')); statusTimer = setTimeout(poll, 2000); }).catch(reject); poll(); });
+        }).then(task => {
+            saveWorkspace({manual:task.result || '', requirement, prompt, default_prompt:defaultPrompt, model_id:task.selected_model || modelId, knowledge_document_ids:Array.from(selected.keys()), created_at:new Date().toISOString()});
+            $('resultCard').hidden = false; $('resultMeta').textContent = `模型：${task.selected_model || modelId} · 文档长度：${(task.result || '').length} 字符`; showStatus('人工用例已生成。现在可以分别进入 API、UI 或人工工作区。'); $('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+        }).catch(error => { $('progressContainer').classList.add('failed'); $('progressTitle').textContent = '生成失败'; $('progressStep').textContent = error.response?.data?.error || error.message || '生成失败'; showStatus(error.response?.data?.error || error.message || '生成失败'); }).finally(() => { button.disabled = false; if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; } });
+    });
+    function restore() { const workspace = readWorkspace(); const legacyPlaceholder = '请基于产品需求生成高质量、可执行的人工测试用例，并覆盖主流程、异常流程和关键断言。'; if (workspace.prompt === legacyPlaceholder) { delete workspace.prompt; saveWorkspace(workspace); } if (workspace.requirement) $('requirement').value = workspace.requirement; if (workspace.prompt) $('userPrompt').value = workspace.prompt; if (workspace.default_prompt !== undefined) $('defaultPromptText').value = workspace.default_prompt; if (workspace.model_id) { const select = $('generationModel'); const timer = setInterval(() => { if (Array.from(select.options).some(option => option.value === workspace.model_id)) { select.value = workspace.model_id; clearInterval(timer); } }, 200); setTimeout(() => clearInterval(timer), 5000); } }
+    const saveDraft = () => { const current = readWorkspace(); current.requirement = $('requirement').value; current.prompt = $('userPrompt').value; current.default_prompt = $('defaultPromptText').value; current.model_id = $('generationModel').value || current.model_id || ''; saveWorkspace(current); };
+    $('requirement').addEventListener('input', saveDraft);
+    $('userPrompt').addEventListener('input', saveDraft);
+    $('defaultPromptText').addEventListener('input', saveDraft);
+    $('generationModel').addEventListener('change', saveDraft);
+    restore();
+})();
+</script>
+{% endblock %}

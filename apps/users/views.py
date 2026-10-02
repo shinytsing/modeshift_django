@@ -2,6 +2,7 @@ import json
 import re
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -1155,8 +1156,8 @@ def extend_session_api(request):
     """延长用户session过期时间API"""
     try:
         if request.user.is_authenticated and hasattr(request, "session"):
-            # 延长session过期时间到30天
-            request.session.set_expiry(60 * 60 * 24 * 30)  # 30天
+            # 延长session到长期有效；用户主动退出登录时仍会清除session。
+            request.session.set_expiry(settings.SESSION_COOKIE_AGE)
             request.session.save()
 
             # 记录session延长活动
@@ -1172,12 +1173,12 @@ def extend_session_api(request):
                     activity_type="session_extend",
                     ip_address=ip,
                     user_agent=request.META.get("HTTP_USER_AGENT", ""),
-                    details={"new_expiry": "30天", "extend_method": "api"},
+                    details={"new_expiry": "长期", "extend_method": "api"},
                 )
             except Exception as e:
                 print(f"记录session延长活动失败: {e}")
 
-            return JsonResponse({"success": True, "message": "Session已延长至30天", "expires_in": 60 * 60 * 24 * 30})  # 过期时间（秒）
+            return JsonResponse({"success": True, "message": "Session已延长至长期有效", "expires_in": settings.SESSION_COOKIE_AGE})
         else:
             return JsonResponse({"success": False, "message": "用户未登录或session不可用"}, status=401)
 

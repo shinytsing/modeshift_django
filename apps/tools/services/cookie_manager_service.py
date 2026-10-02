@@ -40,7 +40,7 @@ class CookieManagerService:
                 'user_id': self.user.id,
                 'username': self.user.username,
                 'save_time': time.time(),
-                'expires_at': time.time() + (7 * 24 * 60 * 60),  # 7天后过期
+                'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else time.time() + (7 * 24 * 60 * 60),
                 'platform': self.platform
             }
             
@@ -49,7 +49,7 @@ class CookieManagerService:
             
             # 同时保存到Redis缓存
             cache_key = f"cookies:{self.platform}:{self.user.id}"
-            cache.set(cache_key, cookie_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, cookie_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"Cookies已保存到文件: {self.cookie_file} (用户: {self.user.username}, 平台: {self.platform})")
             return True
@@ -85,12 +85,12 @@ class CookieManagerService:
             
             # 检查是否过期
             expires_at = cookie_data.get('expires_at', 0)
-            if time.time() > expires_at:
+            if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
                 logger.warning(f"Cookies已过期: {self.platform} (用户: {self.user.username})")
                 return []
             
             # 更新缓存
-            cache.set(cache_key, cookie_data, 60 * 60 * 24 * 7)
+            cache.set(cache_key, cookie_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"已从文件加载Cookies: {self.platform} (用户: {self.user.username}, 数量: {len(cookies)})")
             return cookies
@@ -111,7 +111,7 @@ class CookieManagerService:
                 'username': self.user.username,
                 'login_method': login_method,
                 'platform': self.platform,
-                'expires_at': time.time() + (7 * 24 * 60 * 60),  # 7天后过期
+                'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else time.time() + (7 * 24 * 60 * 60),
                 'is_valid': True
             }
             
@@ -120,7 +120,7 @@ class CookieManagerService:
             
             # 同时保存到Redis缓存
             cache_key = f"token:{self.platform}:{self.user.id}"
-            cache.set(cache_key, token_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, token_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"Token已保存: {self.platform} (用户: {self.user.username})")
             return True
@@ -154,13 +154,13 @@ class CookieManagerService:
             
             # 检查是否过期
             expires_at = token_data.get('expires_at', 0)
-            if time.time() > expires_at:
+            if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
                 logger.warning(f"Token已过期: {self.platform} (用户: {self.user.username})")
                 token_data['is_valid'] = False
                 return None
             
             # 更新缓存
-            cache.set(cache_key, token_data, 60 * 60 * 24 * 7)
+            cache.set(cache_key, token_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"已从文件加载Token: {self.platform} (用户: {self.user.username})")
             return token_data

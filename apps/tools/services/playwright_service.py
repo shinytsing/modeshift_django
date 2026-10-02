@@ -175,7 +175,7 @@ class PlaywrightService:
                 'user_id': self.user.id,
                 'username': self.user.username,
                 'save_time': time.time(),
-                'expires_at': time.time() + (7 * 24 * 60 * 60),  # 7天后过期
+                'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else time.time() + (7 * 24 * 60 * 60),
                 'platform': self.platform
             }
             
@@ -185,7 +185,7 @@ class PlaywrightService:
             
             # 保存到Redis缓存
             cache_key = f"cookies:{self.platform}:{self.user.id}"
-            cache.set(cache_key, cookie_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, cookie_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"Cookies已保存到文件: {self.cookie_file} (用户: {self.user.username}, 数量: {len(cookies)})")
             return True
@@ -219,12 +219,12 @@ class PlaywrightService:
                 
                 # 检查是否过期
                 expires_at = cookie_data.get('expires_at', 0)
-                if time.time() > expires_at:
+                if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
                     logger.warning(f"Cookies已过期: {self.platform} (用户: {self.user.username})")
                     return False
                 
                 # 更新缓存
-                cache.set(cache_key, cookie_data, 60 * 60 * 24 * 7)
+                cache.set(cache_key, cookie_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             if not cookies:
                 logger.warning(f"没有可用的Cookies: {self.platform} (用户: {self.user.username})")
@@ -255,7 +255,7 @@ class PlaywrightService:
                 'username': self.user.username,
                 'login_method': login_method,
                 'platform': self.platform,
-                'expires_at': time.time() + (7 * 24 * 60 * 60),  # 7天后过期
+                'expires_at': None if settings.AUTH_TOKEN_PERSIST_FOREVER else time.time() + (7 * 24 * 60 * 60),
                 'is_valid': True
             }
             
@@ -265,7 +265,7 @@ class PlaywrightService:
             
             # 保存到Redis缓存
             cache_key = f"token:{self.platform}:{self.user.id}"
-            cache.set(cache_key, token_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, token_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             # 保存到跨标签页同步
             self.sync_token_to_cross_tab(token)
@@ -300,13 +300,13 @@ class PlaywrightService:
             
             # 检查是否过期
             expires_at = token_data.get('expires_at', 0)
-            if time.time() > expires_at:
+            if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
                 logger.warning(f"Token已过期: {self.platform} (用户: {self.user.username})")
                 token_data['is_valid'] = False
                 return None
             
             # 更新缓存
-            cache.set(cache_key, token_data, 60 * 60 * 24 * 7)
+            cache.set(cache_key, token_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"已从文件加载Token: {self.platform} (用户: {self.user.username})")
             return token_data
@@ -335,7 +335,7 @@ class PlaywrightService:
             
             # 保存到Redis用于跨标签页同步
             sync_key = f"cross_tab_tokens:{self.user.id}"
-            cache.set(sync_key, cross_tab_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(sync_key, cross_tab_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"Token已同步到跨标签页: {self.platform} (用户: {self.user.username})")
             
@@ -355,7 +355,7 @@ class PlaywrightService:
             
             # 检查是否过期
             expires_at = cookie_data.get('expires_at', 0)
-            if time.time() > expires_at:
+            if expires_at and not settings.AUTH_TOKEN_PERSIST_FOREVER and time.time() > expires_at:
                 return False
             
             # 检查关键cookie是否存在

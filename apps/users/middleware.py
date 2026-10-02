@@ -3,6 +3,7 @@ import logging
 import time
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
@@ -246,9 +247,9 @@ class SessionExtensionMiddleware(MiddlewareMixin):
                 session = request.session
 
                 # 检查session是否即将过期（比如还有7天过期）
-                if session.get_expiry_age() < 60 * 60 * 24 * 7:  # 7天
+                if session.get_expiry_age() < 60 * 60 * 24 * 30:
                     # 延长session过期时间到30天
-                    session.set_expiry(60 * 60 * 24 * 30)  # 30天
+                    session.set_expiry(settings.SESSION_COOKIE_AGE)
                     try:
                         session.save()
                     except Exception as e:

@@ -16,7 +16,8 @@ except ImportError:
 # 📋 优化的导入结构 - 按功能分组
 # =============================================================================
 
-from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, TaskListAPI, TaskStatusAPI
+from .async_test_cases_api import AsyncGenerateTestCasesAPI, DeleteTaskAPI, ModelCatalogAPI, TaskListAPI, TaskStatusAPI
+from .automation_case_api import AutomationCaseGenerationAPI
 from .views.download_views import TaskDownloadAPI
 from .views.goal_views import create_life_goal
 from .views.user_resolver_views import UserResolverView, UserResolverTestView
@@ -128,7 +129,8 @@ from .generate_redbook_api import GenerateRedBookAPI
 
 # 从测试用例生成API导入
 from .generate_test_cases_api import GenerateTestCasesAPI
-from .views.rag_views import rag_generate_api, rag_search_api, rag_sync_site_capabilities_api, rag_upload_api, requirement_rag_page
+from .test_execution_api import ExecuteGeneratedTestCasesAPI, ExecutionArtifactAPI, ExecutionTaskStatusAPI, StopExecutionTaskAPI
+from .views.rag_views import rag_document_detail_api, rag_document_search_api, rag_generate_api, rag_search_api, rag_sync_site_capabilities_api, rag_upload_api, requirement_rag_page
 from .guitar_training_views import (
     complete_practice_session_api,
     download_tab_api,
@@ -350,6 +352,9 @@ from .views.basic_tools_views import (
     storyboard_api,
     task_manager,
     test_case_generator,
+    test_case_channel,
+    test_case_execution_reports,
+    test_case_execution_runner,
     training_plan_editor,
     update_location_api,
     web_crawler,
@@ -751,6 +756,11 @@ urlpatterns = [
     path("homework_grading/", homework_grading_view, name="homework_grading"),
     # 基础工具页面路由
     path("test_case_generator/", test_case_generator, name="test_case_generator"),
+    path("test_case_generator/manual/", lambda request: test_case_channel(request, "manual"), name="test_case_manual"),
+    path("test_case_generator/api/", lambda request: test_case_channel(request, "api"), name="test_case_api"),
+    path("test_case_generator/ui/", lambda request: test_case_channel(request, "ui"), name="test_case_ui"),
+    path("test_case_generator/execute/", test_case_execution_runner, name="test_case_execution_runner"),
+    path("test_case_generator/reports/", test_case_execution_reports, name="test_case_reports"),
     path("task_manager/", task_manager, name="task_manager"),
     path("redbook_generator/", redbook_generator, name="redbook_generator"),
     path("pdf_converter/", pdf_converter, name="pdf_converter"),
@@ -765,12 +775,20 @@ urlpatterns = [
     path("api/generate-testcases/", GenerateTestCasesAPI.as_view(), name="generate_test_cases_api"),
     path("requirement-rag/", requirement_rag_page, name="requirement_rag"),
     path("api/rag/documents/", rag_upload_api, name="rag_upload_api"),
+    path("api/rag/documents/<int:document_id>/", rag_document_detail_api, name="rag_document_detail_api"),
     path("api/rag/site-capabilities/", rag_sync_site_capabilities_api, name="rag_sync_site_capabilities_api"),
     path("api/rag/search/", rag_search_api, name="rag_search_api"),
+    path("api/rag/documents/search/", rag_document_search_api, name="rag_document_search_api"),
     path("api/rag/generate/", rag_generate_api, name="rag_generate_api"),
     path("api/generate-redbook/", GenerateRedBookAPI.as_view(), name="generate_redbook_api"),
     # 异步测试用例生成API路由
     path("api/async/generate-testcases/", AsyncGenerateTestCasesAPI.as_view(), name="async_generate_test_cases_api"),
+    path("api/async/execute-testcases/", ExecuteGeneratedTestCasesAPI.as_view(), name="execute_generated_test_cases_api"),
+    path("api/automation-cases/generate/", AutomationCaseGenerationAPI.as_view(), name="automation_case_generation_api"),
+    path("api/async/execution/<str:execution_id>/", ExecutionTaskStatusAPI.as_view(), name="execution_task_status_api"),
+    path("api/async/execution/<str:execution_id>/artifact/<str:filename>/", ExecutionArtifactAPI.as_view(), name="execution_artifact_api"),
+    path("api/async/execution/<str:execution_id>/stop/", StopExecutionTaskAPI.as_view(), name="stop_execution_task_api"),
+    path("api/llm/models/", ModelCatalogAPI.as_view(), name="llm_model_catalog_api"),
     path("api/async/task/delete/", DeleteTaskAPI.as_view(), name="delete_task_api"),
     path("api/async/task/<str:task_id>/", TaskStatusAPI.as_view(), name="task_status_api"),
     path("api/async/task/<str:task_id>/download/<str:format_type>/", TaskDownloadAPI.as_view(), name="task_download_api"),

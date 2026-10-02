@@ -5,6 +5,7 @@ Token管理和跨标签页同步API视图
 
 import json
 import logging
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -49,7 +50,7 @@ def save_boss_token_api(request):
                 'login_time': timezone.now().isoformat(),
                 'platform': platform
             }
-            cache.set(cache_key, user_tokens, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, user_tokens, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"用户 {request.user.username} 保存{platform} Token成功")
             
@@ -199,7 +200,7 @@ def check_login_status_api(request):
                 'last_sync': timezone.now().isoformat(),
                 'user_id': request.user.id
             }
-            cache.set(cross_tab_key, sync_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cross_tab_key, sync_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
         
         return JsonResponse(login_status)
         
@@ -236,7 +237,7 @@ def sync_session_api(request):
                 'login_time': timezone.now().isoformat(),
                 'platform': platform
             }
-            cache.set(cache_key, user_tokens, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cache_key, user_tokens, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"用户 {request.user.username} 同步{platform} session成功")
             
@@ -312,7 +313,7 @@ def clear_token_api(request):
         user_tokens = cache.get(cache_key, {})
         if platform in user_tokens:
             del user_tokens[platform]
-            cache.set(cache_key, user_tokens, 60 * 60 * 24 * 7)
+            cache.set(cache_key, user_tokens, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
         
         logger.info(f"用户 {request.user.username} 清除{platform} Token成功")
         
@@ -377,7 +378,7 @@ def cross_tab_sync_api(request):
             existing_data['user_id'] = request.user.id
             
             # 保存到缓存
-            cache.set(cross_tab_key, existing_data, 60 * 60 * 24 * 7)  # 7天
+            cache.set(cross_tab_key, existing_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"跨标签页Token已更新: {platform} (用户: {request.user.username})")
             
@@ -395,7 +396,7 @@ def cross_tab_sync_api(request):
             if 'tokens' in existing_data and platform in existing_data['tokens']:
                 del existing_data['tokens'][platform]
                 existing_data['last_sync'] = timezone.now().isoformat()
-                cache.set(cross_tab_key, existing_data, 60 * 60 * 24 * 7)
+                cache.set(cross_tab_key, existing_data, None if settings.AUTH_TOKEN_PERSIST_FOREVER else 60 * 60 * 24 * 7)
             
             logger.info(f"跨标签页Token已清除: {platform} (用户: {request.user.username})")
             

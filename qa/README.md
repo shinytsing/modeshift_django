@@ -53,9 +53,11 @@ Open `qa/artifacts/allure-report/index.html` after a run. It contains both categ
 - **API 自动化 - requests**: health, response schema, timing, and CSRF negative-path evidence.
 - **UI 自动化 - Playwright**: dashboard navigation, visible assertions, and a browser screenshot.
 
-The showcase suite contains 14 independent tests: 9 API contracts (including CSRF, method-boundary,
-statistics, history, result consistency, and an authentication/profile state machine) and 5 UI
-scenarios. The flagship `--e2e` path visibly performs **注册 → 退出 → 登录 → 受保护个人资料 →
+The showcase suite contains 19 independent tests: 12 API contracts (including CSRF, method-boundary,
+statistics, history, result consistency, and an authentication/profile state machine) and 7 UI
+scenarios. The testcase-generator UI scenario exercises model selection, knowledge search, drag/drop,
+keyboard removal, request payload IDs, and visible source attribution with stubbed generation responses.
+The flagship `--e2e` path visibly performs **注册 → 退出 → 登录 → 受保护个人资料 →
 BMI 计算**, while the requests scenario carries the same session across **匿名拒绝 → 注册 → 登出 →
 登录 → 资料更新 → BMI 接口 → 登出拒绝**. The unified runner verifies health before pytest starts.
 

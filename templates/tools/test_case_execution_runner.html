@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}自动化执行中 - ModeShift{% endblock %}
+{% block content %}
+<main class="execution-runner">
+  <div class="runner-topbar">
+    <a href="{% url 'tools:test_case_generator' %}">← 返回测试用例生成器</a>
+    <span id="runnerChannel">自动化执行</span>
+  </div>
+  <section class="runner-card">
+    <div class="runner-kicker">MODE SHIFT / EXECUTION AGENT</div>
+    <h1 id="runnerTitle">正在启动自动化执行</h1>
+    <p id="runnerDescription">当前通道已在独立页面启动，原用例页面可以安全关闭或继续查看。</p>
+    <div class="runner-progress"><span id="runnerProgressBar"></span></div>
+    <div class="runner-status" id="runnerStatus">正在连接执行任务…</div>
+    <div class="runner-live" id="runnerLiveLog">执行日志：等待执行器反馈…</div>
+    <section class="runner-live-view" id="runnerLiveView" hidden>
+      <div class="runner-live-view-head"><strong>Playwright 实时执行画面</strong><span id="runnerLiveFrameMeta">等待首帧…</span></div>
+      <div class="runner-frame-tools"><button type="button" data-zoom="0.75">75%</button><button type="button" data-zoom="1">100%</button><button type="button" data-zoom="1.25">125%</button><button type="button" data-zoom="1.5">150%</button><span>可横向滚动查看原尺寸画面</span></div>
+      <div class="runner-frame-scroll"><img id="runnerLiveFrame" alt="Playwright 当前页面执行画面"></div>
+    </section>
+    <div class="runner-actions">
+      <a class="runner-button" href="{% url 'tools:test_case_reports' %}">查看历史报告</a>
+      <button class="runner-button danger" id="stopRunner" type="button" hidden>停止执行</button>
+      <button class="runner-button" id="closeRunner" type="button">关闭此页</button>
+    </div>
+    <div id="runnerReport" class="runner-report" hidden></div>
+  </section>
+</main>
+<style>
+  .execution-runner{max-width:1080px;margin:32px auto;padding:24px;color:#f5f7fb;background:#14171d;border:1px solid #2f3744;border-radius:18px;box-shadow:0 0 24px rgba(0,255,136,.12);font-family:JetBrains Mono,Fira Code,Consolas,monospace}
+  .runner-topbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #2b333f;padding-bottom:16px}.runner-topbar a{color:#9ee7c2;text-decoration:none}.runner-topbar span,.runner-kicker{color:#00ff88;letter-spacing:1.5px;font-size:.78rem}
+  .runner-card{margin-top:24px;padding:28px;background:#1b2028;border:1px solid #344151;border-radius:14px}.runner-card h1{margin:8px 0;color:#fff}.runner-card p,.runner-status{color:#aeb9c8}.runner-progress{height:12px;margin:26px 0 12px;background:#0e1116;border:1px solid #394655;border-radius:999px;overflow:hidden}.runner-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#00a968,#00ff88);transition:width .3s ease}.runner-live{margin-top:14px;padding:12px;border:1px solid #394655;border-radius:8px;background:#0e1116;color:#9ee7c2;min-height:22px}.runner-live-view{margin-top:18px;padding:14px;border:1px solid #394655;border-radius:10px;background:#0e1116}.runner-live-view-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#fff;margin-bottom:10px}.runner-live-view-head span{color:#8e9caf;font-size:.8rem}.runner-frame-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0;color:#8e9caf;font-size:.8rem}.runner-frame-tools button{border:1px solid #516176;border-radius:6px;background:#1b2028;color:#dce5ef;padding:5px 9px;cursor:pointer}.runner-frame-scroll{overflow:auto;border:1px solid #344151;border-radius:8px;background:#05070a}.runner-live-view img{display:block;width:1440px;max-width:none;height:auto;background:#05070a;transform-origin:top left;border-radius:8px}.runner-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.runner-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border:1px solid #516176;border-radius:8px;background:transparent;color:#dce5ef;text-decoration:none;cursor:pointer;font:inherit}.runner-button.danger{border-color:#ff6675;color:#ff9aa4}.runner-report{display:grid;gap:12px;margin-top:24px}.runner-summary{padding:14px;border:1px solid #344151;border-radius:10px;color:#fff}.runner-case{padding:14px;border:1px solid #344151;border-radius:10px;background:#10141a}.runner-case.passed{border-color:#00c878}.runner-case.failed{border-color:#ff6675}.runner-case.skipped{border-color:#d6ad4d}.runner-case pre{white-space:pre-wrap;color:#aeb9c8;max-height:300px;overflow:auto}.runner-screenshot{display:block;width:min(720px,100%);max-height:420px;object-fit:contain;margin-top:10px;border:1px solid #394655;border-radius:8px}
+</style>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const executionId = params.get('execution_id');
+  const channel = (params.get('channel') || 'ui').toUpperCase();
+  const $ = id => document.getElementById(id);
+  const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  $('runnerChannel').textContent = `${channel} 自动化执行`;
+  $('runnerTitle').textContent = `${channel} 自动化执行中`;
+  document.querySelectorAll('[data-zoom]').forEach(button => button.addEventListener('click', () => { $('runnerLiveFrame').style.width = `${1440 * Number(button.dataset.zoom)}px`; }));
+  $('closeRunner').addEventListener('click', () => window.close());
+  if (!executionId) { $('runnerStatus').textContent = '缺少执行任务编号，请从自动化用例页面重新点击执行。'; return; }
+  $('stopRunner').hidden = false;
+  $('stopRunner').addEventListener('click', async () => {
+    $('stopRunner').disabled = true;
+    await fetch(`/tools/api/async/execution/${encodeURIComponent(executionId)}/stop/`, {method:'POST', headers:{'X-CSRFToken': document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || ''}});
+  });
+  function renderReport(report) {
+    const summary = report?.summary || {};
+    const cases = report?.cases || [];
+    $('runnerReport').hidden = false;
+    $('runnerReport').innerHTML = `<div class="runner-summary">${escapeHtml(report?.requested_mode || channel)} · 通过 ${summary.passed || 0} · 失败 ${summary.failed || 0} · 跳过 ${summary.skipped || 0}</div>` + cases.map(item => {
+      const screenshots = (item.steps || []).map(step => step && step.screenshot).filter(Boolean);
+      const shotHtml = [...new Set(screenshots)].map(name => `<img class="runner-screenshot" loading="lazy" src="/tools/api/async/execution/${encodeURIComponent(executionId)}/artifact/${encodeURIComponent(name)}/" alt="执行截图">`).join('');
+      return `<article class="runner-case ${escapeHtml(item.status)}"><strong>${escapeHtml(item.title || item.id)}</strong><div>${escapeHtml(item.channel)} · ${escapeHtml(item.status)}</div><p>${escapeHtml(item.reason || '')}</p>${shotHtml}<pre>${escapeHtml(JSON.stringify(item.steps || [], null, 2))}</pre></article>`;
+    }).join('');
+  }
+  async function poll() {
+    try {
+      const response = await fetch(`/tools/api/async/execution/${encodeURIComponent(executionId)}/`, {cache:'no-store'});
+      const data = await response.json();
+      const progress = Math.max(0, Math.min(100, Number(data.progress || 0)));
+      $('runnerProgressBar').style.width = `${progress}%`;
+      $('runnerStatus').textContent = data.current_step ? `${data.current_step}（${progress}%）` : `执行中（${progress}%）`;
+      $('runnerLiveLog').textContent = data.current_step ? `执行日志：${data.current_step}` : '执行日志：执行器已启动…';
+      if (data.status === 'running' || data.status === 'completed') {
+        const frame = $('runnerLiveFrame');
+        frame.src = `/tools/api/async/execution/${encodeURIComponent(executionId)}/artifact/live.png?t=${Date.now()}`;
+        $('runnerLiveView').hidden = false;
+        $('runnerLiveFrameMeta').textContent = data.current_step || '最近执行画面';
+      }
+      if (data.status === 'completed') { $('runnerProgressBar').style.width = '100%'; $('runnerStatus').textContent = '执行完成'; $('stopRunner').hidden = true; renderReport(data.report); return; }
+      if (data.status === 'failed') { $('runnerStatus').textContent = data.error || '执行失败'; $('stopRunner').hidden = true; return; }
+      if (data.status === 'cancelled') { $('runnerStatus').textContent = '已停止执行'; $('stopRunner').hidden = true; return; }
+      setTimeout(poll, 1500);
+    } catch (_) { $('runnerStatus').textContent = '正在重试连接执行任务…'; setTimeout(poll, 2500); }
+  }
+  poll();
+})();
+</script>
+{% endblock %}

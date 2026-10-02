@@ -28,8 +28,8 @@ MIDDLEWARE = [
 # 生产环境特定配置 - 只设置DEBUG为False
 DEBUG = False
 
-# 暂时关闭登录/注册，方便访客直接使用
-AUTH_LOGIN_DISABLED = os.environ.get("AUTH_LOGIN_DISABLED", "true").lower() in ("1", "true", "yes")
+# 认证默认保持开启；需要访客模式时必须通过环境变量显式启用。
+AUTH_LOGIN_DISABLED = os.environ.get("AUTH_LOGIN_DISABLED", "false").lower() in ("1", "true", "yes")
 
 TEMPLATES[0]["OPTIONS"]["context_processors"].append("config.context_processors.site_flags")
 
@@ -74,7 +74,7 @@ CACHES = {
 
 # 会话配置 - 使用数据库存储session
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天
+SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", str(60 * 60 * 24 * 3650)))
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为True
