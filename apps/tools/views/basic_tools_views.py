@@ -36,6 +36,7 @@ def test_case_channel(request, channel):
     """Independent manual/API/UI testcase workspace."""
     if channel not in {"manual", "api", "ui"}:
         from django.http import Http404
+
         raise Http404("未知测试用例通道")
     template = {
         "manual": "tools/test_case_manual.html",
@@ -164,7 +165,7 @@ def self_analysis_api(request):
             # 调用DeepSeek API进行分析
             # 使用统一的LLM服务
             llm_service = get_llm_service()
-            
+
             # 生成小红书内容
             content = llm_service.generate_redbook_content(prompt)
 
@@ -213,13 +214,10 @@ def storyboard_api(request):
 
         # 使用统一的LLM服务
         llm_service = get_llm_service()
-        
+
         # 生成治愈故事
         story = llm_service.generate_content(
-            f"请根据以下描述创作一个治愈故事：{prompt}", 
-            system_prompt=system_prompt, 
-            temperature=0.8, 
-            max_tokens=1000
+            f"请根据以下描述创作一个治愈故事：{prompt}", system_prompt=system_prompt, temperature=0.8, max_tokens=1000
         )
 
         if story:
@@ -233,6 +231,7 @@ def storyboard_api(request):
             ]
 
             import random
+
             story = random.choice(fallback_stories)
 
             return JsonResponse(
@@ -299,10 +298,7 @@ def ai_analysis_api(request):
     except Exception as e:
         logger.error(f"AI分析API错误: {str(e)}")
         # 返回系统维护提示
-        return JsonResponse({
-            "success": False, 
-            "error": "AI服务暂时不可用，系统正在维护中，请稍后再试"
-        })
+        return JsonResponse({"success": False, "error": "AI服务暂时不可用，系统正在维护中，请稍后再试"})
 
 
 def call_deepseek_api(prompt):
@@ -311,14 +307,14 @@ def call_deepseek_api(prompt):
     """
     try:
         from apps.tools.services.llm_service import get_llm_service
-        
+
         # 使用统一的LLM服务
         llm_service = get_llm_service()
-        
+
         system_prompt = "你是一位资深的中国传统命理学专家，精通八字命理和姻缘分析。请提供专业、详细且实用的分析建议。"
-        
+
         ai_content = llm_service.generate_content(prompt, system_prompt, temperature=0.7)
-        
+
         # 解析AI回复并结构化
         return parse_ai_response(ai_content)
 
@@ -333,7 +329,7 @@ def parse_ai_response(ai_content):
     """
     try:
         logger.info("开始解析AI分析内容...")
-        
+
         # 尝试将AI回复分段处理
         sections = []
         current_section = {"title": "AI智能分析", "content": ""}
@@ -348,13 +344,51 @@ def parse_ai_response(ai_content):
             if any(
                 marker in line
                 for marker in [
-                    "一、", "二、", "三、", "四、", "五、", "六、", "七、", "八、", "九、", "十、",
-                    "1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "10.",
-                    "##", "**", "###", "####",
-                    "【", "】", "（", "）",
-                    "分析：", "总结：", "建议：", "结论：", "要点：", "重点：",
-                    "优势：", "劣势：", "机会：", "威胁：", "风险：", "挑战：",
-                    "原因：", "影响：", "解决方案：", "改进建议：", "注意事项："
+                    "一、",
+                    "二、",
+                    "三、",
+                    "四、",
+                    "五、",
+                    "六、",
+                    "七、",
+                    "八、",
+                    "九、",
+                    "十、",
+                    "1.",
+                    "2.",
+                    "3.",
+                    "4.",
+                    "5.",
+                    "6.",
+                    "7.",
+                    "8.",
+                    "9.",
+                    "10.",
+                    "##",
+                    "**",
+                    "###",
+                    "####",
+                    "【",
+                    "】",
+                    "（",
+                    "）",
+                    "分析：",
+                    "总结：",
+                    "建议：",
+                    "结论：",
+                    "要点：",
+                    "重点：",
+                    "优势：",
+                    "劣势：",
+                    "机会：",
+                    "威胁：",
+                    "风险：",
+                    "挑战：",
+                    "原因：",
+                    "影响：",
+                    "解决方案：",
+                    "改进建议：",
+                    "注意事项：",
                 ]
             ):
                 if current_section["content"]:
@@ -379,7 +413,7 @@ def parse_ai_response(ai_content):
 
         logger.info(f"成功解析AI分析内容：{len(sections)}个章节")
         return {"title": "AI智能深度分析", "sections": sections}
-        
+
     except Exception as e:
         logger.error(f"解析AI分析内容失败: {e}")
         return {"title": "AI智能深度分析", "sections": [{"title": "🧠 AI深度分析", "content": ai_content}]}
@@ -393,11 +427,11 @@ def _intelligent_parse_content(content):
         sections = []
         lines = content.split("\n")
         current_section = {"title": "核心分析", "content": ""}
-        
+
         # 关键词映射
         keyword_mapping = {
             "优势": "优势分析",
-            "劣势": "劣势分析", 
+            "劣势": "劣势分析",
             "机会": "机会分析",
             "威胁": "威胁分析",
             "风险": "风险评估",
@@ -407,21 +441,21 @@ def _intelligent_parse_content(content):
             "建议": "改进建议",
             "方案": "解决方案",
             "总结": "总结",
-            "结论": "结论"
+            "结论": "结论",
         }
-        
+
         for line in lines:
             line = line.strip()
             if not line:
                 continue
-            
+
             # 检查是否包含关键词
             found_keyword = None
             for keyword, title in keyword_mapping.items():
                 if keyword in line:
                     found_keyword = title
                     break
-            
+
             if found_keyword:
                 # 保存当前section
                 if current_section["content"]:
@@ -433,17 +467,17 @@ def _intelligent_parse_content(content):
                 if current_section["content"]:
                     current_section["content"] += "\n"
                 current_section["content"] += line
-        
+
         # 添加最后一个section
         if current_section["content"]:
             sections.append(current_section)
-        
+
         # 如果还是没有分段，按段落长度分段
         if len(sections) <= 1:
             sections = _paragraph_based_parse(content)
-        
+
         return sections
-        
+
     except Exception as e:
         logger.error(f"智能解析内容失败: {e}")
         return [{"title": "🧠 AI深度分析", "content": content}]
@@ -454,19 +488,16 @@ def _paragraph_based_parse(content):
     基于段落长度进行分段
     """
     try:
-        paragraphs = content.split('\n\n')
+        paragraphs = content.split("\n\n")
         sections = []
-        
+
         for i, paragraph in enumerate(paragraphs):
             if paragraph.strip():
                 title = f"📝 分析要点 {i+1}" if len(paragraphs) > 1 else "🧠 AI深度分析"
-                sections.append({
-                    "title": title,
-                    "content": paragraph.strip()
-                })
-        
+                sections.append({"title": title, "content": paragraph.strip()})
+
         return sections if sections else [{"title": "🧠 AI深度分析", "content": content}]
-        
+
     except Exception as e:
         logger.error(f"段落解析失败: {e}")
         return [{"title": "🧠 AI深度分析", "content": content}]

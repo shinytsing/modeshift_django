@@ -223,7 +223,11 @@ def normalize_execution_plan(raw_plan: str | dict[str, Any], requested_mode: str
             for raw_step in raw_case.get("steps") or []:
                 if not isinstance(raw_step, dict):
                     continue
-                steps.append(_validate_api_step(raw_step) if channel == "api" else _validate_ui_step(raw_step) if channel == "ui" else {"action": "manual"})
+                steps.append(
+                    _validate_api_step(raw_step)
+                    if channel == "api"
+                    else _validate_ui_step(raw_step) if channel == "ui" else {"action": "manual"}
+                )
         except ExecutionPlanError as exc:
             manual_reason = f"自动化计划校验失败：{exc}"
             channel = "manual"
@@ -302,7 +306,11 @@ def _assert_response(response: requests.Response, expect: dict[str, Any]) -> lis
         return failures
     if "status" in expect and response.status_code != int(expect["status"]):
         failures.append(f"状态码期望 {expect['status']}，实际 {response.status_code}")
-    for expected in expect.get("text_contains", []) if isinstance(expect.get("text_contains"), list) else ([expect["text_contains"]] if expect.get("text_contains") else []):
+    for expected in (
+        expect.get("text_contains", [])
+        if isinstance(expect.get("text_contains"), list)
+        else ([expect["text_contains"]] if expect.get("text_contains") else [])
+    ):
         if str(expected) not in response.text:
             failures.append(f"响应不包含文本：{expected}")
     if isinstance(expect.get("json"), dict):
@@ -322,7 +330,9 @@ def _assert_response(response: requests.Response, expect: dict[str, Any]) -> lis
     return failures
 
 
-def _execute_api_case(case: dict[str, Any], target_url: str, allow_mutations: bool, browser_cookies: dict[str, str] | None = None) -> dict[str, Any]:
+def _execute_api_case(
+    case: dict[str, Any], target_url: str, allow_mutations: bool, browser_cookies: dict[str, str] | None = None
+) -> dict[str, Any]:
     session = requests.Session()
     if browser_cookies:
         session.cookies.update(browser_cookies)
@@ -334,14 +344,23 @@ def _execute_api_case(case: dict[str, Any], target_url: str, allow_mutations: bo
         method = step["method"]
         operation = step.get("operation") or classify_api_operation(method, step.get("path", ""))
         if operation == "write" and not allow_mutations:
-            return {"id": case["id"], "title": case["title"], "status": "skipped", "channel": "api", "reason": "包含真实写操作；请勾选允许 API 真正写操作后重试", "steps": step_results}
+            return {
+                "id": case["id"],
+                "title": case["title"],
+                "status": "skipped",
+                "channel": "api",
+                "reason": "包含真实写操作；请勾选允许 API 真正写操作后重试",
+                "steps": step_results,
+            }
         url = _same_origin_url(target_url, step["path"])
         request_started = time.monotonic()
         try:
             request_headers = dict(step["headers"])
             if method not in {"GET", "HEAD", "OPTIONS"} and csrf_token:
                 request_headers.setdefault("X-CSRFToken", csrf_token)
-            response = session.request(method, url, headers=request_headers, params=step["query"], json=step["body"], timeout=15)
+            response = session.request(
+                method, url, headers=request_headers, params=step["query"], json=step["body"], timeout=15
+            )
             failures = _assert_response(response, step["expect"])
             step_results.append(
                 {
@@ -357,11 +376,36 @@ def _execute_api_case(case: dict[str, Any], target_url: str, allow_mutations: bo
                 }
             )
             if failures:
-                return {"id": case["id"], "title": case["title"], "status": "failed", "channel": "api", "reason": "; ".join(failures), "duration_ms": round((time.monotonic() - started) * 1000, 2), "steps": step_results}
+                return {
+                    "id": case["id"],
+                    "title": case["title"],
+                    "status": "failed",
+                    "channel": "api",
+                    "reason": "; ".join(failures),
+                    "duration_ms": round((time.monotonic() - started) * 1000, 2),
+                    "steps": step_results,
+                }
         except requests.RequestException as exc:
-            step_results.append({"step": index, "action": "request", "method": method, "operation": operation, "url": url, "error": str(exc)})
-            return {"id": case["id"], "title": case["title"], "status": "failed", "channel": "api", "reason": str(exc), "duration_ms": round((time.monotonic() - started) * 1000, 2), "steps": step_results}
-    return {"id": case["id"], "title": case["title"], "status": "passed", "channel": "api", "duration_ms": round((time.monotonic() - started) * 1000, 2), "steps": step_results}
+            step_results.append(
+                {"step": index, "action": "request", "method": method, "operation": operation, "url": url, "error": str(exc)}
+            )
+            return {
+                "id": case["id"],
+                "title": case["title"],
+                "status": "failed",
+                "channel": "api",
+                "reason": str(exc),
+                "duration_ms": round((time.monotonic() - started) * 1000, 2),
+                "steps": step_results,
+            }
+    return {
+        "id": case["id"],
+        "title": case["title"],
+        "status": "passed",
+        "channel": "api",
+        "duration_ms": round((time.monotonic() - started) * 1000, 2),
+        "steps": step_results,
+    }
 
 
 def _ui_locator(page: Any, value: str) -> Any:
@@ -390,15 +434,21 @@ def _execute_ui_cases(
     executable = shutil.which("chromium") or shutil.which("chromium-browser")
     launch_args = ["--no-sandbox", "--disable-dev-shm-usage"]
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True, executable_path=executable, args=launch_args) if executable else playwright.chromium.launch(headless=True, args=launch_args)
+        browser = (
+            playwright.chromium.launch(headless=True, executable_path=executable, args=launch_args)
+            if executable
+            else playwright.chromium.launch(headless=True, args=launch_args)
+        )
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         if browser_cookies:
             hostname = urlparse(target_url).hostname or "127.0.0.1"
-            context.add_cookies([
-                {"name": name, "value": value, "domain": hostname, "path": "/"}
-                for name, value in browser_cookies.items()
-                if name and value
-            ])
+            context.add_cookies(
+                [
+                    {"name": name, "value": value, "domain": hostname, "path": "/"}
+                    for name, value in browser_cookies.items()
+                    if name and value
+                ]
+            )
         page = context.new_page()
         try:
             for case_index, case in enumerate(cases):
@@ -429,9 +479,13 @@ def _execute_ui_cases(
                             locator = _ui_locator(page, step["locator"])
                             locator.wait_for(state="visible", timeout=10000)
                         elif action == "screenshot":
-                            screenshot = artifact_dir / f"{case['id']}-{index}-{re.sub(r'[^A-Za-z0-9_-]+', '-', step['name'])}.png"
+                            screenshot = (
+                                artifact_dir / f"{case['id']}-{index}-{re.sub(r'[^A-Za-z0-9_-]+', '-', step['name'])}.png"
+                            )
                             page.screenshot(path=str(screenshot), full_page=True)
-                            step_results.append({"step": index, "action": action, "status": "passed", "screenshot": screenshot.name})
+                            step_results.append(
+                                {"step": index, "action": action, "status": "passed", "screenshot": screenshot.name}
+                            )
                             continue
                         step_results.append({"step": index, "action": action, "status": "passed"})
                         # Keep a single fresh frame for the dedicated runner
@@ -459,30 +513,63 @@ def _execute_ui_cases(
                     if screenshot.exists():
                         error_step["screenshot"] = screenshot.name
                     step_results.append(error_step)
-                results[case["id"]] = {"id": case["id"], "title": case["title"], "status": status, "channel": "ui", "reason": reason, "duration_ms": round((time.monotonic() - started) * 1000, 2), "steps": step_results}
+                results[case["id"]] = {
+                    "id": case["id"],
+                    "title": case["title"],
+                    "status": status,
+                    "channel": "ui",
+                    "reason": reason,
+                    "duration_ms": round((time.monotonic() - started) * 1000, 2),
+                    "steps": step_results,
+                }
         finally:
             context.close()
             browser.close()
     return results
 
 
-def execute_plan(plan: dict[str, Any], allow_mutations: bool, artifact_dir: str | Path, progress_callback: Callable[[int, str], None] | None = None, browser_cookies: dict[str, str] | None = None) -> dict[str, Any]:
+def execute_plan(
+    plan: dict[str, Any],
+    allow_mutations: bool,
+    artifact_dir: str | Path,
+    progress_callback: Callable[[int, str], None] | None = None,
+    browser_cookies: dict[str, str] | None = None,
+) -> dict[str, Any]:
     target_url = runtime_target_url(normalize_target_url(plan["target_url"]))
     cases = plan.get("cases", [])
     artifact_path = Path(artifact_dir)
     artifact_path.mkdir(parents=True, exist_ok=True)
     ui_cases = [case for case in cases if case["channel"] == "ui"]
-    results_by_id = _execute_ui_cases(ui_cases, target_url, artifact_path, browser_cookies, progress_callback) if ui_cases else {}
+    results_by_id = (
+        _execute_ui_cases(ui_cases, target_url, artifact_path, browser_cookies, progress_callback) if ui_cases else {}
+    )
     results: list[dict[str, Any]] = []
     for index, case in enumerate(cases, start=1):
         if progress_callback:
             progress_callback(round((index - 1) / max(len(cases), 1) * 100), f"执行 {case['id']}：{case['title']}")
         if case["channel"] == "manual":
-            result = {"id": case["id"], "title": case["title"], "status": "skipped", "channel": "manual", "reason": case["manual_reason"] or "无法安全转换为可执行步骤", "steps": []}
+            result = {
+                "id": case["id"],
+                "title": case["title"],
+                "status": "skipped",
+                "channel": "manual",
+                "reason": case["manual_reason"] or "无法安全转换为可执行步骤",
+                "steps": [],
+            }
         elif case["channel"] == "api":
             result = _execute_api_case(case, target_url, allow_mutations, browser_cookies)
         else:
-            result = results_by_id.get(case["id"], {"id": case["id"], "title": case["title"], "status": "failed", "channel": "ui", "reason": "UI 执行器未返回结果", "steps": []})
+            result = results_by_id.get(
+                case["id"],
+                {
+                    "id": case["id"],
+                    "title": case["title"],
+                    "status": "failed",
+                    "channel": "ui",
+                    "reason": "UI 执行器未返回结果",
+                    "steps": [],
+                },
+            )
         results.append(result)
     summary = {
         "total": len(results),

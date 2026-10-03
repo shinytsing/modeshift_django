@@ -91,9 +91,7 @@ def rag_search_api(request):
 @require_GET
 @_api_login_required
 def rag_document_detail_api(request, document_id):
-    document = RequirementDocument.objects.filter(
-        Q(id=document_id) & (Q(owner=request.user) | Q(owner__isnull=True))
-    ).first()
+    document = RequirementDocument.objects.filter(Q(id=document_id) & (Q(owner=request.user) | Q(owner__isnull=True))).first()
     if not document:
         return JsonResponse({"error": "文档不存在或无权查看"}, status=404)
     return JsonResponse(

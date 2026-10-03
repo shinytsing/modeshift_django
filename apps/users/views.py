@@ -22,8 +22,6 @@ from .models import Profile, UserActionLog, UserActivityLog, UserMembership, Use
 from .services.progressive_captcha_service import ProgressiveCaptchaService
 
 
-
-
 # 注册模板过滤器
 @register.filter
 def activity_color(activity_type):
@@ -138,7 +136,8 @@ def register(request):
 
             # 自动登录用户
             from django.contrib.auth import login
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
             messages.success(request, "注册成功！已自动登录。")
             return redirect("home")  # 跳转到首页
@@ -411,7 +410,9 @@ def admin_change_membership_api(request, user_id):
             details=f"会员类型从 {old_type} 变更为 {membership_type}，有效期：{days}天，备注：{note}",
         )
 
-        return JsonResponse({"success": True, "message": f"用户会员已更新为 {membership_type}"}, content_type="application/json")
+        return JsonResponse(
+            {"success": True, "message": f"用户会员已更新为 {membership_type}"}, content_type="application/json"
+        )
 
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)
@@ -501,7 +502,9 @@ def admin_batch_operation_api(request):
         note = data.get("note", "")
 
         if not user_ids:
-            return JsonResponse({"success": False, "message": "请选择要操作的用户"}, status=400, content_type="application/json")
+            return JsonResponse(
+                {"success": False, "message": "请选择要操作的用户"}, status=400, content_type="application/json"
+            )
 
         success_count = 0
         failed_count = 0
@@ -768,7 +771,9 @@ def admin_force_logout_api(request, user_id):
             details=f"强制登出用户 {user.username}，原因：{reason}",
         )
 
-        return JsonResponse({"success": True, "message": f"用户 {user.username} 已被强制登出"}, content_type="application/json")
+        return JsonResponse(
+            {"success": True, "message": f"用户 {user.username} 已被强制登出"}, content_type="application/json"
+        )
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "无效的JSON数据"}, status=400, content_type="application/json")
@@ -856,7 +861,9 @@ def upload_avatar(request):
     try:
         # 检查是否有文件上传
         if "avatar" not in request.FILES:
-            return JsonResponse({"success": False, "message": "请选择要上传的头像文件"}, status=400, content_type="application/json")
+            return JsonResponse(
+                {"success": False, "message": "请选择要上传的头像文件"}, status=400, content_type="application/json"
+            )
 
         avatar_file = request.FILES["avatar"]
 
@@ -871,7 +878,9 @@ def upload_avatar(request):
 
         # 验证文件大小（限制为5MB）
         if avatar_file.size > 5 * 1024 * 1024:
-            return JsonResponse({"success": False, "message": "头像文件大小不能超过5MB"}, status=400, content_type="application/json")
+            return JsonResponse(
+                {"success": False, "message": "头像文件大小不能超过5MB"}, status=400, content_type="application/json"
+            )
 
         # 获取或创建用户资料
         try:
@@ -1178,7 +1187,9 @@ def extend_session_api(request):
             except Exception as e:
                 print(f"记录session延长活动失败: {e}")
 
-            return JsonResponse({"success": True, "message": "Session已延长至长期有效", "expires_in": settings.SESSION_COOKIE_AGE})
+            return JsonResponse(
+                {"success": True, "message": "Session已延长至长期有效", "expires_in": settings.SESSION_COOKIE_AGE}
+            )
         else:
             return JsonResponse({"success": False, "message": "用户未登录或session不可用"}, status=401)
 
@@ -1225,8 +1236,8 @@ def user_login_api(request):
     """用户登录API"""
     try:
         data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
+        username = data.get("username")
+        password = data.get("password")
 
         if not username or not password:
             return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
@@ -1234,20 +1245,19 @@ def user_login_api(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             # 确保request有session属性
-            if not hasattr(request, 'session'):
+            if not hasattr(request, "session"):
                 from django.contrib.sessions.backends.db import SessionStore
+
                 request.session = SessionStore()
 
             login(request, user)
-            return JsonResponse({
-                "success": True,
-                "message": "登录成功",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "登录成功",
+                    "user": {"id": user.id, "username": user.username, "email": user.email},
                 }
-            })
+            )
         else:
             return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
 
@@ -1262,9 +1272,9 @@ def user_register_api(request):
     """用户注册API"""
     try:
         data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        email = data.get('email', '')
+        username = data.get("username")
+        password = data.get("password")
+        email = data.get("email", "")
 
         if not username or not password:
             return JsonResponse({"success": False, "message": "用户名和密码不能为空"}, status=400)
@@ -1285,6 +1295,7 @@ def user_register_api(request):
         # 确保Profile被创建（信号处理器可能失败）
         try:
             from .models import Profile
+
             Profile.objects.get_or_create(user=user)
         except Exception as profile_error:
             logger.warning(f"Profile创建失败（可能已存在）: {str(profile_error)}")
@@ -1292,18 +1303,17 @@ def user_register_api(request):
         # 自动登录用户
         from django.contrib.auth import login
         from django.contrib.auth.backends import ModelBackend
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-        return JsonResponse({
-            "success": True,
-            "message": "注册成功，已自动登录",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email
-            },
-            "redirect_url": "/"  # 注册成功后跳转到首页
-        })
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "注册成功，已自动登录",
+                "user": {"id": user.id, "username": user.username, "email": user.email},
+                "redirect_url": "/",  # 注册成功后跳转到首页
+            }
+        )
 
     except Exception as e:
         return JsonResponse({"success": False, "message": "注册暂时无法完成，请检查填写内容后重试"}, status=500)
@@ -1321,48 +1331,52 @@ def user_profile_api(request):
         if request.method == "GET":
             # 获取用户资料
             profile, created = Profile.objects.get_or_create(user=request.user)
-            return JsonResponse({
-                "success": True,
-                "data": {
-                    "id": request.user.id,
-                    "username": request.user.username,
-                    "email": request.user.email,
-                    "first_name": request.user.first_name,
-                    "last_name": request.user.last_name,
-                    "date_joined": request.user.date_joined.isoformat(),
-                    "last_login": request.user.last_login.isoformat() if request.user.last_login else None,
-                    "profile": {
-                        "bio": profile.bio if hasattr(profile, 'bio') else '',
-                        "avatar": profile.avatar.url if hasattr(profile, 'avatar') and profile.avatar else None
-                    }
+            return JsonResponse(
+                {
+                    "success": True,
+                    "data": {
+                        "id": request.user.id,
+                        "username": request.user.username,
+                        "email": request.user.email,
+                        "first_name": request.user.first_name,
+                        "last_name": request.user.last_name,
+                        "date_joined": request.user.date_joined.isoformat(),
+                        "last_login": request.user.last_login.isoformat() if request.user.last_login else None,
+                        "profile": {
+                            "bio": profile.bio if hasattr(profile, "bio") else "",
+                            "avatar": profile.avatar.url if hasattr(profile, "avatar") and profile.avatar else None,
+                        },
+                    },
                 }
-            })
+            )
 
         elif request.method == "POST":
             # 更新用户资料
             data = json.loads(request.body)
             profile, created = Profile.objects.get_or_create(user=request.user)
 
-            if 'first_name' in data:
-                request.user.first_name = data['first_name']
-            if 'last_name' in data:
-                request.user.last_name = data['last_name']
-            if 'email' in data:
-                request.user.email = data['email']
+            if "first_name" in data:
+                request.user.first_name = data["first_name"]
+            if "last_name" in data:
+                request.user.last_name = data["last_name"]
+            if "email" in data:
+                request.user.email = data["email"]
 
             request.user.save()
 
-            return JsonResponse({
-                "success": True,
-                "message": "资料更新成功",
-                "data": {
-                    "id": request.user.id,
-                    "username": request.user.username,
-                    "email": request.user.email,
-                    "first_name": request.user.first_name,
-                    "last_name": request.user.last_name
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "资料更新成功",
+                    "data": {
+                        "id": request.user.id,
+                        "username": request.user.username,
+                        "email": request.user.email,
+                        "first_name": request.user.first_name,
+                        "last_name": request.user.last_name,
+                    },
                 }
-            })
+            )
 
     except Exception as e:
         return JsonResponse({"success": False, "message": f"操作失败: {str(e)}"}, status=500)

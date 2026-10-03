@@ -51,7 +51,12 @@ class DocumentContextGenerationAPITests(TestCase):
         llm.return_value.resolve_model.return_value = ("deepseek", "deepseek-chat")
         response = self.client.post(
             "/tools/api/async/generate-testcases/",
-            {"requirement": "登录", "prompt": "生成用例", "model_id": "deepseek:deepseek-chat", "knowledge_document_ids": [self.private_document.id]},
+            {
+                "requirement": "登录",
+                "prompt": "生成用例",
+                "model_id": "deepseek:deepseek-chat",
+                "knowledge_document_ids": [self.private_document.id],
+            },
             format="json",
         )
         self.assertEqual(response.status_code, 403)
@@ -77,7 +82,9 @@ class DocumentContextGenerationAPITests(TestCase):
         response = self.client.post(
             "/tools/api/async/generate-testcases/",
             {
-                "requirement": "验证码过期", "prompt": "生成边界用例", "model_id": "deepseek:deepseek-chat",
+                "requirement": "验证码过期",
+                "prompt": "生成边界用例",
+                "model_id": "deepseek:deepseek-chat",
                 "knowledge_document_ids": [self.own_document.id],
             },
             format="json",
@@ -104,9 +111,15 @@ class DocumentContextGenerationAPITests(TestCase):
     def test_task_status_rejects_another_users_task(self):
         task = {
             "task-foreign": {
-                "id": "task-foreign", "user_id": f"user:{self.other_user.pk}", "status": "completed",
-                "progress": 100, "created_at": "2026-01-01T00:00:00", "started_at": None,
-                "completed_at": "2026-01-01T00:01:00", "result": "private result", "error": None,
+                "id": "task-foreign",
+                "user_id": f"user:{self.other_user.pk}",
+                "status": "completed",
+                "progress": 100,
+                "created_at": "2026-01-01T00:00:00",
+                "started_at": None,
+                "completed_at": "2026-01-01T00:01:00",
+                "result": "private result",
+                "error": None,
             }
         }
         with tempfile.TemporaryDirectory() as storage:
@@ -121,9 +134,15 @@ class DocumentContextGenerationAPITests(TestCase):
     def test_task_download_does_not_expose_another_users_private_result(self):
         task = {
             "task-download-private": {
-                "id": "task-download-private", "user_id": f"user:{self.other_user.pk}", "status": "completed",
-                "progress": 100, "created_at": "2026-01-01T00:00:00", "started_at": None,
-                "completed_at": "2026-01-01T00:01:00", "result": "private source context", "error": None,
+                "id": "task-download-private",
+                "user_id": f"user:{self.other_user.pk}",
+                "status": "completed",
+                "progress": 100,
+                "created_at": "2026-01-01T00:00:00",
+                "started_at": None,
+                "completed_at": "2026-01-01T00:01:00",
+                "result": "private source context",
+                "error": None,
             }
         }
         with tempfile.TemporaryDirectory() as storage:
@@ -136,8 +155,22 @@ class DocumentContextGenerationAPITests(TestCase):
 
     def test_task_list_does_not_return_another_users_requirement(self):
         data = {
-            "mine": {"id": "mine", "user_id": f"user:{self.user.pk}", "requirement": "my req", "status": "pending", "progress": 0, "created_at": "2026-01-02T00:00:00"},
-            "theirs": {"id": "theirs", "user_id": f"user:{self.other_user.pk}", "requirement": "secret req", "status": "pending", "progress": 0, "created_at": "2026-01-03T00:00:00"},
+            "mine": {
+                "id": "mine",
+                "user_id": f"user:{self.user.pk}",
+                "requirement": "my req",
+                "status": "pending",
+                "progress": 0,
+                "created_at": "2026-01-02T00:00:00",
+            },
+            "theirs": {
+                "id": "theirs",
+                "user_id": f"user:{self.other_user.pk}",
+                "requirement": "secret req",
+                "status": "pending",
+                "progress": 0,
+                "created_at": "2026-01-03T00:00:00",
+            },
         }
         with tempfile.TemporaryDirectory() as storage:
             with open(os.path.join(storage, "tasks.json"), "w", encoding="utf-8") as output:

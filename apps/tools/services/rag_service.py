@@ -259,7 +259,10 @@ def ingest_document(owner, upload: UploadedFile) -> RequirementDocument:
         extracted_text=text,
     )
     RequirementChunk.objects.bulk_create(
-        [RequirementChunk(document=document, sequence=index + 1, content=piece, vector=embed(piece)) for index, piece in enumerate(pieces)]
+        [
+            RequirementChunk(document=document, sequence=index + 1, content=piece, vector=embed(piece))
+            for index, piece in enumerate(pieces)
+        ]
     )
     return document
 
@@ -407,7 +410,9 @@ def sync_site_capabilities() -> RequirementDocument:
     auto_titles_match = auto_ready and not auto_qs.exclude(title__in=expected_auto_titles).exists()
     if not auto_titles_match:
         auto_qs.exclude(title__in=expected_auto_titles).delete()
-    needs_auto_sync = not auto_titles_match or auto_qs.filter(title__in=expected_auto_titles).count() != len(expected_auto_titles)
+    needs_auto_sync = not auto_titles_match or auto_qs.filter(title__in=expected_auto_titles).count() != len(
+        expected_auto_titles
+    )
 
     documents = []
     for module in modules:

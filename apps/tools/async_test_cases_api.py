@@ -46,11 +46,15 @@ class AsyncGenerateTestCasesAPI(APIView):
             try:
                 get_llm_service().resolve_model(model_id)
             except (ValueError, TypeError):
-                return Response({"success": False, "error": "请选择模型目录中已配置的模型"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "error": "请选择模型目录中已配置的模型"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             raw_document_ids = request.data.get("knowledge_document_ids", [])
             if not isinstance(raw_document_ids, list) or len(raw_document_ids) > 10:
-                return Response({"success": False, "error": "知识库文档选择无效（最多选择 10 篇）"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "error": "知识库文档选择无效（最多选择 10 篇）"}, status=status.HTTP_400_BAD_REQUEST
+                )
             try:
                 document_ids = [int(value) for value in raw_document_ids]
             except (TypeError, ValueError):
@@ -61,16 +65,20 @@ class AsyncGenerateTestCasesAPI(APIView):
             if document_ids:
                 if not request.user.is_authenticated:
                     return Response({"success": False, "error": "请登录后使用知识库文档"}, status=status.HTTP_401_UNAUTHORIZED)
-                authorized = set(RequirementDocument.objects.filter(
-                    Q(owner=request.user) | Q(owner__isnull=True), id__in=document_ids
-                ).values_list("id", flat=True))
+                authorized = set(
+                    RequirementDocument.objects.filter(
+                        Q(owner=request.user) | Q(owner__isnull=True), id__in=document_ids
+                    ).values_list("id", flat=True)
+                )
                 if authorized != set(document_ids):
-                    return Response({"success": False, "error": "所选知识库文档不存在或无权访问"}, status=status.HTTP_403_FORBIDDEN)
+                    return Response(
+                        {"success": False, "error": "所选知识库文档不存在或无权访问"}, status=status.HTTP_403_FORBIDDEN
+                    )
                 evidence = search_chunks(request.user, requirement, limit=10, document_ids=document_ids)
 
             # 创建异步任务 - 智能选择模式
             user_id = _requester_id(request, create_session=True)
-            
+
             # 使用真实AI服务
             task_manager = get_task_manager()
             task_id = task_manager.create_task(
@@ -90,7 +98,9 @@ class AsyncGenerateTestCasesAPI(APIView):
 
         except Exception as e:
             logger.error(f"创建异步任务失败: {e}")
-            return Response({"success": False, "error": f"创建任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"success": False, "error": f"创建任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class TaskStatusAPI(APIView):
@@ -105,12 +115,12 @@ class TaskStatusAPI(APIView):
             import json
             import os
             from .async_task_manager import AsyncTaskManager
-            
+
             task_manager = AsyncTaskManager()
-            tasks_file = os.path.join(task_manager.storage_dir, 'tasks.json')
-            
+            tasks_file = os.path.join(task_manager.storage_dir, "tasks.json")
+
             if os.path.exists(tasks_file):
-                with open(tasks_file, 'r', encoding='utf-8') as f:
+                with open(tasks_file, "r", encoding="utf-8") as f:
                     tasks_data = json.load(f)
                     task = tasks_data.get(task_id)
             else:
@@ -150,7 +160,9 @@ class TaskStatusAPI(APIView):
 
         except Exception as e:
             logger.error(f"获取任务状态失败: {e}")
-            return Response({"success": False, "error": f"获取任务状态失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"success": False, "error": f"获取任务状态失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class TaskListAPI(APIView):
@@ -165,12 +177,12 @@ class TaskListAPI(APIView):
             import json
             import os
             from .async_task_manager import AsyncTaskManager
-            
+
             task_manager = AsyncTaskManager()
-            tasks_file = os.path.join(task_manager.storage_dir, 'tasks.json')
-            
+            tasks_file = os.path.join(task_manager.storage_dir, "tasks.json")
+
             if os.path.exists(tasks_file):
-                with open(tasks_file, 'r', encoding='utf-8') as f:
+                with open(tasks_file, "r", encoding="utf-8") as f:
                     tasks_data = json.load(f)
                     tasks = list(tasks_data.values())
             else:
@@ -200,7 +212,9 @@ class TaskListAPI(APIView):
 
         except Exception as e:
             logger.error(f"获取任务列表失败: {e}")
-            return Response({"success": False, "error": f"获取任务列表失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"success": False, "error": f"获取任务列表失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class DeleteTaskAPI(APIView):
@@ -237,7 +251,9 @@ class DeleteTaskAPI(APIView):
 
         except Exception as e:
             logger.error(f"删除任务失败: {e}")
-            return Response({"success": False, "error": f"删除任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"success": False, "error": f"删除任务失败: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class ModelCatalogAPI(APIView):

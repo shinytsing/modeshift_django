@@ -43,22 +43,26 @@ class AutomationCaseGenerationAPI(APIView):
         if document_ids:
             if not request.user.is_authenticated:
                 return Response({"success": False, "error": "请登录后使用知识库文档"}, status=status.HTTP_401_UNAUTHORIZED)
-            authorized = set(RequirementDocument.objects.filter(
-                Q(owner=request.user) | Q(owner__isnull=True), id__in=document_ids
-            ).values_list("id", flat=True))
+            authorized = set(
+                RequirementDocument.objects.filter(
+                    Q(owner=request.user) | Q(owner__isnull=True), id__in=document_ids
+                ).values_list("id", flat=True)
+            )
             if authorized != set(document_ids):
-                return Response({"success": False, "error": "所选知识库文档不存在或无权访问"}, status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    {"success": False, "error": "所选知识库文档不存在或无权访问"}, status=status.HTTP_403_FORBIDDEN
+                )
             evidence = search_chunks(request.user, requirement, limit=8, document_ids=document_ids)
 
         kind = "API" if channel == "api" else "UI"
         rules = (
             "每条用例必须明确 HTTP 方法、真实 API path、请求 headers/query/body 和 status 或 JSON 断言；API path 必须以 /api/、/tools/api/、/users/api/、/content/api/ 或 /accounts/api/ 开头，/tools/.../manual/、/tools/.../ui/ 等页面地址绝不能作为 API。GET/HEAD/OPTIONS 是只读，健身计算类 POST 才可视为安全 POST，美食随机、评分、保存、上传、删除、更新等 POST/PUT/PATCH/DELETE 都是真实写操作，必须保留为写操作并在执行时由用户显式放行。"
-            if channel == "api" else
-            "每条用例必须明确 open path、fill/click 定位器，以及登录后 expect_text 或 expect_visible 断言；执行器会继承当前浏览器登录会话，不能把登录成功写成匿名假设。UI 只允许 open/click/fill/expect_text/expect_visible/screenshot，不要输出 wait。美食选择器必须使用真实稳定 ID：#breakfast/#lunch/#dinner/#snack、#mood_happy/#mood_excited/#mood_calm/#mood_sad/#mood_angry/#mood_neutral、#mixed/#chinese/#western/#japanese/#korean/#thai、#price_low/#price_medium/#price_high、#no_spicy/#vegetarian/#no_seafood/#no_pork/#low_sugar/#low_salt、#startButton/#pureRandomButton/#resultContainer/#foodName/#nutritionInfo/#alternativeGrid。营养断言使用页面真实文本“卡路里”“蛋白质”“脂肪”“碳水化合物”“膳食纤维”或只断言 #nutritionInfo 可见，不要使用未出现在页面的“热量”。"
+            if channel == "api"
+            else "每条用例必须明确 open path、fill/click 定位器，以及登录后 expect_text 或 expect_visible 断言；执行器会继承当前浏览器登录会话，不能把登录成功写成匿名假设。UI 只允许 open/click/fill/expect_text/expect_visible/screenshot，不要输出 wait。美食选择器必须使用真实稳定 ID：#breakfast/#lunch/#dinner/#snack、#mood_happy/#mood_excited/#mood_calm/#mood_sad/#mood_angry/#mood_neutral、#mixed/#chinese/#western/#japanese/#korean/#thai、#price_low/#price_medium/#price_high、#no_spicy/#vegetarian/#no_seafood/#no_pork/#low_sugar/#low_salt、#startButton/#pureRandomButton/#resultContainer/#foodName/#nutritionInfo/#alternativeGrid。营养断言使用页面真实文本“卡路里”“蛋白质”“脂肪”“碳水化合物”“膳食纤维”或只断言 #nutritionInfo 可见，不要使用未出现在页面的“热量”。"
         )
-        evidence_text = "\n\n".join(
-            f"[知识库：{item['document']}#分块{item['sequence']}]\n{item['content']}" for item in evidence
-        ) or "无"
+        evidence_text = (
+            "\n\n".join(f"[知识库：{item['document']}#分块{item['sequence']}]\n{item['content']}" for item in evidence) or "无"
+        )
         prompt = f"""请生成一份短小、可执行的 {kind} 自动化测试用例文档。
 
 产品需求：

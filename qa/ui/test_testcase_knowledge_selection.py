@@ -35,26 +35,53 @@ def test_user_selects_knowledge_and_model_for_testcase_generation(page: Page) ->
 
     page.route(
         "**/tools/api/llm/models/",
-        lambda route: route.fulfill(status=200, json={"models": [{
-            "id": "groq:test-model", "provider": "groq", "model": "test-model",
-            "label": "groq / test-model", "available": True,
-            "status": "configured_unverified", "description": "已配置，未在线验证",
-        }]}),
+        lambda route: route.fulfill(
+            status=200,
+            json={
+                "models": [
+                    {
+                        "id": "groq:test-model",
+                        "provider": "groq",
+                        "model": "test-model",
+                        "label": "groq / test-model",
+                        "available": True,
+                        "status": "configured_unverified",
+                        "description": "已配置，未在线验证",
+                    }
+                ]
+            },
+        ),
     )
     page.route(
         "**/tools/api/rag/documents/search/**",
-        lambda route: route.fulfill(status=200, json={"results": [{
-            "id": 42, "title": "登录模块说明.md", "snippet": "验证码过期后需提示重新获取。",
-            "score": 0.9, "source": "private",
-        }]}),
+        lambda route: route.fulfill(
+            status=200,
+            json={
+                "results": [
+                    {
+                        "id": 42,
+                        "title": "登录模块说明.md",
+                        "snippet": "验证码过期后需提示重新获取。",
+                        "score": 0.9,
+                        "source": "private",
+                    }
+                ]
+            },
+        ),
     )
     page.route(
         "**/tools/api/rag/documents/42/",
-        lambda route: route.fulfill(status=200, json={
-            "id": 42, "title": "登录模块说明.md", "source": "private",
-            "source_type": "markdown", "chunks": 1,
-            "content": "验证码过期后需提示重新获取。",
-        }),
+        lambda route: route.fulfill(
+            status=200,
+            json={
+                "id": 42,
+                "title": "登录模块说明.md",
+                "source": "private",
+                "source_type": "markdown",
+                "chunks": 1,
+                "content": "验证码过期后需提示重新获取。",
+            },
+        ),
     )
     submitted: dict = {}
 
@@ -65,12 +92,21 @@ def test_user_selects_knowledge_and_model_for_testcase_generation(page: Page) ->
     page.route("**/tools/api/async/generate-testcases/", create_task)
     page.route(
         "**/tools/api/async/task/qa-task/",
-        lambda route: route.fulfill(status=200, json={
-            "success": True, "task_id": "qa-task", "status": "completed", "progress": 100,
-            "created_at": "2026-01-01", "started_at": "2026-01-01", "completed_at": "2026-01-01",
-            "result": "# 测试用例\n### TC-001 登录验证码过期", "sources": [{"document": "登录模块说明.md", "sequence": 1}],
-            "selected_model": "groq:test-model",
-        }),
+        lambda route: route.fulfill(
+            status=200,
+            json={
+                "success": True,
+                "task_id": "qa-task",
+                "status": "completed",
+                "progress": 100,
+                "created_at": "2026-01-01",
+                "started_at": "2026-01-01",
+                "completed_at": "2026-01-01",
+                "result": "# 测试用例\n### TC-001 登录验证码过期",
+                "sources": [{"document": "登录模块说明.md", "sequence": 1}],
+                "selected_model": "groq:test-model",
+            },
+        ),
     )
 
     page.goto(_url("/tools/test_case_generator/"), wait_until="domcontentloaded")
@@ -101,4 +137,6 @@ def test_user_selects_knowledge_and_model_for_testcase_generation(page: Page) ->
     assert submitted["knowledge_document_ids"] == [42]
     assert submitted["requirement"] == "验证码过期后提示重新获取"
     assert submitted["prompt"] == "只基于已选资料，覆盖 {requirement}"
-    allure.attach(page.screenshot(full_page=True), name="testcase-knowledge-selection.png", attachment_type=allure.attachment_type.PNG)
+    allure.attach(
+        page.screenshot(full_page=True), name="testcase-knowledge-selection.png", attachment_type=allure.attachment_type.PNG
+    )

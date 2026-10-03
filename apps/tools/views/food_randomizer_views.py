@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 def _calculate_food_health_score(food):
     """计算食物健康评分 - 更严格的评分标准"""
     score = 0  # 从0开始计算
-    
+
     # 营养成分评分 (总分100分)
     if food.calories > 0:
         # 蛋白质评分 (0-25分)
@@ -38,7 +38,7 @@ def _calculate_food_health_score(food):
             score += 10
         else:
             score += 5
-        
+
         # 脂肪评分 (0-20分) - 低脂食物得分更高
         fat_ratio = (food.fat * 9) / food.calories * 100
         if fat_ratio <= 15:
@@ -51,7 +51,7 @@ def _calculate_food_health_score(food):
             score += 5
         else:
             score += 0  # 高脂食物不得分
-        
+
         # 碳水化合物评分 (0-15分)
         carb_ratio = (food.carbohydrates * 4) / food.calories * 100
         if 40 <= carb_ratio <= 60:
@@ -62,9 +62,9 @@ def _calculate_food_health_score(food):
             score += 5
         else:
             score += 0
-    
+
     # 膳食纤维评分 (0-15分)
-    fiber_value = getattr(food, 'fiber', 0) or getattr(food, 'dietary_fiber', 0)
+    fiber_value = getattr(food, "fiber", 0) or getattr(food, "dietary_fiber", 0)
     if fiber_value >= 8:
         score += 15
     elif fiber_value >= 5:
@@ -75,7 +75,7 @@ def _calculate_food_health_score(food):
         score += 5
     else:
         score += 0
-    
+
     # 钠含量评分 (0-15分) - 低钠食物得分更高
     sodium_value = food.sodium if food.sodium > 0 else 500  # 如果钠为0，假设为500mg
     if sodium_value <= 150:
@@ -88,7 +88,7 @@ def _calculate_food_health_score(food):
         score += 5
     else:
         score += 0  # 高钠食物不得分
-    
+
     # 糖分评分 (0-10分) - 低糖食物得分更高
     sugar_value = food.sugar if food.sugar > 0 else 10  # 如果糖为0，假设为10g
     if sugar_value <= 3:
@@ -101,10 +101,10 @@ def _calculate_food_health_score(food):
         score += 3
     else:
         score += 0  # 高糖食物不得分
-    
+
     # 健康标签加分 (0-10分) - 减少加分
     health_bonus = 0
-    tags = getattr(food, 'tags', [])
+    tags = getattr(food, "tags", [])
     if isinstance(tags, list):
         if "素食" in tags:
             health_bonus += 1
@@ -118,9 +118,9 @@ def _calculate_food_health_score(food):
             health_bonus += 2
         if "有机" in tags:
             health_bonus += 2
-    
+
     score += min(health_bonus, 10)  # 最多加10分
-    
+
     # 确保分数在0-100范围内
     return max(0, min(100, int(score)))
 
@@ -191,47 +191,48 @@ def food_randomizer_pure_random_api(request):
             import os
             from django.conf import settings
             from apps.tools.models.legacy_models import FoodPhotoBinding
-            
+
             image_url = "/static/img/food/default-food.svg"  # 默认图片
-            
+
             # 1. 首先检查FoodItem表中的image_url字段
             if food.image_url:
                 # 检查图片文件是否存在
-                if food.image_url.startswith('/media/'):
+                if food.image_url.startswith("/media/"):
                     # 媒体文件路径
-                    media_path = food.image_url.replace('/media/', '')
+                    media_path = food.image_url.replace("/media/", "")
                     full_path = os.path.join(settings.MEDIA_ROOT, media_path)
                     if os.path.exists(full_path):
                         image_url = food.image_url
-                elif food.image_url.startswith('/static/'):
+                elif food.image_url.startswith("/static/"):
                     # 静态文件路径
-                    static_path = food.image_url.replace('/static/', '')
+                    static_path = food.image_url.replace("/static/", "")
                     full_path = os.path.join(settings.STATIC_ROOT, static_path)
                     if os.path.exists(full_path):
                         image_url = food.image_url
                 else:
                     # 外部URL，直接使用
                     image_url = food.image_url
-            
+
             # 2. 如果FoodItem.image_url不存在或文件不存在，检查FoodPhotoBinding表
             if image_url == "/static/img/food/default-food.svg":
                 try:
-                    photo_binding = FoodPhotoBinding.objects.filter(
-                        food_item=food,
-                        is_active=True
-                    ).order_by('-accuracy_score', '-created_at').first()
-                    
+                    photo_binding = (
+                        FoodPhotoBinding.objects.filter(food_item=food, is_active=True)
+                        .order_by("-accuracy_score", "-created_at")
+                        .first()
+                    )
+
                     if photo_binding and photo_binding.photo_url:
                         # 检查绑定的照片文件是否存在
-                        if photo_binding.photo_url.startswith('/media/'):
+                        if photo_binding.photo_url.startswith("/media/"):
                             # 媒体文件路径
-                            media_path = photo_binding.photo_url.replace('/media/', '')
+                            media_path = photo_binding.photo_url.replace("/media/", "")
                             full_path = os.path.join(settings.MEDIA_ROOT, media_path)
                             if os.path.exists(full_path):
                                 image_url = photo_binding.photo_url
-                        elif photo_binding.photo_url.startswith('/static/'):
+                        elif photo_binding.photo_url.startswith("/static/"):
                             # 静态文件路径
-                            static_path = photo_binding.photo_url.replace('/static/', '')
+                            static_path = photo_binding.photo_url.replace("/static/", "")
                             full_path = os.path.join(settings.STATIC_ROOT, static_path)
                             if os.path.exists(full_path):
                                 image_url = photo_binding.photo_url
@@ -240,12 +241,12 @@ def food_randomizer_pure_random_api(request):
                             image_url = photo_binding.photo_url
                 except Exception as e:
                     logger.warning(f"检查食物绑定照片失败: {str(e)}")
-            
+
             # 3. 如果还是没有图片，检查静态文件
             if image_url == "/static/img/food/default-food.svg":
                 image_filename = f"{food.name}.jpg"
                 image_path = os.path.join(settings.STATIC_ROOT, "img", "food", image_filename)
-                
+
                 if os.path.exists(image_path):
                     image_url = f"/static/img/food/{image_filename}"
 
@@ -529,9 +530,9 @@ def food_randomizer_rate_api(request):
         if session_id:
             # 新版使用真实的 FoodRandomizationSession 主键；兼容旧版时间戳。
             try:
-                log_record = FoodHistory.objects.filter(
-                    user=request.user, session_id=int(session_id)
-                ).order_by("-created_at").first()
+                log_record = (
+                    FoodHistory.objects.filter(user=request.user, session_id=int(session_id)).order_by("-created_at").first()
+                )
             except (TypeError, ValueError):
                 log_record = None
             if not log_record:
@@ -544,10 +545,14 @@ def food_randomizer_rate_api(request):
                     if session_datetime.tzinfo is None:
                         session_datetime = timezone.make_aware(session_datetime)
                     time_range = timedelta(minutes=1)
-                    log_record = FoodHistory.objects.filter(
-                        user=request.user,
-                        created_at__range=[session_datetime - time_range, session_datetime + time_range],
-                    ).order_by("-created_at").first()
+                    log_record = (
+                        FoodHistory.objects.filter(
+                            user=request.user,
+                            created_at__range=[session_datetime - time_range, session_datetime + time_range],
+                        )
+                        .order_by("-created_at")
+                        .first()
+                    )
                 except (ValueError, TypeError):
                     log_record = None
             if not log_record:

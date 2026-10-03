@@ -16,12 +16,14 @@ except ImportError:
     # Django 4.2.18可能没有这个函数，使用替代方案
     def is_async_context():
         import asyncio
+
         try:
             # 检查是否有当前运行的事件循环
             loop = asyncio.get_running_loop()
             return loop is not None
         except RuntimeError:
             return False
+
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +181,7 @@ class UserSessionMiddleware(MiddlewareMixin):
                 return
         except Exception:
             pass
-            
+
         if request.user.is_authenticated:
             try:
                 # 检查是否有活跃会话
@@ -192,7 +194,7 @@ class UserSessionMiddleware(MiddlewareMixin):
                     UserSessionStats.objects.create(
                         user=request.user,
                         session_start=timezone.now(),
-                        ip_address=getattr(request, 'client_ip', ''),
+                        ip_address=getattr(request, "client_ip", ""),
                         user_agent=request.META.get("HTTP_USER_AGENT", ""),
                         is_active=True,
                     )
@@ -206,7 +208,7 @@ class UserSessionMiddleware(MiddlewareMixin):
                 return response
         except Exception:
             pass
-            
+
         if request.user.is_authenticated:
             try:
                 # 更新会话活跃时间
@@ -219,7 +221,9 @@ class UserSessionMiddleware(MiddlewareMixin):
                     if timezone.now() - active_session.session_start > timedelta(minutes=30):
                         active_session.is_active = False
                         active_session.session_end = timezone.now()
-                        active_session.duration = int((active_session.session_end - active_session.session_start).total_seconds())
+                        active_session.duration = int(
+                            (active_session.session_end - active_session.session_start).total_seconds()
+                        )
                         try:
                             active_session.save()
                         except Exception as e:
@@ -240,7 +244,7 @@ class SessionExtensionMiddleware(MiddlewareMixin):
                 return
         except Exception:
             pass
-        
+
         if request.user.is_authenticated and hasattr(request, "session"):
             try:
                 # 获取当前session
@@ -269,7 +273,7 @@ class SessionExtensionMiddleware(MiddlewareMixin):
                 return response
         except Exception:
             pass
-            
+
         if request.user.is_authenticated and hasattr(request, "session"):
             try:
                 # 确保session被保存 - 使用异步安全的方式
@@ -281,7 +285,7 @@ class SessionExtensionMiddleware(MiddlewareMixin):
                         logger.debug(f"Session save skipped in async context: {e}")
             except Exception as e:
                 logger.debug(f"Session save skipped: {e}")
-        
+
         return response
 
 
@@ -295,7 +299,7 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
                 return
         except Exception:
             pass
-            
+
         # 如果用户未登录但有会话cookie，尝试恢复会话
         from django.contrib.auth.models import AnonymousUser
 
@@ -343,7 +347,7 @@ class SessionPersistenceMiddleware(MiddlewareMixin):
                 return response
         except Exception:
             pass
-            
+
         # 如果用户已登录，确保会话数据持久化
         from django.contrib.auth.models import AnonymousUser
 

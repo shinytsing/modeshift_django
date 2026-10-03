@@ -1,28 +1,30 @@
 """
 生产环境配置 - 与开发环境完全一致，都使用PostgreSQL数据库
 """
+
 import os
-os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
+
+os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
 from .base import *
 
 # 添加whitenoise到INSTALLED_APPS
-INSTALLED_APPS = INSTALLED_APPS + ['whitenoise.runserver_nostatic']
+INSTALLED_APPS = INSTALLED_APPS + ["whitenoise.runserver_nostatic"]
 
 # 添加whitenoise中间件，移除缓存中间件避免HttpResponse序列化问题
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
-    'apps.users.middleware.SessionExtensionMiddleware',
-    'apps.tools.services.monitoring_service.PerformanceMonitoringMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    "apps.users.middleware.SessionExtensionMiddleware",
+    "apps.tools.services.monitoring_service.PerformanceMonitoringMiddleware",
 ]
 
 # 生产环境特定配置 - 只设置DEBUG为False
@@ -36,7 +38,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"].append("config.context_processors.
 # 允许的主机 - 生产环境域名和IP
 ALLOWED_HOSTS = [
     "shenyiqing.xin",
-    "www.shenyiqing.xin", 
+    "www.shenyiqing.xin",
     "47.103.143.152",
     "localhost",
     "127.0.0.1",
@@ -92,7 +94,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
-WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'bz2', 'tar', 'rar', '7z']
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp", "zip", "gz", "bz2", "tar", "rar", "7z"]
 
 # 静态文件配置 - 生产环境优化
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
@@ -100,7 +102,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # 静态文件压缩配置
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
-WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'bz2', 'tar', 'rar', '7z']
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp", "zip", "gz", "bz2", "tar", "rar", "7z"]
 
 # 禁用静态文件缓存 - 解决训练计划显示问题
 WHITENOISE_MAX_AGE = 0

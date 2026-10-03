@@ -66,11 +66,7 @@ class ExecuteGeneratedTestCasesAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             cookie_names = {settings.SESSION_COOKIE_NAME, settings.CSRF_COOKIE_NAME}
-            browser_cookies = {
-                name: request.COOKIES[name]
-                for name in cookie_names
-                if name in request.COOKIES
-            }
+            browser_cookies = {name: request.COOKIES[name] for name in cookie_names if name in request.COOKIES}
             task_id = TestExecutionManager().create_task(
                 test_cases=str(payload.get("test_cases", "")),
                 requirement=str(payload.get("requirement", "")),
@@ -86,7 +82,9 @@ class ExecuteGeneratedTestCasesAPI(APIView):
             )
         except (ExecutionPlanError, ValueError) as exc:
             return Response({"success": False, "error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "execution_id": task_id, "message": "自动化执行任务已创建"}, status=status.HTTP_202_ACCEPTED)
+        return Response(
+            {"success": True, "execution_id": task_id, "message": "自动化执行任务已创建"}, status=status.HTTP_202_ACCEPTED
+        )
 
 
 class ExecutionTaskStatusAPI(APIView):

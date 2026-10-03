@@ -102,9 +102,7 @@ class TestExecutionManager:
             self.tasks[task_id] = task
             if browser_cookies:
                 self.runtime_cookies[task_id] = {
-                    str(name): str(value)
-                    for name, value in browser_cookies.items()
-                    if name and value
+                    str(name): str(value) for name, value in browser_cookies.items() if name and value
                 }
             self._save()
         thread = threading.Thread(target=self._execute_task, args=(task_id,), daemon=True)
@@ -123,27 +121,57 @@ class TestExecutionManager:
                 task = self.tasks.get(task_id)
                 if not task:
                     return
-                task.update({"status": "running", "started_at": datetime.now().isoformat(), "progress": 3, "current_step": "让模型区分人工与自动化用例"})
+                task.update(
+                    {
+                        "status": "running",
+                        "started_at": datetime.now().isoformat(),
+                        "progress": 3,
+                        "current_step": "让模型区分人工与自动化用例",
+                    }
+                )
                 self._save()
             with self.task_lock:
                 browser_cookies = self.runtime_cookies.pop(task_id, {})
             plan = build_execution_plan(
-                task["test_cases"], task["target_url"], task["mode"], task["model_id"], task["max_cases"],
-                requirement=task.get("requirement", ""), user_prompt=task.get("user_prompt", ""),
+                task["test_cases"],
+                task["target_url"],
+                task["mode"],
+                task["model_id"],
+                task["max_cases"],
+                requirement=task.get("requirement", ""),
+                user_prompt=task.get("user_prompt", ""),
             )
-            channel_counts = {channel: sum(case["channel"] == channel for case in plan["cases"]) for channel in ("api", "ui", "manual")}
-            self._update(task_id, progress=10, current_step="执行自动化用例", plan_summary={"total": len(plan["cases"]), **channel_counts})
+            channel_counts = {
+                channel: sum(case["channel"] == channel for case in plan["cases"]) for channel in ("api", "ui", "manual")
+            }
+            self._update(
+                task_id,
+                progress=10,
+                current_step="执行自动化用例",
+                plan_summary={"total": len(plan["cases"]), **channel_counts},
+            )
             report = execute_plan(
                 plan,
                 task["allow_mutations"],
                 os.path.join(self.artifacts_dir, task_id),
-                progress_callback=lambda progress, step: self._update(task_id, progress=10 + round(progress * 0.9), current_step=step),
+                progress_callback=lambda progress, step: self._update(
+                    task_id, progress=10 + round(progress * 0.9), current_step=step
+                ),
                 browser_cookies=browser_cookies,
             )
-            self._update(task_id, status="completed", progress=100, current_step="执行完成", report=report, completed_at=datetime.now().isoformat())
+            self._update(
+                task_id,
+                status="completed",
+                progress=100,
+                current_step="执行完成",
+                report=report,
+                completed_at=datetime.now().isoformat(),
+            )
         except Exception as exc:
             logger.exception("自动化执行任务失败：%s", task_id)
-            self._update(task_id, status="failed", current_step="执行失败", error=str(exc), completed_at=datetime.now().isoformat())
+            self._update(
+                task_id, status="failed", current_step="执行失败", error=str(exc), completed_at=datetime.now().isoformat()
+            )
 
     def get_task(self, task_id: str) -> dict[str, Any] | None:
         self._load()

@@ -80,7 +80,9 @@ class LLMModelCatalogTests(TestCase):
     def test_every_continuation_call_keeps_the_selected_model_and_system_rules(self):
         selected = self.manager.services[LLMProvider.GROQ]
         selected.api_key = "gsk_configured-for-test"
-        with patch.object(self.manager, "_generate_with_specific_service", side_effect=["partial cases", "continued cases"]) as generate:
+        with patch.object(
+            self.manager, "_generate_with_specific_service", side_effect=["partial cases", "continued cases"]
+        ) as generate:
             with patch.object(self.manager, "_is_content_complete", side_effect=[False, True]):
                 with patch.object(self.manager, "_clean_and_format_content", side_effect=lambda content: content):
                     self.manager.generate_test_cases("需求", "我的提示词 {requirement}", model_id=f"groq:{selected.model}")

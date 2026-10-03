@@ -348,27 +348,27 @@ class AsyncTaskManager:
 
             logger.error(f"后台任务失败: {task_id}, 错误: {e}")
 
-
     def _generate_with_ai_service(self, requirement: str, user_prompt: str, task_id: str) -> str:
         """使用AI服务生成测试用例"""
         try:
             logger.info(f"开始使用AI服务生成测试用例: {task_id}")
             llm_service = get_llm_service()
-            
+
             # 检查可用服务
             available_providers = llm_service.get_available_providers()
             logger.info(f"可用AI服务: {[p.value for p in available_providers]}")
-            
+
             if not available_providers:
                 logger.error(f"没有可用的AI服务: {task_id}")
                 return self._generate_maintenance_message(requirement, user_prompt)
-            
+
             result = llm_service.generate_test_cases(requirement, user_prompt)
             logger.info(f"AI服务生成成功: {task_id}")
             return result
         except Exception as e:
             logger.error(f"AI服务生成失败: {task_id}, 错误: {e}")
             import traceback
+
             logger.error(f"详细错误信息: {traceback.format_exc()}")
             # 如果AI服务不可用，返回系统维护提示
             logger.warning(f"AI服务不可用，返回系统维护提示: {task_id}")
@@ -379,13 +379,13 @@ class AsyncTaskManager:
         try:
             logger.info(f"开始使用AI服务接续生成测试用例: {task_id}")
             llm_service = get_llm_service()
-            
+
             task = self.tasks.get(task_id, {})
             model_id = task.get("model_id")
             if not model_id and not llm_service.get_available_providers():
                 logger.error(f"没有可用的AI服务: {task_id}")
                 return self._generate_maintenance_message(requirement, user_prompt)
-            
+
             result = llm_service.generate_test_cases(
                 requirement,
                 user_prompt,
@@ -393,17 +393,18 @@ class AsyncTaskManager:
                 sources=task.get("evidence", []),
             )
             logger.info(f"AI服务接续生成成功: {task_id}, 结果长度: {len(result)}")
-            
+
             # 更新任务进度
             with self.task_lock:
                 self.tasks[task_id]["current_step"] = "生成完成，检查质量"
                 self._save_tasks_to_storage()
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"AI服务接续生成失败: {task_id}, 错误: {e}")
             import traceback
+
             logger.error(f"详细错误信息: {traceback.format_exc()}")
             if self.tasks.get(task_id, {}).get("model_id"):
                 raise
@@ -465,40 +466,37 @@ class AsyncTaskManager:
 
             # 创建系统消息，将跳转信息编码到metadata中
             jump_url = f"/tools/task_manager/?task_id={task_id}"
-            
+
             # 为任务创建者创建通知
             user_id = task.get("user_id")
             if user_id and user_id != "anonymous":
                 try:
                     user = User.objects.get(username=user_id)
-                    
+
                     # 确保系统聊天室只有admin用户，避免重复通知
                     if system_room.user1 != admin_user and system_room.user2 != admin_user:
                         system_room.user1 = admin_user
                         system_room.user2 = None
                         system_room.save()
-                    
+
                     # 检查是否已经存在相同的通知，避免重复
                     existing_notification = ChatNotification.objects.filter(
-                        user=user,
-                        room=system_room,
-                        message__content__contains=f"任务ID: {task_id[:8]}...",
-                        is_read=False
+                        user=user, room=system_room, message__content__contains=f"任务ID: {task_id[:8]}...", is_read=False
                     ).first()
-                    
+
                     if existing_notification:
                         logger.info(f"任务 {task_id[:8]}... 的通知已存在，跳过重复创建")
                         return
-                    
+
                     # 创建系统消息，将跳转信息存储在metadata中
                     system_chat_message = ChatMessage.objects.create(
-                        room=system_room, 
-                        sender=admin_user, 
-                        content=system_message, 
+                        room=system_room,
+                        sender=admin_user,
+                        content=system_message,
                         message_type="system",
-                        metadata={"jump_url": jump_url, "task_id": task_id}
+                        metadata={"jump_url": jump_url, "task_id": task_id},
                     )
-                    
+
                     # 手动创建通知，避免自动通知创建逻辑的干扰
                     ChatNotification.objects.create(user=user, room=system_room, message=system_chat_message, is_read=False)
                     logger.info(f"为用户 {user_id} 创建任务完成通知")
@@ -534,12 +532,14 @@ class AsyncTaskManager:
 # 全局任务管理器实例 - 使用单例模式
 _task_manager_instance = None
 
+
 def get_task_manager():
     """获取任务管理器单例"""
     global _task_manager_instance
     if _task_manager_instance is None:
         _task_manager_instance = AsyncTaskManager()
     return _task_manager_instance
+
 
 # 为了向后兼容，保留原来的变量名
 task_manager = get_task_manager()
