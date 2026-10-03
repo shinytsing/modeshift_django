@@ -81,15 +81,18 @@ compose() {
   "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
-echo "==> Logging in to GitHub Container Registry"
-printf '%s' "$GHCR_PULL_TOKEN" | timeout --foreground 60s "${docker_command[@]}" login ghcr.io \
-  --username "$GHCR_USERNAME" --password-stdin >/dev/null
-
-echo "==> Pulling production image $QATOOLBOX_IMAGE"
 export QATOOLBOX_IMAGE
-pull_started_at=$(date +%s)
-timeout --foreground 45m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
-echo "==> Image pull finished in $(( $(date +%s) - pull_started_at ))s"
+if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
+  echo "==> Reusing locally built image $QATOOLBOX_IMAGE"
+else
+  echo "==> Local image is not available; pulling $QATOOLBOX_IMAGE from GHCR"
+  echo "==> Logging in to GitHub Container Registry"
+  printf '%s' "$GHCR_PULL_TOKEN" | timeout --foreground 60s "${docker_command[@]}" login ghcr.io \
+    --username "$GHCR_USERNAME" --password-stdin >/dev/null
+  pull_started_at=$(date +%s)
+  timeout --foreground 45m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
+  echo "==> Image pull finished in $(( $(date +%s) - pull_started_at ))s"
+fi
 
 echo "==> Starting the public production stack on port $APP_PORT"
 start_started_at=$(date +%s)

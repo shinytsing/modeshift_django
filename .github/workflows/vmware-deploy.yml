@@ -76,7 +76,9 @@ jobs:
   build_image:
     name: Build and publish cached production image
     needs: qa
-    runs-on: ubuntu-latest
+    # Keep the image on the persistent deployment runner so deploy can reuse
+    # its local Docker layers instead of downloading the image from GHCR.
+    runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 20
     outputs:
       image: ${{ steps.image.outputs.ref }}
@@ -110,6 +112,7 @@ jobs:
           file: docker/Dockerfile.prod
           platforms: linux/amd64
           push: true
+          load: true
           tags: |
             ${{ steps.image.outputs.ref }}
             ghcr.io/${{ github.repository }}:main
