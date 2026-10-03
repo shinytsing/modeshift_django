@@ -72,20 +72,29 @@ if ! docker info >/dev/null 2>&1; then
   docker_command=("${SUDO[@]}" docker)
 fi
 
+echo "==> Remote deployment diagnostics"
+uname -a
+df -h "$PROJECT_DIR" /var/lib/docker 2>/dev/null || df -h "$PROJECT_DIR"
+"${docker_command[@]}" info --format 'Docker server={{.ServerVersion}} storage={{.Driver}} root={{.DockerRootDir}}'
+
 compose() {
   "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
 echo "==> Logging in to GitHub Container Registry"
-printf '%s' "$GHCR_PULL_TOKEN" | "${docker_command[@]}" login ghcr.io \
+printf '%s' "$GHCR_PULL_TOKEN" | timeout --foreground 60s "${docker_command[@]}" login ghcr.io \
   --username "$GHCR_USERNAME" --password-stdin >/dev/null
 
 echo "==> Pulling production image $QATOOLBOX_IMAGE"
 export QATOOLBOX_IMAGE
-compose pull web
+pull_started_at=$(date +%s)
+timeout --foreground 15m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
+echo "==> Image pull finished in $(( $(date +%s) - pull_started_at ))s"
 
 echo "==> Starting the public production stack on port $APP_PORT"
-compose up -d --no-build db redis web nginx
+start_started_at=$(date +%s)
+timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --no-build db redis web nginx
+echo "==> Compose start finished in $(( $(date +%s) - start_started_at ))s"
 
 for attempt in {1..30}; do
   if curl -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
