@@ -129,7 +129,7 @@ jobs:
     name: Pull and start public Docker application on VMware
     needs: build_image
     runs-on: [self-hosted, linux, x64, vmware]
-    timeout-minutes: 45
+    timeout-minutes: 90
     env:
       QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
       GHCR_USERNAME: ${{ github.actor }}

@@ -88,7 +88,7 @@ printf '%s' "$GHCR_PULL_TOKEN" | timeout --foreground 60s "${docker_command[@]}"
 echo "==> Pulling production image $QATOOLBOX_IMAGE"
 export QATOOLBOX_IMAGE
 pull_started_at=$(date +%s)
-timeout --foreground 15m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
+timeout --foreground 45m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
 echo "==> Image pull finished in $(( $(date +%s) - pull_started_at ))s"
 
 echo "==> Starting the public production stack on port $APP_PORT"
