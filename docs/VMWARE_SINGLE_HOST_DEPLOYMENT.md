@@ -1,5 +1,7 @@
 # ModeShift Django：单 VMware 虚拟机部署手册
 
+记录日期：2026-10-04（北京时间）。本文描述当前实现，不把计划中的能力当作已实现能力。
+
 本文档记录当前已经验证过的生产部署方案。后续维护部署时，优先阅读本文档和以下实际执行文件：
 
 - `.github/workflows/vmware-deploy.yml`
@@ -198,6 +200,10 @@ ALL_PROXY: http://192.168.27.1:7890
 
 部署前，`scripts/deploy-public-vm.sh` 会读取当前 `modeshift_web` 容器使用的镜像。新版本启动后如果 30 次本机健康检查全部失败，并且旧镜像仍存在，脚本会恢复旧镜像并重新启动 web/nginx。
 
+重要限制：当前是替换 web 容器后检查健康，不是蓝绿发布；切换期间可能短暂不可用。回滚只是尝试恢复旧镜像，尚未再次验证回滚后的健康状态。Compose 启动命令失败、任务被取消、DeepSeek 后置检查失败时，当前没有统一的自动回滚处理。脚本记录的旧镜像使用容器的镜像名称；若旧容器使用可变的 `:main` 标签，标签可能已指向新镜像，应人工核对镜像 ID。不要把当前机制理解为所有错误都能自动恢复。
+
+web 启动命令会执行数据库迁移。镜像回滚不会回滚数据库、配置或数据卷；不向后兼容的数据库迁移需要单独的备份和恢复方案。不要在生产环境主动制造失败来验证回滚，应在隔离环境演练。
+
 手工查看当前版本：`docker inspect --format '{{.Config.Image}}' modeshift_web`。
 
 查看本机缓存：`docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedSince}}'`。
@@ -256,6 +262,19 @@ ALL_PROXY: http://192.168.27.1:7890
 确认 GitHub Secret 名称为 `DEEPSEEK_API_KEY`，Key 没过期且没有写入代码。只检查容器中变量是否存在：`docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T web sh -c 'test -n "${DEEPSEEK_API_KEY:-}"'`。
 
 ## 12. 方案边界和维护原则
+
+本次验证的耗时基线（Run `37199597201`）：QA 212 秒，VMware checkout 104 秒，Docker 缓存构建 23 秒，部署脚本 10 秒。整体约 6 分钟，不承诺每次一样快。首次依赖构建曾触发 20 分钟上限，保留下来的中间层使后续重跑命中缓存。
+
+排障历史：
+
+- 大源码 artifact 传输和 GitHub 直连很慢，改为 VMware 持久化 workspace checkout，并使用宿主机代理。
+- Buildx 工具下载失败，改用本机现有 Docker 引擎。
+- Legacy Builder 不支持 `--progress=plain`，移除该参数。
+- apt/pip 未正确使用代理，给各 Dockerfile 阶段声明代理参数并导出小写代理变量。
+- localhost 健康请求误经外网代理返回 502，增加 `curl --noproxy '*'`。
+- 同机镜像绕经 GHCR 浪费时间，移除应用镜像登录、推送和拉取步骤。
+
+本地 Git 同步注意：本次 Mac 上的 `git commit/write-tree` 曾卡住，最终通过 GitHub Git 数据 API 创建提交并以非强制方式更新 main。远程已更新不代表本地 HEAD 自动同步；本地可能仍有已暂存的同一批改动。下一次工作前先核对 HEAD、origin/main 和暂存区，不要重复提交或直接重置。必要时先保存本地差异，再执行安全的 fetch 和快进同步。本文档提交为 `54f82220c5381710e4059070ca49b63e8fcab03d`，其触发的 Run `37201543979` 也已验证成功。
 
 当前单 VM 方案可以做到自动触发、自动拉代码、本地缓存构建、自动启动、健康检查、GitHub 状态回传和失败回滚；但不能提供多机高可用、数据库跨机器容灾或主机故障自动接管。
 
