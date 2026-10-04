@@ -100,7 +100,7 @@ timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -
 echo "==> Compose start finished in $(( $(date +%s) - start_started_at ))s"
 
 for attempt in {1..30}; do
-  if curl -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
+  if curl --noproxy '*' --connect-timeout 3 --max-time 10 -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
     break
   fi
   if [[ "$attempt" -eq 30 ]]; then

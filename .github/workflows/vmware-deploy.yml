@@ -173,7 +173,7 @@ jobs:
           QATOOLBOX_DIR="$deploy_dir" bash "$deploy_dir/scripts/deploy-public-vm.sh"
 
       - name: Verify deployed health contract
-        run: curl --fail --retry 10 --retry-delay 3 http://127.0.0.1:8080/health/
+        run: curl --noproxy '*' --fail --retry 10 --retry-delay 3 http://127.0.0.1:8080/health/
 
   notify:
     name: Email final pipeline result
