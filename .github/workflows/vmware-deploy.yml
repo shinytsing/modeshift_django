@@ -80,6 +80,22 @@ jobs:
     # its local Docker layers instead of downloading the image from GHCR.
     runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 20
+    # The VM can reach the host's Clash HTTP proxy, while direct GitHub
+    # transport is unreliable. Keep GitHub as the source of truth, but route
+    # runner-side Git/registry requests through the proven LAN proxy.
+    env:
+      HTTP_PROXY: http://192.168.27.1:7890
+      HTTPS_PROXY: http://192.168.27.1:7890
+      ALL_PROXY: http://192.168.27.1:7890
+      http_proxy: http://192.168.27.1:7890
+      https_proxy: http://192.168.27.1:7890
+      all_proxy: http://192.168.27.1:7890
+      GIT_TERMINAL_PROMPT: "0"
+      GIT_CONFIG_COUNT: "2"
+      GIT_CONFIG_KEY_0: http.lowSpeedLimit
+      GIT_CONFIG_VALUE_0: "1024"
+      GIT_CONFIG_KEY_1: http.lowSpeedTime
+      GIT_CONFIG_VALUE_1: "30"
     outputs:
       image: ${{ steps.image.outputs.ref }}
       compose_bundle: ${{ steps.bundle.outputs.compose }}
@@ -141,6 +157,12 @@ jobs:
     runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 90
     env:
+      HTTP_PROXY: http://192.168.27.1:7890
+      HTTPS_PROXY: http://192.168.27.1:7890
+      ALL_PROXY: http://192.168.27.1:7890
+      http_proxy: http://192.168.27.1:7890
+      https_proxy: http://192.168.27.1:7890
+      all_proxy: http://192.168.27.1:7890
       QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
       GHCR_USERNAME: ${{ github.actor }}
       GHCR_PULL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
