@@ -25,6 +25,17 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Package source for the VMware build runner
+        run: git archive --format=tar.gz --output="$RUNNER_TEMP/modeshift-source.tar.gz" HEAD
+
+      - name: Upload source package
+        uses: actions/upload-artifact@v6
+        with:
+          name: modeshift-source
+          path: ${{ runner.temp }}/modeshift-source.tar.gz
+          compression-level: 0
+          retention-days: 1
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -87,8 +98,17 @@ jobs:
       deploy_script_bundle: ${{ steps.bundle.outputs.script }}
 
     steps:
-      - name: Check out the triggering revision
-        uses: actions/checkout@v5
+      - name: Download source package
+        uses: actions/download-artifact@v6
+        with:
+          name: modeshift-source
+          path: ${{ runner.temp }}/modeshift-source-artifact
+
+      - name: Extract source package
+        run: |
+          mkdir -p "$RUNNER_TEMP/modeshift-source"
+          tar -xzf "$RUNNER_TEMP/modeshift-source-artifact/modeshift-source.tar.gz" \
+            -C "$RUNNER_TEMP/modeshift-source"
 
       - name: Set image reference
         id: image
@@ -108,10 +128,9 @@ jobs:
       - name: Build and publish production image
         uses: docker/build-push-action@v7
         with:
-          context: .
-          file: docker/Dockerfile.prod
+          context: ${{ runner.temp }}/modeshift-source
+          file: ${{ runner.temp }}/modeshift-source/docker/Dockerfile.prod
           platforms: linux/amd64
-          push: true
           load: true
           tags: |
             ${{ steps.image.outputs.ref }}
@@ -120,13 +139,19 @@ jobs:
           cache-from: type=gha,scope=qatoolbox-production
           cache-to: type=gha,mode=max,scope=qatoolbox-production
 
+      - name: Push production image to GHCR
+        run: |
+          docker push "${{ steps.image.outputs.ref }}"
+          docker push "ghcr.io/${{ github.repository }}:main"
+
       - name: Package deployment configuration
         id: bundle
         shell: bash
         run: |
-          echo "compose=$(base64 -w0 docker/docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
-          echo "nginx=$(base64 -w0 docker/nginx.prod.conf)" >> "$GITHUB_OUTPUT"
-          echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
+          source_dir="$RUNNER_TEMP/modeshift-source"
+          echo "compose=$(base64 -w0 "$source_dir/docker/docker-compose.prod.yml")" >> "$GITHUB_OUTPUT"
+          echo "nginx=$(base64 -w0 "$source_dir/docker/nginx.prod.conf")" >> "$GITHUB_OUTPUT"
+          echo "script=$(base64 -w0 "$source_dir/scripts/deploy-public-vm.sh")" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Pull and start public Docker application on VMware
