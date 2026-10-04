@@ -115,7 +115,7 @@ jobs:
 
       - name: Build production image from the persistent Docker cache
         run: |
-          docker build --platform linux/amd64 --progress=plain \
+          docker build --platform linux/amd64 \
             --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
             --tag "${{ steps.image.outputs.ref }}" \
             --tag "ghcr.io/${{ github.repository }}:main" \
