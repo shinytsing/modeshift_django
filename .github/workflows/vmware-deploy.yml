@@ -25,17 +25,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Package source for the VMware build runner
-        run: git archive --format=tar.gz --output="$RUNNER_TEMP/modeshift-source.tar.gz" HEAD
-
-      - name: Upload source package
-        uses: actions/upload-artifact@v6
-        with:
-          name: modeshift-source
-          path: ${{ runner.temp }}/modeshift-source.tar.gz
-          compression-level: 0
-          retention-days: 1
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -98,17 +87,11 @@ jobs:
       deploy_script_bundle: ${{ steps.bundle.outputs.script }}
 
     steps:
-      - name: Download source package
-        uses: actions/download-artifact@v6
+      - name: Check out the triggering revision in the persistent runner workspace
+        uses: actions/checkout@v5
         with:
-          name: modeshift-source
-          path: ${{ runner.temp }}/modeshift-source-artifact
-
-      - name: Extract source package
-        run: |
-          mkdir -p "$RUNNER_TEMP/modeshift-source"
-          tar -xzf "$RUNNER_TEMP/modeshift-source-artifact/modeshift-source.tar.gz" \
-            -C "$RUNNER_TEMP/modeshift-source"
+          fetch-depth: 1
+          clean: false
 
       - name: Set image reference
         id: image
@@ -128,8 +111,8 @@ jobs:
       - name: Build and publish production image
         uses: docker/build-push-action@v7
         with:
-          context: ${{ runner.temp }}/modeshift-source
-          file: ${{ runner.temp }}/modeshift-source/docker/Dockerfile.prod
+          context: .
+          file: docker/Dockerfile.prod
           platforms: linux/amd64
           load: true
           tags: |
@@ -148,10 +131,9 @@ jobs:
         id: bundle
         shell: bash
         run: |
-          source_dir="$RUNNER_TEMP/modeshift-source"
-          echo "compose=$(base64 -w0 "$source_dir/docker/docker-compose.prod.yml")" >> "$GITHUB_OUTPUT"
-          echo "nginx=$(base64 -w0 "$source_dir/docker/nginx.prod.conf")" >> "$GITHUB_OUTPUT"
-          echo "script=$(base64 -w0 "$source_dir/scripts/deploy-public-vm.sh")" >> "$GITHUB_OUTPUT"
+          echo "compose=$(base64 -w0 docker/docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
+          echo "nginx=$(base64 -w0 docker/nginx.prod.conf)" >> "$GITHUB_OUTPUT"
+          echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Pull and start public Docker application on VMware
