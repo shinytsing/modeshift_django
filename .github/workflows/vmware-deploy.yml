@@ -80,6 +80,11 @@ jobs:
     # its local Docker layers instead of downloading the image from GHCR.
     runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 20
+    env:
+      HTTP_PROXY: http://192.168.27.1:7890
+      HTTPS_PROXY: http://192.168.27.1:7890
+      ALL_PROXY: http://192.168.27.1:7890
+      GIT_TERMINAL_PROMPT: "0"
     outputs:
       image: ${{ steps.image.outputs.ref }}
       compose_bundle: ${{ steps.bundle.outputs.compose }}
@@ -103,29 +108,18 @@ jobs:
         shell: bash
         run: echo "ref=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io \
+            --username '${{ github.actor }}' --password-stdin
 
-      - name: Build and publish production image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile.prod
-          platforms: linux/amd64
-          load: true
-          tags: |
-            ${{ steps.image.outputs.ref }}
-            ghcr.io/${{ github.repository }}:main
-          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          cache-from: type=gha,scope=qatoolbox-production
-          cache-to: type=gha,mode=max,scope=qatoolbox-production
+      - name: Build production image from the persistent Docker cache
+        run: |
+          docker build --platform linux/amd64 --progress=plain \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --tag "${{ steps.image.outputs.ref }}" \
+            --tag "ghcr.io/${{ github.repository }}:main" \
+            --file docker/Dockerfile.prod .
 
       - name: Push production image to GHCR
         run: |
