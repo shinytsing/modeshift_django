@@ -116,6 +116,9 @@ jobs:
       - name: Build production image from the persistent Docker cache
         run: |
           docker build --platform linux/amd64 \
+            --build-arg "HTTP_PROXY=$HTTP_PROXY" \
+            --build-arg "HTTPS_PROXY=$HTTPS_PROXY" \
+            --build-arg "ALL_PROXY=$ALL_PROXY" \
             --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
             --tag "${{ steps.image.outputs.ref }}" \
             --tag "ghcr.io/${{ github.repository }}:main" \
