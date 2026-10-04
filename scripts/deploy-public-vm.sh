@@ -57,11 +57,6 @@ if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
   echo "QATOOLBOX_IMAGE is required." >&2
   exit 1
 fi
-if [[ -z "${GHCR_USERNAME:-}" || -z "${GHCR_PULL_TOKEN:-}" ]]; then
-  echo "GHCR_USERNAME and GHCR_PULL_TOKEN are required." >&2
-  exit 1
-fi
-
 SUDO=()
 if [[ $EUID -ne 0 ]]; then
   SUDO=(sudo)
@@ -82,16 +77,17 @@ compose() {
 }
 
 export QATOOLBOX_IMAGE
-if "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
-  echo "==> Reusing locally built image $QATOOLBOX_IMAGE"
-else
-  echo "==> Local image is not available; pulling $QATOOLBOX_IMAGE from GHCR"
-  echo "==> Logging in to GitHub Container Registry"
-  printf '%s' "$GHCR_PULL_TOKEN" | timeout --foreground 60s "${docker_command[@]}" login ghcr.io \
-    --username "$GHCR_USERNAME" --password-stdin >/dev/null
-  pull_started_at=$(date +%s)
-  timeout --foreground 45m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull web
-  echo "==> Image pull finished in $(( $(date +%s) - pull_started_at ))s"
+if ! "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; then
+  echo "Locally built image is missing: $QATOOLBOX_IMAGE" >&2
+  echo "This single-VM deployment intentionally does not pull from GHCR." >&2
+  exit 1
+fi
+echo "==> Reusing locally built image $QATOOLBOX_IMAGE"
+
+previous_image=""
+if "${docker_command[@]}" container inspect modeshift_web >/dev/null 2>&1; then
+  previous_image="$(${docker_command[@]} container inspect --format '{{.Config.Image}}' modeshift_web)"
+  echo "==> Previous web image recorded for rollback: $previous_image"
 fi
 
 echo "==> Starting the public production stack on port $APP_PORT"
@@ -106,6 +102,11 @@ for attempt in {1..30}; do
   if [[ "$attempt" -eq 30 ]]; then
     echo "Public production stack did not become healthy." >&2
     compose logs --tail=100 web nginx >&2
+    if [[ -n "$previous_image" ]] && "${docker_command[@]}" image inspect "$previous_image" >/dev/null 2>&1; then
+      echo "==> Rolling back to previous web image: $previous_image" >&2
+      export QATOOLBOX_IMAGE="$previous_image"
+      compose up -d --no-build web nginx >&2 || true
+    fi
     exit 1
   fi
   sleep 2
