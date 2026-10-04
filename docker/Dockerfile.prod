@@ -1,6 +1,13 @@
 # 多阶段构建 - 生产环境优化
 FROM python:3.12-slim AS builder
 
+# The VMware runner reaches the public network through the host's HTTP proxy.
+# Declare the build args explicitly because the runner uses Docker's legacy
+# builder, which does not reliably expose CLI proxy args in every stage.
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG ALL_PROXY
+
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -8,7 +15,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # 安装系统依赖
-RUN apt-get update && apt-get install -y \
+RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_PROXY" && \
+    apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     curl \
@@ -20,12 +28,17 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # 复制并安装Python依赖
 COPY requirements.txt requirements.production.txt ./
-RUN pip install --upgrade pip && \
+RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_PROXY" && \
+    pip install --upgrade pip && \
     pip install -r requirements.production.txt
 
 # 应用打包阶段。collectstatic 会把 src/static 复制到 staticfiles；
 # 在中间阶段删掉源静态目录，避免大型音频在最终镜像中存两份。
 FROM python:3.12-slim AS application
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG ALL_PROXY
 
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -33,7 +46,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH"
 
 # 安装运行时依赖
-RUN apt-get update && apt-get install -y \
+RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_PROXY" && \
+    apt-get update && apt-get install -y \
     libpq5 \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -65,11 +79,16 @@ RUN python manage.py collectstatic --noinput && \
 # 因此不是用 whiteout “看起来删除”，而是实际减小传输大小。
 FROM python:3.12-slim AS production
 
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG ALL_PROXY
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH"
 
-RUN apt-get update && apt-get install -y \
+RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_PROXY" && \
+    apt-get update && apt-get install -y \
     libpq5 \
     curl \
     # UI 自动化执行器需要 Chromium 和中文字体渲染
