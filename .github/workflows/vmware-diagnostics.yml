@@ -1,0 +1,78 @@
+name: VMware connectivity diagnostics
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/vmware-network-diagnostics]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, linux, x64, vmware]
+    timeout-minutes: 5
+    steps:
+      - name: Inspect VM resources and proxy configuration without checkout
+        shell: bash
+        run: |
+          set -eu
+          date -u
+          df -h / /var/lib/docker
+          free -h
+          ip -4 route
+          python3 - <<'PY'
+          import os
+          import socket
+          from urllib.parse import urlsplit
+          for key in ('HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy'):
+              value = os.environ.get(key)
+              if value:
+                  proxy = urlsplit(value if '://' in value else 'http://' + value)
+                  print(f'{key}: scheme={proxy.scheme}, host={proxy.hostname}, port={proxy.port}, credentials={bool(proxy.username)}')
+          for host in ('github.com', 'api.github.com', 'ghcr.io'):
+              try:
+                  print(host, sorted({item[4][0] for item in socket.getaddrinfo(host, 443)}))
+              except OSError as exc:
+                  print(host, type(exc).__name__)
+          for port in (7890, 7897, 10809, 1080):
+              try:
+                  with socket.create_connection(('192.168.27.1', port), timeout=1):
+                      print(f'Host proxy candidate 192.168.27.1:{port}: reachable')
+              except OSError:
+                  print(f'Host proxy candidate 192.168.27.1:{port}: unavailable')
+          PY
+          docker info --format 'Docker={{.ServerVersion}} Root={{.DockerRootDir}}'
+          docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}'
+          docker system df
+
+      - name: Measure HTTPS and Git transport with bounded timeouts
+        shell: bash
+        run: |
+          set +e
+          for url in https://github.com https://api.github.com https://ghcr.io/v2/ https://registry-1.docker.io/v2/; do
+            (
+              for mode in default ipv4 direct-ipv4; do
+                opts=()
+                case "$mode" in
+                  ipv4) opts=(-4) ;;
+                  direct-ipv4) opts=(-4 --noproxy '*') ;;
+                esac
+                echo "Probe $url ($mode)"
+                curl "${opts[@]}" --silent --show-error --connect-timeout 5 --max-time 12 \
+                  --output /dev/null --write-out 'http=%{http_code} dns=%{time_namelookup}s tcp=%{time_connect}s tls=%{time_appconnect}s total=%{time_total}s bytes=%{size_download} speed=%{speed_download}\n' "$url"
+                echo "exit=$?"
+              done
+            ) &
+          done
+          wait
+          echo 'Public Git transport probe'
+          timeout 25s git -c http.lowSpeedLimit=1024 -c http.lowSpeedTime=10 \
+            ls-remote https://github.com/docker/build-push-action.git HEAD
+          echo "git exit=$?"
+          echo 'GitHub archive transfer probe'
+          curl -4 --silent --show-error --location --connect-timeout 5 --max-time 25 \
+            --output /dev/null --write-out 'http=%{http_code} total=%{time_total}s bytes=%{size_download} speed=%{speed_download}\n' \
+            https://codeload.github.com/actions/checkout/tar.gz/refs/tags/v5
+          echo "archive exit=$?"
+          exit 0
