@@ -53,7 +53,10 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-media/
+media/*
+!media/
+media/*
+!media/vx.jpg
 staticfiles/
 logs/
 *.log

@@ -64,6 +64,11 @@ WORKDIR /app
 # 复制应用代码
 COPY --chown=appuser:appuser . .
 
+# Keep the bundled default avatar outside the runtime media volume. The
+# deploy script seeds it into the volume when an existing VM volume is empty.
+RUN mkdir -p /app/default_media && \
+    cp /app/media/vx.jpg /app/default_media/vx.jpg
+
 # WORKDIR 由 root 创建；先为运行用户创建可写目录。
 RUN mkdir -p /app/staticfiles /app/media /app/logs && \
     chown appuser:appuser /app /app/staticfiles /app/media /app/logs
