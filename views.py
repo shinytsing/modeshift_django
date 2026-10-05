@@ -83,6 +83,25 @@ def custom_static_serve(request, path):
     return response
 
 
+def public_default_media_serve(request):
+    """Serve the bundled default avatar without requiring a login.
+
+    The default avatar is referenced by public pages and is not user content.
+    Keep the general media endpoint protected while allowing this one immutable
+    asset to render before authentication.
+    """
+    full_path = os.path.join(settings.MEDIA_ROOT, "vx.jpg")
+    if not os.path.isfile(full_path):
+        raise Http404("默认头像不存在")
+
+    response = FileResponse(open(full_path, "rb"), content_type="image/jpeg")
+    response["Content-Length"] = os.path.getsize(full_path)
+    response["Cache-Control"] = "public, max-age=3600"
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Content-Disposition"] = 'inline; filename="vx.jpg"'
+    return response
+
+
 @login_required_modal
 def secure_media_serve(request, path):
     """安全的媒体文件服务，需要登录验证"""

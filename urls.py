@@ -30,6 +30,7 @@ from views import (
     custom_static_serve,
     help_page_view,
     home_view,
+    public_default_media_serve,
     resume_3d_view,
     secure_media_serve,
     theme_demo_view,
@@ -171,6 +172,7 @@ if settings.DEBUG:
 else:
     # 生产环境使用安全的媒体文件服务
     urlpatterns += [
+        path("media/vx.jpg", public_default_media_serve, name="public_default_avatar"),
         path("media/<path:path>", secure_media_serve, name="secure_media"),
     ]
 
