@@ -102,10 +102,19 @@ def public_default_media_serve(request):
     return response
 
 
-@login_required_modal
 def secure_media_serve(request, path):
     """安全的媒体文件服务，需要登录验证"""
     try:
+        # The bundled default avatar is used on public pages before login.
+        if path == "vx.jpg":
+            return public_default_media_serve(request)
+
+        if (
+            not getattr(settings, "AUTH_LOGIN_DISABLED", False)
+            and not request.user.is_authenticated
+        ):
+            return redirect("home")
+
         # 检查文件路径是否在媒体目录内
         full_path = os.path.join(settings.MEDIA_ROOT, path)
         if not os.path.exists(full_path):
