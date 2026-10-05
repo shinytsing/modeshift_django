@@ -38,7 +38,12 @@ def tool_view(request):
 
     context = {
         "preferred_mode": preferred_mode,
-        "mode_names": {"work": "极客模式", "life": "生活模式", "training": "狂暴模式", "emo": "Emo模式"},
+        "mode_names": {
+            "work": "极客模式",
+            "life": "生活模式",
+            "training": "狂暴模式",
+            "emo": "Emo模式",
+        },
     }
 
     return render(request, "tool.html", context)  # 确保这里指向你的工具模板
@@ -121,7 +126,13 @@ def secure_media_serve(request, path):
             raise Http404("文件不存在")
 
         # 检查文件是否在允许的目录内
-        allowed_dirs = ["chat_images", "chat_files", "chat_audio", "chat_videos", "avatars"]
+        allowed_dirs = [
+            "chat_images",
+            "chat_files",
+            "chat_audio",
+            "chat_videos",
+            "avatars",
+        ]
         path_parts = path.split("/")
         if not any(allowed_dir in path_parts for allowed_dir in allowed_dirs):
             raise Http404("无权访问此文件")

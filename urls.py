@@ -79,11 +79,13 @@ def privacy_policy_view(request):
 def google_oauth_test_view(request):
     """Google OAuth测试页面"""
     import os
+
     context = {
-        'google_client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID'),
-        'google_client_secret': os.getenv('GOOGLE_OAUTH_CLIENT_SECRET'),
+        "google_client_id": os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+        "google_client_secret": os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
     }
     return render(request, "google_oauth_test.html", context)
+
 
 def error_animation_test_view(request):
     """错误动画测试页面"""
@@ -94,7 +96,9 @@ def health_check_view(request):
     """健康检查视图"""
     from django.http import JsonResponse
 
-    return JsonResponse({"status": "healthy", "timestamp": time.time(), "version": "1.0.0"})
+    return JsonResponse(
+        {"status": "healthy", "timestamp": time.time(), "version": "1.0.0"}
+    )
 
 
 urlpatterns = [
@@ -113,26 +117,35 @@ urlpatterns = [
     path("testing-performance/", testing_performance_view, name="testing_performance"),
     path("testing-security/", testing_security_view, name="testing_security"),
     # 测试API接口
-            path("api/tests/run/", run_tests_api, name="api_run_tests"),
-            path("api/tests/status/", get_test_status_api, name="api_test_status"),
-            path("api/tests/results/", get_test_results_api, name="api_test_results"),
-            path("api/tests/stats/", get_test_stats_api, name="api_test_stats"),
-            path("api/tests/history/", get_test_history_api, name="api_test_history"),
-            path("api/tests/report/", get_test_report_api, name="api_test_report"),
-            path("api/tests/stop/", stop_tests_api, name="api_stop_tests"),
-            # Allure报告路径
-            path("reports/allure-report/", allure_report_view, name="allure_report"),
-            path("reports/allure-report/<path:path>", allure_report_view, name="allure_report_file"),
+    path("api/tests/run/", run_tests_api, name="api_run_tests"),
+    path("api/tests/status/", get_test_status_api, name="api_test_status"),
+    path("api/tests/results/", get_test_results_api, name="api_test_results"),
+    path("api/tests/stats/", get_test_stats_api, name="api_test_stats"),
+    path("api/tests/history/", get_test_history_api, name="api_test_history"),
+    path("api/tests/report/", get_test_report_api, name="api_test_report"),
+    path("api/tests/stop/", stop_tests_api, name="api_stop_tests"),
+    # Allure报告路径
+    path("reports/allure-report/", allure_report_view, name="allure_report"),
+    path(
+        "reports/allure-report/<path:path>",
+        allure_report_view,
+        name="allure_report_file",
+    ),
     path("terms/", terms_of_service_view, name="terms_of_service"),
     path("privacy/", privacy_policy_view, name="privacy_policy"),
-        path("google-oauth-test/", google_oauth_test_view, name="google_oauth_test"),
-        path("error-animation-test/", error_animation_test_view, name="error_animation_test"),
+    path("google-oauth-test/", google_oauth_test_view, name="google_oauth_test"),
+    path(
+        "error-animation-test/", error_animation_test_view, name="error_animation_test"
+    ),
     path("version-history/", version_history_view, name="version_history"),
     path("help/", help_page_view, name="help_page"),
     path("admin/", admin.site.urls),
     # Trojan代理服务重定向（兼容性）
     path("trojan/", RedirectView.as_view(url="/tools/trojan/", permanent=False)),
-    path("trojan/<path:path>", RedirectView.as_view(url="/tools/trojan/%(path)s", permanent=False)),
+    path(
+        "trojan/<path:path>",
+        RedirectView.as_view(url="/tools/trojan/%(path)s", permanent=False),
+    ),
     # 工具主页面路由
     # 工具子路由（包含测试用例生成器等）
     path("tools/", include("apps.tools.urls", namespace="tools")),
@@ -151,7 +164,9 @@ urlpatterns = [
     # allauth 登录/注册
     path("accounts/", include("allauth.urls")),
     # Favicon路由
-    path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),
+    path(
+        "favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)
+    ),
 ]
 
 # 开发环境下提供媒体文件访问和debug_toolbar
@@ -177,7 +192,8 @@ else:
 # 生产环境静态文件服务
 if not settings.DEBUG:
     from django.views.static import serve
+
     urlpatterns += [
-        path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
-        path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
+        path("static/<path:path>", serve, {"document_root": settings.STATIC_ROOT}),
+        path("media/<path:path>", serve, {"document_root": settings.MEDIA_ROOT}),
     ]
