@@ -101,6 +101,12 @@ if ! compose exec -T web sh -c 'test -f /app/media/vx.jpg'; then
     'test -f /app/default_media/vx.jpg && cp /app/default_media/vx.jpg /app/media/vx.jpg && chmod 0644 /app/media/vx.jpg'
 fi
 
+if ! compose exec -T web sh -c 'test -f /app/staticfiles/img/wechat-contact.jpg'; then
+  echo "==> Seeding missing static asset static/img/wechat-contact.jpg"
+  compose exec -T -u 0 web sh -c \
+    'test -f /app/default_static/img/wechat-contact.jpg && mkdir -p /app/staticfiles/img && cp /app/default_static/img/wechat-contact.jpg /app/staticfiles/img/wechat-contact.jpg && chmod 0644 /app/staticfiles/img/wechat-contact.jpg'
+fi
+
 for attempt in {1..30}; do
   if curl --noproxy '*' --connect-timeout 3 --max-time 10 -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
     break

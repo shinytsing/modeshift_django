@@ -69,6 +69,11 @@ COPY --chown=appuser:appuser . .
 RUN mkdir -p /app/default_media && \
     cp /app/media/vx.jpg /app/default_media/vx.jpg
 
+# Keep the public WeChat contact image available for deployments that reuse an
+# existing static volume. The deploy script seeds it without clearing assets.
+RUN mkdir -p /app/default_static/img && \
+    cp /app/src/static/img/wechat-contact.jpg /app/default_static/img/wechat-contact.jpg
+
 # WORKDIR 由 root 创建；先为运行用户创建可写目录。
 RUN mkdir -p /app/staticfiles /app/media /app/logs && \
     chown appuser:appuser /app /app/staticfiles /app/media /app/logs
