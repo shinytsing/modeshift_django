@@ -111,7 +111,7 @@ def secure_media_serve(request, path):
     """安全的媒体文件服务，需要登录验证"""
     try:
         # The bundled default avatar is used on public pages before login.
-        if path == "vx.jpg":
+        if path.rstrip("/") == "vx.jpg":
             return public_default_media_serve(request)
 
         if (
