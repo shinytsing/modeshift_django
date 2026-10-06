@@ -289,3 +289,19 @@ web 启动命令会执行数据库迁移。镜像回滚不会回滚数据库、�
 5. 修改 workflow 后验证 YAML，并运行一次真实 Actions 流程。
 6. 只有 VMware 内部健康检查成功，才认为部署成功。
 7. 每次发布保留 commit SHA，便于定位版本和回滚。
+
+## 10. 可选跳过 QA 的提交标识
+
+对于只修改文档、静态资源或其他不触及运行时的低风险提交，可以在提交信息中加入：
+
+```text
+docs: update guide [skip-qa]
+```
+
+工作流会先检查变更文件：
+
+- 没有 `[skip-qa]`：正常执行完整 QA。
+- 有 `[skip-qa]` 且只涉及非保护文件：跳过 QA，继续在 VMware 构建和部署。
+- 有 `[skip-qa]` 但修改了应用代码、配置、路由、Docker、依赖或部署脚本：自动拒绝跳过，仍执行完整 QA。
+
+受保护范围包括 `apps/`、`config/`、`docker/`、`.github/workflows/`、`urls.py`、`views.py`、`manage.py`、`wsgi.py`、依赖文件和 `scripts/deploy-public-vm.sh`。这个标识只是减少低风险提交的等待时间，不允许用来绕过核心功能验证。

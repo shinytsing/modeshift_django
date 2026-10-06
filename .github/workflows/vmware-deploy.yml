@@ -13,8 +13,56 @@ permissions:
   contents: read
 
 jobs:
+  qa_policy:
+    name: Decide whether QA may be skipped
+    runs-on: ubuntu-latest
+    outputs:
+      skip_qa: ${{ steps.policy.outputs.skip_qa }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Validate optional QA skip marker
+        id: policy
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
+        shell: bash
+        run: |
+          # [skip-qa] is allowed only for changes outside protected runtime paths.
+          if [[ "$COMMIT_MESSAGE" != *"[skip-qa]"* ]]; then
+            echo "skip_qa=false" >> "$GITHUB_OUTPUT"
+            echo "No [skip-qa] marker; full QA is required."
+            exit 0
+          fi
+
+          base_sha="${{ github.event.before }}"
+          if [ -z "$base_sha" ] || ! git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
+            base_sha="${{ github.sha }}^"
+          fi
+          protected_files=$(git diff --name-only "$base_sha" "${{ github.sha }}")
+          protected_regex='^(apps/|config/|\.github/workflows/|docker/|scripts/deploy-public-vm\.sh$|requirements.*\.txt$|urls\.py$|views\.py$|wsgi\.py$|manage\.py$)'
+          blocked=()
+          while IFS= read -r file; do
+            if [[ "$file" =~ $protected_regex ]]; then
+              blocked+=("$file")
+            fi
+          done <<< "$protected_files"
+
+          if [ "${#blocked[@]}" -gt 0 ]; then
+            echo "[skip-qa] requested, but protected runtime files changed:"
+            printf ' - %s\n' "${blocked[@]}"
+            echo "skip_qa=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "[skip-qa] accepted for non-protected files."
+            echo "skip_qa=true" >> "$GITHUB_OUTPUT"
+          fi
+
   qa:
     name: QA gate — API contracts and UI smoke
+    needs: qa_policy
+    if: needs.qa_policy.outputs.skip_qa != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -74,7 +122,8 @@ jobs:
 
   build_image:
     name: Build cached production image on VMware
-    needs: qa
+    needs: [qa_policy, qa]
+    if: ${{ always() && needs.qa_policy.result == 'success' && (needs.qa.result == 'success' || needs.qa.result == 'skipped') }}
     # Keep the image on the persistent deployment runner so deploy can reuse
     # its local Docker layers instead of downloading the image from GHCR.
     runs-on: [self-hosted, linux, x64, vmware]
