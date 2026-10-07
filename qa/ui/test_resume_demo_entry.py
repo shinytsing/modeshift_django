@@ -134,7 +134,9 @@ def test_performance_card_opens_read_only_case_notes(page: Page, base_url: str, 
     resume.dialog.get_by_role("link", name=link_name).click()
     expect(page).to_have_url(f"{base_url}/resume-3d/performance/#{anchor}")
     expect(page.get_by_role("heading", name=heading)).to_be_visible()
-    expect(page.get_by_text("报告状态：已找到高途 JMeter 原始 Dashboard 和 Locust 历史控制台页面；Locust 暂无有效运行报告。")).to_be_visible()
+    expect(
+        page.get_by_text("报告状态：已找到高途 JMeter 原始 Dashboard 和 Locust 历史控制台页面；Locust 暂无有效运行报告。")
+    ).to_be_visible()
     expect(page.get_by_role("button", name="执行压测")).to_have_count(0)
     assert page_errors == []
 

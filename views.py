@@ -98,7 +98,9 @@ def resume_run_ui_demo(request):
         return JsonResponse({"status": "unavailable", "message": "服务器尚未配置演示环境地址"}, status=503)
     target_url = target_url or f"http://127.0.0.1:{request.get_port()}"
     if not auth_mutations_are_allowed(target_url):
-        return JsonResponse({"status": "unavailable", "message": "此流程会创建 QA 测试账号，请先配置独立演示环境并允许测试造数"}, status=503)
+        return JsonResponse(
+            {"status": "unavailable", "message": "此流程会创建 QA 测试账号，请先配置独立演示环境并允许测试造数"}, status=503
+        )
     if not _resume_demo_lock.acquire(blocking=False):
         return JsonResponse({"status": "busy", "message": "已有演示正在执行，请稍后再试"}, status=409)
     try:
@@ -131,7 +133,9 @@ def resume_run_ui_demo(request):
     except subprocess.TimeoutExpired:
         return JsonResponse({"status": "failed", "message": "执行超过 90 秒，已停止", "output": "执行超时"}, status=504)
     except OSError:
-        return JsonResponse({"status": "failed", "message": "无法启动测试进程，请检查 Python 环境", "output": "测试进程启动失败"}, status=500)
+        return JsonResponse(
+            {"status": "failed", "message": "无法启动测试进程，请检查 Python 环境", "output": "测试进程启动失败"}, status=500
+        )
     finally:
         _resume_demo_lock.release()
 
