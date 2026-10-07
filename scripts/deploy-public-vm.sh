@@ -59,7 +59,7 @@ if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
 fi
 SUDO=()
 if [[ $EUID -ne 0 ]]; then
-  SUDO=(sudo)
+  SUDO=(sudo -n)
 fi
 
 docker_command=(docker)
@@ -112,6 +112,16 @@ if ! compose exec -T web sh -c 'test -f /app/staticfiles/img/vx.jpg'; then
   compose exec -T -u 0 web sh -c \
     'test -f /app/default_static/img/vx.jpg && mkdir -p /app/staticfiles/img && cp /app/default_static/img/vx.jpg /app/staticfiles/img/vx.jpg && chmod 0644 /app/staticfiles/img/vx.jpg'
 fi
+
+# The persisted static volume masks collectstatic output baked into a new
+# image. Refresh the archived resume reports from this release on every deploy.
+echo "==> Syncing bundled resume reports into the persistent static volume"
+compose exec -T -u 0 web sh -c \
+  'test -f /app/static/resume-reports/gaotu-jmeter-20251127/index.html && \
+   test -f /app/static/resume-reports/gaotu-locust-console-original.png && \
+   mkdir -p /app/staticfiles/resume-reports && \
+   cp -a /app/static/resume-reports/. /app/staticfiles/resume-reports/ && \
+   chmod -R a+rX /app/staticfiles/resume-reports'
 
 for attempt in {1..30}; do
   if curl --noproxy '*' --connect-timeout 3 --max-time 10 -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
@@ -184,14 +194,28 @@ chmod 600 "$env_tmp"
 mv "$env_tmp" "$ENV_FILE"
 
 if command -v systemctl >/dev/null && systemctl cat modeshift-django.service >/dev/null 2>&1; then
-  boot_override="$(mktemp "$PROJECT_DIR/.boot-image.XXXXXX")"
-  printf '[Service]\nEnvironmentFile="%s"\n' "$release_file" > "$boot_override"
-  boot_target=/etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
-  if ! cmp -s "$boot_override" "$boot_target"; then
-    "${SUDO[@]}" install -D -m 0644 "$boot_override" "$boot_target"
-    "${SUDO[@]}" systemctl daemon-reload
+  boot_compose_override="$HOME/.local/share/modeshift-updater/compose.success-image.override.yml"
+  boot_exec="$(systemctl show modeshift-django.service --property=ExecStart --value)"
+  boot_env="$(systemctl show modeshift-django.service --property=Environment --value)"
+  if [[ -f "$boot_compose_override" && "$boot_exec" == *"$boot_compose_override"* && "$boot_env" != *QATOOLBOX_IMAGE=* ]]; then
+    boot_image="$("${docker_command[@]}" compose --env-file "$ENV_FILE" \
+      -f "$COMPOSE_FILE" -f "$boot_compose_override" config --format json |
+      python3 -c 'import json,sys; print(json.load(sys.stdin)["services"]["web"]["image"])')"
+    if [[ "$boot_image" != "$QATOOLBOX_IMAGE" ]]; then
+      echo "Boot service resolves $boot_image instead of $QATOOLBOX_IMAGE" >&2
+      exit 1
+    fi
+    echo "==> Boot service already resolves the successful image through its Compose override"
+  else
+    boot_override="$(mktemp "$PROJECT_DIR/.boot-image.XXXXXX")"
+    printf '[Service]\nEnvironmentFile="%s"\n' "$release_file" > "$boot_override"
+    boot_target=/etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
+    if ! cmp -s "$boot_override" "$boot_target"; then
+      "${SUDO[@]}" install -D -m 0644 "$boot_override" "$boot_target"
+      "${SUDO[@]}" systemctl daemon-reload
+    fi
+    echo "==> Boot service will reuse successful image $QATOOLBOX_IMAGE"
   fi
-  echo "==> Boot service will reuse successful image $QATOOLBOX_IMAGE"
 fi
 
 echo "Public deployment succeeded: http://127.0.0.1:${APP_PORT}/health/"

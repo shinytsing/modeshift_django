@@ -311,6 +311,6 @@ docs: update guide [skip-qa]
 
 VMware 只读诊断确认：`modeshift-django.service` 的环境固定了旧镜像 `51108c8df19c2b72022c0daf68215b6434e63880`。GitHub 发布时 shell 使用新的 `QATOOLBOX_IMAGE`，但开机服务未同步，重启时重新创建旧 Web 容器；图片文件本身存在，旧模板仍引用受登录保护的 `/media/vx.jpg`。
 
-成功发布后，部署脚本将镜像保存至 `.deployed-image.env`，同步 `.env` 的 `QATOOLBOX_IMAGE`，并为现有开机服务安装 `90-deployed-image.conf`，使用 `EnvironmentFile` 覆盖旧的 `Environment` 镜像设置。只在应用检查通过后更新，不修改数据库或数据卷。安装覆盖配置后执行 `systemctl daemon-reload`；未来开机或重启应用服务读取最后成功发布的版本。
+后续只读诊断确认，当前开机服务已不再从 systemd `Environment` 固定镜像，而是使用用户目录里的 `compose.success-image.override.yml`；该覆盖文件以 `${QATOOLBOX_IMAGE}` 读取项目 `.env`。发布脚本在应用检查通过后更新 `.deployed-image.env` 和 `.env`，并验证开机 Compose 配置解析出的 web 镜像与本次提交一致，当前这条路径不需要 `sudo`。旧式服务仍走 systemd 覆盖配置分支，但要求预先配置免密权限，不能在无人值守的流水线里交互输入密码。脚本同时将镜像自带的简历历史报告同步到持久化静态卷，避免旧卷遮住新资源。
 
 诊断工作流 `.github/workflows/vmware-image-diagnostic.yml` 默认只读，不输出环境密钥。手工勾选 `verify_boot_restart` 会重启应用开机服务（可能短暂不可用），验证镜像仍等于保存的版本、首页引用 `/static/img/vx.jpg?v=20261006`，且媒体和静态图片可访问；不重启整台虚拟机。实际执行记录以 Actions 结果为准，不能把配置已写入当作重启验证已通过。
