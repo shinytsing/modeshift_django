@@ -167,6 +167,23 @@ jobs:
             --tag "ghcr.io/${{ github.repository }}:main" \
             --file docker/Dockerfile.prod .
 
+      - name: Verify Chromium starts as the production user
+        run: |
+          docker run --rm --entrypoint python "${{ steps.image.outputs.ref }}" -c '
+          import os
+          from playwright.sync_api import sync_playwright
+
+          assert os.access(os.environ["HOME"], os.W_OK), "Chromium home is not writable"
+          with sync_playwright() as playwright:
+              browser = playwright.chromium.launch(
+                  headless=True,
+                  executable_path="/usr/bin/chromium",
+                  args=["--no-sandbox"],
+              )
+              print("Chromium launch passed:", browser.version)
+              browser.close()
+          '
+
       - name: Package deployment configuration
         id: bundle
         shell: bash

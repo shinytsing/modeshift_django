@@ -56,7 +56,7 @@ RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_P
 COPY --from=builder /opt/venv /opt/venv
 
 # 创建应用用户
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -r appuser && useradd -r -m -d /home/appuser -g appuser appuser
 
 # 设置工作目录
 WORKDIR /app
@@ -96,7 +96,10 @@ ARG ALL_PROXY
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    HOME=/home/appuser \
+    XDG_CONFIG_HOME=/home/appuser/.config \
+    XDG_CACHE_HOME=/home/appuser/.cache
 
 RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_PROXY" && \
     apt-get update && apt-get install -y \
@@ -109,7 +112,7 @@ RUN export http_proxy="$HTTP_PROXY" https_proxy="$HTTPS_PROXY" all_proxy="$ALL_P
 
 COPY --from=builder /opt/venv /opt/venv
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -r appuser && useradd -r -m -d /home/appuser -g appuser appuser
 
 WORKDIR /app
 COPY --from=application --chown=appuser:appuser /app /app

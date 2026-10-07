@@ -317,4 +317,6 @@ VMware 只读诊断确认：`modeshift-django.service` 的环境固定了旧镜�
 
 简历页的“执行 UI 自动化”现在运行 `qa/ui/public_demo.py` 中的只读 Playwright 浏览器链路：打开简历、点击技能卡、进入历史性能案例并确认 Locust 图片加载，然后把步骤和实际截图返回页面。本地可显示浏览器窗口，线上用无头 Chromium；它不注册测试账号。注册→登录→BMI 用例仍在 QA 门禁，不从公开简历页执行。该演示直接使用镜像已有的 Playwright 运行库和 Chromium，不依赖生产镜像安装 pytest。
 
+生产镜像的 `appuser` 必须有可写的 `/home/appuser`，并把 Chromium 的 XDG 配置/缓存目录指向这个 home。构建作业会在新镜像内以默认非 root 用户启动一次无头 Chromium；这条检查通过后才允许部署，避免 QA 门禁通过但公开演示按钮在容器里启动失败。
+
 发布时先确保 PostgreSQL 与 Redis 已启动，再仅更新 Web/Nginx，不再对持久化依赖使用 `--force-recreate`。静态报告在镜像的 `/app/static/resume-reports`，发布脚本会复制到挂载卷 `/app/staticfiles/resume-reports`；验收时分别请求 Locust PNG 与 JMeter `index.html`，不能只凭模板页面 HTTP 200 判定资源可用。
