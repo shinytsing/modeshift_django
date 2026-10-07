@@ -44,3 +44,5 @@ jobs:
           grep -RlE 'modeshift|qatoolbox' /etc/systemd/system --include='*.service' --include='*.timer' 2>/dev/null || true
           echo 'COMPOSE IMAGE CONFIGURATION'
           grep -nE 'image:|QATOOLBOX_IMAGE' "$HOME/modeshift_django/docker/docker-compose.prod.yml" || true
+          echo 'BOOT SERVICE IMAGE AND SCRIPT PATHS ONLY'
+          systemctl show modeshift-django --property=ExecStart --property=Environment | python3 -c 'import sys,re; s=sys.stdin.read(); print("image settings:", re.findall(r"QATOOLBOX_IMAGE=[^\s;\"}]+",s)); print("script paths:",re.findall(r"/[\w./-]+\.(?:sh|yml)",s))'
