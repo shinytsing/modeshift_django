@@ -33,3 +33,14 @@ jobs:
           curl --noproxy '*' --max-time 15 -sS 'https://shenyiqing.xyz/?diagnostic=runner' | grep -E 'media/vx.jpg|img/vx.jpg|wechat-contact.jpg' || true
           systemctl is-active cloudflared || true
           systemctl show cloudflared --property=MainPID --property=ActiveState --property=SubState || true
+          echo 'PERSISTED IMAGE CONFIGURATION (NO SECRETS)'
+          for file in "$HOME/modeshift_django/.env" "$HOME/modeshift_django/.env.vm" "$HOME/modeshift_django/.env.production"; do
+            if [ -f "$file" ]; then
+              echo "$file"
+              grep '^QATOOLBOX_IMAGE=' "$file" || true
+            fi
+          done
+          echo 'STARTUP UNIT REFERENCES'
+          grep -RlE 'modeshift|qatoolbox' /etc/systemd/system --include='*.service' --include='*.timer' 2>/dev/null || true
+          echo 'COMPOSE IMAGE CONFIGURATION'
+          grep -nE 'image:|QATOOLBOX_IMAGE' "$HOME/modeshift_django/docker/docker-compose.prod.yml" || true
