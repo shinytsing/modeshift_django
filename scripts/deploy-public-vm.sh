@@ -186,9 +186,11 @@ mv "$env_tmp" "$ENV_FILE"
 if command -v systemctl >/dev/null && systemctl cat modeshift-django.service >/dev/null 2>&1; then
   boot_override="$(mktemp "$PROJECT_DIR/.boot-image.XXXXXX")"
   printf '[Service]\nEnvironmentFile="%s"\n' "$release_file" > "$boot_override"
-  "${SUDO[@]}" install -D -m 0644 "$boot_override" \
-    /etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
-  "${SUDO[@]}" systemctl daemon-reload
+  boot_target=/etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
+  if ! cmp -s "$boot_override" "$boot_target"; then
+    "${SUDO[@]}" install -D -m 0644 "$boot_override" "$boot_target"
+    "${SUDO[@]}" systemctl daemon-reload
+  fi
   echo "==> Boot service will reuse successful image $QATOOLBOX_IMAGE"
 fi
 
