@@ -305,3 +305,12 @@ docs: update guide [skip-qa]
 - 有 `[skip-qa]` 但修改了应用代码、配置、路由、Docker、依赖或部署脚本：自动拒绝跳过，仍执行完整 QA。
 
 受保护范围包括 `apps/`、`config/`、`docker/`、`.github/workflows/`、`urls.py`、`views.py`、`manage.py`、`wsgi.py`、依赖文件和 `scripts/deploy-public-vm.sh`。这个标识只是减少低风险提交的等待时间，不允许用来绕过核心功能验证。
+
+
+## 重启恢复旧版本与微信图片故障（2026-10-07）
+
+VMware 只读诊断确认：`modeshift-django.service` 的环境固定了旧镜像 `51108c8df19c2b72022c0daf68215b6434e63880`。GitHub 发布时 shell 使用新的 `QATOOLBOX_IMAGE`，但开机服务未同步，重启时重新创建旧 Web 容器；图片文件本身存在，旧模板仍引用受登录保护的 `/media/vx.jpg`。
+
+成功发布后，部署脚本将镜像保存至 `.deployed-image.env`，同步 `.env` 的 `QATOOLBOX_IMAGE`，并为现有开机服务安装 `90-deployed-image.conf`，使用 `EnvironmentFile` 覆盖旧的 `Environment` 镜像设置。只在应用检查通过后更新，不修改数据库或数据卷。安装覆盖配置后执行 `systemctl daemon-reload`；未来开机或重启应用服务读取最后成功发布的版本。
+
+诊断工作流 `.github/workflows/vmware-image-diagnostic.yml` 默认只读，不输出环境密钥。手工勾选 `verify_boot_restart` 会重启应用开机服务（可能短暂不可用），验证镜像仍等于保存的版本、首页引用 `/static/img/vx.jpg?v=20261006`，且媒体和静态图片可访问；不重启整台虚拟机。实际执行记录以 Actions 结果为准，不能把配置已写入当作重启验证已通过。

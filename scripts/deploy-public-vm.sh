@@ -164,4 +164,32 @@ PY
   echo "DeepSeek API connectivity verified in the public web container"
 fi
 
+# Publish the release selection only after the application checks have passed.
+# The boot unit previously pinned an old SHA in Environment=QATOOLBOX_IMAGE;
+# an EnvironmentFile takes precedence over Environment= and survives reboot.
+release_file="$PROJECT_DIR/.deployed-image.env"
+release_tmp="$(mktemp "$PROJECT_DIR/.deployed-image.XXXXXX")"
+printf 'QATOOLBOX_IMAGE=%s\n' "$QATOOLBOX_IMAGE" > "$release_tmp"
+chmod 600 "$release_tmp"
+mv "$release_tmp" "$release_file"
+
+# Also keep ordinary docker compose invocations on the successful release.
+env_tmp="$(mktemp "$PROJECT_DIR/.env.XXXXXX")"
+awk -v image="$QATOOLBOX_IMAGE" '
+  /^QATOOLBOX_IMAGE=/ { next }
+  { print }
+  END { print "QATOOLBOX_IMAGE=" image }
+' "$ENV_FILE" > "$env_tmp"
+chmod 600 "$env_tmp"
+mv "$env_tmp" "$ENV_FILE"
+
+if command -v systemctl >/dev/null && systemctl cat modeshift-django.service >/dev/null 2>&1; then
+  boot_override="$(mktemp "$PROJECT_DIR/.boot-image.XXXXXX")"
+  printf '[Service]\nEnvironmentFile="%s"\n' "$release_file" > "$boot_override"
+  "${SUDO[@]}" install -D -m 0644 "$boot_override" \
+    /etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
+  "${SUDO[@]}" systemctl daemon-reload
+  echo "==> Boot service will reuse successful image $QATOOLBOX_IMAGE"
+fi
+
 echo "Public deployment succeeded: http://127.0.0.1:${APP_PORT}/health/"
