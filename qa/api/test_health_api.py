@@ -6,20 +6,19 @@ import time
 
 import allure
 import pytest
-import requests
+
+from qa.api.clients.dashboard import DashboardApi
 
 
 @pytest.mark.api
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("部署健康契约")
-def test_health_endpoint_returns_the_deployment_contract(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_health_endpoint_returns_the_deployment_contract(dashboard_api: DashboardApi) -> None:
     """A deployable instance exposes one exact, machine-readable health contract."""
     started_at = time.monotonic()
     with allure.step("请求健康检查接口"):
-        response = http_session.get(f"{base_url}/health/", timeout=3)
+        response = dashboard_api.health()
     elapsed_seconds = time.monotonic() - started_at
 
     allure.attach(
@@ -47,12 +46,10 @@ def test_health_endpoint_returns_the_deployment_contract(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试看板状态契约")
-def test_test_status_endpoint_returns_a_complete_dashboard_state(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_status_endpoint_returns_a_complete_dashboard_state(dashboard_api: DashboardApi) -> None:
     """The dashboard can render only when its status response keeps this shape."""
     with allure.step("请求测试看板状态"):
-        response = http_session.get(f"{base_url}/api/tests/status/", timeout=3)
+        response = dashboard_api.status()
 
     allure.attach(
         response.text,
@@ -76,12 +73,10 @@ def test_test_status_endpoint_returns_a_complete_dashboard_state(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("CSRF 负向安全边界")
-def test_test_status_endpoint_rejects_post_requests_without_a_csrf_token(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_status_endpoint_rejects_post_requests_without_a_csrf_token(dashboard_api: DashboardApi) -> None:
     """An unsafe request without a CSRF token must fail before it can change state."""
     with allure.step("提交不带 CSRF Token 的 POST 请求"):
-        response = http_session.post(f"{base_url}/api/tests/status/", timeout=3)
+        response = dashboard_api.status_without_csrf()
 
     allure.attach(
         response.text,
@@ -96,12 +91,10 @@ def test_test_status_endpoint_rejects_post_requests_without_a_csrf_token(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试结果统计契约")
-def test_test_results_endpoint_keeps_totals_and_categories_consistent(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_results_endpoint_keeps_totals_and_categories_consistent(dashboard_api: DashboardApi) -> None:
     """The dashboard result cards must agree with the detailed category totals."""
     with allure.step("请求测试结果统计"):
-        response = http_session.get(f"{base_url}/api/tests/results/", timeout=3)
+        response = dashboard_api.results()
 
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith("application/json")
@@ -123,17 +116,11 @@ def test_test_results_endpoint_keeps_totals_and_categories_consistent(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试启动请求契约")
-def test_run_tests_endpoint_echoes_the_selected_test_types(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_run_tests_endpoint_echoes_the_selected_test_types(dashboard_api: DashboardApi) -> None:
     """The UI-selected API/UI scope reaches the runner without being silently changed."""
     selected_test_types = ["api", "ui"]
     with allure.step("提交 API 与 UI 的测试启动请求"):
-        response = http_session.post(
-            f"{base_url}/api/tests/run/",
-            json={"test_types": selected_test_types},
-            timeout=3,
-        )
+        response = dashboard_api.run(selected_test_types)
 
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith("application/json")
@@ -154,12 +141,10 @@ def test_run_tests_endpoint_echoes_the_selected_test_types(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("看板统计聚合契约")
-def test_test_stats_endpoint_keeps_global_and_category_totals_consistent(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_stats_endpoint_keeps_global_and_category_totals_consistent(dashboard_api: DashboardApi) -> None:
     """Dashboard summary cards must reconcile with the reported global test totals."""
     with allure.step("请求测试统计汇总"):
-        response = http_session.get(f"{base_url}/api/tests/stats/", timeout=3)
+        response = dashboard_api.stats()
 
     assert response.status_code == 200
     assert response.headers["Content-Type"].startswith("application/json")
@@ -178,12 +163,10 @@ def test_test_stats_endpoint_keeps_global_and_category_totals_consistent(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试历史分页契约")
-def test_test_history_endpoint_returns_a_complete_first_page(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_test_history_endpoint_returns_a_complete_first_page(dashboard_api: DashboardApi) -> None:
     """History rows must be uniquely identified and internally consistent for dashboard pagination."""
     with allure.step("请求第一页测试历史"):
-        response = http_session.get(f"{base_url}/api/tests/history/", timeout=3)
+        response = dashboard_api.history()
 
     assert response.status_code == 200
     body = response.json()
@@ -203,12 +186,10 @@ def test_test_history_endpoint_returns_a_complete_first_page(
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试启动方法边界")
-def test_run_tests_endpoint_rejects_get_requests(
-    base_url: str, http_session: requests.Session
-) -> None:
+def test_run_tests_endpoint_rejects_get_requests(dashboard_api: DashboardApi) -> None:
     """The runner endpoint accepts only an explicit POST command, never a browser GET request."""
     with allure.step("使用 GET 请求访问测试启动接口"):
-        response = http_session.get(f"{base_url}/api/tests/run/", timeout=3)
+        response = dashboard_api.run_with_get()
 
     assert response.status_code == 405
     assert response.headers["Allow"] == "POST"

@@ -23,7 +23,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import include, path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 # from apps.tools.views.health_views import DetailedHealthCheckView, HealthCheckView
 from views import (
@@ -31,6 +31,8 @@ from views import (
     help_page_view,
     home_view,
     resume_3d_view,
+    resume_download_view,
+    resume_run_ui_demo,
     secure_media_serve,
     theme_demo_view,
     tool_view,
@@ -96,9 +98,7 @@ def health_check_view(request):
     """健康检查视图"""
     from django.http import JsonResponse
 
-    return JsonResponse(
-        {"status": "healthy", "timestamp": time.time(), "version": "1.0.0"}
-    )
+    return JsonResponse({"status": "healthy", "timestamp": time.time(), "version": "1.0.0"})
 
 
 urlpatterns = [
@@ -108,6 +108,9 @@ urlpatterns = [
     path("welcome/", welcome_view, name="welcome"),
     path("theme-demo/", theme_demo_view, name="theme_demo"),
     path("resume-3d/", resume_3d_view, name="resume_3d"),
+    path("resume-3d/performance/", TemplateView.as_view(template_name="resume_performance.html"), name="resume_performance"),
+    path("resume-3d/download/", resume_download_view, name="resume_download"),
+    path("resume-3d/run-ui/", resume_run_ui_demo, name="resume_run_ui_demo"),
     path("modern-demo/", modern_demo_view, name="modern_demo"),
     path("test-geek-login/", test_geek_login_view, name="test_geek_login"),
     # 测试手法展示页面
@@ -126,26 +129,17 @@ urlpatterns = [
     path("api/tests/stop/", stop_tests_api, name="api_stop_tests"),
     # Allure报告路径
     path("reports/allure-report/", allure_report_view, name="allure_report"),
-    path(
-        "reports/allure-report/<path:path>",
-        allure_report_view,
-        name="allure_report_file",
-    ),
+    path("reports/allure-report/<path:path>", allure_report_view, name="allure_report_file"),
     path("terms/", terms_of_service_view, name="terms_of_service"),
     path("privacy/", privacy_policy_view, name="privacy_policy"),
     path("google-oauth-test/", google_oauth_test_view, name="google_oauth_test"),
-    path(
-        "error-animation-test/", error_animation_test_view, name="error_animation_test"
-    ),
+    path("error-animation-test/", error_animation_test_view, name="error_animation_test"),
     path("version-history/", version_history_view, name="version_history"),
     path("help/", help_page_view, name="help_page"),
     path("admin/", admin.site.urls),
     # Trojan代理服务重定向（兼容性）
     path("trojan/", RedirectView.as_view(url="/tools/trojan/", permanent=False)),
-    path(
-        "trojan/<path:path>",
-        RedirectView.as_view(url="/tools/trojan/%(path)s", permanent=False),
-    ),
+    path("trojan/<path:path>", RedirectView.as_view(url="/tools/trojan/%(path)s", permanent=False)),
     # 工具主页面路由
     # 工具子路由（包含测试用例生成器等）
     path("tools/", include("apps.tools.urls", namespace="tools")),
@@ -164,9 +158,7 @@ urlpatterns = [
     # allauth 登录/注册
     path("accounts/", include("allauth.urls")),
     # Favicon路由
-    path(
-        "favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)
-    ),
+    path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),
 ]
 
 # 开发环境下提供媒体文件访问和debug_toolbar

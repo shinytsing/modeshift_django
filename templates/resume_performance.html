@@ -1,0 +1,135 @@
+{% load static %}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>性能测试案例 · 高杰</title>
+  <style>
+    :root { color-scheme:dark; --bg:#07111d; --panel:#102338; --line:#35516b; --ink:#f1f7ff; --muted:#bfcee0; --accent:#c5e9ff; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:radial-gradient(circle at 85% 0%,#183d5a,transparent 36%),var(--bg); color:var(--ink); font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; }
+    main { max-width:1020px; margin:auto; padding:38px 22px 90px; }
+    a { color:var(--accent); }
+    .back { display:inline-block; margin-bottom:38px; }
+    .eyebrow { color:var(--accent); font:700 12px ui-monospace,monospace; letter-spacing:.14em; }
+    h1 { margin:12px 0; font-size:clamp(36px,6vw,64px); letter-spacing:-.055em; }
+    h2 { margin:0 0 16px; font-size:29px; }
+    h3 { margin:22px 0 8px; font-size:17px; }
+    p,li { color:var(--muted); line-height:1.8; }
+    .lead { max-width:780px; font-size:17px; }
+    .notice,.panel { border:1px solid var(--line); border-radius:18px; background:var(--panel); padding:24px; }
+    .notice { margin:28px 0; border-color:#7c7180; }
+    .notice strong { color:#ffe1a7; }
+    .links { display:flex; flex-wrap:wrap; gap:12px; margin:22px 0 38px; }
+    .links a { border:1px solid var(--line); border-radius:99px; padding:10px 15px; text-decoration:none; }
+    .links a:hover,.links a:focus-visible { border-color:var(--accent); }
+    .panel { margin:22px 0; scroll-margin-top:25px; }
+    .status { display:inline-block; color:#ffe1a7; border:1px solid #a69067; border-radius:99px; padding:5px 10px; font-size:12px; }
+    code { color:#d1edff; }
+    pre { overflow:auto; padding:16px; border-radius:12px; background:#06121f; color:#d1edff; line-height:1.65; }
+    button { cursor:pointer; border:1px solid var(--accent); border-radius:99px; padding:10px 15px; color:var(--bg); background:var(--accent); font:inherit; }
+    button:disabled { opacity:.6; cursor:wait; }
+    .result { min-height:72px; white-space:pre-wrap; margin-top:15px; }
+    .metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:20px 0; }
+    .metric { border:1px solid var(--line); border-radius:12px; padding:17px; }
+    .metric strong { display:block; font-size:24px; color:var(--accent); }
+    .metric span { color:var(--muted); font-size:12px; }
+    .archive-shot { margin:22px 0; }
+    .archive-shot img { display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:12px; }
+    .archive-shot figcaption { color:var(--muted); font-size:13px; line-height:1.7; margin-top:10px; }
+    @media (max-width:680px) { .metrics { grid-template-columns:1fr; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="{% url 'resume_3d' %}#stack">← 返回技能卡片</a>
+    <div class="eyebrow">PERFORMANCE / CASE NOTES</div>
+    <h1>JMeter 与 Locust：怎么设计压测</h1>
+    <p class="lead">高途 Coding-Link WebSocket 的历史性能测试材料：JMeter 原始 Dashboard、Locust 当年控制台的原貌截图和多用户脚本，以及独立的 Python WebSocket 测试报告。这里的“执行”是历史流程回放，不会对高途接口重新施压。</p>
+    <div class="notice" role="note">
+      <strong>报告状态：已找到高途 JMeter 原始 Dashboard 和 Locust 历史控制台页面；Locust 暂无有效运行报告。</strong>
+      <p>归档中的 JMeter 统计为 50 个样本、0 个报告错误。另一份 Locust JSON 快照记录 0 用户、0 请求，不能作为压测结果。2025-10-30 的 WebSocket HTML 报告由独立 Python 测试器生成，不冒充 Locust。脚本含环境凭据，原始脚本和日志不在本站公开。</p>
+    </div>
+    <nav class="links" aria-label="性能测试案例导航"><a href="#jmeter">看 JMeter 历史报告</a><a href="#locust">看 Locust 脚本流程</a><a href="#method">看压测验收方法</a></nav>
+
+    <section class="panel" id="jmeter" aria-labelledby="jmeter-title">
+      <h2 id="jmeter-title">JMeter：高途 Coding-Link WebSocket</h2>
+      <span class="status">历史归档 · 2025-11-27 · 50 样本报告</span>
+      <p>归档里有名为“5 并发”的 JMX 脚本，以及单独的“50 threads” JMeter Dashboard 和 JTL 结果。两者是否属于同一次运行尚无直接证据，因此分别展示，不混为一个测试结论。</p>
+      <div class="metrics" aria-label="JMeter 历史报告摘要">
+        <div class="metric"><strong>50</strong><span>报告样本数；不是并发上限</span></div>
+        <div class="metric"><strong>0</strong><span>报告中的错误样本数</span></div>
+        <div class="metric"><strong>369623 ms</strong><span>WebSocket 采样平均持续时间；不是消息响应延迟</span></div>
+      </div>
+      <p><a href="{% static 'resume-reports/gaotu-jmeter-20251127/index.html' %}" target="_blank" rel="noopener noreferrer">打开当时生成的 Apache JMeter Dashboard ↗</a></p>
+      <button type="button" id="replayJmeter">执行历史 JMeter 流程回放</button>
+      <pre class="result" id="jmeterReplayOutput" role="status" aria-live="polite">等待回放；不会发起真实压测。</pre>
+      <h3>我如何看这份报告</h3>
+      <ul>
+        <li>先核对请求名称、采样数、错误数，再核对并发配置、启动速率、运行时长是否与本次报告匹配。</li>
+        <li>WebSocket 长连接采样约 369 秒，不能把它当成“单条消息响应慢 369 秒”；消息级延迟需要另外取事件时间戳。</li>
+        <li>本报告 0 个 JMeter 错误只说明这个采样维度未报错，不能证明下游音频回复质量、全链路稳定性或容量上限。</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="locust" aria-labelledby="locust-title">
+      <h2 id="locust-title">Locust：高途多用户音频会话</h2>
+      <span class="status">找到历史控制台原貌与业务脚本 · 无有效结果报告</span>
+      <p>高途归档的 <code>performance_test/coding_link_locust_multiuser.py</code> 定义 <code>CodingLinkUser</code>、梯度加压管理、WebSocket 客户端和全局统计。一个虚拟用户建立连接，发送设备/心跳信息，把 OGG 音频分片上传，再接收并校验返回音频；用户数、启动速率和测试时长由 Locust 控制。</p>
+      <p>下面是从归档的 <code>performance_test/locust_web_ui.html</code> 原页面直接截取的全页图。它展示了当时的并发场景、参数和命令预览；这里是一张图片，按钮不可点击，不会执行任何测试。图里的“打开 Locust Web UI”原本指向运行者电脑上的 <code>localhost:8089</code>，不是可移植的历史报告。</p>
+      <figure class="archive-shot">
+        <a href="{% static 'resume-reports/gaotu-locust-console-original.png' %}" target="_blank" rel="noopener noreferrer" aria-label="打开 Locust 当年控制台原貌大图">
+          <img src="{% static 'resume-reports/gaotu-locust-console-original.png' %}" alt="高途 Coding-Link Locust 历史控制台原貌：左侧有并发场景和参数，右侧有测试状态和快速链接" width="1200" height="1375" loading="lazy">
+        </a>
+        <figcaption>原页面截图，可点击放大；只是历史控制台外观，不是 Locust 实测结果。</figcaption>
+      </figure>
+      <pre><code>class CodingLinkUser(User):
+    wait_time = constant(0)
+
+    @task
+    def websocket_test(self):
+        client = CodingLinkWebSocketClient(self.user_id, self.config, environment=self.environment)
+        success = client.run_test()</code></pre>
+      <h3>结果边界</h3>
+      <p>找到的 Locust JSON 是 0 用户、0 请求的空快照，不能计算成功率或 P95。旧脚本含环境凭据和业务地址，本站只展示可核对的结构与流程，不提供原始脚本下载。</p>
+    </section>
+
+    <section class="panel" id="method" aria-labelledby="method-title">
+      <h2 id="method-title">一份可信的压测报告要回答什么</h2>
+      <ol>
+        <li><strong>测什么：</strong>核心交易/查询路径、目标流量、基线与验收阈值。</li>
+        <li><strong>怎么测：</strong>预热、升压、稳定期、数据准备、隔离环境与观察指标。</li>
+        <li><strong>结果如何：</strong>吞吐量、P95/P99、错误率、资源使用和最先出现的瓶颈。</li>
+        <li><strong>能否复现：</strong>原始报告、脚本版本、命令、环境配置及失败请求样本。</li>
+      </ol>
+      <p>JMeter 的历史结果可打开原始 Dashboard；Locust 展示当年控制台的原貌截图，它只证明当时有配置页面和脚本设计，不能宣称实际压测成绩。需要新的结果时，应在独立测试环境运行并保存对应原始报告。</p>
+    </section>
+  </main>
+  <script>
+    const replaySteps={
+      jmeter:[
+        '01 / 核对归档：JMeter WebSocket Dashboard，50 个样本。',
+        '02 / 校验结果：统计文件记录 0 个错误样本。',
+        '03 / 解释口径：369623 ms 是长连接采样持续时间，不是消息级延迟。',
+        '04 / 下一步：打开原始 Dashboard，比对曲线、JTL 和运行配置。'
+      ]
+    };
+    async function replay(){
+      const button=document.getElementById('replayJmeter');
+      const output=document.getElementById('jmeterReplayOutput');
+      if(button.disabled)return;
+      button.disabled=true;output.textContent='';
+      for(const step of replaySteps.jmeter){
+        output.textContent+=(output.textContent?'\n':'')+step;
+        if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await new Promise(resolve=>setTimeout(resolve,500));
+      }
+      button.disabled=false;
+    }
+    document.getElementById('replayJmeter').addEventListener('click',replay);
+    if(new URLSearchParams(location.search).get('play')==='jmeter')replay();
+  </script>
+</body>
+</html>

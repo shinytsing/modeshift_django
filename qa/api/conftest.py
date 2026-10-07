@@ -2,23 +2,22 @@
 
 from __future__ import annotations
 
-import os
 from urllib.parse import urlsplit
 
 import allure
 import pytest
 import requests
 
+from qa.api.clients.auth import AuthApi
+from qa.api.clients.dashboard import DashboardApi
+from qa.api.clients.fitness import FitnessApi
+from qa.api.clients.resume import ResumeApi
+from qa.api.clients.transport import ApiTransport
 
-@pytest.fixture(scope="session")
-def base_url() -> str:
-    """Return the target environment without hardcoding a host into a test."""
-    return os.getenv("BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture
 def http_session() -> requests.Session:
-    """Provide a reusable client and attach every exercised API to Allure."""
+    """Isolate cookies per test and attach exercised APIs to Allure."""
     session = requests.Session()
     session.headers.update({"User-Agent": "qatoolbox-qa-suite/1.0"})
 
@@ -40,4 +39,30 @@ def http_session() -> requests.Session:
         return response
 
     session.hooks["response"].append(attach_api_evidence)
-    return session
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def api_transport(http_session: requests.Session, base_url: str) -> ApiTransport:
+    return ApiTransport(http_session, base_url)
+
+
+@pytest.fixture
+def auth_api(api_transport: ApiTransport) -> AuthApi:
+    return AuthApi(api_transport)
+
+
+@pytest.fixture
+def dashboard_api(api_transport: ApiTransport) -> DashboardApi:
+    return DashboardApi(api_transport)
+
+
+@pytest.fixture
+def fitness_api(api_transport: ApiTransport) -> FitnessApi:
+    return FitnessApi(api_transport)
+
+
+@pytest.fixture
+def resume_api(api_transport: ApiTransport) -> ResumeApi:
+    return ResumeApi(api_transport)

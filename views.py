@@ -1,9 +1,13 @@
 import mimetypes
 import os
+import subprocess
+import sys
+import threading
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import redirect, render
 from django.views.static import serve
 from functools import wraps
@@ -68,6 +72,70 @@ def resume_3d_view(request):
     return render(request, "resume_3d.html")
 
 
+def resume_download_view(request):
+    """Download the resume supplied by its owner, independent of desktop paths."""
+    resume_path = settings.BASE_DIR / "docs" / "assets" / "gaojie-resume.pdf"
+    try:
+        resume_file = open(resume_path, "rb")
+    except FileNotFoundError:
+        raise Http404("简历文件暂不可用")
+    return FileResponse(resume_file, as_attachment=True, filename="高杰-测试开发工程师.pdf", content_type="application/pdf")
+
+
+_resume_demo_lock = threading.Lock()
+
+
+@require_POST
+def resume_run_ui_demo(request):
+    """Reuse the registration/login/BMI scenario collected by the GitHub QA gate."""
+    from qa.support.auth import auth_mutations_are_allowed
+
+    local_demo = settings.DEBUG and request.META.get("REMOTE_ADDR") in {"127.0.0.1", "::1"}
+    if not local_demo and os.getenv("RESUME_UI_DEMO_ENABLED") != "1":
+        return JsonResponse({"status": "unavailable", "message": "服务器尚未启用浏览器演示"}, status=403)
+    target_url = os.getenv("RESUME_UI_DEMO_BASE_URL")
+    if not target_url and not local_demo:
+        return JsonResponse({"status": "unavailable", "message": "服务器尚未配置演示环境地址"}, status=503)
+    target_url = target_url or f"http://127.0.0.1:{request.get_port()}"
+    if not auth_mutations_are_allowed(target_url):
+        return JsonResponse({"status": "unavailable", "message": "此流程会创建 QA 测试账号，请先配置独立演示环境并允许测试造数"}, status=503)
+    if not _resume_demo_lock.acquire(blocking=False):
+        return JsonResponse({"status": "busy", "message": "已有演示正在执行，请稍后再试"}, status=409)
+    try:
+        command = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-c",
+            "qa/pytest.ini",
+            "qa/ui/test_authenticated_bmi_flow.py::test_user_registers_logs_in_and_calculates_bmi_through_the_visible_ui",
+            "-v",
+            "-o",
+            "addopts=",
+            "--slowmo",
+            "1000",
+        ]
+        if local_demo and sys.platform == "darwin":
+            command += ["--headed"]
+            command += ["--browser-channel", "chrome"]
+        env = os.environ.copy()
+        env["BASE_URL"] = target_url
+        result = subprocess.run(command, cwd=settings.BASE_DIR, env=env, capture_output=True, text=True, timeout=90)
+        return JsonResponse(
+            {
+                "status": "passed" if result.returncode == 0 else "failed",
+                "message": "演示通过" if result.returncode == 0 else "演示失败，请查看执行日志",
+                "output": (result.stdout + result.stderr)[-6000:],
+            }
+        )
+    except subprocess.TimeoutExpired:
+        return JsonResponse({"status": "failed", "message": "执行超过 90 秒，已停止", "output": "执行超时"}, status=504)
+    except OSError:
+        return JsonResponse({"status": "failed", "message": "无法启动测试进程，请检查 Python 环境", "output": "测试进程启动失败"}, status=500)
+    finally:
+        _resume_demo_lock.release()
+
+
 def version_history_view(request):
     """版本迭代记录页面"""
     return render(request, "version_history.html")
@@ -114,10 +182,7 @@ def secure_media_serve(request, path):
         if path.rstrip("/") == "vx.jpg":
             return public_default_media_serve(request)
 
-        if (
-            not getattr(settings, "AUTH_LOGIN_DISABLED", False)
-            and not request.user.is_authenticated
-        ):
+        if not getattr(settings, "AUTH_LOGIN_DISABLED", False) and not request.user.is_authenticated:
             return redirect("home")
 
         # 检查文件路径是否在媒体目录内
