@@ -1,0 +1,35 @@
+name: Diagnose VMware public image routing
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, linux, x64, vmware]
+    timeout-minutes: 5
+    steps:
+      - name: Inspect running services without secrets or mutations
+        shell: bash
+        run: |
+          set -uo pipefail
+          date -u
+          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
+          for name in modeshift_web modeshift_nginx; do
+            docker inspect "$name" --format 'name={{.Name}} image={{.Config.Image}} image_id={{.Image}} created={{.Created}} mounts={{range .Mounts}}{{.Destination}}:{{.Type}} {{end}}' || true
+          done
+          docker exec modeshift_web sh -c 'grep -nE "media/vx.jpg|img/vx.jpg|wechat-contact.jpg" /app/templates/base.html; ls -l /app/media/vx.jpg /app/staticfiles/img/vx.jpg /app/staticfiles/img/wechat-contact.jpg' || true
+          docker exec modeshift_nginx sh -c 'nginx -T 2>&1 | grep -E "upstream|server web:|proxy_pass|listen|alias"' || true
+          for port in 8000 8080; do
+            echo "LOCAL PORT $port"
+            curl --noproxy '*' --max-time 10 -sS "http://127.0.0.1:$port/" | grep -E 'media/vx.jpg|img/vx.jpg|wechat-contact.jpg' || true
+            for path in /media/vx.jpg /static/img/vx.jpg /health/; do
+              curl --noproxy '*' --max-time 10 -sS -o /dev/null -w "$path status=%{http_code} type=%{content_type} redirect=%{redirect_url}\n" "http://127.0.0.1:$port$path" || true
+            done
+          done
+          echo 'PUBLIC PAGE'
+          curl --noproxy '*' --max-time 15 -sS 'https://shenyiqing.xyz/?diagnostic=runner' | grep -E 'media/vx.jpg|img/vx.jpg|wechat-contact.jpg' || true
+          systemctl is-active cloudflared || true
+          systemctl show cloudflared --property=MainPID --property=ActiveState --property=SubState || true
