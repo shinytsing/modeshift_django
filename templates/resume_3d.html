@@ -51,7 +51,7 @@
     <section class="section"><div class="section-label">QUALITY SIGNALS</div><h2>将质量结果，转成可验证的信号。</h2><div class="metrics"><article class="metric"><strong>5年</strong><span>测试与测试开发经验</span></article><article class="metric"><strong>4段</strong><span>跨航空、教育、社交、安全的完整经历</span></article><article class="metric"><strong>50%+</strong><span>AI 辅助用例产出效率提升</span></article><article class="metric"><strong>90%</strong><span>测试数据准备耗时降低</span></article></div></section>
     <section class="section" id="flow"><div class="section-label">QUALITY FLIGHT PATH</div><h2>从需求到线上，每一段都有人负责。</h2><div class="quality-flow"><article class="flow"><b>需求评审</b><span>可测性拆解、风险识别、PRD 解析</span></article><article class="flow"><b>方案与用例</b><span>场景设计、接口/UI 覆盖、AI 辅助生成</span></article><article class="flow"><b>数据与接口</b><span>造数脚本、服务校验、数据库与缓存验证</span></article><article class="flow"><b>多端回归</b><span>Web、iOS、Android、小程序与后台链路</span></article><article class="flow"><b>自动化交付</b><span>API/UI 自动化、性能测试、Jenkins CI/CD</span></article><article class="flow"><b>发布与反馈</b><span>线上巡检、日志扫描、反馈闭环与复盘</span></article></div></section>
     <section class="section" id="stack"><div class="section-label">TESTING STACK</div><h2>覆盖测试、平台、数据与交付。</h2><div class="skill-grid">
-      <article class="card skill skill-trigger" role="button" tabindex="0" aria-haspopup="dialog" data-skill="automation"><i>01 / AUTOMATION</i><b>Pytest · Playwright<br>Selenium · POM</b><p>现场执行同一条注册→登录→BMI 的 Playwright 门禁用例。</p></article>
+      <article class="card skill skill-trigger" role="button" tabindex="0" aria-haspopup="dialog" data-skill="automation"><i>01 / AUTOMATION</i><b>Pytest · Playwright<br>Selenium · POM</b><p>现场执行只读 Playwright 浏览器用例，检查简历卡片与历史报告。</p></article>
       <article class="card skill skill-trigger" role="button" tabindex="0" aria-haspopup="dialog" data-skill="pending"><i>02 / PERFORMANCE</i><b>JMeter · Locust<br>WebSocket</b><p>高途 Coding-Link：JMeter 历史报告与 Locust 当年控制台原貌。</p></article>
       <article class="card skill skill-trigger" role="button" tabindex="0" aria-haspopup="dialog" data-skill="pending"><i>03 / ENGINEERING</i><b>Python · Django<br>ModeShift · RAG</b><p>ModeShift：文档检索、异步用例生成与分层自动化。</p></article>
       <article class="card skill skill-trigger" role="button" tabindex="0" aria-haspopup="dialog" data-skill="pending"><i>04 / DELIVERY</i><b>GitHub Actions · QA Gate<br>VMware · CI/CD</b><p>PR/develop 跑门禁；main 过 QA 后才构建并部署到 VMware。</p></article>
@@ -76,20 +76,22 @@
     <h2 id="skillDialogTitle">UI 自动化展示</h2>
     <div id="automationSkillContent">
       <p>Pytest · Playwright / Selenium · POM</p>
-      <p>直接复用 GitHub 质量门禁中的 Playwright 用例，演示与发布前回归只维护同一套代码。Selenium 是已有经验背景。</p>
-      <pre><code>bmi = BmiPage(page, base_url)
-bmi.open()
-response = bmi.calculate("170", "65")
-assert response.status == 200
-expect(bmi.result_value).to_contain_text("22.5")</code></pre>
-      <p>门禁流程：注册测试账号 → 退出并重新登录 → 验证个人资料 → 输入身高体重 → 校验 BMI 接口和页面结果（22.5，正常体重）。上方是已登录后的 POM 用例节选：页面操作封装在 BmiPage，断言留在测试中。本机打开浏览器窗口；线上由服务器运行无头浏览器，结果显示在下方。</p>
+      <p>这里与 GitHub QA 门禁共用一条只读 Playwright 用例；Selenium 是已有经验背景。</p>
+      <pre><code>resume = ResumePage(page, base_url)
+resume.open()
+resume.open_automation()
+expect(resume.dialog).to_be_visible()
+resume.open_skill("JMeter · Locust")
+expect(image).not_to_have_js_property("naturalWidth", 0)</code></pre>
+      <p>演示流程：打开简历页 → 点击 UI 自动化卡片 → 打开性能案例 → 校验 Locust 历史图片确实加载。本机可看到浏览器操作；线上运行无头浏览器，并在下方返回真实步骤与截图。不注册账号，不执行压测。</p>
       <form id="uiDemoForm" action="{% url 'resume_run_ui_demo' %}" method="post">
         {% csrf_token %}
         <div class="actions"><button class="button primary" id="runUiDemo" type="submit">执行 UI 自动化</button></div>
       </form>
-      <p id="uiDemoStatus" role="status" aria-live="polite">等待执行。线上使用前需部署浏览器运行环境。</p>
+      <p id="uiDemoStatus" role="status" aria-live="polite">等待执行。</p>
       <pre id="uiDemoOutput" hidden></pre>
-      <p>共用用例：qa/ui/test_authenticated_bmi_flow.py。GitHub 门禁和这里执行的是同一个注册、登录与 BMI 用例，不使用模拟执行与示例统计。每次运行会创建一个 QA 测试账号，请使用独立演示环境。</p>
+      <img id="uiDemoScreenshot" alt="本次 Playwright 演示的真实浏览器截图" hidden style="max-width:100%;height:auto;margin-top:16px;border:1px solid rgba(255,255,255,.15);border-radius:12px">
+      <p>共用用例：qa/ui/public_demo.py，由 qa/ui/test_resume_demo_entry.py 纳入 GitHub QA 门禁。注册→登录→BMI 是另一条独立门禁用例，不在公开站点执行。</p>
     </div>
     <div id="pendingSkillContent" hidden></div>
   </dialog>
@@ -99,15 +101,21 @@ expect(bmi.result_value).to_contain_text("22.5")</code></pre>
       event.preventDefault();
       const form=event.currentTarget, button=document.getElementById('runUiDemo');
       const status=document.getElementById('uiDemoStatus'), output=document.getElementById('uiDemoOutput');
+      const screenshot=document.getElementById('uiDemoScreenshot');
       button.disabled=true; button.textContent='执行中…';
       status.textContent='正在运行浏览器，执行页面跳转和断言，请等待结果。';
       output.hidden=true;
+      screenshot.hidden=true; screenshot.removeAttribute('src');
       try {
         const response=await fetch(form.action,{method:'POST',credentials:'same-origin',headers:{'X-CSRFToken':form.elements.csrfmiddlewaretoken.value}});
         const result=await response.json();
         status.textContent=result.message;
         output.textContent=result.output || result.message;
         output.hidden=false;
+        if(result.status==='passed' && result.screenshot){
+          screenshot.src='data:image/png;base64,'+result.screenshot;
+          screenshot.hidden=false;
+        }
       } catch(error) {
         status.textContent='未取得执行结果，请检查服务连接；不要重复点击，先确认浏览器是否仍在运行。';
       } finally {

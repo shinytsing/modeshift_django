@@ -92,7 +92,11 @@ fi
 
 echo "==> Starting the public production stack on port $APP_PORT"
 start_started_at=$(date +%s)
-timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --no-build --force-recreate db redis web nginx
+# Preserve the persistent database and Redis containers during web releases.
+# Recreating all four at once can race with the VM's boot/updater service and
+# briefly remove healthy dependencies from the live application.
+timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --wait --wait-timeout 120 --no-build db redis
+timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --no-build --no-deps web nginx
 echo "==> Compose start finished in $(( $(date +%s) - start_started_at ))s"
 
 if ! compose exec -T web sh -c 'test -f /app/media/vx.jpg'; then

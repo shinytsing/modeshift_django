@@ -6,6 +6,22 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from qa.ui.pages.resume import ResumePage
+from qa.ui.public_demo import run_resume_journey
+
+
+@pytest.mark.ui
+def test_public_resume_demo_is_read_only_and_loads_archived_image(page: Page, base_url: str):
+    steps = run_resume_journey(page, base_url)
+    assert len(steps) == 3
+    assert "无 404" in steps[-1]
+
+
+@pytest.mark.ui
+def test_public_resume_demo_rejects_missing_archived_image(page: Page, base_url: str):
+    page.route("**/static/resume-reports/gaotu-locust-console-original.png", lambda route: route.fulfill(status=404))
+    with pytest.raises(AssertionError):
+        run_resume_journey(page, base_url)
+    assert page.get_by_role("img", name=re.compile("Locust 历史控制台原貌")).evaluate("image => image.naturalWidth") == 0
 
 
 @pytest.mark.ui
@@ -30,7 +46,7 @@ def test_automation_skill_opens_demo_dialog(page: Page, base_url: str):
     resume.open_automation()
     dialog = page.get_by_role("dialog", name="UI 自动化展示")
     expect(dialog).to_be_visible()
-    expect(dialog.get_by_text("共用用例：qa/ui/test_authenticated_bmi_flow.py", exact=False)).to_be_visible()
+    expect(dialog.get_by_text("共用用例：qa/ui/public_demo.py", exact=False)).to_be_visible()
     resume.close_skill()
     expect(dialog).not_to_be_visible()
     card.focus()
@@ -215,10 +231,8 @@ def test_execute_button_runs_real_browser_journey(page: Page, base_url: str):
     assert response.status == 200
     result = response.json()
     assert result["status"] == "passed", result
-    assert "1 passed" in result["output"]
-    assert re.search(
-        r"test_user_registers_logs_in_and_calculates_bmi_through_the_visible_ui\[chromium\]\s+PASSED",
-        result["output"],
-    ), result["output"]
-    expect(resume.execution_status).to_have_text("演示通过")
+    assert "Locust 历史图片已加载" in result["output"]
+    assert result["screenshot"]
+    expect(resume.execution_status).to_have_text("只读 UI 自动化演示通过")
+    expect(page.get_by_role("img", name="本次 Playwright 演示的真实浏览器截图")).to_be_visible()
     expect(resume.run_button).to_be_enabled()

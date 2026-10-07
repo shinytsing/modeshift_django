@@ -314,3 +314,7 @@ VMware 只读诊断确认：`modeshift-django.service` 的环境固定了旧镜�
 后续只读诊断确认，当前开机服务已不再从 systemd `Environment` 固定镜像，而是使用用户目录里的 `compose.success-image.override.yml`；该覆盖文件以 `${QATOOLBOX_IMAGE}` 读取项目 `.env`。发布脚本在应用检查通过后更新 `.deployed-image.env` 和 `.env`，并验证开机 Compose 配置解析出的 web 镜像与本次提交一致，当前这条路径不需要 `sudo`。旧式服务仍走 systemd 覆盖配置分支，但要求预先配置免密权限，不能在无人值守的流水线里交互输入密码。脚本同时将镜像自带的简历历史报告同步到持久化静态卷，避免旧卷遮住新资源。
 
 诊断工作流 `.github/workflows/vmware-image-diagnostic.yml` 默认只读，不输出环境密钥。手工勾选 `verify_boot_restart` 会重启应用开机服务（可能短暂不可用），验证镜像仍等于保存的版本、首页引用 `/static/img/vx.jpg?v=20261006`，且媒体和静态图片可访问；不重启整台虚拟机。实际执行记录以 Actions 结果为准，不能把配置已写入当作重启验证已通过。
+
+简历页的“执行 UI 自动化”现在运行 `qa/ui/public_demo.py` 中的只读 Playwright 浏览器链路：打开简历、点击技能卡、进入历史性能案例并确认 Locust 图片加载，然后把步骤和实际截图返回页面。本地可显示浏览器窗口，线上用无头 Chromium；它不注册测试账号。注册→登录→BMI 用例仍在 QA 门禁，不从公开简历页执行。该演示直接使用镜像已有的 Playwright 运行库和 Chromium，不依赖生产镜像安装 pytest。
+
+发布时先确保 PostgreSQL 与 Redis 已启动，再仅更新 Web/Nginx，不再对持久化依赖使用 `--force-recreate`。静态报告在镜像的 `/app/static/resume-reports`，发布脚本会复制到挂载卷 `/app/staticfiles/resume-reports`；验收时分别请求 Locust PNG 与 JMeter `index.html`，不能只凭模板页面 HTTP 200 判定资源可用。

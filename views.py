@@ -1,4 +1,5 @@
 import mimetypes
+import json
 import os
 import subprocess
 import sys
@@ -6,6 +7,7 @@ import threading
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect, render
@@ -87,48 +89,51 @@ _resume_demo_lock = threading.Lock()
 
 @require_POST
 def resume_run_ui_demo(request):
-    """Reuse the registration/login/BMI scenario collected by the GitHub QA gate."""
-    from qa.support.auth import auth_mutations_are_allowed
-
+    """Run the same read-only resume journey exercised by the QA gate."""
     local_demo = settings.DEBUG and request.META.get("REMOTE_ADDR") in {"127.0.0.1", "::1"}
-    if not local_demo and os.getenv("RESUME_UI_DEMO_ENABLED") != "1":
-        return JsonResponse({"status": "unavailable", "message": "服务器尚未启用浏览器演示"}, status=403)
-    target_url = os.getenv("RESUME_UI_DEMO_BASE_URL")
-    if not target_url and not local_demo:
-        return JsonResponse({"status": "unavailable", "message": "服务器尚未配置演示环境地址"}, status=503)
-    target_url = target_url or f"http://127.0.0.1:{request.get_port()}"
-    if not auth_mutations_are_allowed(target_url):
-        return JsonResponse(
-            {"status": "unavailable", "message": "此流程会创建 QA 测试账号，请先配置独立演示环境并允许测试造数"}, status=503
-        )
+    target_url = f"http://127.0.0.1:{request.get_port() if local_demo else 8000}"
     if not _resume_demo_lock.acquire(blocking=False):
         return JsonResponse({"status": "busy", "message": "已有演示正在执行，请稍后再试"}, status=409)
+    cache_lock = False
     try:
-        command = [
-            sys.executable,
-            "-m",
-            "pytest",
-            "-c",
-            "qa/pytest.ini",
-            "qa/ui/test_authenticated_bmi_flow.py::test_user_registers_logs_in_and_calculates_bmi_through_the_visible_ui",
-            "-v",
-            "-o",
-            "addopts=",
-            "--slowmo",
-            "1000",
-        ]
-        if local_demo and sys.platform == "darwin":
-            command += ["--headed"]
-            command += ["--browser-channel", "chrome"]
+        if not local_demo:
+            try:
+                cache_lock = cache.add("resume:ui-demo:running", "1", timeout=100)
+            except Exception:
+                return JsonResponse({"status": "unavailable", "message": "演示服务暂不可用，请稍后重试"}, status=503)
+            if not cache_lock:
+                return JsonResponse({"status": "busy", "message": "已有演示正在执行，请稍后再试"}, status=409)
         env = os.environ.copy()
         env["BASE_URL"] = target_url
-        result = subprocess.run(command, cwd=settings.BASE_DIR, env=env, capture_output=True, text=True, timeout=90)
+        env["QA_DEMO_HEADED"] = "1" if local_demo and sys.platform == "darwin" else "0"
+        result = subprocess.run(
+            [sys.executable, "-m", "qa.ui.public_demo"],
+            cwd=settings.BASE_DIR,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=90,
+        )
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            payload = {"status": "failed", "error": "浏览器进程未返回有效结果"}
+        if result.returncode == 0 and payload.get("status") == "passed":
+            return JsonResponse(
+                {
+                    "status": "passed",
+                    "message": "只读 UI 自动化演示通过",
+                    "output": "\n".join(payload["steps"]),
+                    "screenshot": payload["screenshot"],
+                }
+            )
         return JsonResponse(
             {
-                "status": "passed" if result.returncode == 0 else "failed",
-                "message": "演示通过" if result.returncode == 0 else "演示失败，请查看执行日志",
-                "output": (result.stdout + result.stderr)[-6000:],
-            }
+                "status": "failed",
+                "message": "演示未通过，请检查页面或报告图片",
+                "output": payload.get("error", "浏览器执行失败")[-1000:],
+            },
+            status=500,
         )
     except subprocess.TimeoutExpired:
         return JsonResponse({"status": "failed", "message": "执行超过 90 秒，已停止", "output": "执行超时"}, status=504)
@@ -137,6 +142,8 @@ def resume_run_ui_demo(request):
             {"status": "failed", "message": "无法启动测试进程，请检查 Python 环境", "output": "测试进程启动失败"}, status=500
         )
     finally:
+        if cache_lock:
+            cache.delete("resume:ui-demo:running")
         _resume_demo_lock.release()
 
 
