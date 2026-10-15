@@ -3,6 +3,10 @@ name: Diagnose VMware public image routing and boot version
 on:
   workflow_dispatch:
     inputs:
+      resources_only:
+        description: Inspect memory, swap and disk only, without restarting anything
+        type: boolean
+        default: false
       verify_boot_restart:
         description: Restart the application boot service and verify its saved release (brief downtime)
         type: boolean
@@ -16,6 +20,27 @@ jobs:
     runs-on: [self-hosted, linux, x64, vmware]
     timeout-minutes: 5
     steps:
+      - name: Inspect VM memory swap disk and container budgets
+        shell: bash
+        run: |
+          set -uo pipefail
+          date -u
+          free -m
+          swapon --show --bytes || true
+          sysctl vm.swappiness || true
+          nproc
+          df -h / "$HOME" /var/lib/docker
+          df -i / /var/lib/docker
+          timeout 20s docker system df || true
+          timeout 20s docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.CPUPerc}}\t{{.PIDs}}' || true
+          for name in modeshift_web modeshift_postgres modeshift_redis modeshift_nginx; do
+            docker inspect "$name" --format 'name={{.Name}} memory={{.HostConfig.Memory}} swap={{.HostConfig.MemorySwap}} oom={{.State.OOMKilled}} restarts={{.RestartCount}} log_driver={{.HostConfig.LogConfig.Type}}' || true
+          done
+          if sudo -n true 2>/dev/null; then
+            echo 'Noninteractive sudo available'
+          else
+            echo 'Host swap changes require VM-terminal sudo approval/password'
+          fi
       - name: Verify saved release survives application service restart
         if: inputs.verify_boot_restart
         shell: bash
@@ -33,6 +58,7 @@ jobs:
           curl --noproxy '*' --fail --max-time 10 -o /dev/null http://127.0.0.1:8000/static/img/vx.jpg
           echo "Restart verification passed for $expected"
       - name: Inspect running services without secrets or mutations
+        if: ${{ !inputs.resources_only }}
         shell: bash
         run: |
           set -uo pipefail
