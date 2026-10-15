@@ -58,6 +58,11 @@ def local_server_address(base_url: str) -> tuple[str, int]:
     return parsed.hostname, parsed.port or 80
 
 
+def is_loopback_http(base_url: str) -> bool:
+    parsed = urlparse(base_url)
+    return parsed.scheme == "http" and parsed.hostname in {"127.0.0.1", "localhost", "::1"}
+
+
 def generate_allure_report() -> None:
     """Render API and UI pytest results into a shareable Allure HTML report."""
     results_directory = ARTIFACTS_DIRECTORY / "allure-results"
@@ -81,14 +86,17 @@ def parse_arguments(arguments: list[str] | None = None) -> list[str]:
     selected_suite = parser.add_mutually_exclusive_group()
     selected_suite.add_argument("--api", action="store_true", help="run only requests API contracts")
     selected_suite.add_argument("--ui", action="store_true", help="run only Playwright UI scenarios")
-    selected_suite.add_argument("--e2e", action="store_true", help="run only stateful API and UI journeys")
+    selected_suite.add_argument("--e2e", action="store_true", help="run every test marked e2e")
+    selected_suite.add_argument("--smoke", action="store_true", help="run read-only tests marked smoke")
     options = parser.parse_args(arguments)
     if options.api:
         return ["qa/api"]
     if options.ui:
         return ["qa/ui"]
     if options.e2e:
-        return ["qa/api/test_auth_flow_api.py", "qa/ui/test_authenticated_bmi_flow.py"]
+        return ["qa/api", "qa/ui", "-m", "e2e"]
+    if options.smoke:
+        return ["qa/api", "qa/ui", "-m", "smoke"]
     return ["qa/api", "qa/ui"]
 
 
@@ -98,6 +106,10 @@ def main(arguments: list[str] | None = None) -> int:
     base_url = environment.setdefault("BASE_URL", DEFAULT_BASE_URL).rstrip("/")
     start_server = environment.get("QA_START_SERVER", "1") == "1"
     server: subprocess.Popen[str] | None = None
+    selected_tests = parse_arguments(arguments)
+    if not is_loopback_http(base_url) and selected_tests[-2:] != ["-m", "smoke"]:
+        print("Remote targets only support --smoke: the full suite can create users or start test runs.")
+        return 2
 
     try:
         reset_artifacts()
@@ -118,7 +130,7 @@ def main(arguments: list[str] | None = None) -> int:
             )
 
         wait_for_health(base_url)
-        pytest_command = [sys.executable, "-m", "pytest", "-c", "qa/pytest.ini", *parse_arguments(arguments)]
+        pytest_command = [sys.executable, "-m", "pytest", "-c", "qa/pytest.ini", *selected_tests]
         headed_option = environment.get("QA_HEADED")
         run_headed = headed_option.lower() in {"1", "true", "yes"} if headed_option else not environment.get("CI")
         if run_headed:

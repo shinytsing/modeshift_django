@@ -11,6 +11,7 @@ from qa.api.clients.dashboard import DashboardApi
 
 
 @pytest.mark.api
+@pytest.mark.smoke
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("部署健康契约")

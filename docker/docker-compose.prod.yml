@@ -62,7 +62,6 @@ services:
       exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120
       --max-requests 1000 --max-requests-jitter 100 wsgi:application"
     volumes:
-      - ../config/settings/docker_production.py:/app/config/settings/docker_production.py:ro
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - ./logs:/app/logs

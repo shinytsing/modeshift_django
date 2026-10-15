@@ -48,6 +48,7 @@ class LLMProvider(Enum):
     BYTEDANCE = "bytedance"
     SILICONFLOW = "siliconflow"
     DEEPSEEK = "deepseek"
+    GEMINI = "gemini"
     MOCK = "mock"
 
 
@@ -335,6 +336,51 @@ class DeepSeekService(LLMService):
             return result["choices"][0]["message"]["content"]
         except Exception as e:
             logger.error(f"DeepSeek API调用失败: {e}")
+            raise
+
+
+class GeminiService(LLMService):
+    """Google Gemini API service (Gemini API / Google AI Studio)."""
+
+    def __init__(self):
+        # Keep both names supported because Google documents both env vars.
+        self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta"
+        self.model = "gemini-3.8-flash"
+
+    def is_available(self) -> bool:
+        return bool(self.api_key)
+
+    def generate_content(self, prompt: str, system_prompt: str = None, **kwargs) -> str:
+        if not self.is_available():
+            raise ValueError("Gemini API密钥未配置")
+
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": kwargs.get("temperature", 0.7),
+                "maxOutputTokens": kwargs.get("max_tokens", 4000),
+            },
+        }
+        if system_prompt:
+            payload["systemInstruction"] = {"parts": [{"text": system_prompt}]}
+
+        try:
+            response = _global_session.post(
+                f"{self.base_url}/models/{self.model}:generateContent",
+                params={"key": self.api_key},
+                json=payload,
+                timeout=120,
+            )
+            response.raise_for_status()
+            result = response.json()
+            parts = result.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+            text = "".join(part.get("text", "") for part in parts if isinstance(part, dict))
+            if not text:
+                raise ValueError("Gemini API返回了空内容")
+            return text
+        except Exception as e:
+            logger.error(f"Gemini API调用失败: {e}")
             raise
 
 
@@ -855,10 +901,12 @@ class LLMServiceManager:
             LLMProvider.BYTEDANCE: BytedanceService(),
             LLMProvider.SILICONFLOW: SiliconflowService(),
             LLMProvider.DEEPSEEK: DeepSeekService(),
+            LLMProvider.GEMINI: GeminiService(),
             LLMProvider.MOCK: MockService(),
         }
         self.provider_priority = [
             LLMProvider.DEEPSEEK,  # 已验证的默认云端模型
+            LLMProvider.GEMINI,  # DeepSeek 忙碌或异常时切换到 Gemini
             LLMProvider.TENCENT,  # 腾讯混元，作为 DeepSeek 不可用时的备选
             LLMProvider.AIMLAPI,  # 你的密钥，第二优先级
             LLMProvider.AITOOLS,  # 无需登录，兼容OpenAI
@@ -918,6 +966,7 @@ class LLMServiceManager:
             LLMProvider.BYTEDANCE: "字节扣子",
             LLMProvider.SILICONFLOW: "硅基流动",
             LLMProvider.DEEPSEEK: "DeepSeek",
+            LLMProvider.GEMINI: "Gemini",
         }
         for provider in self.provider_priority:
             if provider in (LLMProvider.MOCK, LLMProvider.OLLAMA):

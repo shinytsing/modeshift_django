@@ -403,6 +403,10 @@ media/tool_outputs/
 
 # Root-level local exports, proxy state, and generated samples.
 /.env.example
+
+# Archived report vendor bundles are inputs, not application build output.
+!static/resume-reports/**/dist/
+!static/resume-reports/**/dist/**
 /env.server
 /requirements_local.txt
 /cookies.txt

@@ -270,6 +270,7 @@ REST_FRAMEWORK = {
 
 # 第三方API配置
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
 # 站点配置（用于captcha）
 SITE_ID = 1

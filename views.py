@@ -74,6 +74,11 @@ def resume_3d_view(request):
     return render(request, "resume_3d.html")
 
 
+def testing_learning_view(request):
+    """Local Django page for the test-development interview practice paper."""
+    return render(request, "testing_learning.html")
+
+
 def resume_download_view(request):
     """Download the resume supplied by its owner, independent of desktop paths."""
     resume_path = settings.BASE_DIR / "docs" / "assets" / "gaojie-resume.pdf"

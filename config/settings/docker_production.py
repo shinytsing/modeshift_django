@@ -169,6 +169,7 @@ REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 # name used by the base settings so views and services behave consistently in
 # both production settings modules.
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
 
 CACHES = {
     "default": {

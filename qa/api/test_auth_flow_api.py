@@ -26,13 +26,14 @@ def _csrf_token(response: requests.Response) -> str:
 @allure.feature("API 自动化 - requests")
 @allure.story("注册、登录与资料连续场景")
 def test_authenticated_session_survives_registration_login_and_profile_operations(
-    base_url: str, auth_api: AuthApi, fitness_api: FitnessApi
+    base_url: str, auth_api: AuthApi, fitness_api: FitnessApi, qa_user_cleanup
 ) -> None:
     """One browser-equivalent session must transition safely across the complete user journey."""
     if not auth_mutations_are_allowed(base_url):
-        pytest.skip("认证场景会创建 QA 数据；非本机目标需设置 QA_ALLOW_AUTH_MUTATIONS=1")
+        pytest.skip("认证场景会创建 QA 数据；当前只支持本机执行和清理")
 
     credentials = new_qa_credentials()
+    qa_user_cleanup(credentials.email)
     with allure.step("匿名访问资料 API 被拒绝"):
         anonymous_profile = auth_api.profile()
     assert anonymous_profile.status_code == 401

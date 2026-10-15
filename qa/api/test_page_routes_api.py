@@ -13,17 +13,19 @@ from qa.support.auth import auth_mutations_are_allowed
 
 
 @pytest.mark.api
+@pytest.mark.e2e
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("API 自动化 - requests")
 @allure.story("测试用例生成页面可用性")
 def test_test_case_generator_page_renders_from_the_deployment_template(
-    base_url: str, auth_api: AuthApi, api_transport: ApiTransport
+    base_url: str, auth_api: AuthApi, api_transport: ApiTransport, qa_user_cleanup
 ) -> None:
     """The linked tool page must not become a production 500 due to a missing template."""
     if not auth_mutations_are_allowed(base_url):
-        pytest.skip("页面受登录保护；非本机目标不创建 QA 用户")
+        pytest.skip("页面受登录保护；当前只支持本机创建和清理 QA 用户")
 
     username = f"qa-template-{uuid4().hex[:12]}"
+    qa_user_cleanup(f"{username}@example.invalid")
     with allure.step("注册用于访问受保护工具页的 QA 用户"):
         registration = auth_api.register_json(username, "QaTemplate123!", f"{username}@example.invalid")
     assert registration.status_code == 200

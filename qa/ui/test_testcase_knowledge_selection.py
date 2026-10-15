@@ -18,11 +18,12 @@ from qa.ui.pages.testcase_generator import TestcaseGeneratorPage
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("测试用例生成器")
 @allure.story("选择知识库资料与模型并查看生成来源")
-def test_user_selects_knowledge_and_model_for_testcase_generation(page: Page, base_url: str) -> None:
+def test_user_selects_knowledge_and_model_for_testcase_generation(page: Page, base_url: str, qa_user_cleanup) -> None:
     if not auth_mutations_are_allowed(base_url):
-        pytest.skip("用例生成器要求登录；非本机目标需设置 QA_ALLOW_AUTH_MUTATIONS=1")
+        pytest.skip("用例生成器要求登录；当前只支持本机执行和清理")
 
     credentials = new_qa_credentials()
+    qa_user_cleanup(credentials.email)
     signup = SignupPage(page, base_url)
     signup.open()
     signup.register(credentials.email, credentials.password)

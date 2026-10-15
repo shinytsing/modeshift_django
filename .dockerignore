@@ -64,6 +64,11 @@ logs/
 .env.development
 .env.test
 .env.production
+.env.*
+env.production*
+env.server
+.playwright-cli/
+test-results/
 
 # Documentation
 docs/
@@ -98,6 +103,9 @@ java_job/
 
 # CI evidence and local work state must never inflate a production build context.
 qa/artifacts/
+
+# Keep archived report CSS/JS/fonts, including their vendor dist folders.
+!static/resume-reports/**
 .plan/
 .agents/
 

@@ -2,6 +2,7 @@
 Google Gemini Vision批改服务
 直接分析作业图片，无需OCR
 """
+
 import os
 import logging
 import json
@@ -17,8 +18,8 @@ class GeminiGradingService:
 
     def __init__(self):
         """初始化Gemini服务（支持代理）"""
-        self.api_key = os.getenv('GEMINI_API_KEY', '')
-        self.proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY', '')
+        self.api_key = os.getenv("GEMINI_API_KEY", "")
+        self.proxy = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY", "")
         self.use_gemini = bool(self.api_key)
 
         if self.use_gemini:
@@ -31,7 +32,7 @@ class GeminiGradingService:
                     logger.info("💡 Gemini将通过代理访问")
 
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
+                self.model = genai.GenerativeModel("gemini-3.8-flash")
 
                 if self.proxy:
                     logger.info("✅ Gemini Vision服务初始化成功（通过代理）")
@@ -157,7 +158,7 @@ class GeminiGradingService:
             import re
 
             # 尝试提取JSON代码块
-            json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+            json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
             if json_match:
                 json_text = json_match.group(1)
             else:
@@ -171,18 +172,18 @@ class GeminiGradingService:
             if not isinstance(result, dict):
                 raise ValueError("响应不是字典格式")
 
-            if 'questions' not in result:
+            if "questions" not in result:
                 raise ValueError("响应中缺少questions字段")
 
             # 确保数值类型正确
-            result['total_score'] = float(result.get('total_score', 0))
-            result['max_score'] = float(result.get('max_score', 0))
+            result["total_score"] = float(result.get("total_score", 0))
+            result["max_score"] = float(result.get("max_score", 0))
 
-            for q in result['questions']:
-                q['question_number'] = int(q.get('question_number', 0))
-                q['score'] = float(q.get('score', 0))
-                q['max_score'] = float(q.get('max_score', 0))
-                q['is_correct'] = bool(q.get('is_correct', False))
+            for q in result["questions"]:
+                q["question_number"] = int(q.get("question_number", 0))
+                q["score"] = float(q.get("score", 0))
+                q["max_score"] = float(q.get("max_score", 0))
+                q["is_correct"] = bool(q.get("is_correct", False))
 
             logger.info(f"成功解析Gemini响应: {len(result['questions'])}道题目")
 
@@ -211,17 +212,9 @@ class GeminiGradingService:
         for image_path in image_paths:
             try:
                 result = self.grade_homework_from_image(image_path)
-                results.append({
-                    'success': True,
-                    'image_path': image_path,
-                    'result': result
-                })
+                results.append({"success": True, "image_path": image_path, "result": result})
             except Exception as e:
                 logger.error(f"批改失败 {image_path}: {str(e)}")
-                results.append({
-                    'success': False,
-                    'image_path': image_path,
-                    'error': str(e)
-                })
+                results.append({"success": False, "image_path": image_path, "error": str(e)})
 
         return results

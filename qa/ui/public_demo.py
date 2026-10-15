@@ -50,6 +50,7 @@ def main() -> int:
     if not chromium_path and sys.platform == "darwin":
         chrome = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
         chromium_path = str(chrome) if chrome.exists() else None
+    stage = "launch"
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(
@@ -59,15 +60,18 @@ def main() -> int:
                 args=["--no-sandbox"] if sys.platform == "linux" else [],
             )
             try:
+                stage = "new-page"
                 page = browser.new_page(viewport={"width": 1440, "height": 900})
+                stage = "journey"
                 steps = run_resume_journey(page, base_url)
+                stage = "screenshot"
                 screenshot = base64.b64encode(page.screenshot()).decode("ascii")
                 print(json.dumps({"status": "passed", "steps": steps, "screenshot": screenshot}, ensure_ascii=False))
                 return 0
             finally:
                 browser.close()
     except Exception as exc:
-        print(json.dumps({"status": "failed", "error": f"{type(exc).__name__}: {exc}"}, ensure_ascii=False))
+        print(json.dumps({"status": "failed", "error": f"{stage}: {type(exc).__name__}: {exc}"}, ensure_ascii=False))
         return 1
 
 

@@ -19,11 +19,12 @@ from qa.ui.pages.job_search import JobSearchPage
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("BOSS 单平台求职投递")
 @allure.story("页面只显示 BOSS 并进入扫码登录步骤")
-def test_enhanced_job_search_exposes_only_boss_qr_flow(page: Page, base_url: str) -> None:
+def test_enhanced_job_search_exposes_only_boss_qr_flow(page: Page, base_url: str, qa_user_cleanup) -> None:
     if not auth_mutations_are_allowed(base_url):
-        pytest.skip("页面需要本地 QA 登录；非本机目标需设置 QA_ALLOW_AUTH_MUTATIONS=1")
+        pytest.skip("页面需要本机 QA 登录和清理")
 
     credentials = new_qa_credentials()
+    qa_user_cleanup(credentials.email)
     signup = SignupPage(page, base_url)
     signup.open()
     signup.register(credentials.email, credentials.password)

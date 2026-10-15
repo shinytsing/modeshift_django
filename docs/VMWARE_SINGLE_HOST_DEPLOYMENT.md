@@ -320,3 +320,7 @@ VMware 只读诊断确认：`modeshift-django.service` 的环境固定了旧镜�
 生产镜像的 `appuser` 必须有可写的 `/home/appuser`，并把 Chromium 的 XDG 配置/缓存目录指向这个 home。构建作业会在新镜像内以默认非 root 用户启动一次无头 Chromium；这条检查通过后才允许部署，避免 QA 门禁通过但公开演示按钮在容器里启动失败。
 
 发布时先确保 PostgreSQL 与 Redis 已启动，再仅更新 Web/Nginx，不再对持久化依赖使用 `--force-recreate`。静态报告在镜像的 `/app/static/resume-reports`，发布脚本会复制到挂载卷 `/app/staticfiles/resume-reports`；验收时分别请求 Locust PNG 与 JMeter `index.html`，不能只凭模板页面 HTTP 200 判定资源可用。
+
+生产设置代码随镜像发布，不再把宿主机的旧 `docker_production.py` 挂载覆盖进去；运行时密钥仍由 VM 的 `.env` 注入，不提交到 Git。Gemini 支持读取 `GEMINI_API_KEY` 或 `GOOGLE_API_KEY`，没有配置时不会作为可用模型出现；离线边界测试不代表真实模型调用已验证。
+
+历史 JMeter 报告中的 vendor `dist/` 是必需的 CSS、JavaScript 和字体输入，不是应用构建产物，必须同时纳入 Git 与镜像；通用 `dist/` 忽略规则对该归档路径作精确例外。

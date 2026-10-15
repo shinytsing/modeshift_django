@@ -228,7 +228,7 @@ def test_execute_button_runs_real_browser_journey(page: Page, base_url: str):
     resume.open()
     resume.open_automation()
     response = resume.run_ui_demo()
-    assert response.status == 200
+    assert response.status == 200, response.text()
     result = response.json()
     assert result["status"] == "passed", result
     assert "Locust 历史图片已加载" in result["output"]

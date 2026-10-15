@@ -58,7 +58,7 @@ class MultiAPITravelService:
             "gemini": {
                 "base_url": "https://generativelanguage.googleapis.com/v1beta",
                 "api_key": getattr(settings, "GEMINI_API_KEY", ""),
-                "model": "models/gemini-pro",
+                "model": "models/gemini-3.8-flash",
                 "max_tokens": 4000,
                 "timeout": 60,
                 "priority": 4,
@@ -704,15 +704,15 @@ class MultiAPITravelService:
 
                 # 使用统一的LLM服务管理器
                 llm_service = get_llm_service()
-                
+
                 # 构建旅游攻略生成的提示词
                 travel_prompt = self._build_travel_guide_prompt(
                     destination, travel_style, budget_range, travel_duration, interests
                 )
-                
+
                 # 使用LLM服务生成攻略内容
                 guide_content = llm_service.generate_travel_guide(travel_prompt)
-                
+
                 if guide_content:
                     # 解析生成的攻略内容
                     guide_data = self._parse_travel_guide_content(guide_content, destination)
@@ -768,9 +768,6 @@ class MultiAPITravelService:
         except Exception as e:
             logger.error(f"❌ 旅游攻略生成失败: {e}")
             return self._get_error_response(str(e))
-
-
-
 
     def _get_fast_api_strategy(self) -> List[str]:
         """获取快速模式API策略"""
@@ -1441,9 +1438,6 @@ class MultiAPITravelService:
             "round_trip": {"cost": 500, "recommendations": ["高铁", "飞机", "长途汽车"]},
         }
 
-
-
-
     def _format_response(self, guide_data: Dict, api_used: str, generation_time: float, fast_mode: bool) -> Dict:
         """格式化响应"""
         guide_data.update(
@@ -1466,10 +1460,12 @@ class MultiAPITravelService:
             "generated_at": timezone.now().isoformat(),
         }
 
-    def _build_travel_guide_prompt(self, destination: str, travel_style: str, budget_range: str, travel_duration: str, interests: List[str]) -> str:
+    def _build_travel_guide_prompt(
+        self, destination: str, travel_style: str, budget_range: str, travel_duration: str, interests: List[str]
+    ) -> str:
         """构建旅游攻略生成的提示词"""
         interests_text = "、".join(interests) if interests else "无特殊偏好"
-        
+
         prompt = f"""
 请为{destination}生成一份详细的旅游攻略，要求如下：
 
@@ -1540,30 +1536,25 @@ class MultiAPITravelService:
         """解析LLM生成的旅游攻略内容"""
         try:
             logger.info(f"开始解析{destination}的LLM生成内容...")
-            
+
             # 尝试解析JSON格式的响应
-            if content.strip().startswith('{') and content.strip().endswith('}'):
+            if content.strip().startswith("{") and content.strip().endswith("}"):
                 try:
                     parsed_data = json.loads(content)
                     logger.info(f"成功解析JSON格式的{destination}攻略内容")
                     return parsed_data
                 except json.JSONDecodeError:
                     logger.warning(f"JSON解析失败，尝试文本解析")
-            
+
             # 文本格式解析
             parsed_data = self._parse_text_travel_guide(content, destination)
             logger.info(f"成功解析文本格式的{destination}攻略内容")
             return parsed_data
-            
+
         except Exception as e:
             logger.error(f"解析{destination}旅游攻略内容失败: {e}")
-            return {
-                "destination": destination,
-                "content": content,
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"destination": destination, "content": content, "success": False, "error": str(e)}
+
     def _parse_text_travel_guide(self, content: str, destination: str) -> Dict:
         """解析文本格式的旅游攻略内容"""
         try:
@@ -1584,64 +1575,72 @@ class MultiAPITravelService:
                 "best_time_to_visit": "全年适合",
                 "is_real_data": True,
                 "api_generated": True,
-                "success": True
+                "success": True,
             }
-            
+
             # 尝试从文本中提取结构化信息
-            lines = content.split('\n')
+            lines = content.split("\n")
             current_section = None
-            
+
             for line in lines:
                 line = line.strip()
                 if not line:
                     continue
-                
+
                 # 识别章节标题
-                if '景点' in line or '必去' in line or '推荐' in line:
-                    current_section = 'attractions'
-                elif '美食' in line or '特色' in line or '餐厅' in line:
-                    current_section = 'food'
-                elif '交通' in line or '出行' in line:
-                    current_section = 'transport'
-                elif '预算' in line or '费用' in line or '花费' in line:
-                    current_section = 'budget'
-                elif '贴士' in line or '注意' in line or '建议' in line:
-                    current_section = 'tips'
-                elif '行程' in line or '安排' in line:
-                    current_section = 'schedule'
-                
+                if "景点" in line or "必去" in line or "推荐" in line:
+                    current_section = "attractions"
+                elif "美食" in line or "特色" in line or "餐厅" in line:
+                    current_section = "food"
+                elif "交通" in line or "出行" in line:
+                    current_section = "transport"
+                elif "预算" in line or "费用" in line or "花费" in line:
+                    current_section = "budget"
+                elif "贴士" in line or "注意" in line or "建议" in line:
+                    current_section = "tips"
+                elif "行程" in line or "安排" in line:
+                    current_section = "schedule"
+
                 # 提取具体内容
-                if current_section == 'attractions' and ('·' in line or '•' in line or '-' in line):
-                    attraction = line.replace('·', '').replace('•', '').replace('-', '').strip()
+                if current_section == "attractions" and ("·" in line or "•" in line or "-" in line):
+                    attraction = line.replace("·", "").replace("•", "").replace("-", "").strip()
                     if attraction and len(attraction) > 3:
                         guide_data["must_visit_attractions"].append(attraction)
-                
-                elif current_section == 'food' and ('·' in line or '•' in line or '-' in line):
-                    food = line.replace('·', '').replace('•', '').replace('-', '').strip()
+
+                elif current_section == "food" and ("·" in line or "•" in line or "-" in line):
+                    food = line.replace("·", "").replace("•", "").replace("-", "").strip()
                     if food and len(food) > 3:
                         guide_data["food_recommendations"].append(food)
-                
-                elif current_section == 'transport' and len(line) > 10:
+
+                elif current_section == "transport" and len(line) > 10:
                     guide_data["transportation_guide"] += line + "\n"
-                
-                elif current_section == 'tips' and ('·' in line or '•' in line or '-' in line):
-                    tip = line.replace('·', '').replace('•', '').replace('-', '').strip()
+
+                elif current_section == "tips" and ("·" in line or "•" in line or "-" in line):
+                    tip = line.replace("·", "").replace("•", "").replace("-", "").strip()
                     if tip and len(tip) > 5:
                         guide_data["travel_tips"].append(tip)
-            
+
             # 如果提取的内容不够，使用默认值
             if not guide_data["must_visit_attractions"]:
-                guide_data["must_visit_attractions"] = [f"{destination}著名景点", f"{destination}历史文化景点", f"{destination}自然风光"]
-            
+                guide_data["must_visit_attractions"] = [
+                    f"{destination}著名景点",
+                    f"{destination}历史文化景点",
+                    f"{destination}自然风光",
+                ]
+
             if not guide_data["food_recommendations"]:
-                guide_data["food_recommendations"] = [f"{destination}特色美食", f"{destination}传统小吃", f"{destination}当地餐厅"]
-            
+                guide_data["food_recommendations"] = [
+                    f"{destination}特色美食",
+                    f"{destination}传统小吃",
+                    f"{destination}当地餐厅",
+                ]
+
             if not guide_data["transportation_guide"]:
                 guide_data["transportation_guide"] = f"{destination}交通便利，建议使用公共交通或出租车"
-            
+
             if not guide_data["travel_tips"]:
                 guide_data["travel_tips"] = ["建议提前了解当地天气", "注意保管好随身物品", "尊重当地文化习俗"]
-            
+
             # 设置预算估算
             guide_data["budget_estimate"] = {
                 "total_cost": 3000,
@@ -1650,15 +1649,19 @@ class MultiAPITravelService:
                 "food": 800,
                 "transport": 400,
                 "attractions": 300,
-                "daily_average": 600
+                "daily_average": 600,
             }
-            
+
             # 生成每日行程
-            guide_data["daily_schedule"] = self._generate_simple_daily_schedule(destination, guide_data["must_visit_attractions"])
-            
-            logger.info(f"成功解析{destination}攻略：{len(guide_data['must_visit_attractions'])}个景点，{len(guide_data['food_recommendations'])}个美食")
+            guide_data["daily_schedule"] = self._generate_simple_daily_schedule(
+                destination, guide_data["must_visit_attractions"]
+            )
+
+            logger.info(
+                f"成功解析{destination}攻略：{len(guide_data['must_visit_attractions'])}个景点，{len(guide_data['food_recommendations'])}个美食"
+            )
             return guide_data
-            
+
         except Exception as e:
             logger.error(f"解析{destination}文本攻略失败: {e}")
             return {
@@ -1672,55 +1675,57 @@ class MultiAPITravelService:
                 "daily_schedule": [],
                 "is_real_data": True,
                 "api_generated": True,
-                "success": True
+                "success": True,
             }
-    
+
     def _generate_simple_daily_schedule(self, destination: str, attractions: list) -> list:
         """生成简单的每日行程"""
         schedule = []
         days = min(3, len(attractions))
-        
+
         for day in range(1, days + 1):
-            day_schedule = {
-                "day": day,
-                "date": f"第{day}天",
-                "morning": [],
-                "afternoon": [],
-                "evening": []
-            }
-            
+            day_schedule = {"day": day, "date": f"第{day}天", "morning": [], "afternoon": [], "evening": []}
+
             if day == 1:
-                day_schedule["morning"].append({
-                    "time": "09:00",
-                    "activity": f"抵达{destination}",
-                    "location": "机场/火车站",
-                    "tips": "建议提前预订接机服务"
-                })
-            
+                day_schedule["morning"].append(
+                    {
+                        "time": "09:00",
+                        "activity": f"抵达{destination}",
+                        "location": "机场/火车站",
+                        "tips": "建议提前预订接机服务",
+                    }
+                )
+
             # 分配景点
             if attractions:
                 attraction = attractions[min(day - 1, len(attractions) - 1)]
-                day_schedule["morning"].append({
-                    "time": "10:00-12:00",
-                    "activity": f"游览{attraction}",
-                    "location": attraction,
-                    "tips": f"建议提前了解{attraction}的开放时间"
-                })
-                
-                day_schedule["afternoon"].append({
-                    "time": "14:00-17:00",
-                    "activity": f"继续游览{attraction}周边",
-                    "location": attraction,
-                    "tips": "可以拍照留念，体验当地文化"
-                })
-                
-                day_schedule["evening"].append({
-                    "time": "18:00-20:00",
-                    "activity": f"品尝{destination}特色美食",
-                    "location": "当地餐厅",
-                    "tips": "建议选择当地特色餐厅"
-                })
-            
+                day_schedule["morning"].append(
+                    {
+                        "time": "10:00-12:00",
+                        "activity": f"游览{attraction}",
+                        "location": attraction,
+                        "tips": f"建议提前了解{attraction}的开放时间",
+                    }
+                )
+
+                day_schedule["afternoon"].append(
+                    {
+                        "time": "14:00-17:00",
+                        "activity": f"继续游览{attraction}周边",
+                        "location": attraction,
+                        "tips": "可以拍照留念，体验当地文化",
+                    }
+                )
+
+                day_schedule["evening"].append(
+                    {
+                        "time": "18:00-20:00",
+                        "activity": f"品尝{destination}特色美食",
+                        "location": "当地餐厅",
+                        "tips": "建议选择当地特色餐厅",
+                    }
+                )
+
             schedule.append(day_schedule)
-        
+
         return schedule

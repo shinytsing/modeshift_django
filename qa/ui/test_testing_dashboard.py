@@ -11,6 +11,7 @@ from qa.ui.pages.dashboard import TestingDashboardPage
 
 
 @pytest.mark.ui
+@pytest.mark.smoke
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("UI 自动化 - Playwright")
 @allure.story("测试看板端到端冒烟")

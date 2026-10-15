@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -26,8 +25,6 @@ def new_qa_credentials() -> QaCredentials:
 
 
 def auth_mutations_are_allowed(base_url: str) -> bool:
-    """Allow account creation only locally unless an operator explicitly opts in."""
-    hostname = urlparse(base_url).hostname
-    if hostname in {"127.0.0.1", "localhost", "::1"}:
-        return True
-    return os.getenv("QA_ALLOW_AUTH_MUTATIONS", "").lower() in {"1", "true", "yes"}
+    """Only local QA accounts can be removed through this suite's ORM teardown."""
+    parsed = urlparse(base_url)
+    return parsed.scheme == "http" and parsed.hostname in {"127.0.0.1", "localhost", "::1"}

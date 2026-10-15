@@ -3,6 +3,7 @@
 使用讯飞星火3.5 + 智谱GLM-4
 专注于中文理解、作文批改、古诗文鉴赏
 """
+
 import os
 import logging
 import json
@@ -17,12 +18,13 @@ class ChineseGradingService:
 
     def __init__(self):
         """初始化语文批改服务"""
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY", "")
         # 优先使用腾讯混元（本地已有）
-        self.tencent_secret_key = os.getenv('TENCENT_SECRET_KEY', '')
-        self.use_tencent = bool(self.tencent_secret_key and self.tencent_secret_key.startswith('sk-'))
+        self.tencent_secret_key = os.getenv("TENCENT_SECRET_KEY", "")
+        self.use_tencent = bool(self.tencent_secret_key and self.tencent_secret_key.startswith("sk-"))
 
         # 备用：智谱GLM
-        self.zhipu_api_key = os.getenv('ZHIPU_API_KEY', '')
+        self.zhipu_api_key = os.getenv("ZHIPU_API_KEY", "")
         self.use_zhipu = bool(self.zhipu_api_key)
 
         if self.use_tencent:
@@ -73,12 +75,14 @@ class ChineseGradingService:
     def _grade_with_tencent(self, image_path: str) -> Dict[str, Any]:
         """使用腾讯混元批改"""
         from .tencent_grading_service import TencentGradingService
+
         tencent_service = TencentGradingService()
         return tencent_service.grade_homework_from_image(image_path)
 
     def _grade_with_zhipu(self, image_path: str) -> Dict[str, Any]:
         """使用智谱GLM批改"""
         from .zhipu_grading_service import ZhipuGradingService
+
         zhipu_service = ZhipuGradingService()
         return zhipu_service.grade_homework_from_image(image_path)
 
@@ -89,7 +93,7 @@ class ChineseGradingService:
             from PIL import Image
 
             genai.configure(api_key=self.gemini_api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel("gemini-3.8-flash")
 
             image = Image.open(image_path)
 
@@ -151,7 +155,7 @@ class ChineseGradingService:
         import re
 
         # 提取JSON
-        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
         if json_match:
             json_text = json_match.group(1)
         else:
@@ -160,13 +164,13 @@ class ChineseGradingService:
         result = json.loads(json_text)
 
         # 确保数值类型
-        result['total_score'] = float(result.get('total_score', 0))
-        result['max_score'] = float(result.get('max_score', 0))
+        result["total_score"] = float(result.get("total_score", 0))
+        result["max_score"] = float(result.get("max_score", 0))
 
-        for q in result['questions']:
-            q['question_number'] = int(q.get('question_number', 0))
-            q['score'] = float(q.get('score', 0))
-            q['max_score'] = float(q.get('max_score', 0))
-            q['is_correct'] = bool(q.get('is_correct', False))
+        for q in result["questions"]:
+            q["question_number"] = int(q.get("question_number", 0))
+            q["score"] = float(q.get("score", 0))
+            q["max_score"] = float(q.get("max_score", 0))
+            q["is_correct"] = bool(q.get("is_correct", False))
 
         return result

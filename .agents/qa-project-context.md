@@ -21,7 +21,7 @@ The suite is intentionally independent of `tests/` and `test_files/` legacy suit
 
 - Install: `python3 -m pip install -r qa/requirements.txt && python3 -m playwright install chromium`
 - Local or CI server: `python3 qa/scripts/run_suite.py`
-- Deployed environment: `BASE_URL=https://example.test QA_START_SERVER=0 python3 qa/scripts/run_suite.py`
+- Deployed test environment, read-only subset: `BASE_URL=https://example.test QA_START_SERVER=0 python3 qa/scripts/run_suite.py --smoke`
 - Auth/API/UI continuous journey only: `python3 qa/scripts/run_suite.py --e2e`
 
 ## Evidence
@@ -31,5 +31,6 @@ showcase report. Keep `junit.xml`, `report.html`, `allure-results/`, and Playwri
 traces/screenshots as supporting evidence. Never publish credentials, cookies, or production data.
 
 The registration journey creates a uniquely labelled `qa-e2e-...@example.invalid` local user.
-It is allowed for loopback targets. A deployed test environment must explicitly set
-`QA_ALLOW_AUTH_MUTATIONS=1`; never set that flag for production.
+It is allowed only for loopback targets, and a fixture deletes that exact identity after the test.
+Remote stateful QA remains disabled until a safe remote cleanup contract exists; never point the
+mutation suite at production.

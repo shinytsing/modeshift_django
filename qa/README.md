@@ -27,20 +27,18 @@ macOS 使用已安装的 Chrome，Linux CI 使用 Playwright 安装的 Chromium�
 项目若位于 iCloud 同步的桌面目录，必须保证源码、模板和 `.env` 已下载并保留在本机，
 云端占位文件会使文件读取和页面请求卡住；不要通过延长超时或删减断言掩盖问题。
 
-To run the same suite against a dedicated deployed test environment, do not start Django locally:
+To run only the read-only smoke subset against a dedicated deployed test environment, do not start Django locally:
 
 ```bash
-BASE_URL=https://your-test-environment.example QA_START_SERVER=0 python3 qa/scripts/run_suite.py
+BASE_URL=https://your-test-environment.example QA_START_SERVER=0 python3 qa/scripts/run_suite.py --smoke
 ```
 
-Do not target production with this command. The full suite now includes a registration journey
-that creates a uniquely labelled `qa-e2e-...@example.invalid` user. It runs automatically on
-localhost and CI; a dedicated deployed test environment additionally needs explicit opt-in:
-
-```bash
-BASE_URL=https://your-test-environment.example QA_START_SERVER=0 QA_ALLOW_AUTH_MUTATIONS=1 \
-  python3 qa/scripts/run_suite.py
-```
+Do not target production with the full-suite command. The runner rejects remote targets unless
+`--smoke` is selected, because other tests can start test runs as well as register users.
+Stateful registration tests run only on loopback:
+they register uniquely labelled QA users and remove those exact identities in fixture teardown,
+including after an assertion failure. `QA_ALLOW_AUTH_MUTATIONS` is not an override: the current
+API has no safe remote account cleanup contract, so stateful cases are skipped on remote targets.
 
 ### Focused local runs
 
@@ -56,6 +54,9 @@ QA_HEADED=0 python3 qa/run_ui.py
 
 # Only the complete stateful API + visible-browser journey
 python3 qa/scripts/run_suite.py --e2e
+
+# Fast read-only health/dashboard smoke subset
+python3 qa/scripts/run_suite.py --smoke
 ```
 
 All three commands use the same server lifecycle, `BASE_URL` contract, artifact location, and
@@ -73,9 +74,26 @@ result consistency, and an authentication/profile state machine) and UI scenario
 skill-card checks count as separate pytest cases. The testcase-generator UI scenario exercises model
 selection, knowledge search, selected document IDs, and visible source attribution with stubbed
 generation responses.
-The flagship `--e2e` path visibly performs **注册 → 退出 → 登录 → 受保护个人资料 →
-BMI 计算**, while the requests scenario carries the same session across **匿名拒绝 → 注册 → 登出 →
-登录 → 资料更新 → BMI 接口 → 登出拒绝**. The unified runner verifies health before pytest starts.
+`--e2e` selects every test marked `e2e`, including the registered-user browser journeys.
+The flagship path visibly performs **注册 → 退出 → 登录 → 受保护个人资料 → BMI 计算**;
+the requests scenario carries the same session across **匿名拒绝 → 注册 → 登出 → 登录 →
+资料更新 → BMI 接口 → 登出拒绝**. The unified runner verifies health before pytest starts.
+
+## AI output quality (offline)
+
+`qa/ai_eval/login_otp_expired.json` is a reviewed requirement sample. The tests in
+`qa/api/test_ai_eval.py` check that a valid case passes and that duplicates, missing fields,
+placeholders, or missing required concepts fail. To check a **saved real-model response**:
+
+```bash
+.venv311/bin/python -m qa.ai_eval.evaluate /path/to/model-output.md \
+  --requirements qa/ai_eval/login_otp_expired.json
+```
+
+This is a deterministic structural/keyword gate, not a model-quality score. The browser test
+for knowledge selection still stubs generation responses; it does not prove grounding,
+factual correctness, or that a specific model produced the output. A reviewed real-model
+sample and source-attribution checks are required before claiming those properties.
 
 ## 测试分层
 

@@ -46,3 +46,20 @@ def test_original_locust_console_screenshot_is_served_as_an_image(api_transport:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("image/png")
     assert response.content.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+@pytest.mark.api
+@pytest.mark.parametrize(
+    "asset,content_type",
+    [
+        ("sbadmin2-1.0.7/dist/css/sb-admin-2.css", "text/css"),
+        ("sbadmin2-1.0.7/bower_components/bootstrap/dist/css/bootstrap.min.css", "text/css"),
+        ("sbadmin2-1.0.7/bower_components/jquery/dist/jquery.min.js", "javascript"),
+        ("sbadmin2-1.0.7/bower_components/bootstrap/dist/js/bootstrap.min.js", "javascript"),
+    ],
+)
+def test_archived_jmeter_vendor_assets_are_available(api_transport: ApiTransport, asset: str, content_type: str):
+    response = api_transport.get(f"/static/resume-reports/gaotu-jmeter-20251127/{asset}")
+    assert response.status_code == 200
+    assert content_type in response.headers["content-type"]
+    assert len(response.content) > 100

@@ -18,12 +18,13 @@ from qa.ui.pages.fitness import BmiPage
 @allure.epic("QAToolBox 左移质量门禁")
 @allure.feature("UI 自动化 - Playwright")
 @allure.story("注册登录后使用受保护的 BMI 工具")
-def test_user_registers_logs_in_and_calculates_bmi_through_the_visible_ui(page: Page, base_url: str) -> None:
+def test_user_registers_logs_in_and_calculates_bmi_through_the_visible_ui(page: Page, base_url: str, qa_user_cleanup) -> None:
     """A new user can complete the portfolio's core auth-to-feature journey in a real browser."""
     if not auth_mutations_are_allowed(base_url):
-        pytest.skip("认证场景会创建 QA 数据；非本机目标需设置 QA_ALLOW_AUTH_MUTATIONS=1")
+        pytest.skip("认证场景会创建 QA 数据；当前只支持本机执行和清理")
 
     credentials = new_qa_credentials()
+    qa_user_cleanup(credentials.email)
     signup = SignupPage(page, base_url)
     session = SessionPage(page, base_url)
     login = LoginPage(page, base_url)
