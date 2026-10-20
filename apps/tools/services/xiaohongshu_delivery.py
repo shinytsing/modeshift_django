@@ -178,6 +178,7 @@ def send_snapshot_email(
 def send_digest_email(user_id: int, recipient: str, updates: list[tuple[SocialMediaSubscription, dict]]) -> int:
     """Send one consolidated daily email for all creators checked in a run."""
     from apps.tools.services.creator_email_policy import reserve_send
+
     if not updates:
         return 0
     reserve_send(user_id)
@@ -189,7 +190,10 @@ def send_digest_email(user_id: int, recipient: str, updates: list[tuple[SocialMe
         changes = result.get("count_changes") or {}
         lines = [f"<h3 style='margin-bottom:6px'>{escape(subscription.target_user_name)}</h3>"]
         if changes:
-            labels = [f"{escape(str(v.get('label', k)))}：{escape(str(v.get('before') or '没有'))} → {escape(str(v.get('after') or '没有'))}" for k, v in changes.items()]
+            labels = [
+                f"{escape(str(v.get('label', k)))}：{escape(str(v.get('before') or '没有'))} → {escape(str(v.get('after') or '没有'))}"
+                for k, v in changes.items()
+            ]
             lines.append("<p>" + "；".join(labels) + "</p>")
         if notes:
             lines.append(f"<p><strong>更新内容：{len(notes)} 篇</strong></p><ul>")
@@ -208,14 +212,22 @@ def send_digest_email(user_id: int, recipient: str, updates: list[tuple[SocialMe
                         inline_images.append(image)
                         cover_cids[cover] = cid
                 image_src = f"cid:{cover_cids[cover]}" if cover in cover_cids else cover
-                image = f"<img src='{escape(image_src, quote=True)}' alt='{title}' style='width:180px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:6px 0'>" if image_src else ""
+                image = (
+                    f"<img src='{escape(image_src, quote=True)}' alt='{title}' style='width:180px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:6px 0'>"
+                    if image_src
+                    else ""
+                )
                 link = f"<a href='{escape(url, quote=True)}'>{title}</a>" if url else title
                 lines.append(f"<li>{image}{link}</li>")
             lines.append("</ul>")
         if not changes and not notes:
             lines.append("<p>本次没有检测到粉丝、关注或内容更新。</p>")
         sections.append("<section style='padding:10px 0;border-bottom:1px solid #eee5e2'>" + "".join(lines) + "</section>")
-    html = "<div style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#292321'><h2 style='color:#cf2634'>Peep 关注更新日报</h2>" + "".join(sections) + "<p style='color:#756c69'>同一轮检查的所有关注对象合并为一封邮件。</p></div>"
+    html = (
+        "<div style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#292321'><h2 style='color:#cf2634'>Peep 关注更新日报</h2>"
+        + "".join(sections)
+        + "<p style='color:#756c69'>同一轮检查的所有关注对象合并为一封邮件。</p></div>"
+    )
     text_parts = ["Peep 关注更新日报"]
     for subscription, result in updates:
         text_parts.append(subscription.target_user_name)

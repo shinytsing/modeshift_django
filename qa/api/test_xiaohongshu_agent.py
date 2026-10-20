@@ -794,8 +794,12 @@ def test_creator_email_shared_address_and_persistent_daily_cap(monkeypatch):
     from apps.tools.services import creator_email_policy as policy
 
     user = User.objects.create_user(username="mail-daily-cap")
-    first = SocialMediaSubscription.objects.create(user=user, platform="xiaohongshu", target_user_id="one", target_user_name="One")
-    second = SocialMediaSubscription.objects.create(user=user, platform="bilibili", target_user_id="two", target_user_name="Two")
+    first = SocialMediaSubscription.objects.create(
+        user=user, platform="xiaohongshu", target_user_id="one", target_user_name="One"
+    )
+    second = SocialMediaSubscription.objects.create(
+        user=user, platform="bilibili", target_user_id="two", target_user_name="Two"
+    )
     creator_watch_service.set_alert_email(user, first.pk, "first@qq.com")
     creator_watch_service.set_alert_email(user, second.pk, "second@qq.com")
     assert creator_watch_service.serialize_watch(first)["alert_email"] == "second@qq.com"

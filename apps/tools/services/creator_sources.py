@@ -71,8 +71,12 @@ def _netease_call(path: str, *, payload: dict | None = None) -> dict:
 
 def _weibo_call(path: str, *, params: dict | None = None) -> dict:
     try:
-        response = requests.get("https://m.weibo.cn" + path, params=params, timeout=12,
-                               headers={"User-Agent": "Mozilla/5.0", "Referer": "https://m.weibo.cn/"})
+        response = requests.get(
+            "https://m.weibo.cn" + path,
+            params=params,
+            timeout=12,
+            headers={"User-Agent": "Mozilla/5.0", "Referer": "https://m.weibo.cn/"},
+        )
         response.raise_for_status()
         data = response.json()
     except (requests.RequestException, ValueError) as exc:
@@ -132,6 +136,7 @@ def search_candidates(platform: str, keyword: str) -> list[dict]:
     if platform == "xiaohongshu":
         try:
             from apps.tools.services.xiaohongshu_user_search import search_users
+
             users = search_users(keyword)
             if users:
                 return [{**item, "platform": platform, "platform_label": PLATFORM_LABELS[platform]} for item in users]
@@ -186,20 +191,39 @@ def search_candidates(platform: str, keyword: str) -> list[dict]:
         ]
     if platform == "weibo":
         try:
-            run = subprocess.run(["weibo-cli", "users", keyword, "-n", "8"], capture_output=True, text=True, timeout=20, check=False)
+            run = subprocess.run(
+                ["weibo-cli", "users", keyword, "-n", "8"], capture_output=True, text=True, timeout=20, check=False
+            )
             cli_users = json.loads(run.stdout) if run.returncode == 0 else []
         except (OSError, subprocess.TimeoutExpired, ValueError):
             cli_users = []
         if isinstance(cli_users, list) and cli_users:
-            return [{"user_id": str(u["id"]), "nickname": u.get("screen_name") or "未知用户", "avatar": u.get("avatar_hd") or u.get("profile_image_url") or "", "source_note": u.get("description") or "", "xsec_token": ""} for u in cli_users if u.get("id")]
+            return [
+                {
+                    "user_id": str(u["id"]),
+                    "nickname": u.get("screen_name") or "未知用户",
+                    "avatar": u.get("avatar_hd") or u.get("profile_image_url") or "",
+                    "source_note": u.get("description") or "",
+                    "xsec_token": "",
+                }
+                for u in cli_users
+                if u.get("id")
+            ]
         data = _weibo_call("/api/container/getIndex", params={"containerid": "100103type=3", "q": keyword})
         candidates = []
         for card in (data.get("data") or {}).get("cards") or []:
             for item in card.get("card_group") or []:
                 user = item.get("user") or {}
                 if user.get("id"):
-                    candidates.append({"user_id": str(user["id"]), "nickname": user.get("screen_name") or "未知用户",
-                                      "avatar": user.get("profile_image_url") or "", "source_note": user.get("description") or "", "xsec_token": ""})
+                    candidates.append(
+                        {
+                            "user_id": str(user["id"]),
+                            "nickname": user.get("screen_name") or "未知用户",
+                            "avatar": user.get("profile_image_url") or "",
+                            "source_note": user.get("description") or "",
+                            "xsec_token": "",
+                        }
+                    )
         return candidates[:8]
     raise xhs.XhsInputError(f"{PLATFORM_LABELS.get(platform, '该平台')} 暂未配置可用的数据源")
 
@@ -246,14 +270,17 @@ def read_profile(platform: str, user_id: str, token: str = "") -> dict:
             "is_truncated": bool(len(videos or []) >= 30),
         }
     elif platform == "weibo":
-        data = _weibo_call("/api/container/getIndex", params={"containerid": f"100505{user_id}", "type": "uid", "value": user_id})
+        data = _weibo_call(
+            "/api/container/getIndex", params={"containerid": f"100505{user_id}", "type": "uid", "value": user_id}
+        )
         user = (data.get("data") or {}).get("userInfo") or {}
         profile = {
             "nickname": user.get("screen_name") or "未知用户",
             "avatar": user.get("profile_image_url") or "",
             "description": user.get("description") or "",
             "counts": {"fans": user.get("followers_count"), "follows": user.get("follow_count")},
-            "notes": [], "is_truncated": False,
+            "notes": [],
+            "is_truncated": False,
         }
     else:
         data = _netease_call(f"/api/v1/user/detail/{user_id}")

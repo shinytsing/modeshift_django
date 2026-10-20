@@ -256,11 +256,14 @@ def check_watch(subscription: SocialMediaSubscription) -> dict:
         else:
             answer = f"{profile['nickname']} 与{reference}相比，在可见笔记中没有发现新笔记。"
         answer += f" {reference}读取 {baseline['visible_count']} 篇，本次读取 {current['visible_count']} 篇。"
-    count_changes = _count_changes(baseline.get("profile_counts") if baseline else None, current.get("profile_counts") or {}) if baseline else {}
+    count_changes = (
+        _count_changes(baseline.get("profile_counts") if baseline else None, current.get("profile_counts") or {})
+        if baseline
+        else {}
+    )
     if count_changes:
         summary = "；".join(
-            f"{item['label']} {item['before'] or '没有'}→{item['after'] or '没有'}"
-            for item in count_changes.values()
+            f"{item['label']} {item['before'] or '没有'}→{item['after'] or '没有'}" for item in count_changes.values()
         )
         answer += f" 账号数据变化：{summary}。"
     if current["is_truncated"]:
@@ -319,10 +322,7 @@ def _today_result(subscription: SocialMediaSubscription) -> dict | None:
     if public_notes:
         reference = "昨天" if baseline and baseline.get("date") == yesterday else "上次记录"
         titles = "；".join(f"《{note.get('title') or '未命名笔记'}》" for note in public_notes[:5])
-        answer = (
-            f"{subscription.target_user_name} 与{reference}相比，发现 {len(public_notes)} 篇新笔记：{titles}。"
-            " 这是今天已保存的检查结果。"
-        )
+        answer = f"{subscription.target_user_name} 与{reference}相比，发现 {len(public_notes)} 篇新笔记：{titles}。" " 这是今天已保存的检查结果。"
     else:
         answer = str(last_result.get("answer") or "暂无检查结果") + " 这是今天已保存的检查结果。"
     count_changes = last_result.get("count_changes") or _count_changes(

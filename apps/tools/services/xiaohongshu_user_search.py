@@ -26,7 +26,12 @@ def search_users(keyword: str) -> list[dict]:
     response_data = {}
     try:
         with sync_playwright() as pw:
-            context = pw.chromium.launch_persistent_context(profile, headless=True, channel=os.environ.get("XHS_USER_SEARCH_BROWSER", "chrome"), args=["--disable-blink-features=AutomationControlled"])
+            context = pw.chromium.launch_persistent_context(
+                profile,
+                headless=True,
+                channel=os.environ.get("XHS_USER_SEARCH_BROWSER", "chrome"),
+                args=["--disable-blink-features=AutomationControlled"],
+            )
             _sync_official_mcp_cookies(context)
             page = context.pages[0] if context.pages else context.new_page()
 
@@ -69,13 +74,15 @@ def _normalize(payload: dict) -> list[dict]:
         nickname = user.get("nickname") or user.get("nick_name") or user.get("nickName") or ""
         if not user_id or not nickname:
             continue
-        result.append({
-            "user_id": user_id,
-            "nickname": nickname,
-            "avatar": user.get("avatar") or user.get("avatar_url") or user.get("image") or "",
-            "xsec_token": user.get("xsec_token") or user.get("xsecToken") or "",
-            "source_note": "User Search",
-        })
+        result.append(
+            {
+                "user_id": user_id,
+                "nickname": nickname,
+                "avatar": user.get("avatar") or user.get("avatar_url") or user.get("image") or "",
+                "xsec_token": user.get("xsec_token") or user.get("xsecToken") or "",
+                "source_note": "User Search",
+            }
+        )
     return result[:10]
 
 
@@ -93,7 +100,8 @@ def _sync_official_mcp_cookies(context) -> None:
             if not cookie.get("name") or not cookie.get("value"):
                 continue
             item = {
-                "name": cookie["name"], "value": cookie["value"],
+                "name": cookie["name"],
+                "value": cookie["value"],
                 "domain": cookie.get("domain") or ".xiaohongshu.com",
                 "path": cookie.get("path") or "/",
             }

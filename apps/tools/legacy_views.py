@@ -212,6 +212,7 @@ def deepseek_api(request):
 
         # 使用统一的LLM服务
         from apps.tools.services.llm_service import get_llm_service
+
         llm_service = get_llm_service()
 
         try:
@@ -599,6 +600,7 @@ def self_analysis_api(request):
 
         # 使用统一的LLM服务（腾讯混元优先）
         from apps.tools.services.llm_service import get_llm_service
+
         llm_service = get_llm_service()
 
         # 构建系统提示词
@@ -639,11 +641,7 @@ def self_analysis_api(request):
                 full_prompt = f"{system_prompt}\n\n历史对话：\n{history_text}\n\n用户消息：{user_message}"
 
             # 使用统一的LLM服务生成回复（腾讯混元优先）
-            ai_response = llm_service.generate_content(
-                full_prompt,
-                temperature=0.7,
-                max_tokens=1000
-            )
+            ai_response = llm_service.generate_content(full_prompt, temperature=0.7, max_tokens=1000)
 
             return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
 
@@ -659,7 +657,9 @@ def self_analysis_api(request):
             elif "继续提问" in user_message or "更全面" in user_message:
                 ai_response = "很好！我很高兴你愿意让我更全面地了解你。\n\n**让我们从你的价值观开始：你认为人生中最重要的三样东西是什么？**比如家庭、事业、健康、自由、爱情、友谊等等。\n\n请按照对你来说的重要程度排序，并简单说明为什么这些对你很重要。"
             else:
-                ai_response = "感谢你的分享！这让我对你有了更深的了解。\n\n**我想继续了解你：在你的人生经历中，有没有什么特别重要的事件或转折点，让你对自己有了新的认识？**\n\n这些经历往往能帮助我们更好地理解自己的内心世界。"
+                ai_response = (
+                    "感谢你的分享！这让我对你有了更深的了解。\n\n**我想继续了解你：在你的人生经历中，有没有什么特别重要的事件或转折点，让你对自己有了新的认识？**\n\n这些经历往往能帮助我们更好地理解自己的内心世界。"
+                )
 
             return JsonResponse({"success": True, "response": ai_response}, content_type="application/json")
 
@@ -895,13 +895,14 @@ def add_social_subscription_api(request):
         ).first()
 
         if existing:
-            return JsonResponse({
-                "success": False,
-                "error": f"该用户已订阅！请先删除现有订阅后再添加。\n"
-                        f"平台: {platform}\n"
-                        f"用户: {target_user_name}\n"
-                        f"订阅ID: {existing.id}"
-            }, status=400, content_type="application/json")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": f"该用户已订阅！请先删除现有订阅后再添加。\n" f"平台: {platform}\n" f"用户: {target_user_name}\n" f"订阅ID: {existing.id}",
+                },
+                status=400,
+                content_type="application/json",
+            )
 
         # 创建新订阅
         subscription = SocialMediaSubscription.objects.create(
@@ -1787,7 +1788,8 @@ def search_diaries(request, data):
         # 文本搜索
         if query:
             diaries = diaries.filter(
-                models.Q(title__icontains=query) | models.Q(content__icontains=query)  # | models.Q(mood_note__icontains=query)  # 字段不存在，暂时注释
+                models.Q(title__icontains=query)
+                | models.Q(content__icontains=query)  # | models.Q(mood_note__icontains=query)  # 字段不存在，暂时注释
             )
 
         # 心情过滤
@@ -6368,10 +6370,9 @@ def fitness_profile(request):
         )
 
         # 获取最近的训练记录（移除CheckInDetail依赖）
-        recent_workouts = (
-            CheckInCalendar.objects.filter(user=request.user, calendar_type="fitness", status="completed")
-            .order_by("-date")[:5]
-        )
+        recent_workouts = CheckInCalendar.objects.filter(
+            user=request.user, calendar_type="fitness", status="completed"
+        ).order_by("-date")[:5]
 
         # 获取最近的重量记录
         recent_weight_records = ExerciseWeightRecord.objects.filter(user=request.user).order_by("-workout_date")[:10]
@@ -6387,9 +6388,7 @@ def fitness_profile(request):
         ).count()
 
         # 获取训练类型分布（移除CheckInDetail依赖）
-        workout_types = CheckInCalendar.objects.filter(
-            user=request.user, calendar_type="fitness", status="completed"
-        )
+        workout_types = CheckInCalendar.objects.filter(user=request.user, calendar_type="fitness", status="completed")
 
         type_distribution = {}
         for workout in workout_types:
@@ -7025,14 +7024,46 @@ def feature_recommendations_api(request):
             if not request.user.is_authenticated:
                 # 未登录用户返回一些基础推荐功能
                 from apps.tools.models.legacy_models import Feature
-                basic_features = Feature.objects.filter(
-                    is_active=True,
-                    is_public=True
-                ).order_by('-recommendation_weight')[:6]
+
+                basic_features = Feature.objects.filter(is_active=True, is_public=True).order_by("-recommendation_weight")[:6]
 
                 basic_recommendations = []
                 for feature in basic_features:
-                    basic_recommendations.append({
+                    basic_recommendations.append(
+                        {
+                            "id": feature.id,
+                            "name": feature.name,
+                            "description": feature.description,
+                            "category": feature.category,
+                            "category_display": feature.get_category_display(),
+                            "icon_class": feature.icon_class,
+                            "icon_color": feature.icon_color,
+                            "url_name": feature.url_name,
+                            "recommendation_weight": feature.recommendation_weight,
+                            "popularity_score": feature.popularity_score,
+                            "recommendation_reason": "为您推荐一个实用功能",
+                        }
+                    )
+
+                return JsonResponse(
+                    {"success": True, "data": basic_recommendations, "algorithm": "basic", "count": len(basic_recommendations)}
+                )
+
+            # 获取查询参数
+            algorithm = request.GET.get("algorithm", "smart")
+            limit = int(request.GET.get("limit", 6))
+            force_show = request.GET.get("force_show", "false").lower() == "true"
+
+            # 简化版本：直接返回基础功能推荐
+            from apps.tools.models import Feature
+
+            # 获取基础功能
+            basic_features = Feature.objects.filter(is_active=True, is_public=True).order_by("-recommendation_weight")[:limit]
+
+            formatted_recommendations = []
+            for feature in basic_features:
+                formatted_recommendations.append(
+                    {
                         "id": feature.id,
                         "name": feature.name,
                         "description": feature.description,
@@ -7044,44 +7075,8 @@ def feature_recommendations_api(request):
                         "recommendation_weight": feature.recommendation_weight,
                         "popularity_score": feature.popularity_score,
                         "recommendation_reason": "为您推荐一个实用功能",
-                    })
-
-                return JsonResponse({
-                    "success": True,
-                    "data": basic_recommendations,
-                    "algorithm": "basic",
-                    "count": len(basic_recommendations)
-                })
-
-            # 获取查询参数
-            algorithm = request.GET.get("algorithm", "smart")
-            limit = int(request.GET.get("limit", 6))
-            force_show = request.GET.get("force_show", "false").lower() == "true"
-
-            # 简化版本：直接返回基础功能推荐
-            from apps.tools.models import Feature
-
-            # 获取基础功能
-            basic_features = Feature.objects.filter(
-                is_active=True,
-                is_public=True
-            ).order_by('-recommendation_weight')[:limit]
-
-            formatted_recommendations = []
-            for feature in basic_features:
-                formatted_recommendations.append({
-                    "id": feature.id,
-                    "name": feature.name,
-                    "description": feature.description,
-                    "category": feature.category,
-                    "category_display": feature.get_category_display(),
-                    "icon_class": feature.icon_class,
-                    "icon_color": feature.icon_color,
-                    "url_name": feature.url_name,
-                    "recommendation_weight": feature.recommendation_weight,
-                    "popularity_score": feature.popularity_score,
-                    "recommendation_reason": "为您推荐一个实用功能",
-                })
+                    }
+                )
 
             return JsonResponse(
                 {
@@ -7850,9 +7845,7 @@ def get_user_profile_data(user):
         "display_name": f"{user.first_name} {user.last_name}".strip() or user.username,
         "avatar_url": (profile.avatar.url if (profile and getattr(profile, "avatar", None)) else None),
         "bio": getattr(profile, "bio", "") if profile else "",
-        "membership_type": (
-            membership.get_membership_type_display() if membership else "免费用户"
-        ),
+        "membership_type": (membership.get_membership_type_display() if membership else "免费用户"),
         "theme_mode": (theme.get_mode_display() if theme else "默认模式"),
         "tags": tags,
         "is_online": False,  # 将在WebSocket中更新
@@ -8130,10 +8123,7 @@ def audio_converter_api(request):
         if uploaded_file.size > max_file_size:
             file_size_mb = uploaded_file.size / (1024 * 1024)
             max_size_mb = max_file_size / (1024 * 1024)
-            return JsonResponse({
-                "success": False,
-                "message": f"文件太大！当前文件大小：{file_size_mb:.1f}MB，最大允许大小：{max_size_mb:.1f}MB"
-            })
+            return JsonResponse({"success": False, "message": f"文件太大！当前文件大小：{file_size_mb:.1f}MB，最大允许大小：{max_size_mb:.1f}MB"})
 
         # 检查文件类型
         file_extension = uploaded_file.name.lower().split(".")[-1]
@@ -8564,7 +8554,6 @@ def decrypt_ncm_file(ncm_path):
             # 移除PKCS7填充
             key_data = unpad(key_data)
 
-
             # 从解密后的密钥数据中提取实际的密钥
             try:
                 # 尝试不同的密钥提取方式
@@ -8857,7 +8846,6 @@ def decrypt_ncm_file_fallback(ncm_path):
                     rc4_key = decrypted_key[prefix_pos + len(netease_prefix) :]
                 else:
                     raise Exception("无法提取RC4密钥")
-
 
             # 读取元数据长度
             meta_length = struct.unpack("<I", f.read(4))[0]
@@ -10835,67 +10823,58 @@ def end_chat_room_api(request, room_id):
 
         # 检查用户是否是聊天室的参与者
         if request.user not in [chat_room.user1, chat_room.user2]:
-            return JsonResponse(
-                {"success": False, "error": "您不是此聊天室的参与者"},
-                status=403
-            )
+            return JsonResponse({"success": False, "error": "您不是此聊天室的参与者"}, status=403)
 
         # 结束聊天室
         chat_room.status = "ended"
         chat_room.save()
 
-        return JsonResponse({
-            "success": True,
-            "message": "聊天室已结束"
-        })
+        return JsonResponse({"success": True, "message": "聊天室已结束"})
 
     except ChatRoom.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "error": "聊天室不存在"},
-            status=404
-        )
+        return JsonResponse({"success": False, "error": "聊天室不存在"}, status=404)
     except Exception as e:
         logger.error(f"结束聊天室错误: {e}")
-        return JsonResponse(
-            {"success": False, "error": "结束聊天室失败"},
-            status=500
-        )
+        return JsonResponse({"success": False, "error": "结束聊天室失败"}, status=500)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 分片上传相关API（优化大文件上传速度）
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
 @csrf_exempt
 @require_http_methods(["POST"])
 @login_required
 def chunked_upload_init(request, room_id):
     """初始化分片上传"""
-    response_headers = {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-    }
+    response_headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
     try:
         data = json.loads(request.body)
-        filename = data.get('filename')
-        total_size = data.get('total_size')
-        total_chunks = data.get('total_chunks')
+        filename = data.get("filename")
+        total_size = data.get("total_size")
+        total_chunks = data.get("total_chunks")
 
         # 生成唯一的上传ID
         upload_id = str(uuid.uuid4())
 
         # 创建临时目录
-        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
+        temp_dir = os.path.join(settings.MEDIA_ROOT, "chat_files", "temp", upload_id)
         os.makedirs(temp_dir, exist_ok=True)
 
-        logger.info(f"初始化分片上传 - upload_id: {upload_id}, filename: {filename}, total_size: {total_size}, total_chunks: {total_chunks}")
+        logger.info(
+            f"初始化分片上传 - upload_id: {upload_id}, filename: {filename}, total_size: {total_size}, total_chunks: {total_chunks}"
+        )
 
-        return JsonResponse({
-            'success': True,
-            'upload_id': upload_id,
-        }, content_type="application/json", headers=response_headers)
+        return JsonResponse(
+            {
+                "success": True,
+                "upload_id": upload_id,
+            },
+            content_type="application/json",
+            headers=response_headers,
+        )
 
     except Exception as e:
         logger.error(f"初始化上传失败: {e}")
@@ -10912,16 +10891,12 @@ def chunked_upload_init(request, room_id):
 @login_required
 def chunked_upload_chunk(request, room_id):
     """上传单个分片"""
-    response_headers = {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-    }
+    response_headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
     try:
-        upload_id = request.POST.get('upload_id')
-        chunk_index = int(request.POST.get('chunk_index'))
-        chunk_file = request.FILES.get('chunk')
+        upload_id = request.POST.get("upload_id")
+        chunk_index = int(request.POST.get("chunk_index"))
+        chunk_file = request.FILES.get("chunk")
 
         if not all([upload_id, chunk_file]):
             return JsonResponse(
@@ -10932,19 +10907,23 @@ def chunked_upload_chunk(request, room_id):
             )
 
         # 保存分片到临时目录
-        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
-        chunk_path = os.path.join(temp_dir, f'chunk_{chunk_index}')
+        temp_dir = os.path.join(settings.MEDIA_ROOT, "chat_files", "temp", upload_id)
+        chunk_path = os.path.join(temp_dir, f"chunk_{chunk_index}")
 
-        with open(chunk_path, 'wb') as f:
+        with open(chunk_path, "wb") as f:
             for chunk in chunk_file.chunks():
                 f.write(chunk)
 
         logger.info(f"分片上传成功 - upload_id: {upload_id}, chunk_index: {chunk_index}")
 
-        return JsonResponse({
-            'success': True,
-            'chunk_index': chunk_index,
-        }, content_type="application/json", headers=response_headers)
+        return JsonResponse(
+            {
+                "success": True,
+                "chunk_index": chunk_index,
+            },
+            content_type="application/json",
+            headers=response_headers,
+        )
 
     except Exception as e:
         logger.error(f"上传分片失败: {e}")
@@ -10961,18 +10940,14 @@ def chunked_upload_chunk(request, room_id):
 @login_required
 def chunked_upload_complete(request, room_id):
     """完成分片上传，合并文件"""
-    response_headers = {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-    }
+    response_headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
     try:
         data = json.loads(request.body)
-        upload_id = data.get('upload_id')
-        filename = data.get('filename')
-        total_chunks = data.get('total_chunks')
-        message_type = data.get('message_type', 'file')
+        upload_id = data.get("upload_id")
+        filename = data.get("filename")
+        total_chunks = data.get("total_chunks")
+        message_type = data.get("message_type", "file")
 
         # 获取聊天室
         chat_room = ChatRoom.objects.get(room_id=room_id)
@@ -10987,7 +10962,7 @@ def chunked_upload_complete(request, room_id):
             )
 
         # 合并分片
-        temp_dir = os.path.join(settings.MEDIA_ROOT, 'chat_files', 'temp', upload_id)
+        temp_dir = os.path.join(settings.MEDIA_ROOT, "chat_files", "temp", upload_id)
         file_extension = os.path.splitext(filename)[1]
         final_filename = f"chat_files/{uuid.uuid4()}{file_extension}"
         final_path = os.path.join(settings.MEDIA_ROOT, final_filename)
@@ -10995,11 +10970,11 @@ def chunked_upload_complete(request, room_id):
 
         logger.info(f"开始合并分片 - upload_id: {upload_id}, total_chunks: {total_chunks}")
 
-        with open(final_path, 'wb') as final_file:
+        with open(final_path, "wb") as final_file:
             for i in range(total_chunks):
-                chunk_path = os.path.join(temp_dir, f'chunk_{i}')
+                chunk_path = os.path.join(temp_dir, f"chunk_{i}")
                 if os.path.exists(chunk_path):
-                    with open(chunk_path, 'rb') as chunk_file:
+                    with open(chunk_path, "rb") as chunk_file:
                         final_file.write(chunk_file.read())
                     os.remove(chunk_path)  # 删除已合并的分片
                 else:
@@ -11021,21 +10996,13 @@ def chunked_upload_complete(request, room_id):
             logger.warning(f"清理临时目录失败: {cleanup_error}")
 
         # 创建消息
-        if message_type == 'image':
+        if message_type == "image":
             message = ChatMessage.objects.create(
-                room=chat_room,
-                sender=request.user,
-                message_type="image",
-                content=filename,
-                image_url=final_filename
+                room=chat_room, sender=request.user, message_type="image", content=filename, image_url=final_filename
             )
         else:
             message = ChatMessage.objects.create(
-                room=chat_room,
-                sender=request.user,
-                message_type="file",
-                content=filename,
-                file_url=final_filename
+                room=chat_room, sender=request.user, message_type="file", content=filename, file_url=final_filename
             )
 
         # 获取文件大小
@@ -11043,25 +11010,31 @@ def chunked_upload_complete(request, room_id):
 
         logger.info(f"分片上传完成 - filename: {filename}, size: {file_size}")
 
-        return JsonResponse({
-            'success': True,
-            'message': {
-                'id': message.id,
-                'sender': message.sender.username,
-                'content': message.content,
-                'message_type': message.message_type,
-                'file_url': final_filename if message_type == 'file' else None,
-                'image_url': final_filename if message_type == 'image' else None,
-                'created_at': message.created_at.isoformat(),
-                'is_own': True,
+        return JsonResponse(
+            {
+                "success": True,
+                "message": {
+                    "id": message.id,
+                    "sender": message.sender.username,
+                    "content": message.content,
+                    "message_type": message.message_type,
+                    "file_url": final_filename if message_type == "file" else None,
+                    "image_url": final_filename if message_type == "image" else None,
+                    "created_at": message.created_at.isoformat(),
+                    "is_own": True,
+                },
+                "upload_info": {
+                    "file_name": filename,
+                    "file_size": f"{file_size / 1024:.1f}KB"
+                    if file_size < 1024 * 1024
+                    else f"{file_size / (1024*1024):.1f}MB",
+                    "file_type": "图片" if message_type == "image" else "文件",
+                    "upload_time": message.created_at.strftime("%H:%M:%S"),
+                },
             },
-            'upload_info': {
-                'file_name': filename,
-                'file_size': f"{file_size / 1024:.1f}KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.1f}MB",
-                'file_type': '图片' if message_type == 'image' else '文件',
-                'upload_time': message.created_at.strftime("%H:%M:%S"),
-            },
-        }, content_type="application/json", headers=response_headers)
+            content_type="application/json",
+            headers=response_headers,
+        )
 
     except ChatRoom.DoesNotExist:
         return JsonResponse(

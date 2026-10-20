@@ -71,9 +71,13 @@ def _throttled(request, action, seconds=8):
 @login_required
 @require_GET
 def xiaohongshu_agent_page(request):
-    return render(request, "tools/xiaohongshu_agent.html", {
-        "can_login_xhs": request.user.is_staff or settings.DEBUG,
-    })
+    return render(
+        request,
+        "tools/xiaohongshu_agent.html",
+        {
+            "can_login_xhs": request.user.is_staff or settings.DEBUG,
+        },
+    )
 
 
 @login_required
@@ -129,7 +133,11 @@ def xiaohongshu_agent_watches_api(request):
     # The Peep panel is shared by every supported platform. Keep the legacy
     # Xiaohongshu serializer and add the generic creator-watch subscriptions.
     xhs_items = [watches.serialize_watch(item) for item in watches.list_watches(request.user)]
-    creator_items = [creator_watch_service.serialize_watch(item) for item in creator_watch_service.list_watches(request.user) if item.platform != "xiaohongshu"]
+    creator_items = [
+        creator_watch_service.serialize_watch(item)
+        for item in creator_watch_service.list_watches(request.user)
+        if item.platform != "xiaohongshu"
+    ]
     unique = []
     seen = set()
     for item in xhs_items + creator_items:

@@ -124,30 +124,29 @@ def _discover_creator(user, message: str, watches: list[SocialMediaSubscription]
             errors.append(f"{label}：{exc}")
             continue
         exact = [
-            candidate
-            for candidate in candidates
-            if _normalized_creator_name(str(candidate.get("nickname") or "")) == wanted
+            candidate for candidate in candidates if _normalized_creator_name(str(candidate.get("nickname") or "")) == wanted
         ]
         for candidate in exact:
             exact_matches.append({**candidate, "platform": platform, "platform_label": label})
         related.extend(
-            f"{label} {candidate.get('nickname') or '未知用户'}"
-            for candidate in candidates[:3]
-            if candidate.get("nickname")
+            f"{label} {candidate.get('nickname') or '未知用户'}" for candidate in candidates[:3] if candidate.get("nickname")
         )
         for candidate in candidates[:8]:
             if candidate.get("nickname"):
-                related_candidates.append({
-                    **candidate,
-                    "platform": platform,
-                    "platform_label": label,
-                    "match_score": _candidate_score(str(candidate.get("nickname") or ""), hint),
-                })
+                related_candidates.append(
+                    {
+                        **candidate,
+                        "platform": platform,
+                        "platform_label": label,
+                        "match_score": _candidate_score(str(candidate.get("nickname") or ""), hint),
+                    }
+                )
     if len(exact_matches) > 1:
         labels = "、".join(dict.fromkeys(item["platform_label"] for item in exact_matches))
         return {
             "answer": f"Agent 已搜索{labels}，找到多个昵称为“{hint}”的账号。请从下面选择正确账号后再关注。",
-            "new_notes": [], "discovered": False,
+            "new_notes": [],
+            "discovered": False,
             "discovery_candidates": exact_matches,
         }
     if len(exact_matches) == 1:
@@ -155,13 +154,26 @@ def _discover_creator(user, message: str, watches: list[SocialMediaSubscription]
         platform = candidate["platform"]
         label = candidate["platform_label"]
         try:
-            item, created = subscribe(user, platform, str(candidate.get("user_id") or ""), str(candidate.get("xsec_token") or ""))
+            item, created = subscribe(
+                user, platform, str(candidate.get("user_id") or ""), str(candidate.get("xsec_token") or "")
+            )
         except (xhs.XhsInputError, xhs.XhsServiceError) as exc:
             errors.append(f"{label}：找到同名账号，但主页读取失败（{exc}）")
         else:
             watch = serialize_watch(item)
             action = "已自动关注" if created else "已找到已有关注"
-            return {"answer": f"Agent 在{label}找到昵称精确匹配的“{watch['nickname']}”，{action}。已建立今天的首次快照，本次可见 {watch['last_visible_count'] or 0} 条；因为没有昨天的记录，今天暂时不能判断是否更新，之后会自动对比。", "comparison": "baseline", "baseline_date": None, "checked_date": watch["last_snapshot_date"], "previous_visible_count": None, "current_visible_count": watch["last_visible_count"] or 0, "new_count": 0, "new_notes": [], "watch": watch, "discovered": True}
+            return {
+                "answer": f"Agent 在{label}找到昵称精确匹配的“{watch['nickname']}”，{action}。已建立今天的首次快照，本次可见 {watch['last_visible_count'] or 0} 条；因为没有昨天的记录，今天暂时不能判断是否更新，之后会自动对比。",
+                "comparison": "baseline",
+                "baseline_date": None,
+                "checked_date": watch["last_snapshot_date"],
+                "previous_visible_count": None,
+                "current_visible_count": watch["last_visible_count"] or 0,
+                "new_count": 0,
+                "new_notes": [],
+                "watch": watch,
+                "discovered": True,
+            }
     if related:
         examples = "、".join(dict.fromkeys(related))
         answer = (
@@ -174,9 +186,13 @@ def _discover_creator(user, message: str, watches: list[SocialMediaSubscription]
     if errors:
         answer += f" 部分平台暂时不可用：{'；'.join(errors)}。"
     related_candidates.sort(key=lambda item: item.get("match_score", 0), reverse=True)
-    return {"answer": answer, "new_notes": [], "discovered": False,
-            "discovery_candidates": related_candidates[:3],
-            "web_search_url": f"https://www.xiaohongshu.com/search_result?keyword={quote(hint)}"}
+    return {
+        "answer": answer,
+        "new_notes": [],
+        "discovered": False,
+        "discovery_candidates": related_candidates[:3],
+        "web_search_url": f"https://www.xiaohongshu.com/search_result?keyword={quote(hint)}",
+    }
 
 
 def _https_url(value: object) -> str:

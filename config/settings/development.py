@@ -91,8 +91,7 @@ _email_host_user = os.getenv("EMAIL_HOST_USER", "")
 _email_host_password = os.getenv("EMAIL_HOST_PASSWORD", "")
 _email_placeholders = ("your-email", "password", "changeme", "example")
 _email_configured = bool(_email_host_user and _email_host_password) and not any(
-    value in _email_host_user.lower() or value in _email_host_password.lower()
-    for value in _email_placeholders
+    value in _email_host_user.lower() or value in _email_host_password.lower() for value in _email_placeholders
 )
 if _email_configured:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -90,8 +90,13 @@ def _data(response: dict) -> dict:
 def _note_id_and_token(feed: dict, card: dict) -> tuple[str, str]:
     """Accept the several note shapes returned by different XHS page builds."""
     note_id = (
-        feed.get("id") or feed.get("noteId") or feed.get("note_id") or
-        card.get("id") or card.get("noteId") or card.get("note_id") or ""
+        feed.get("id")
+        or feed.get("noteId")
+        or feed.get("note_id")
+        or card.get("id")
+        or card.get("noteId")
+        or card.get("note_id")
+        or ""
     )
     token = feed.get("xsecToken") or feed.get("xsec_token") or card.get("xsecToken") or ""
     for value in (feed.get("url"), feed.get("link"), card.get("url"), card.get("link")):
@@ -104,6 +109,7 @@ def _note_id_and_token(feed: dict, card: dict) -> tuple[str, str]:
             token = parse_qs(urlparse(value).query).get("xsec_token", [""])[0]
     # Newer MCP builds sometimes wrap the note card several levels deep.
     if not note_id:
+
         def walk(value: object) -> str:
             if isinstance(value, dict):
                 for key in ("noteId", "note_id", "feedId", "feed_id"):
@@ -120,6 +126,7 @@ def _note_id_and_token(feed: dict, card: dict) -> tuple[str, str]:
                     if found:
                         return found
             return ""
+
         note_id = walk(feed)
     return str(note_id), str(token)
 
@@ -284,7 +291,12 @@ def search_profile_candidates(keyword: str) -> list[dict]:
         if len(candidates) >= 50:
             break
     keyword_folded = keyword.casefold()
-    candidates.sort(key=lambda item: (0 if str(item.get("nickname", "")).casefold() == keyword_folded else 1, -len(str(item.get("nickname", "")))))
+    candidates.sort(
+        key=lambda item: (
+            0 if str(item.get("nickname", "")).casefold() == keyword_folded else 1,
+            -len(str(item.get("nickname", ""))),
+        )
+    )
     cache.set(cache_key, candidates, timeout=300)
     return candidates
 
