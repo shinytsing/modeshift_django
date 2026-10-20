@@ -6,6 +6,9 @@ import json
 import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+import django
+
+django.setup()
 
 import pytest
 from django.contrib.auth.models import User
