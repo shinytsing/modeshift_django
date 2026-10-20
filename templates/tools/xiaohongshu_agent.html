@@ -1,0 +1,582 @@
+{% extends 'base.html' %}
+
+{% block tool_title_inner %}博主更新 Agent{% endblock %}
+{% block tool_title_display %}博主更新 Agent{% endblock %}
+
+{% block extra_css %}
+<style>
+  .xhs-agent { min-height: 75vh; padding: 108px 20px 72px; background: #f7f7f8; color: #242124; }
+  .xhs-shell { max-width: 1040px; margin: auto; display: flex; flex-direction: column; }
+  .xhs-head { order: 0; margin-bottom: 12px; padding: 18px 20px; background: #fff; border: 1px solid #e8e8eb; border-radius: 16px; }
+  .xhs-head h1 { font-size: clamp(1.55rem, 3vw, 2rem); margin: 0 0 5px; color: #bc2432; }
+  .xhs-head p { color: #665e5b; line-height: 1.7; margin: 0; }
+  .xhs-panel { background: white; border: 1px solid #e8e8eb; border-radius: 16px; padding: 18px; margin-bottom: 12px; box-shadow: 0 4px 18px rgba(35, 27, 29, .035); }
+  .xhs-chat-panel { order: 1; }
+  .xhs-watches-panel { order: 2; }
+  .xhs-add-panel { order: 3; }
+  .xhs-status { order: 4; }
+  #xhs-candidates-panel { order: 5; }
+  #xhs-profile-panel { order: 6; }
+  .xhs-admin-panel { order: 7; }
+  .xhs-panel h2 { margin: 0 0 14px; font-size: 1.15rem; }
+  .xhs-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .xhs-input { flex: 1 1 440px; min-width: 0; padding: 13px 14px; border: 1px solid #d9ceca; border-radius: 10px; font: inherit; }
+  .xhs-platform { flex: 0 0 155px; min-width: 130px; padding: 13px 14px; border: 1px solid #d9ceca; border-radius: 10px; background: #fff; font: inherit; }
+  .xhs-input:focus { outline: 2px solid #f7a4aa; border-color: #cf2634; }
+  .xhs-btn { border: 0; border-radius: 10px; padding: 12px 19px; background: #cf2634; color: white; font: inherit; font-weight: 700; cursor: pointer; }
+  .xhs-btn:disabled { opacity: .55; cursor: wait; }
+  .xhs-btn.loading::before { content: ''; display: inline-block; width: 13px; height: 13px; margin-right: 7px; vertical-align: -2px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: xhs-spin .75s linear infinite; }
+  .xhs-btn.secondary { background: white; border: 1px solid #cf2634; color: #ad1e2b; }
+  .xhs-hint { color: #756c69; font-size: .92rem; line-height: 1.6; margin: 11px 0 0; }
+  .xhs-status { min-height: 24px; margin: 0 0 12px; color: #645b57; }
+  .xhs-status.error { color: #b31f2b; }
+  .xhs-status.success { color: #247047; }
+  .xhs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 13px; }
+  .xhs-candidate { text-align: left; width: 100%; border: 1px solid #ede2de; background: #fff; border-radius: 13px; padding: 14px; cursor: pointer; color: inherit; font: inherit; }
+  .xhs-candidate:hover { border-color: #cf2634; background: #fff8f8; }
+  .xhs-candidate strong, .xhs-candidate small { display: block; }
+  .xhs-candidate { position: relative; padding-right: 110px; min-height: 76px; }
+  .xhs-candidate-avatar { position: absolute; left: 14px; top: 14px; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #f5e2e3; }
+  .xhs-candidate-copy { padding-left: 60px; }
+  .xhs-candidate-choose { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); padding: 7px 10px; border-radius: 8px; background: #fff; color: #6845a5; font-size: .82rem; font-weight: 700; }
+  .xhs-candidate small { color: #786f6b; margin-top: 6px; }
+  .xhs-profile-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .xhs-avatar { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; background: #f5e2e3; }
+  .xhs-profile-head h2 { margin: 0 0 4px; font-size: 1.6rem; }
+  .xhs-counts { display: flex; gap: 18px; flex-wrap: wrap; padding: 14px 0; color: #504845; }
+  .xhs-counts span { background: #faf2f0; border-radius: 9px; padding: 8px 12px; }
+  .xhs-trend { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.22); }
+  .xhs-trend-title { margin: 0 0 8px; font-size: .9rem; color: rgba(255,255,255,.82); }
+  .xhs-trend svg { display:block; width:100%; height:100px; overflow:visible; }
+  .xhs-trend polyline { fill:none; stroke:#fff; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .xhs-trend text { fill:rgba(255,255,255,.72); font-size:9px; }
+  .xhs-note { border: 1px solid #e7e7e9; border-radius: 12px; overflow: hidden; background: white; color: #292321; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+  .xhs-note:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(41, 35, 33, .09); }
+  .xhs-note img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #f4eae8; }
+  .xhs-cover-fallback { display:flex; align-items:center; justify-content:center; min-height:120px; padding:1rem; color:#8a7772; background:#f4eae8; text-align:center; }
+  .xhs-note div { padding: 10px; }
+  .xhs-note strong { display: -webkit-box; line-height: 1.42; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .xhs-note small { color: #706763; }
+  .xhs-qr { max-width: 240px; width: 100%; display: block; margin: 15px 0; }
+  #xhs-watches { display: block; }
+  .xhs-watch { border: 1px solid #e7e7e9; border-radius: 14px; padding: 16px; }
+  .xhs-watch + .xhs-watch { margin-top: 12px; }
+  .xhs-watch-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .xhs-watch-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .xhs-watch-avatar { width: 48px; height: 48px; flex: 0 0 48px; object-fit: cover; border-radius: 50%; background: #f5e2e3; border: 1px solid rgba(255,255,255,.35); }
+  .xhs-watch-title strong { display: block; font-size: 1.05rem; }
+  .xhs-watch small { color: #706763; }
+  .xhs-watch-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .xhs-watch-email-settings { flex: 1 1 200px; }
+  .xhs-watch-email-settings summary { cursor: pointer; color: #6f6663; font-size: .9rem; }
+  .xhs-watch-email { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .xhs-watch-email .xhs-input { grid-column: 1 / -1; min-width: 0; width: 100%; }
+  .xhs-watch-email .xhs-btn { padding: 9px 6px; font-size: .9rem; }
+  .xhs-answer { padding: 14px; background: #fff6f4; border-radius: 12px; line-height: 1.7; white-space: pre-wrap; }
+  .xhs-note p { margin: 7px 0 0; white-space: pre-wrap; line-height: 1.5; }
+  .xhs-note.compact p { display: none; }
+  .xhs-snapshot { margin-top: 14px; padding-top: 12px; border-top: 1px solid #eee5e2; }
+  .xhs-snapshot-title { margin: 0 0 9px; font-size: .9rem; color: #504845; }
+  .xhs-snapshot-strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; padding: 2px; }
+  .xhs-snapshot-strip .xhs-note { scroll-snap-align: start; }
+  .xhs-snapshot-strip .xhs-note img { aspect-ratio: 3 / 4; }
+  .xhs-snapshot-empty { color: #756c69; font-size: .88rem; }
+  [hidden] { display: none !important; }
+  .xhs-more { margin: 10px 0 0; color: #756c69; font-size: .88rem; }
+  @media (max-width: 900px) { .xhs-snapshot-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .xhs-agent { padding: 88px 10px 55px; } .xhs-panel { padding: 14px; } .xhs-snapshot-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .xhs-watch-head { flex-direction: column; } }
+
+  /* Match the Life Mode visual language: gradient canvas, glass cards, rounded controls. */
+  .xhs-agent { min-height: 100vh; padding: 116px 24px 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); color: #fff; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; }
+  .xhs-shell { max-width: 1180px; gap: 18px; }
+  .xhs-head, .xhs-panel { background: rgba(255,255,255,.14); border: 2px solid rgba(255,255,255,.25); box-shadow: 0 8px 32px rgba(50,30,90,.18); backdrop-filter: blur(20px); }
+  .xhs-head { padding: 26px 28px; border-radius: 20px; }
+  .xhs-head h1 { color: #fff; font-size: clamp(1.8rem, 4vw, 2.7rem); text-shadow: 0 0 26px rgba(255,255,255,.45); letter-spacing: 1px; }
+  .xhs-head p, .xhs-hint, .xhs-status, .xhs-watch small, .xhs-candidate small, .xhs-note small, .xhs-snapshot-empty, .xhs-more { color: rgba(255,255,255,.82); }
+  .xhs-panel { border-radius: 20px; padding: 22px; }
+  .xhs-panel h2, .xhs-snapshot-title { color: #fff; }
+  .xhs-input, .xhs-platform { border: 1px solid rgba(255,255,255,.42); background: rgba(255,255,255,.18); color: #fff; border-radius: 12px; }
+  /* Native option menus ignore the glass background on some browsers; keep
+     their text dark on white so every platform remains readable. */
+  .xhs-platform option { color: #242124; background: #fff; }
+  .xhs-input::placeholder { color: rgba(255,255,255,.72); }
+  .xhs-input:focus { outline: 2px solid rgba(255,255,255,.8); border-color: #fff; }
+  .xhs-btn { background: #fff; color: #6845a5; border-radius: 12px; box-shadow: 0 5px 16px rgba(48,28,90,.16); }
+  .xhs-btn.secondary { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.7); color: #fff; }
+  .xhs-answer { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+  .xhs-counts span { background: rgba(255,255,255,.18); color: #fff; }
+  .xhs-comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+  .xhs-metric { padding: 12px 14px; border: 1px solid rgba(255,255,255,.28); border-radius: 14px; background: rgba(255,255,255,.14); }
+  .xhs-metric-label { display: block; color: rgba(255,255,255,.72); font-size: .78rem; margin-bottom: 5px; }
+  .xhs-metric-value { display: block; color: #fff; font-size: 1.05rem; font-weight: 700; }
+  .xhs-answer { white-space: pre-line; }
+  .xhs-candidate, .xhs-watch, .xhs-note { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.16); color: #fff; }
+  .xhs-candidate:hover { border-color: #fff; background: rgba(255,255,255,.25); }
+  .xhs-note { box-shadow: 0 5px 18px rgba(50,30,90,.12); }
+  .xhs-note strong { color: #fff; }
+  .xhs-watch + .xhs-watch { border-top-color: rgba(255,255,255,.3); }
+  .xhs-watch-email-settings summary { color: rgba(255,255,255,.84); }
+  .xhs-snapshot { border-top-color: rgba(255,255,255,.28); }
+  .xhs-cover-fallback { color: rgba(255,255,255,.86); background: rgba(255,255,255,.12); }
+  .xhs-status.error { color: #ffe2e4; }
+  .xhs-status.success { color: #d9ffe7; }
+  .xhs-status.loading::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: xhs-spin .75s linear infinite; }
+  @keyframes xhs-spin { to { transform: rotate(360deg); } }
+  .xhs-loading-panel { display: flex; align-items: center; gap: 13px; margin-top: 16px; padding: 15px 17px; border: 1px solid rgba(255,255,255,.28); border-radius: 15px; background: rgba(255,255,255,.13); }
+  .xhs-loading-panel strong, .xhs-loading-panel small { display: block; color: #fff; }
+  .xhs-loading-panel small { margin-top: 4px; color: rgba(255,255,255,.76); }
+  .xhs-loading-spinner { width: 25px; height: 25px; flex: 0 0 25px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: xhs-spin .75s linear infinite; }
+  .xhs-link-fallback { margin-top: 18px; padding-top: 16px; }
+  .xhs-link-fallback label { display: block; margin-bottom: 9px; color: rgba(255,255,255,.84); font-size: .9rem; }
+  @media (max-width: 600px) { .xhs-agent { padding: 92px 12px 56px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="xhs-agent">
+  <div class="xhs-shell">
+    <header class="xhs-head">
+      <h1>博主更新 Agent</h1>
+      <p>关注博主后每天自动检查更新。有新内容时，站内提醒会通知你；也可以随时提问。</p>
+    </header>
+
+    <section id="xhs-chat-panel" class="xhs-panel xhs-chat-panel">
+      <h2>想查谁更新了？</h2>
+      <form id="xhs-message-form" class="xhs-row">
+        <input id="xhs-message" class="xhs-input" type="text" maxlength="300" required placeholder="例如：B 站罗翔说刑法今天更新了吗？">
+        <button id="xhs-message-submit" class="xhs-btn" type="submit">发送</button>
+      </form>
+      <div id="xhs-loading-panel" class="xhs-loading-panel" hidden aria-live="polite">
+        <span class="xhs-loading-spinner" aria-hidden="true"></span>
+        <div><strong>Agent 正在查找</strong><small>正在读取公开主页并核对候选账号，请稍候…</small></div>
+      </div>
+      <div id="xhs-result" hidden>
+        <p id="xhs-answer" class="xhs-answer"></p>
+        <div id="xhs-comparison" class="xhs-comparison-grid"></div>
+        <div id="xhs-new-notes" class="xhs-list"></div>
+      </div>
+    </section>
+
+    <section class="xhs-panel xhs-add-panel" aria-labelledby="xhs-query-title">
+      <h2 id="xhs-query-title">添加关注</h2>
+      <form id="xhs-form" class="xhs-row">
+        <select id="xhs-platform" class="xhs-platform" aria-label="选择平台">
+          <option value="xiaohongshu">小红书</option>
+          <option value="bilibili">B 站</option>
+          <option value="netease">网易云音乐</option>
+          <option value="weibo">微博</option>
+        </select>
+        <input id="xhs-query" class="xhs-input" type="text" autocomplete="off" maxlength="2048" required placeholder="输入昵称，或粘贴所选平台的用户主页链接">
+        <button id="xhs-submit" class="xhs-btn" type="submit">查找并关注</button>
+      </form>
+      <p class="xhs-hint">粘贴主页链接可直接关注；按昵称搜索时，选中正确作者后自动关注。首次读取建立基线，之后每天自动检查。</p>
+      <p id="xhs-source-status" class="xhs-hint">小红书登录状态正在检查…</p>
+    </section>
+
+    <p id="xhs-status" class="xhs-status" role="status" aria-live="polite">准备就绪。</p>
+
+    <section id="xhs-candidates-panel" class="xhs-panel" hidden>
+      <h2>搜索结果</h2>
+      <p id="xhs-candidates-hint" class="xhs-hint">请核对头像、昵称和来源后再关注。</p>
+      <div id="xhs-candidates" class="xhs-list"></div>
+      <div class="xhs-link-fallback">
+        <label for="xhs-candidate-link">找不到或不确定？粘贴正确的主页完整链接</label>
+        <div class="xhs-row">
+          <input id="xhs-candidate-link" class="xhs-input" type="url" placeholder="https://www.xiaohongshu.com/user/profile/..." />
+          <button id="xhs-candidate-link-submit" class="xhs-btn secondary" type="button">按链接读取</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="xhs-profile-panel" class="xhs-panel" hidden>
+      <div class="xhs-profile-head">
+        <img id="xhs-avatar" class="xhs-avatar" alt="用户头像" hidden>
+        <div><h2 id="xhs-name"></h2><p id="xhs-red-id" class="xhs-hint"></p></div>
+      </div>
+      <p id="xhs-description"></p>
+      <div id="xhs-counts" class="xhs-counts"></div>
+      <details><summary>查看本次加载的内容 <span id="xhs-note-count"></span></summary><div id="xhs-notes" class="xhs-list"></div></details>
+    </section>
+
+    <section id="xhs-watches-panel" class="xhs-panel xhs-watches-panel">
+      <h2>正在关注</h2>
+      <div id="xhs-watches" class="xhs-list"></div>
+      <p class="xhs-hint">每天自动检查一次。新增内容会出现在系统消息提醒；所有关注对象共用一个提醒邮箱，每天最多 3 封（含测试邮件）。</p>
+      <a class="xhs-btn secondary" href="{% url 'tools:peep_trends' %}">查看 14 天趋势</a>
+    </section>
+
+    {% if can_login_xhs %}
+    <section class="xhs-panel xhs-admin-panel" aria-labelledby="xhs-admin-title">
+      <h2 id="xhs-admin-title">小红书登录</h2>
+      <p id="xhs-login-status" class="xhs-hint">正在检查 MCP 登录状态…</p>
+      <button id="xhs-qr-button" class="xhs-btn secondary" type="button">获取登录二维码</button>
+      <button id="xhs-check-button" class="xhs-btn secondary" type="button">刷新登录状态</button>
+      <img id="xhs-qr" class="xhs-qr" alt="小红书登录二维码" hidden>
+      <p class="xhs-hint">请用你自己授权的小红书账号扫码。生产环境仅管理员可操作登录。</p>
+    </section>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+(() => {
+  const csrf = '{{ csrf_token }}';
+  const routes = {
+    search: '{% url "tools:xiaohongshu_agent_search_api" %}',
+    profile: '{% url "tools:xiaohongshu_agent_profile_api" %}',
+    watches: '{% url "tools:xiaohongshu_agent_watches_api" %}',
+    subscribe: '{% url "tools:xiaohongshu_agent_subscribe_api" %}',
+    unsubscribe: '{% url "tools:xiaohongshu_agent_unsubscribe_api" %}',
+    alertEmail: '{% url "tools:xiaohongshu_agent_alert_email_api" %}',
+    testEmail: '{% url "tools:xiaohongshu_agent_test_email_api" %}',
+    message: '{% url "tools:xiaohongshu_agent_message_api" %}',
+    loginStatus: '{% url "tools:xiaohongshu_agent_login_status_api" %}',
+    loginQr: '{% url "tools:xiaohongshu_agent_login_qrcode_api" %}'
+  };
+  const $ = id => document.getElementById(id);
+  const status = (message, kind = '', loading = false) => { $('xhs-status').textContent = message; $('xhs-status').className = `xhs-status ${kind}${loading ? ' loading' : ''}`; };
+  // Keep candidate choices attached to the question/result card so the user
+  // sees the decision immediately below the Agent answer.
+  document.querySelector('.xhs-add-panel').append($('xhs-candidates-panel'));
+  function ensureCandidateLink() {
+    if ($('xhs-candidate-link')) return;
+    const box = document.createElement('div'); box.className = 'xhs-link-fallback';
+    box.innerHTML = '<label for="xhs-candidate-link">找不到或不确定？粘贴正确的主页完整链接</label><div class="xhs-row"><input id="xhs-candidate-link" class="xhs-input" type="url" placeholder="https://www.xiaohongshu.com/user/profile/..." /><button id="xhs-candidate-link-submit" class="xhs-btn secondary" type="button">按链接读取</button></div>';
+    $('xhs-candidates-panel').append(box);
+    $('xhs-candidate-link-submit').addEventListener('click', async () => {
+      const link = $('xhs-candidate-link').value.trim();
+      if (!link) return status('请先粘贴主页完整链接。', 'error');
+      const button = $('xhs-candidate-link-submit'); button.disabled = true; status('正在读取你粘贴的主页…', '', true);
+      try { await showProfile({platform: $('xhs-platform').value, profile_url: link}); $('xhs-candidates-panel').hidden = true; }
+      catch (error) { status(error.message, 'error'); } finally { button.disabled = false; }
+    });
+  }
+  function showWebSearchLink(url) {
+    if (!url || $('xhs-web-search-link')) return;
+    const link = document.createElement('a'); link.id = 'xhs-web-search-link'; link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.className = 'xhs-hint'; link.textContent = '打开小红书网页搜索用户昵称 →';
+    $('xhs-candidates-panel').append(link);
+  }
+  const safeImage = url => typeof url === 'string' && (/^https:\/\//i.test(url) || /^http:\/\/(p1\.music\.126\.net|i\d+\.hdslb\.com)\//i.test(url) || /^\/tools\/api\/xiaohongshu-agent\/watches\/\d+\/covers\/[A-Za-z0-9_-]+\/$/.test(url)) ? (url.startsWith('http://') ? url.replace(/^http:/i, 'https:') : url) : '';
+  const localTime = value => value ? new Date(value).toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai', hour12: false}) : '刚刚';
+
+  async function api(url, body) {
+    const response = await fetch(url, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? {} : {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+      credentials: 'same-origin',
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+    let data;
+    try { data = await response.json(); } catch (_) { throw new Error('服务返回的数据无法解析'); }
+    if (!response.ok) throw new Error(data.error || `请求失败（${response.status}）`);
+    return data;
+  }
+
+  async function showProfile(payload) {
+    $('xhs-profile-panel').hidden = true;
+    status('正在读取用户主页，请稍候…');
+    const {profile} = await api(routes.profile, payload);
+    status('已找到作者，正在建立每日关注…');
+    const {watch, created} = await api(routes.subscribe, payload);
+    $('xhs-name').textContent = profile.nickname || '未知用户';
+    $('xhs-red-id').textContent = profile.red_id ? `小红书号：${profile.red_id}` : '';
+    $('xhs-description').textContent = profile.description || '该用户未填写简介。';
+    const avatar = safeImage(profile.avatar);
+    $('xhs-avatar').hidden = !avatar;
+    if (avatar) $('xhs-avatar').src = avatar;
+    const counts = $('xhs-counts'); counts.replaceChildren();
+    for (const [label, key] of [['关注', 'follows'], ['粉丝', 'fans'], ['获赞与收藏', 'interaction']]) {
+      const item = document.createElement('span'); item.textContent = `${label}：${profile.counts?.[key] || '—'}`; counts.append(item);
+    }
+    $('xhs-note-count').textContent = `(${profile.note_count_loaded || 0})`;
+    const notes = $('xhs-notes'); notes.replaceChildren();
+    for (const note of profile.notes || []) {
+      // Once subscribed, use the same-origin proxy so XHS CDN anti-hotlinking
+      // (403) cannot break the preview image.
+      notes.append(noteCard(note, watch.id));
+    }
+    if (!notes.children.length) { const empty = document.createElement('p'); empty.textContent = '当前没有加载到公开笔记。'; notes.append(empty); }
+    $('xhs-profile-panel').hidden = false;
+    await loadWatches();
+    status(`${created ? '已关注' : '已经关注，未重复创建'} ${watch.platform_label} · ${watch.nickname}；今天的基线已记录，之后每天自动检查。`, 'success');
+  }
+
+  function noteCard(note, watchId = null, compact = false) {
+      const card = document.createElement(note.url ? 'a' : 'article');
+      card.className = `xhs-note${compact ? ' compact' : ''}`;
+      if (note.url) { card.href = note.url; card.target = '_blank'; card.rel = 'noopener noreferrer'; }
+      const proxyCover = watchId && note.id ? `/tools/api/xiaohongshu-agent/watches/${watchId}/covers/${encodeURIComponent(note.id)}/` : '';
+      const cover = safeImage(proxyCover || note.cover);
+      if (cover) {
+        const img = document.createElement('img'); img.src = cover; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+        img.addEventListener('error', () => {
+          if (proxyCover && note.cover && img.src !== note.cover) { img.src = safeImage(note.cover); return; }
+          img.remove();
+          const fallback = document.createElement('span'); fallback.className = 'xhs-cover-fallback';
+          fallback.textContent = '封面暂不可用，请刷新快照'; card.insertBefore(fallback, card.firstChild);
+        });
+        card.append(img);
+      }
+      const detail = document.createElement('div');
+      const title = document.createElement('strong'); title.textContent = note.title || '未命名笔记'; detail.append(title);
+      if (note.likes) { const likes = document.createElement('small'); likes.textContent = `点赞 ${note.likes}`; detail.append(likes); }
+      if (note.description) { const description = document.createElement('p'); description.textContent = note.description; detail.append(description); }
+      card.append(detail);
+      return card;
+  }
+
+  async function loadWatches() {
+    const {watches} = await api(routes.watches);
+    const list = $('xhs-watches'); list.replaceChildren();
+    for (const watch of watches) {
+      const card = document.createElement('div'); card.className = 'xhs-watch';
+      const head = document.createElement('div'); head.className = 'xhs-watch-head';
+      const identity = document.createElement('div'); identity.className = 'xhs-watch-identity';
+      if (watch.avatar) { const avatar = document.createElement('img'); avatar.className = 'xhs-watch-avatar'; avatar.alt = `${watch.nickname || watch.user_id} 头像`; avatar.referrerPolicy = 'no-referrer'; avatar.src = safeImage(watch.avatar); avatar.addEventListener('error', () => avatar.remove()); identity.append(avatar); }
+      const titleBox = document.createElement('div'); titleBox.className = 'xhs-watch-title';
+      const name = document.createElement('strong'); name.textContent = `${watch.platform_label || watch.platform} · ${watch.nickname || watch.user_id}`; titleBox.append(name);
+      const meta = document.createElement('small');
+      const visibleCount = watch.last_visible_count == null ? '没有' : `${watch.last_visible_count} 条`;
+      meta.textContent = watch.monitoring_enabled ? `最近快照：${watch.last_snapshot_date || '没有'} · 可见内容 ${visibleCount}` : '旧订阅 · 尚未建立真实快照';
+      titleBox.append(meta);
+      const profileCounts = watch.profile_counts || {};
+      const countText = [['fans', '粉丝'], ['follows', '关注'], ['interaction', '点赞/收藏']]
+        .filter(([key]) => profileCounts[key] !== undefined && profileCounts[key] !== '')
+        .map(([key, label]) => `${label} ${profileCounts[key]}`).join(' · ');
+      if (countText) { const counts = document.createElement('small'); counts.textContent = countText; titleBox.append(counts); }
+      const trend = watch.trend || [];
+      const metricKey = profileCounts.fans !== undefined ? 'fans' : (profileCounts.follows !== undefined ? 'follows' : 'interaction');
+      const points = trend.map(item => Number((item.profile_counts || {})[metricKey])).filter(Number.isFinite);
+      if (points.length >= 2) {
+        const trendBox = document.createElement('div'); trendBox.className = 'xhs-trend';
+        const trendTitle = document.createElement('h3'); trendTitle.className = 'xhs-trend-title'; trendTitle.textContent = `近 30 天${metricKey === 'fans' ? '粉丝' : metricKey === 'follows' ? '关注' : '获赞/收藏'}变化`; trendBox.append(trendTitle);
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 360 100');
+        const min = Math.min(...points), max = Math.max(...points), span = max - min || 1;
+        const coords = points.map((value, index) => `${(index / Math.max(points.length - 1, 1)) * 350 + 5},${92 - ((value - min) / span) * 78}`).join(' ');
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); line.setAttribute('points', coords); svg.append(line);
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text'); label.setAttribute('x', '5'); label.setAttribute('y', '12'); label.textContent = String(points[points.length - 1]); svg.append(label); trendBox.append(svg); titleBox.append(trendBox);
+      }
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'xhs-btn secondary'; button.textContent = '查询更新';
+      button.addEventListener('click', () => { $('xhs-message').value = `${watch.platform_label || watch.platform} ${watch.nickname || watch.user_id} 今天更新了吗？`; $('xhs-message-form').requestSubmit(); });
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'xhs-btn secondary'; remove.textContent = '取消关注';
+      remove.addEventListener('click', async () => { remove.disabled = true; try { await api(routes.unsubscribe, {watch_id: watch.id}); status(`已取消关注 ${watch.nickname || watch.user_id}`, 'success'); await loadWatches(); } catch (error) { status(error.message, 'error'); remove.disabled = false; } });
+      identity.append(titleBox); const headActions = document.createElement('div'); headActions.className = 'xhs-watch-actions'; headActions.append(button, remove); head.append(identity, headActions); card.append(head);
+      const latestUpdate = watch.latest_update;
+      if (latestUpdate) {
+        const snapshotBox = document.createElement('div'); snapshotBox.className = 'xhs-snapshot';
+        const snapshotTitle = document.createElement('h3'); snapshotTitle.className = 'xhs-snapshot-title';
+        snapshotTitle.textContent = `最近一次更新 · ${latestUpdate.date || '日期未知'} · ${latestUpdate.count == null ? '笔记暂不可解析' : `${latestUpdate.count} 篇`}`;
+        snapshotBox.append(snapshotTitle);
+        const strip = document.createElement('div'); strip.className = 'xhs-snapshot-strip';
+        const updateNotes = latestUpdate.notes || [];
+        for (const note of updateNotes.slice(0, 6)) strip.append(noteCard(note, watch.id, true));
+        if (!strip.children.length) {
+          const empty = document.createElement('p'); empty.className = 'xhs-snapshot-empty'; empty.textContent = '最近一次更新没有可展示的公开内容。'; strip.append(empty);
+        }
+        snapshotBox.append(strip);
+        if (updateNotes.length > 6) {
+          const more = document.createElement('p'); more.className = 'xhs-more'; more.textContent = `本批共 ${updateNotes.length} 篇，页面仅展示最新 6 篇。`; snapshotBox.append(more);
+        }
+        card.append(snapshotBox);
+      } else if (watch.monitoring_enabled) {
+        const empty = document.createElement('p'); empty.className = 'xhs-snapshot-empty'; empty.textContent = '已建立快照，尚未检测到新增内容。'; card.append(empty);
+      }
+      const actions = document.createElement('div'); actions.className = 'xhs-watch-actions';
+      const emailSettings = document.createElement('details'); emailSettings.className = 'xhs-watch-email-settings';
+      const emailLabel = document.createElement('summary'); emailLabel.textContent = watch.alert_email ? `邮箱提醒：${watch.alert_email}` : '设置邮箱提醒';
+      const emailRow = document.createElement('div'); emailRow.className = 'xhs-watch-email';
+      const email = document.createElement('input'); email.type = 'email'; email.className = 'xhs-input';
+      email.placeholder = '账号共用的唯一提醒邮箱'; email.value = watch.alert_email || '';
+      const save = document.createElement('button'); save.type = 'button'; save.className = 'xhs-btn secondary'; save.textContent = '保存邮箱';
+      save.addEventListener('click', async () => {
+        save.disabled = true;
+        try { await api(routes.alertEmail, {watch_id: watch.id, email: email.value.trim()}); status('账号提醒邮箱已保存，所有关注对象共用。每天最多 3 封，留空关闭。', 'success'); }
+        catch (error) { status(error.message, 'error'); }
+        finally { save.disabled = false; }
+      });
+      const testEmail = document.createElement('button'); testEmail.type = 'button'; testEmail.className = 'xhs-btn secondary'; testEmail.textContent = '发送测试邮件';
+      testEmail.addEventListener('click', async () => {
+        testEmail.disabled = true;
+        try { const result = await api(routes.testEmail, {watch_id: watch.id}); status(result.message, 'success'); }
+        catch (error) { status(error.message, 'error'); }
+        finally { testEmail.disabled = false; }
+      });
+      emailRow.append(email, save, testEmail); emailSettings.append(emailLabel, emailRow); actions.append(emailSettings); card.append(actions); list.append(card);
+    }
+    if (!watches.length) { const empty = document.createElement('p'); empty.textContent = '当前账号还没有订阅用户。'; list.append(empty); }
+  }
+
+  $('xhs-candidate-link-submit').addEventListener('click', async () => {
+    const link = $('xhs-candidate-link').value.trim();
+    if (!link) return status('请先粘贴主页完整链接。', 'error');
+    if (!/^https?:\/\//i.test(link)) return status('主页链接格式不正确。', 'error');
+    const button = $('xhs-candidate-link-submit'); button.disabled = true;
+    status('正在读取你粘贴的主页…', '', true);
+    try { await showProfile({platform: $('xhs-platform').value, profile_url: link}); $('xhs-candidates-panel').hidden = true; }
+    catch (error) { status(error.message, 'error'); }
+    finally { button.disabled = false; }
+  });
+
+  $('xhs-message-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = $('xhs-message').value.trim();
+    if (!message) return;
+    $('xhs-message-submit').disabled = true;
+    $('xhs-loading-panel').hidden = false;
+    status('正在检查用户主页并对比快照…', '', true);
+    try {
+      const result = await api(routes.message, {message});
+      const delivery = Object.entries(result.delivery || {}).map(([channel, state]) => `${channel}: ${state}`);
+      $('xhs-answer').textContent = (result.answer || '') + (delivery.length ? `\n通知：${delivery.join('；')}` : '');
+      const discoveryCandidates = result.discovery_candidates || [];
+      if (discoveryCandidates.length) {
+        ensureCandidateLink();
+        showWebSearchLink(result.web_search_url);
+        const list = $('xhs-candidates'); list.replaceChildren();
+        $('xhs-candidates-hint').textContent = '请选择正确账号，确认后才会建立关注。';
+        for (const [index, candidate] of discoveryCandidates.entries()) {
+          const button = document.createElement('button'); button.type = 'button'; button.className = 'xhs-candidate';
+          const avatar = safeImage(candidate.avatar); if (avatar) { const img = document.createElement('img'); img.className = 'xhs-candidate-avatar'; img.referrerPolicy = 'no-referrer'; img.src = avatar; img.alt = `${candidate.nickname || '候选用户'} 头像`; button.append(img); }
+          const copy = document.createElement('span'); copy.className = 'xhs-candidate-copy';
+          const name = document.createElement('strong'); name.textContent = `${index === 0 ? '最相关 · ' : ''}${candidate.platform_label || ''} · ${candidate.nickname || '未知用户'}`; copy.append(name);
+          const source = document.createElement('small'); source.textContent = candidate.source_note ? `来自：${candidate.source_note}` : (candidate.match_score ? `相关度 ${(candidate.match_score * 100).toFixed(0)}%，请核对主页后选择` : '昵称精确匹配，请核对后选择'); copy.append(source); button.append(copy);
+          const choose = document.createElement('span'); choose.className = 'xhs-candidate-choose'; choose.textContent = '选择此账号'; button.append(choose);
+          button.addEventListener('click', async () => {
+            button.disabled = true;
+            try { await showProfile({platform: candidate.platform, user_id: candidate.user_id, xsec_token: candidate.xsec_token || ''}); $('xhs-candidates-panel').hidden = true; }
+            catch (error) { status(error.message, 'error'); }
+            finally { button.disabled = false; }
+          });
+          list.append(button);
+        }
+        $('xhs-candidates-panel').hidden = false;
+      } else if (result.web_search_url) {
+        ensureCandidateLink(); showWebSearchLink(result.web_search_url); $('xhs-candidates-panel').hidden = false;
+      } else {
+        $('xhs-candidates-panel').hidden = true;
+      }
+      const comparison = $('xhs-comparison'); comparison.replaceChildren();
+      if (result.checked_date) {
+        const previousCount = result.previous_visible_count == null ? '没有' : `${result.previous_visible_count} 条`;
+        const metrics = [
+          ['对比日期', result.baseline_date || '没有'],
+          ['数据读取', localTime(result.source_fetched_at)],
+          ['上次可见', previousCount],
+          ['本次可见', `${result.current_visible_count ?? 0} 条`],
+          ['新增内容', `${result.new_count ?? 0} 篇`],
+        ];
+        for (const [label, value] of metrics) {
+          const card = document.createElement('div'); card.className = 'xhs-metric';
+          const title = document.createElement('span'); title.className = 'xhs-metric-label'; title.textContent = label;
+          const content = document.createElement('strong'); content.className = 'xhs-metric-value'; content.textContent = value;
+          card.append(title, content); comparison.append(card);
+        }
+        for (const change of Object.values(result.count_changes || {})) {
+          const card = document.createElement('div'); card.className = 'xhs-metric';
+          const title = document.createElement('span'); title.className = 'xhs-metric-label'; title.textContent = change.label;
+          const content = document.createElement('strong'); content.className = 'xhs-metric-value'; content.textContent = `${change.before || '没有'} → ${change.after || '没有'}`;
+          card.append(title, content); comparison.append(card);
+        }
+      }
+      const notes = $('xhs-new-notes'); notes.replaceChildren();
+      const resultWatchId = result.watch?.id || null;
+      for (const note of (result.new_notes || []).slice(0, 6)) notes.append(noteCard(note, resultWatchId, true));
+      $('xhs-result').hidden = false;
+      status('查询完成。', 'success');
+      await loadWatches();
+    } catch (error) { status(error.message, 'error'); }
+    finally { $('xhs-message-submit').disabled = false; $('xhs-loading-panel').hidden = true; }
+  });
+
+  $('xhs-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const query = $('xhs-query').value.trim();
+    const platform = $('xhs-platform').value;
+    if (!query) return status('请输入昵称或主页链接。', 'error');
+    $('xhs-submit').disabled = true;
+    $('xhs-submit').classList.add('loading'); $('xhs-submit').textContent = '正在读取…';
+    $('xhs-candidates-panel').hidden = true;
+    $('xhs-profile-panel').hidden = true;
+    try {
+      if (/^https?:\/\//i.test(query)) {
+        status('正在读取主页并建立关注，请稍候…', '', true);
+        await showProfile({platform, profile_url: query});
+      } else {
+        status('正在搜索用户，请稍候…', '', true);
+        const candidates = (await api(routes.search, {platform, keyword: query})).candidates || [];
+        ensureCandidateLink();
+        const list = $('xhs-candidates'); list.replaceChildren();
+        const exact = candidates.some(item => (item.nickname || '').trim().toLocaleLowerCase() === query.toLocaleLowerCase());
+        $('xhs-candidates-hint').textContent = exact
+          ? `找到与“${query}”同名的候选，请核对后选择。`
+          : `没有昵称精确匹配“${query}”。以下是公开内容中的相关结果；找不到目标账号时，请粘贴主页完整链接。`;
+        for (const candidate of candidates) {
+          const button = document.createElement('button'); button.type = 'button'; button.className = 'xhs-candidate';
+          const avatar = safeImage(candidate.avatar || candidate.avatar_url); if (avatar) { const img = document.createElement('img'); img.className = 'xhs-candidate-avatar'; img.referrerPolicy = 'no-referrer'; img.src = avatar; img.alt = `${candidate.nickname || '候选用户'} 头像`; button.append(img); }
+          const copy = document.createElement('span'); copy.className = 'xhs-candidate-copy';
+          const name = document.createElement('strong'); name.textContent = `${candidate.platform_label || ({xiaohongshu:'小红书',bilibili:'B 站',netease:'网易云音乐',weibo:'微博'}[candidate.platform] || '')} · ${candidate.nickname || '未知用户'}`; copy.append(name);
+          const source = document.createElement('small'); source.textContent = candidate.source_note ? `来自：${candidate.source_note}` : '公开用户结果'; copy.append(source); button.append(copy);
+          button.addEventListener('click', async () => {
+            button.disabled = true;
+            try { await showProfile({platform, user_id: candidate.user_id, xsec_token: candidate.xsec_token}); $('xhs-candidates-panel').hidden = true; }
+            catch (error) { status(error.message, 'error'); }
+            finally { button.disabled = false; }
+          });
+          list.append(button);
+        }
+        $('xhs-candidates-panel').hidden = !candidates.length;
+        status(candidates.length ? (exact ? `找到 ${candidates.length} 位候选，请核对后选择。` : `找到 ${candidates.length} 个相关结果，但没有昵称精确匹配。`) : '没有找到候选用户；可以粘贴完整主页链接。', candidates.length ? 'success' : '');
+      }
+    } catch (error) { status(error.message, 'error'); }
+    finally { $('xhs-submit').disabled = false; $('xhs-submit').classList.remove('loading'); $('xhs-submit').textContent = '查找并关注'; }
+  });
+
+  loadWatches().catch(error => status(error.message, 'error'));
+
+  function showLoginState(data, historical = false) {
+    const when = data.checked_at ? `（${localTime(data.checked_at)}）` : '';
+    const prefix = historical ? '上次记录：' : '小红书数据源：';
+    let message;
+    if (data.status === 'logged_in') {
+      message = `${prefix}已登录${data.username ? `（${data.username}）` : ''}${when}${historical ? '，仅供参考；管理员可手动刷新状态。' : ''}`;
+    } else if (data.status === 'logged_out') {
+      message = `${prefix}未登录或登录已失效${when}；请管理员重新扫码。`;
+    } else if (data.status === 'error') {
+      const lastSuccess = data.last_success_at ? `上次成功：${localTime(data.last_success_at)}，不代表当前已登录。` : '';
+      message = `${prefix}状态检查失败${when}：${data.error || 'MCP 暂时不可用'}。${lastSuccess}`;
+    } else {
+      message = '小红书登录状态尚未记录，正在检查…';
+    }
+    $('xhs-source-status').textContent = message;
+    {% if can_login_xhs %}
+    $('xhs-login-status').textContent = message;
+    if (!historical && data.is_logged_in) $('xhs-qr').hidden = true;
+    {% endif %}
+  }
+
+  async function checkLogin() {
+    try {
+      const data = await api(routes.loginStatus);
+      showLoginState(data);
+    } catch (error) { $('xhs-source-status').textContent = `小红书状态检查失败：${error.message}`; }
+  }
+  {% if can_login_xhs %}
+  $('xhs-check-button').addEventListener('click', checkLogin);
+  $('xhs-qr-button').addEventListener('click', async () => {
+    $('xhs-login-status').textContent = '正在生成二维码…';
+    try {
+      const data = await api(routes.loginQr, {});
+      if (data.is_logged_in) {
+        $('xhs-qr').hidden = true;
+        $('xhs-login-status').textContent = '小红书 MCP 当前已有登录会话，不需要重复扫码。';
+      } else {
+        $('xhs-qr').src = data.img; $('xhs-qr').hidden = false;
+        $('xhs-login-status').textContent = `请扫码登录；二维码约 ${data.timeout || 300} 秒后过期。扫码后点“刷新登录状态”。`;
+      }
+    } catch (error) { $('xhs-login-status').textContent = error.message; }
+  });
+  {% endif %}
+  api(`${routes.loginStatus}?cached=1`).then(data => showLoginState(data, true)).catch(() => {});
+})();
+</script>
+{% endblock %}

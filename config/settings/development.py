@@ -86,8 +86,24 @@ SESSION_CACHE_ALIAS = "default"
 # 静态文件配置 - 与生产环境一致
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-# 邮件配置 - 开发环境使用控制台后端
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# 邮件配置：本机显式提供真实 SMTP 凭据时才发信，否则继续使用控制台后端。
+_email_host_user = os.getenv("EMAIL_HOST_USER", "")
+_email_host_password = os.getenv("EMAIL_HOST_PASSWORD", "")
+_email_placeholders = ("your-email", "password", "changeme", "example")
+_email_configured = bool(_email_host_user and _email_host_password) and not any(
+    value in _email_host_user.lower() or value in _email_host_password.lower()
+    for value in _email_placeholders
+)
+if _email_configured:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.qq.com")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() in {"1", "true", "yes"}
+    EMAIL_HOST_USER = _email_host_user
+    EMAIL_HOST_PASSWORD = _email_host_password
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", _email_host_user)
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # CORS配置 - 与生产环境一致
 CORS_ALLOW_ALL_ORIGINS = True

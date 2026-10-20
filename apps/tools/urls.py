@@ -1,6 +1,6 @@
 # QAToolbox/apps/tools/urls.py - 优化版本
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import path
 
 try:
@@ -144,6 +144,22 @@ from .views.rag_views import (
     rag_sync_site_capabilities_api,
     rag_upload_api,
     requirement_rag_page,
+)
+from .views.xiaohongshu_agent_views import (
+    xiaohongshu_agent_alert_email_api,
+    xiaohongshu_agent_cover_api,
+    xiaohongshu_agent_test_email_api,
+    xiaohongshu_agent_login_qrcode_api,
+    xiaohongshu_agent_login_status_api,
+    xiaohongshu_agent_message_api,
+    xiaohongshu_agent_page,
+    xiaohongshu_agent_trends_page,
+    xiaohongshu_agent_profile_api,
+    xiaohongshu_agent_search_api,
+    xiaohongshu_agent_subscribe_api,
+    xiaohongshu_agent_unsubscribe_api,
+    xiaohongshu_agent_watches_api,
+    xiaohongshu_agent_wecom_callback,
 )
 from .guitar_training_views import (
     complete_practice_session_api,
@@ -785,6 +801,26 @@ urlpatterns = [
     path("test_case_generator/reports/", test_case_execution_reports, name="test_case_reports"),
     path("task_manager/", task_manager, name="task_manager"),
     path("redbook_generator/", redbook_generator, name="redbook_generator"),
+    # ``peep`` is the canonical page name; retain the old path for bookmarks.
+    path("peep/", xiaohongshu_agent_page, name="peep"),
+    path("peep/trends/", xiaohongshu_agent_trends_page, name="peep_trends"),
+    path("xiaohongshu-agent/", lambda request: redirect("tools:peep")),
+    path("api/xiaohongshu-agent/search/", xiaohongshu_agent_search_api, name="xiaohongshu_agent_search_api"),
+    path("api/xiaohongshu-agent/profile/", xiaohongshu_agent_profile_api, name="xiaohongshu_agent_profile_api"),
+    path("api/xiaohongshu-agent/watches/", xiaohongshu_agent_watches_api, name="xiaohongshu_agent_watches_api"),
+    path(
+        "api/xiaohongshu-agent/watches/<int:watch_id>/covers/<str:note_id>/",
+        xiaohongshu_agent_cover_api,
+        name="xiaohongshu_agent_cover_api",
+    ),
+    path("api/xiaohongshu-agent/subscribe/", xiaohongshu_agent_subscribe_api, name="xiaohongshu_agent_subscribe_api"),
+    path("api/xiaohongshu-agent/unsubscribe/", xiaohongshu_agent_unsubscribe_api, name="xiaohongshu_agent_unsubscribe_api"),
+    path("api/xiaohongshu-agent/alert-email/", xiaohongshu_agent_alert_email_api, name="xiaohongshu_agent_alert_email_api"),
+    path("api/xiaohongshu-agent/test-email/", xiaohongshu_agent_test_email_api, name="xiaohongshu_agent_test_email_api"),
+    path("api/xiaohongshu-agent/message/", xiaohongshu_agent_message_api, name="xiaohongshu_agent_message_api"),
+    path("api/xiaohongshu-agent/login-status/", xiaohongshu_agent_login_status_api, name="xiaohongshu_agent_login_status_api"),
+    path("api/xiaohongshu-agent/login-qrcode/", xiaohongshu_agent_login_qrcode_api, name="xiaohongshu_agent_login_qrcode_api"),
+    path("api/xiaohongshu-agent/wecom/callback/", xiaohongshu_agent_wecom_callback, name="xiaohongshu_agent_wecom_callback"),
     path("pdf_converter/", pdf_converter, name="pdf_converter"),
     path("pdf_converter_test/", pdf_converter_test, name="pdf_converter_test"),
     path("resume-3d-generator/", resume_3d_generator, name="resume_3d_generator"),

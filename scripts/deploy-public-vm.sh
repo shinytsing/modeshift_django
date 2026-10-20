@@ -4,6 +4,7 @@ set -Eeuo pipefail
 
 PROJECT_DIR="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
 COMPOSE_FILE="$PROJECT_DIR/docker/docker-compose.prod.yml"
+CREATOR_COMPOSE_FILE="$PROJECT_DIR/docker/docker-compose.creator-watch.yml"
 ENV_FILE="$PROJECT_DIR/.env"
 VM_ENV_FILE="$PROJECT_DIR/.env.vm"
 APP_PORT="${APP_PORT:-8080}"
@@ -52,7 +53,67 @@ if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
   mv "$env_tmp" "$ENV_FILE"
   echo "==> DeepSeek API key supplied to public production environment"
 fi
+
+# Persist the workflow's already verified SMTP settings for the web container.
+# Values are never printed. Single quotes prevent Compose interpolation of `$`.
+if [[ -n "${EMAIL_HOST:-}" && -n "${EMAIL_PORT:-}" && -n "${EMAIL_HOST_USER:-}" && -n "${EMAIL_HOST_PASSWORD:-}" && -n "${DEFAULT_FROM_EMAIL:-}" ]]; then
+  python3 - "$ENV_FILE" <<'PY'
+import os
+import pathlib
+import sys
+import tempfile
+
+path = pathlib.Path(sys.argv[1])
+keys = ("EMAIL_HOST", "EMAIL_PORT", "EMAIL_USE_TLS", "EMAIL_HOST_USER", "EMAIL_HOST_PASSWORD", "DEFAULT_FROM_EMAIL")
+values = {key: os.environ.get(key, "") for key in keys}
+values["EMAIL_USE_TLS"] = values["EMAIL_USE_TLS"] or "true"
+for key, value in values.items():
+    if any(char in value for char in ("\n", "\r", "\0")):
+        raise SystemExit(f"{key} contains a character unsupported by the deployment env file")
+lines = [line for line in path.read_text().splitlines() if line.split("=", 1)[0] not in keys]
+lines.extend(f"{key}='{value.replace(chr(39), chr(92) + chr(39))}'" for key, value in values.items())
+with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, prefix=".env.mail.", delete=False) as handle:
+    handle.write("\n".join(lines) + "\n")
+    temporary = pathlib.Path(handle.name)
+temporary.chmod(0o600)
+temporary.replace(path)
+PY
+  echo "==> SMTP configuration supplied to public production environment"
+fi
 chmod 600 "$ENV_FILE"
+
+creator_watch_mcp_enabled=false
+if [[ -n "${XHS_MCP_TOKEN:-}" ]]; then
+  if [[ ! -f "$CREATOR_COMPOSE_FILE" ]]; then
+    echo "Creator-watch Compose overlay not found: $CREATOR_COMPOSE_FILE" >&2
+    exit 1
+  fi
+  python3 - "$ENV_FILE" <<'PY'
+import os
+import pathlib
+import sys
+import tempfile
+
+path = pathlib.Path(sys.argv[1])
+token = os.environ["XHS_MCP_TOKEN"]
+if any(char in token for char in ("\n", "\r", "\0", "'")):
+    raise SystemExit("XHS_MCP_TOKEN contains a character unsupported by the deployment env file")
+lines = [
+    line for line in path.read_text().splitlines()
+    if not line.startswith(("XHS_MCP_TOKEN=", "XHS_MCP_BASE_URL="))
+]
+lines.append(f"XHS_MCP_TOKEN='{token}'")
+lines.append("XHS_MCP_BASE_URL=http://xiaohongshu-mcp:18060")
+with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, prefix=".env.xhs.", delete=False) as handle:
+    handle.write("\n".join(lines) + "\n")
+    temporary = pathlib.Path(handle.name)
+temporary.chmod(0o600)
+temporary.replace(path)
+PY
+  creator_watch_mcp_enabled=true
+  echo "==> Xiaohongshu MCP token supplied to public production environment"
+fi
+
 if [[ -z "${QATOOLBOX_IMAGE:-}" ]]; then
   echo "QATOOLBOX_IMAGE is required." >&2
   exit 1
@@ -72,8 +133,12 @@ uname -a
 df -h "$PROJECT_DIR" /var/lib/docker 2>/dev/null || df -h "$PROJECT_DIR"
 "${docker_command[@]}" info --format 'Docker server={{.ServerVersion}} storage={{.Driver}} root={{.DockerRootDir}}'
 
+compose_files=(-f "$COMPOSE_FILE")
+if [[ "$creator_watch_mcp_enabled" == true ]]; then
+  compose_files+=(-f "$CREATOR_COMPOSE_FILE")
+fi
 compose() {
-  "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+  "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" "$@"
 }
 
 export QATOOLBOX_IMAGE
@@ -83,6 +148,15 @@ if ! "${docker_command[@]}" image inspect "$QATOOLBOX_IMAGE" >/dev/null 2>&1; th
   exit 1
 fi
 echo "==> Reusing locally built image $QATOOLBOX_IMAGE"
+if [[ "$creator_watch_mcp_enabled" == true ]]; then
+  xhs_image="${XHS_MCP_IMAGE:-modeshift-xhs-mcp:patched-7797fd3}"
+  if ! "${docker_command[@]}" image inspect "$xhs_image" >/dev/null 2>&1; then
+    echo "Patched Xiaohongshu MCP image is missing: $xhs_image" >&2
+    echo "Build it from the pinned source and readiness patch before enabling XHS_MCP_TOKEN." >&2
+    exit 1
+  fi
+  compose config --quiet
+fi
 
 previous_image=""
 if "${docker_command[@]}" container inspect modeshift_web >/dev/null 2>&1; then
@@ -95,8 +169,11 @@ start_started_at=$(date +%s)
 # Preserve the persistent database and Redis containers during web releases.
 # Recreating all four at once can race with the VM's boot/updater service and
 # briefly remove healthy dependencies from the live application.
-timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --wait --wait-timeout 120 --no-build db redis
-timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --no-build --no-deps web nginx
+timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --wait --wait-timeout 120 --no-build db redis
+if [[ "$creator_watch_mcp_enabled" == true ]]; then
+  timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --wait --wait-timeout 120 --no-build xiaohongshu-mcp
+fi
+timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --no-build --no-deps web nginx
 echo "==> Compose start finished in $(( $(date +%s) - start_started_at ))s"
 
 if ! compose exec -T web sh -c 'test -f /app/media/vx.jpg'; then
@@ -143,6 +220,14 @@ for attempt in {1..30}; do
   fi
   sleep 2
 done
+
+echo "==> Starting the daily creator-watch scheduler"
+compose up -d --no-build --no-deps creator_watch
+if [[ "$("${docker_command[@]}" inspect -f '{{.State.Running}}' "$(compose ps -q creator_watch)")" != "true" ]]; then
+  echo "Creator-watch scheduler did not start." >&2
+  compose logs --tail=50 creator_watch >&2
+  exit 1
+fi
 
 if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
   if ! compose exec -T web sh -c 'test -n "${DEEPSEEK_API_KEY:-}"'; then

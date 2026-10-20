@@ -4,6 +4,9 @@
 
 -r requirements.txt
 
+# Read public creator profiles and recent videos for the daily Bilibili watch.
+bilibili-cli==0.6.2
+
 # EasyOCR has broad Torch constraints. Pin a compatible CPU pair so pip does
 # not backtrack across GPU/CUDA releases during the Docker image build.  This
 # pair remains compatible with the project's existing sympy==1.12 lock.

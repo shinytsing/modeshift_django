@@ -4289,7 +4289,7 @@ def send_image_api(request, room_id):
                         "sender": message.sender.username,
                         "content": message.content,
                         "message_type": message.message_type,
-                        "file_url": filename,
+                        "file_url": f"/media/{filename}",
                         "created_at": message.created_at.isoformat(),
                         "is_own": True,
                     },

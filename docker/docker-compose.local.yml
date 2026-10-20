@@ -33,7 +33,7 @@ services:
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-noreply@example.com}
     command: >
       sh -c "pip install beautifulsoup4 xmind -q &&
-      gunicorn --bind 0.0.0.0:8000 --workers 2 --timeout 300 wsgi:application"
+      daphne -b 0.0.0.0 -p 8000 asgi:application"
     ports:
       - "8000:8000"
     depends_on:
