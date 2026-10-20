@@ -1,4 +1,5 @@
 """Open the persistent User Search browser session for one-time QR login."""
+
 import os
 from playwright.sync_api import sync_playwright
 

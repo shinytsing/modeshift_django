@@ -29,7 +29,9 @@ def _message(result: dict) -> str:
     lines = [result["answer"]]
     notes = result.get("new_notes", [])
     if notes:
-        lines.append(f"\n最近一次更新（{result.get('checked_date') or result.get('update_date') or '本次'}，共 {len(notes)} 篇）")
+        lines.append(
+            f"\n最近一次更新（{result.get('checked_date') or result.get('update_date') or '本次'}，共 {len(notes)} 篇）"
+        )
     for note in notes:
         lines.append(f"\n《{note.get('title') or '未命名笔记'}》")
         if note.get("description"):

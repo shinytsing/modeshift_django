@@ -504,4 +504,7 @@ def reply_to_message(user, message: str, *, refresh: bool = True) -> dict:
     last_result = _state(target).get("last_result") or {}
     if not last_result:
         return {"answer": f"{target.target_user_name} 尚未完成每日检查，请稍后在网页查询。", "new_notes": []}
-    return {"answer": f"{last_result.get('answer', '暂无检查结果')}\n检查时间：{last_result.get('checked_at', '未知')}", "new_notes": []}
+    return {
+        "answer": f"{last_result.get('answer', '暂无检查结果')}\n检查时间：{last_result.get('checked_at', '未知')}",
+        "new_notes": [],
+    }

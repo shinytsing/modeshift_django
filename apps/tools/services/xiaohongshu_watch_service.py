@@ -322,7 +322,10 @@ def _today_result(subscription: SocialMediaSubscription) -> dict | None:
     if public_notes:
         reference = "昨天" if baseline and baseline.get("date") == yesterday else "上次记录"
         titles = "；".join(f"《{note.get('title') or '未命名笔记'}》" for note in public_notes[:5])
-        answer = f"{subscription.target_user_name} 与{reference}相比，发现 {len(public_notes)} 篇新笔记：{titles}。" " 这是今天已保存的检查结果。"
+        answer = (
+            f"{subscription.target_user_name} 与{reference}相比，发现 {len(public_notes)} 篇新笔记：{titles}。"
+            " 这是今天已保存的检查结果。"
+        )
     else:
         answer = str(last_result.get("answer") or "暂无检查结果") + " 这是今天已保存的检查结果。"
     count_changes = last_result.get("count_changes") or _count_changes(
@@ -373,4 +376,7 @@ def reply_to_message(user, message: str, *, refresh: bool = True) -> dict:
     last_result = _state(target).get("last_result") or {}
     if not last_result:
         return {"answer": f"{target.target_user_name} 尚未完成每日检查，请稍后在网页查询。", "new_notes": []}
-    return {"answer": f"{last_result.get('answer', '暂无检查结果')}\n检查时间：{last_result.get('checked_at', '未知')}", "new_notes": []}
+    return {
+        "answer": f"{last_result.get('answer', '暂无检查结果')}\n检查时间：{last_result.get('checked_at', '未知')}",
+        "new_notes": [],
+    }

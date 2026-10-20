@@ -514,7 +514,12 @@ def test_bilibili_daily_comparison_and_named_message(monkeypatch):
             "avatar": "",
             "fetched_at": timezone.now().isoformat(),
             "notes": [
-                {"id": note_id, "title": note_id, "description": "内容简介", "url": f"https://www.bilibili.com/video/{note_id}"}
+                {
+                    "id": note_id,
+                    "title": note_id,
+                    "description": "内容简介",
+                    "url": f"https://www.bilibili.com/video/{note_id}",
+                }
                 for note_id in current_ids
             ],
         }
