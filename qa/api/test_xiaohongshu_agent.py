@@ -5,6 +5,8 @@ import base64
 import json
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+
 import pytest
 from django.contrib.auth.models import User
 from django.core import mail
