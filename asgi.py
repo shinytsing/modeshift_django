@@ -11,7 +11,9 @@ import os
 import asyncio
 
 import django
+from django.conf import settings
 from django.core.asgi import get_asgi_application
+from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler
 from asgiref.sync import sync_to_async
 
 from channels.auth import AuthMiddlewareStack
@@ -52,6 +54,11 @@ def create_async_safe_http_app():
             # 其他类型的请求直接传递
             await sync_app(scope, receive, send)
     
+    # Daphne does not provide Django's runserver static-file handler. Keep
+    # local development assets available when this project is launched with
+    # the ASGI dev script, while production continues to use collected files.
+    if settings.DEBUG:
+        return ASGIStaticFilesHandler(async_app)
     return async_app
 
 # 导入WebSocket路由（在Django设置后导入）
