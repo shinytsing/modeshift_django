@@ -9,6 +9,8 @@ class ChatNotificationManager {
         this.notifications = [];
         this.isVisible = false;
         this.pollInterval = null;
+        this.isFetching = false;
+        this.isFetchingDetails = false;
         this.isDragging = false;
         this.currentX = 0;
         this.currentY = 0;
@@ -1118,10 +1120,10 @@ class ChatNotificationManager {
         // 立即获取一次
         this.fetchNotifications();
 
-        // 每5秒轮询一次
+        // Avoid making slower browsers compete with the notification poll.
         this.pollInterval = setInterval(() => {
-            this.fetchNotifications();
-        }, 5000);
+            if (!document.hidden) this.fetchNotifications();
+        }, 15000);
     }
 
     stopPolling() {
@@ -1132,6 +1134,8 @@ class ChatNotificationManager {
     }
 
     async fetchNotifications() {
+        if (this.isFetching || document.hidden) return;
+        this.isFetching = true;
         try {
             const response = await fetch('/tools/api/notifications/summary/', {
                 method: 'GET',
@@ -1169,10 +1173,14 @@ class ChatNotificationManager {
         } catch (error) {
             // 获取通知摘要失败
             console.log('获取通知摘要失败:', error);
+        } finally {
+            this.isFetching = false;
         }
     }
 
     async fetchDetailedNotifications() {
+        if (this.isFetchingDetails) return;
+        this.isFetchingDetails = true;
         try {
             const response = await fetch('/tools/api/notifications/unread/', {
                 method: 'GET',
@@ -1206,6 +1214,8 @@ class ChatNotificationManager {
         } catch (error) {
             // 获取详细通知失败
             console.log('获取详细通知失败:', error);
+        } finally {
+            this.isFetchingDetails = false;
         }
     }
 
