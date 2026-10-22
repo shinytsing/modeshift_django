@@ -243,6 +243,21 @@ web 启动命令会执行数据库迁移。镜像回滚不会回滚数据库、�
 
 如果原 VMware 虚拟机已删除，需要先重建 Ubuntu 虚拟机，再安装 Docker、Docker Compose 和 GitHub Actions Runner，并使用同一个仓库重新注册 Runner。注册完成后确认 GitHub 中 `vmware-ubuntu` 显示为 `online`，且保留 `self-hosted`、`linux`、`x64`、`vmware` 四个标签；否则构建任务会一直排队，远程服务器仍会继续使用旧镜像。
 
+### Runner 有工作但 Docker 构建失败
+
+如果日志出现 `permission denied while trying to connect to the Docker API`，说明 Runner 服务用户没有 Docker socket 权限。在 VMware Ubuntu 上执行：
+
+```bash
+sudo usermod -aG docker shenshen
+sudo systemctl restart docker
+cd ~/actions-runner
+sudo ./svc.sh stop
+sudo ./svc.sh start
+sudo -u shenshen docker ps
+```
+
+最后一条命令能列出容器后，再重新运行 GitHub Actions；仅重试 workflow 不会修复用户组权限。
+
 ### Checkout 很慢或失败
 
 在 VMware 中执行 `curl -I --max-time 10 -x http://192.168.27.1:7890 https://github.com` 和 `curl -I --max-time 10 -x http://192.168.27.1:7890 https://api.github.com`。如果宿主机代理端口变化，需要同步修改 `.github/workflows/vmware-deploy.yml`。
