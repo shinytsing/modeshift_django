@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.tools.models import SocialMediaSubscription
+from apps.tools.services.creator_sources import PLATFORM_LABELS
 
 from .notification_service import NotificationService
 from .real_crawler import RealSocialMediaCrawler
@@ -32,6 +33,10 @@ class SocialMediaScheduler:
         total_updates = 0
 
         for subscription in active_subscriptions:
+            # The legacy crawler generates simulated posts for these platforms.
+            # Creator Watch uses dated, verified source IDs and reports failures explicitly.
+            if subscription.platform in PLATFORM_LABELS:
+                continue
             try:
                 print(f"爬取 {subscription.platform} - {subscription.target_user_name}")
 

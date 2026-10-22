@@ -74,7 +74,9 @@ class Command(BaseCommand):
         inactive_rooms = []
 
         # 获取所有聊天室
-        all_rooms = ChatRoom.objects.all()
+        # The creator-watch room backs the site-wide notification bell; its
+        # unread notifications must survive the generic chat-room cleanup.
+        all_rooms = ChatRoom.objects.exclude(room_id__startswith="creator-watch-")
 
         for room in all_rooms:
             last_activity = self.get_room_last_activity(room)

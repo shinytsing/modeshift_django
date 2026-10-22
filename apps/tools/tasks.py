@@ -158,12 +158,28 @@ def run_social_media_crawler():
     """运行社交媒体爬虫任务"""
     try:
         from apps.tools.services.social_media.scheduler import SocialMediaScheduler
-        
+
         scheduler = SocialMediaScheduler()
         total_updates = scheduler.run_crawler_task()
-        
+
         logger.info(f"社交媒体爬虫任务完成，共发现 {total_updates} 个更新")
         return total_updates
     except Exception as e:
         logger.error(f"社交媒体爬虫任务执行失败: {e}")
         return 0
+
+
+@shared_task
+def check_xhs_watches_daily():
+    """Persist daily Xiaohongshu snapshots and send configured notifications."""
+    from django.core.management import call_command
+
+    call_command("check_xhs_watches")
+
+
+@shared_task
+def check_creator_watches_daily():
+    """Check real creator sources without using the legacy simulated crawler."""
+    from django.core.management import call_command
+
+    call_command("check_creator_watches")

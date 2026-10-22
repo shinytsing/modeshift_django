@@ -1,0 +1,63 @@
+diff --git a/xiaohongshu/search.go b/xiaohongshu/search.go
+index 2da7902..17a0d6c 100644
+--- a/xiaohongshu/search.go
++++ b/xiaohongshu/search.go
+@@ -116,8 +116,8 @@ func (s *SearchAction) Search(ctx context.Context, keyword string, filters ...Fi
+ 
+ 	searchURL := makeSearchURL(keyword)
+ 	page.MustNavigate(searchURL)
+-	page.MustWaitStable()
+-	page.MustWait(`() => window.__INITIAL_STATE__ !== undefined`)
++	_ = page.Timeout(8 * time.Second).WaitLoad()
++	waitFeedsLoaded(page, 20*time.Second)
+ 	humanize.Delay(ctx, humanize.AfterNavigate)
+ 
+ 	if len(pending) > 0 {
+@@ -203,6 +203,17 @@ func readFeedIDs(page *rod.Page) string {
+ 	return res.Value.Str()
+ }
+ 
++func waitFeedsLoaded(page *rod.Page, timeout time.Duration) {
++	deadline := time.Now().Add(timeout)
++	for time.Now().Before(deadline) {
++		if readFeedIDs(page) != "" {
++			return
++		}
++		time.Sleep(300 * time.Millisecond)
++	}
++	logrus.Warnf("等待搜索结果加载超时（%s）", timeout)
++}
++
+ // waitFeedsChanged 等筛选后的数据到位。
+ //
+ // 点完筛选项之后不能立刻读结果：站点是先把 feeds 清空、再灌入新数据，
+diff --git a/xiaohongshu/user_profile.go b/xiaohongshu/user_profile.go
+index 61216c7..55f8e94 100644
+--- a/xiaohongshu/user_profile.go
++++ b/xiaohongshu/user_profile.go
+@@ -55,14 +55,23 @@ func (u *UserProfileAction) UserProfile(ctx context.Context, userID, xsecToken s
+ 
+ 	searchURL := makeUserProfileURL(userID, xsecToken, tab)
+ 	page.MustNavigate(searchURL)
+-	page.MustWaitStable()
++	_ = page.Timeout(8 * time.Second).WaitLoad()
+ 
+ 	return u.extractUserProfileData(page, tab)
+ }
+ 
+ // extractUserProfileData 从页面中提取用户资料数据的通用方法
+ func (u *UserProfileAction) extractUserProfileData(page *rod.Page, tab ProfileTab) (*UserProfileResponse, error) {
+-	page.MustWait(`() => window.__INITIAL_STATE__ !== undefined`)
++	if err := page.Timeout(25 * time.Second).Wait(rod.Eval(`() => {
++		const u = window.__INITIAL_STATE__ && window.__INITIAL_STATE__.user;
++		if (!u) return false;
++		const unwrap = (o) => o && (o.value !== undefined ? o.value : o._value);
++		const notes = unwrap(u.notes);
++		return !!unwrap(u.userPageData) && Array.isArray(notes)
++			&& notes.some(group => Array.isArray(group) && group.some(feed => feed && feed.id));
++	}`)); err != nil {
++		return nil, fmt.Errorf("用户主页笔记数据未就绪: %w", err)
++	}
+ 
+ 	userDataResult := page.MustEval(`() => {
+ 		if (window.__INITIAL_STATE__ &&

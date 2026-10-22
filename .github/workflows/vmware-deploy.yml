@@ -127,7 +127,7 @@ jobs:
     # Keep the image on the persistent deployment runner so deploy can reuse
     # its local Docker layers instead of downloading the image from GHCR.
     runs-on: [self-hosted, linux, x64, vmware]
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       HTTP_PROXY: http://192.168.27.1:7890
       HTTPS_PROXY: http://192.168.27.1:7890
@@ -136,6 +136,7 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.ref }}
       compose_bundle: ${{ steps.bundle.outputs.compose }}
+      creator_compose_bundle: ${{ steps.bundle.outputs.creator_compose }}
       nginx_bundle: ${{ steps.bundle.outputs.nginx }}
       deploy_script_bundle: ${{ steps.bundle.outputs.script }}
 
@@ -184,11 +185,34 @@ jobs:
               browser.close()
           '
 
+      - name: Build pinned Xiaohongshu MCP when configured
+        shell: bash
+        env:
+          XHS_MCP_TOKEN: ${{ secrets.XHS_MCP_TOKEN }}
+        run: |
+          if [[ -z "$XHS_MCP_TOKEN" ]]; then
+            echo "XHS_MCP_TOKEN is unset; skipping the optional MCP image."
+            exit 0
+          fi
+          source_dir="$(mktemp -d)"
+          trap 'rm -rf "$source_dir"' EXIT
+          git -C "$source_dir" init -q
+          git -C "$source_dir" remote add origin https://github.com/xpzouying/xiaohongshu-mcp.git
+          git -C "$source_dir" fetch --depth 1 origin 7797fd375aba02dcd33afe143f6bee13e5870859
+          git -C "$source_dir" checkout --detach -q FETCH_HEAD
+          git -C "$source_dir" apply "$GITHUB_WORKSPACE/docs/patches/xhs-mcp-readiness.patch"
+          docker build --platform linux/amd64 \
+            --build-arg "HTTP_PROXY=$HTTP_PROXY" \
+            --build-arg "HTTPS_PROXY=$HTTPS_PROXY" \
+            --build-arg "ALL_PROXY=$ALL_PROXY" \
+            --tag modeshift-xhs-mcp:patched-7797fd3 "$source_dir"
+
       - name: Package deployment configuration
         id: bundle
         shell: bash
         run: |
           echo "compose=$(base64 -w0 docker/docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
+          echo "creator_compose=$(base64 -w0 docker/docker-compose.creator-watch.yml)" >> "$GITHUB_OUTPUT"
           echo "nginx=$(base64 -w0 docker/nginx.prod.conf)" >> "$GITHUB_OUTPUT"
           echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
 
@@ -200,18 +224,27 @@ jobs:
     env:
       QATOOLBOX_IMAGE: ${{ needs.build_image.outputs.image }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+      XHS_MCP_TOKEN: ${{ secrets.XHS_MCP_TOKEN }}
 
     steps:
       - name: Restore deployment configuration
         shell: bash
         env:
           COMPOSE_BUNDLE: ${{ needs.build_image.outputs.compose_bundle }}
+          CREATOR_COMPOSE_BUNDLE: ${{ needs.build_image.outputs.creator_compose_bundle }}
           NGINX_BUNDLE: ${{ needs.build_image.outputs.nginx_bundle }}
           DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
         run: |
           deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
           mkdir -p "$deploy_dir/docker" "$deploy_dir/scripts"
           printf '%s' "$COMPOSE_BUNDLE" | base64 --decode > "$deploy_dir/docker/docker-compose.prod.yml"
+          printf '%s' "$CREATOR_COMPOSE_BUNDLE" | base64 --decode > "$deploy_dir/docker/docker-compose.creator-watch.yml"
           printf '%s' "$NGINX_BUNDLE" | base64 --decode > "$deploy_dir/docker/nginx.prod.conf"
           printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > "$deploy_dir/scripts/deploy-public-vm.sh"
           chmod +x "$deploy_dir/scripts/deploy-public-vm.sh"

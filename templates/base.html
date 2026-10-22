@@ -7833,7 +7833,7 @@
         if (typeof ChatNotificationManager === 'undefined') {
             // 动态加载聊天通知脚本
             const script = document.createElement('script');
-            script.src = '{% static "js/chat_notifications.js" %}';
+            script.src = '{% static "js/chat_notifications.js" %}?v=20261018-7';
             script.onload = function() {
                 // 脚本加载完成后，手动创建实例确保通知图标显示
                 // // console.log(...)

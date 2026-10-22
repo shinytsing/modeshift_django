@@ -562,6 +562,10 @@ function goToLifeDiary() {
     }
 }
 
+function goToCreatorWatch() {
+    window.location.href = '{% url "tools:peep" %}#xhs-watches-panel';
+}
+
 // 爆款文案按钮点击处理函数 - 已隐藏
 /*
 function goToRedbookGenerator() {
@@ -956,6 +960,12 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <h3 class="training-title">生活日记</h3>
       <p class="training-description">层层递进记录每日心情，追踪生活目标，回顾美好时光</p>
+    </div>
+
+    <div class="training-card" onclick="goToCreatorWatch()">
+      <div class="training-icon"><i class="fas fa-rss"></i></div>
+      <h3 class="training-title">博主更新提醒</h3>
+      <p class="training-description">关注小红书、B 站和网易云用户，有更新时自动提醒</p>
     </div>
 
     <!-- 爆款文案已隐藏 -->

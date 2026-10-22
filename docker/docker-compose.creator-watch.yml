@@ -1,0 +1,41 @@
+# Apply with docker-compose.prod.yml after building the patched MCP image.
+# The MCP has write APIs; keep it private on the Compose network.
+services:
+  xiaohongshu-mcp:
+    image: ${XHS_MCP_IMAGE:-modeshift-xhs-mcp:patched-7797fd3}
+    restart: unless-stopped
+    init: true
+    environment:
+      AUTH_TOKEN: ${XHS_MCP_TOKEN:?Set XHS_MCP_TOKEN in the private .env file}
+      COOKIES_PATH: /app/data/cookies.json
+      HOME: /app/data/home
+      XDG_CONFIG_HOME: /app/data/config
+    volumes:
+      - xhs_mcp_data:/app/data
+    expose:
+      - "18060"
+    command: ["./app", "-port", ":18060", "-headless=true"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:18060/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    environment:
+      XHS_MCP_BASE_URL: http://xiaohongshu-mcp:18060
+      XHS_MCP_TOKEN: ${XHS_MCP_TOKEN:?Set XHS_MCP_TOKEN in the private .env file}
+    depends_on:
+      xiaohongshu-mcp:
+        condition: service_healthy
+
+  creator_watch:
+    environment:
+      XHS_MCP_BASE_URL: http://xiaohongshu-mcp:18060
+      XHS_MCP_TOKEN: ${XHS_MCP_TOKEN:?Set XHS_MCP_TOKEN in the private .env file}
+    depends_on:
+      xiaohongshu-mcp:
+        condition: service_healthy
+
+volumes:
+  xhs_mcp_data:

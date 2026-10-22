@@ -156,9 +156,6 @@ class ChatNotificationManager {
                     <h3>未读消息</h3>
                     <button class="clear-all-btn" id="clear-all-notifications">全部标记已读</button>
                 </div>
-                <div class="drag-hint">
-                    <small>💡 提示：拖拽图标可移动位置，双击可重置</small>
-                </div>
                 <div class="notification-list" id="notification-list">
                     <div class="no-notifications">暂无未读消息</div>
                 </div>
@@ -170,7 +167,7 @@ class ChatNotificationManager {
         style.textContent = `
             .chat-notification-manager {
                 position: fixed;
-                top: 20px;
+                top: 82px;
                 right: 20px;
                 z-index: 9999;
                 user-select: none;
@@ -191,7 +188,7 @@ class ChatNotificationManager {
                 align-items: center;
                 justify-content: center;
                 color: white;
-                cursor: move;
+                cursor: pointer;
                 box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
                 border: 2px solid #ffd700;
                 transition: all 0.3s ease;
@@ -965,8 +962,42 @@ class ChatNotificationManager {
 
             .notification-content {
                 display: flex;
+                gap: 10px;
                 justify-content: space-between;
                 align-items: flex-start;
+            }
+
+            .notification-cover {
+                width: 58px;
+                height: 58px;
+                flex: 0 0 58px;
+                object-fit: cover;
+                border-radius: 7px;
+            }
+
+            .notification-update-list {
+                display: flex;
+                gap: 8px;
+                margin-top: 9px;
+                overflow-x: auto;
+            }
+
+            .notification-update-link {
+                width: 78px;
+                flex: 0 0 78px;
+                color: #444;
+                font-size: 11px;
+                line-height: 1.25;
+                text-decoration: none;
+            }
+
+            .notification-update-link img {
+                display: block;
+                width: 78px;
+                height: 78px;
+                object-fit: cover;
+                border-radius: 7px;
+                margin-bottom: 4px;
             }
 
             .notification-info {
@@ -1022,86 +1053,12 @@ class ChatNotificationManager {
 
     bindEvents() {
         const icon = document.getElementById('notification-icon');
-        const dropdown = document.getElementById('notification-dropdown');
         const clearAllBtn = document.getElementById('clear-all-notifications');
-        const manager = document.getElementById('chat-notification-manager');
 
-        // 加载保存的位置
-        this.loadPosition();
-
-        // 简化的拖拽事件处理
-        let startX, startY, hasMoved = false;
-
-        icon.addEventListener('mousedown', (e) => {
-            this.isDragging = true;
-            hasMoved = false;
-            startX = e.clientX - this.xOffset;
-            startY = e.clientY - this.yOffset;
-
-            icon.style.cursor = 'grabbing';
-            manager.classList.add('dragging');
-            icon.classList.add('drag-start');
-
-            // 移除开始动画类
-            setTimeout(() => {
-                icon.classList.remove('drag-start');
-            }, 300);
-
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isDragging) return;
-
-            hasMoved = true;
-            e.preventDefault();
-
-            this.currentX = e.clientX - startX;
-            this.currentY = e.clientY - startY;
-
-            this.xOffset = this.currentX;
-            this.yOffset = this.currentY;
-
-            this.setTranslate(this.currentX, this.currentY);
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (this.isDragging) {
-                this.isDragging = false;
-                icon.style.cursor = 'move';
-                manager.classList.remove('dragging');
-                icon.classList.add('drag-end');
-
-                // 移除结束动画类
-                setTimeout(() => {
-                    icon.classList.remove('drag-end');
-                }, 500);
-
-                this.savePosition();
-
-                // 如果有移动，延迟一点时间再允许点击
-                if (hasMoved) {
-                    setTimeout(() => {
-                        // 重置移动标志
-                        hasMoved = false;
-                    }, 100);
-                }
-            }
-        });
-
-        // 点击图标切换显示/隐藏（只有在没有拖拽时才触发）
+        // This is a notification button; dragging made ordinary clicks unreliable.
         icon.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (!this.isDragging && !hasMoved) {
-                this.toggleDropdown();
-            }
-        });
-
-        // 双击重置位置
-        icon.addEventListener('dblclick', (e) => {
-            e.stopPropagation();
-            this.resetPosition();
+            this.toggleDropdown();
         });
 
         // 点击其他地方关闭下拉框
@@ -1341,24 +1298,84 @@ class ChatNotificationManager {
         const list = document.getElementById('notification-list');
 
         if (this.notifications.length === 0) {
-            list.innerHTML = '<div class="no-notifications">暂无未读消息</div>';
+            const empty = document.createElement('div');
+            empty.className = 'no-notifications';
+            empty.textContent = '暂无未读消息';
+            list.replaceChildren(empty);
             return;
         }
 
-        const html = this.notifications.map(notification => `
-            <div class="notification-item" onclick="window.chatNotificationManager && window.chatNotificationManager.openChatRoom('${notification.room_id}', '${notification.message_type || ''}', '${notification.id}')">
-                <div class="notification-content">
-                    <div class="notification-info">
-                        <div class="notification-room">${notification.room_name || '未知聊天室'}</div>
-                        <div class="notification-sender">${notification.sender_username || '系统'}</div>
-                        <div class="notification-message">${notification.message_preview || ''}</div>
-                        <div class="notification-time">${this.formatTime(notification.created_at)}</div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-
-        list.innerHTML = html;
+        const fragment = document.createDocumentFragment();
+        for (const notification of this.notifications) {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.addEventListener('click', () => this.openChatRoom(
+                notification.room_id, notification.message_type || '', notification.id
+            ));
+            const content = document.createElement('div');
+            content.className = 'notification-content';
+            const isCreatorWatch = notification.metadata?.source === 'creator_watch';
+            const updates = isCreatorWatch && Array.isArray(notification.metadata?.updates)
+                ? notification.metadata.updates
+                : [];
+            const cover = isCreatorWatch ? notification.metadata.cover : '';
+            const safeCover = value => typeof value === 'string' && (
+                /^https:\/\//i.test(value) ||
+                /^\/tools\/api\/xiaohongshu-agent\/watches\/\d+\/covers\/[A-Za-z0-9_-]+\/$/.test(value)
+            );
+            if (!updates.length && safeCover(cover)) {
+                const image = document.createElement('img');
+                image.className = 'notification-cover';
+                image.src = cover;
+                image.alt = '新增笔记封面';
+                image.loading = 'lazy';
+                image.onerror = () => image.remove();
+                content.append(image);
+            }
+            const info = document.createElement('div');
+            info.className = 'notification-info';
+            for (const [className, value] of [
+                ['notification-room', notification.room_name || '未知聊天室'],
+                ['notification-sender', notification.message_type === 'system' ? '系统' : (notification.sender_username || '系统')],
+                ['notification-message', notification.message_preview || ''],
+                ['notification-time', this.formatTime(notification.created_at)],
+            ]) {
+                const line = document.createElement('div');
+                line.className = className;
+                line.textContent = value;
+                info.append(line);
+            }
+            content.append(info);
+            item.append(content);
+            if (updates.length) {
+                const gallery = document.createElement('div');
+                gallery.className = 'notification-update-list';
+                for (const update of updates) {
+                    if (!update || typeof update.url !== 'string' || !/^https:\/\//i.test(update.url)) continue;
+                    const link = document.createElement('a');
+                    link.className = 'notification-update-link';
+                    link.href = update.url;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.addEventListener('click', event => event.stopPropagation());
+                    if (safeCover(update.cover)) {
+                        const image = document.createElement('img');
+                        image.src = update.cover;
+                        image.alt = update.title || '更新封面';
+                        image.loading = 'lazy';
+                        image.onerror = () => image.remove();
+                        link.append(image);
+                    }
+                    const title = document.createElement('span');
+                    title.textContent = update.title || '查看更新';
+                    link.append(title);
+                    gallery.append(link);
+                }
+                if (gallery.children.length) item.append(gallery);
+            }
+            fragment.append(item);
+        }
+        list.replaceChildren(fragment);
     }
 
     toggleDropdown() {
