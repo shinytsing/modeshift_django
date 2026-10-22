@@ -618,12 +618,6 @@ function handleKeyboardShortcuts(event) {
                 switchAuthTab('register');
             }
             break;
-        case 'g':
-            if (!event.ctrlKey && !event.altKey) {
-                event.preventDefault();
-                initiateGoogleAuth();
-            }
-            break;
     }
 }
 
@@ -719,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化终端状态
     showTerminalMessage('[INIT] ModeShift Terminal v2.0.1 已启动', 'success');
-    showTerminalMessage('[INFO] 使用键盘快捷键: [L]登录 [R]注册 [G]Google [ESC]关闭', 'info');
+    showTerminalMessage('[INFO] 使用键盘快捷键: [L]登录 [R]注册 [ESC]关闭', 'info');
 });
 
 // 全局函数，供外部调用
