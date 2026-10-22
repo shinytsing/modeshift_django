@@ -170,25 +170,52 @@ def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
     host = (urlparse(cover).hostname or "").lower()
     if not cover.startswith("https://") or not (host == "xhscdn.com" or host.endswith(".xhscdn.com")):
         return JsonResponse({"error": "该笔记没有可读取的真实封面"}, status=404)
-    cache_key = f"creator-cover:{hashlib.sha256(cover.encode()).hexdigest()}"
-    cached = cache.get(cache_key)
-    if cached:
-        content_type, content = cached
-    else:
+
+    def fetch(value):
+        key = f"creator-cover:{hashlib.sha256(value.encode()).hexdigest()}"
+        cached_value = cache.get(key)
+        if cached_value:
+            return cached_value
+        response = requests.get(
+            value,
+            headers={"User-Agent": "Mozilla/5.0", "Referer": "https://www.xiaohongshu.com/"},
+            timeout=12,
+        )
+        response.raise_for_status()
+        media_type = (response.headers.get("Content-Type") or "").split(";", 1)[0].lower()
+        body = response.content
+        if not media_type.startswith("image/") or not body or len(body) > 5 * 1024 * 1024:
+            raise requests.RequestException("invalid image response")
+        result = (media_type, body)
+        cache.set(key, result, timeout=3600)
+        return result
+
+    try:
+        content_type, content = fetch(cover)
+    except requests.RequestException:
+        # XHS CDN URLs are signed and expire. Refresh the note through MCP
+        # once, persist the fresh URL, then retry the image request.
+        token = note.get("xsec_token") if isinstance(note, dict) else ""
         try:
-            response = requests.get(
-                cover,
-                headers={"User-Agent": "Mozilla/5.0", "Referer": "https://www.xiaohongshu.com/"},
-                timeout=12,
-            )
-            response.raise_for_status()
-        except requests.RequestException:
-            return JsonResponse({"error": "真实封面读取失败"}, status=502)
-        content_type = (response.headers.get("Content-Type") or "").split(";", 1)[0].lower()
-        content = response.content
-        if not content_type.startswith("image/") or not content or len(content) > 5 * 1024 * 1024:
-            return JsonResponse({"error": "真实封面响应不正确"}, status=502)
-        cache.set(cache_key, (content_type, content), timeout=3600)
+            refreshed = agent.read_note_detail(note_id, token) if token else {}
+            fresh_cover = next((item for item in refreshed.get("images", []) if isinstance(item, str)), "")
+            fresh_host = (urlparse(fresh_cover).hostname or "").lower()
+            if not fresh_cover.startswith("https://") or not (
+                fresh_host == "xhscdn.com" or fresh_host.endswith(".xhscdn.com")
+            ):
+                raise requests.RequestException("MCP returned no usable cover")
+            for entry in [note] + [
+                item
+                for snapshot in state.get("history") or []
+                for item in snapshot.get("notes") or []
+                if isinstance(item, dict) and item.get("id") == note_id
+            ]:
+                entry["cover"] = fresh_cover
+            item.last_profile_data = item.last_profile_data or {}
+            item.save(update_fields=["last_profile_data", "updated_at"])
+            content_type, content = fetch(fresh_cover)
+        except (requests.RequestException, agent.XhsServiceError, agent.XhsInputError):
+            return JsonResponse({"error": "真实封面已过期，MCP 暂时无法刷新"}, status=502)
     result = HttpResponse(content, content_type=content_type)
     result["Cache-Control"] = "private, max-age=3600"
     result["X-Content-Type-Options"] = "nosniff"
