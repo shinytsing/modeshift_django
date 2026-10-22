@@ -6,8 +6,9 @@
 (function() {
     'use strict';
     
-    // 会话超时时间（30分钟）
-    const SESSION_TIMEOUT = 30 * 60 * 1000;
+    // The server owns authentication expiry.  Do not log users out merely
+    // because a tab was idle for 30 minutes.
+    const SESSION_TIMEOUT = 30 * 24 * 60 * 60 * 1000;
     
     // 最后活动时间
     let lastActivityTime = Date.now();
@@ -68,8 +69,12 @@
             const now = Date.now();
             const timeSinceLastActivity = now - lastActivityTime;
             
+            // Guest pages may be used without authentication.  Their local
+            // state should remain available instead of triggering a login
+            // dialog after an idle period.
             if (timeSinceLastActivity > SESSION_TIMEOUT) {
-                this.handleSessionTimeout();
+                this.updateActivity();
+                this.saveSessionState();
             }
         },
         
@@ -79,14 +84,10 @@
         handleSessionTimeout: function() {
             // Session timeout detected
             
-            // 显示超时提示
-            if (confirm('您的会话已超时，是否重新登录？')) {
-                showGeekLoginModal();
-            } else {
-                // 清除本地存储并重定向到首页
-                this.clearSession();
-                window.location.href = '/';
-            }
+            // Authentication failures are handled by the API response.  An
+            // idle browser tab must not erase guest state or force a login.
+            this.updateActivity();
+            this.saveSessionState();
         },
         
         /**
@@ -120,7 +121,7 @@
                     lastActivity: lastActivityTime,
                     timestamp: Date.now()
                 };
-                sessionStorage.setItem('sessionData', JSON.stringify(sessionData));
+                localStorage.setItem('sessionData', JSON.stringify(sessionData));
             } catch (error) {
                 // Failed to save session state
             }
@@ -131,7 +132,7 @@
          */
         restoreSessionState: function() {
             try {
-                const sessionData = sessionStorage.getItem('sessionData');
+                const sessionData = localStorage.getItem('sessionData');
                 if (sessionData) {
                     const data = JSON.parse(sessionData);
                     lastActivityTime = data.lastActivity || Date.now();
@@ -146,7 +147,7 @@
          */
         clearSession: function() {
             try {
-                sessionStorage.removeItem('sessionData');
+                localStorage.removeItem('sessionData');
                 localStorage.removeItem('userToken');
                 localStorage.removeItem('userData');
             } catch (error) {

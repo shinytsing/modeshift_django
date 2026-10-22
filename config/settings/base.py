@@ -239,7 +239,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 # 本地长期登录；用户主动退出登录时仍会清除 session。
 # 可通过 AUTH_TOKEN_PERSIST_FOREVER=false 恢复短期会话策略。
 AUTH_TOKEN_PERSIST_FOREVER = os.environ.get("AUTH_TOKEN_PERSIST_FOREVER", "true").lower() in ("1", "true", "yes")
-SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", str(60 * 60 * 24 * 3650)))
+# Do not let a stale short-lived environment value make sessions expire early.
+SESSION_COOKIE_AGE = max(int(os.environ.get("SESSION_COOKIE_AGE", 0)), 60 * 60 * 24 * 30)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = False  # 禁用每次请求都保存session，避免异步上下文错误
 SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为True

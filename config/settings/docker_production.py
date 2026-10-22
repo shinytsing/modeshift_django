@@ -185,7 +185,11 @@ CACHES = {
 # 会话配置
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
-SESSION_COOKIE_AGE = 1209600  # 14天
+# Keep the production session at least 30 days even when an old deployment
+# still injects the former 14-day environment value.
+SESSION_COOKIE_AGE = max(int(os.environ.get("SESSION_COOKIE_AGE", 0)), 60 * 60 * 24 * 30)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
 
