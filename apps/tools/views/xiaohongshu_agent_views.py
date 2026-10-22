@@ -158,9 +158,10 @@ def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
     if item is None:
         return JsonResponse({"error": "找不到这个订阅"}, status=404)
     state = (item.last_profile_data or {}).get("xhs_agent") or {}
-    candidates = list((state.get("latest_update") or {}).get("notes") or [])
+    candidates = []
     for snapshot in reversed(state.get("history") or []):
         candidates.extend(snapshot.get("notes") or [])
+    candidates.extend((state.get("latest_update") or {}).get("notes") or [])
     note = next((entry for entry in candidates if isinstance(entry, dict) and entry.get("id") == note_id), None)
     cover = note.get("cover") if note else ""
     if not isinstance(cover, str):
@@ -199,6 +200,8 @@ def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
         try:
             refreshed = agent.read_note_detail(note_id, token) if token else {}
             fresh_cover = next((item for item in refreshed.get("images", []) if isinstance(item, str)), "")
+            if fresh_cover.startswith("http://"):
+                fresh_cover = "https://" + fresh_cover[7:]
             fresh_host = (urlparse(fresh_cover).hostname or "").lower()
             if not fresh_cover.startswith("https://") or not (
                 fresh_host == "xhscdn.com" or fresh_host.endswith(".xhscdn.com")

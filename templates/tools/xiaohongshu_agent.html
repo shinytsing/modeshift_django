@@ -234,6 +234,7 @@
     loginQr: '{% url "tools:xiaohongshu_agent_login_qrcode_api" %}'
   };
   const $ = id => document.getElementById(id);
+  let messageRequestInFlight = false;
   const status = (message, kind = '', loading = false) => { $('xhs-status').textContent = message; $('xhs-status').className = `xhs-status ${kind}${loading ? ' loading' : ''}`; };
   // Keep candidate choices attached to the question/result card so the user
   // sees the decision immediately below the Agent answer.
@@ -419,8 +420,10 @@
 
   $('xhs-message-form').addEventListener('submit', async event => {
     event.preventDefault();
+    if (messageRequestInFlight) return;
     const message = $('xhs-message').value.trim();
     if (!message) return;
+    messageRequestInFlight = true;
     $('xhs-message-submit').disabled = true;
     $('xhs-loading-panel').hidden = false;
     status('正在检查用户主页并对比快照…', '', true);
@@ -485,7 +488,7 @@
       status('查询完成。', 'success');
       await loadWatches();
     } catch (error) { status(error.message, 'error'); }
-    finally { $('xhs-message-submit').disabled = false; $('xhs-loading-panel').hidden = true; }
+    finally { messageRequestInFlight = false; $('xhs-message-submit').disabled = false; $('xhs-loading-panel').hidden = true; }
   });
 
   $('xhs-form').addEventListener('submit', async event => {
