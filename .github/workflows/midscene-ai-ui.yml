@@ -35,7 +35,7 @@ jobs:
       MIDSCENE_MODEL_BASE_URL: ${{ inputs.model_base_url }}
       MIDSCENE_MODEL_NAME: ${{ inputs.model_name }}
       MIDSCENE_MODEL_FAMILY: ${{ inputs.model_family }}
-      MIDSCENE_MODEL_API_KEY: ${{ secrets.MIDSCENE_MODEL_API_KEY }}
+      MIDSCENE_MODEL_API_KEY: ${{ secrets.MIDSCENE_MODEL_API_KEY || secrets.DEEPSEEK_API_KEY }}
 
     steps:
       - name: Checkout
@@ -60,7 +60,7 @@ jobs:
         run: |
           for name in MIDSCENE_MODEL_API_KEY; do
             if [ -z "${!name}" ]; then
-              echo "Missing required repository secret: $name" >&2
+              echo "Missing required repository secret: MIDSCENE_MODEL_API_KEY or DEEPSEEK_API_KEY" >&2
               exit 1
             fi
           done
