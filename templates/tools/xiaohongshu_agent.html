@@ -220,7 +220,7 @@
 
 <script>
 (() => {
-  const csrf = '{{ csrf_token }}';
+  const csrfFallback = '{{ csrf_token }}';
   const routes = {
     search: '{% url "tools:xiaohongshu_agent_search_api" %}',
     profile: '{% url "tools:xiaohongshu_agent_profile_api" %}',
@@ -260,10 +260,15 @@
   const safeImage = url => typeof url === 'string' && (/^https:\/\//i.test(url) || /^http:\/\/(p1\.music\.126\.net|i\d+\.hdslb\.com)\//i.test(url) || /^\/tools\/api\/xiaohongshu-agent\/watches\/\d+\/covers\/[A-Za-z0-9_-]+\/$/.test(url)) ? (url.startsWith('http://') ? url.replace(/^http:/i, 'https:') : url) : '';
   const localTime = value => value ? new Date(value).toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai', hour12: false}) : '刚刚';
 
+  function csrfToken() {
+    const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : csrfFallback;
+  }
+
   async function api(url, body) {
     const response = await fetch(url, {
       method: body === undefined ? 'GET' : 'POST',
-      headers: body === undefined ? {} : {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+      headers: body === undefined ? {} : {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken()},
       credentials: 'same-origin',
       body: body === undefined ? undefined : JSON.stringify(body)
     });
