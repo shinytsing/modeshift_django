@@ -204,7 +204,10 @@ compose exec -T -u 0 web sh -c \
    cp -a /app/static/resume-reports/. /app/staticfiles/resume-reports/ && \
    chmod -R a+rX /app/staticfiles/resume-reports'
 
-for attempt in {1..30}; do
+# Database migrations and the first Daphne boot can take several minutes on
+# the single VMware host. Keep polling through the expected startup window so
+# Nginx's temporary 502 during migration is not treated as a failed release.
+for attempt in {1..180}; do
   if curl --noproxy '*' --connect-timeout 3 --max-time 10 -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
     break
   fi
