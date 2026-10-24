@@ -225,6 +225,14 @@ for attempt in {1..180}; do
 done
 
 echo "==> Starting the daily creator-watch scheduler"
+# A previous Compose project can leave the generated creator-watch container
+# name behind. Remove only containers tagged as this service before recreating it.
+creator_watch_ids=$("${docker_command[@]}" ps -aq --filter "label=com.docker.compose.service=creator_watch" || true)
+if [[ -n "$creator_watch_ids" ]]; then
+  while IFS= read -r creator_watch_id; do
+    [[ -z "$creator_watch_id" ]] || "${docker_command[@]}" rm -f "$creator_watch_id"
+  done <<< "$creator_watch_ids"
+fi
 compose up -d --no-build --no-deps creator_watch
 if [[ "$("${docker_command[@]}" inspect -f '{{.State.Running}}' "$(compose ps -q creator_watch)")" != "true" ]]; then
   echo "Creator-watch scheduler did not start." >&2
