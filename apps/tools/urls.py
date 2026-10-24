@@ -294,6 +294,7 @@ from .monitoring_views import (
     get_alerts,
     get_cache_stats,
     get_monitoring_data,
+    get_service_status,
     get_system_metrics,
     monitoring_dashboard,
     warm_up_cache,
@@ -1366,6 +1367,7 @@ urlpatterns = [
     # 监控系统路由
     path("monitoring/", monitoring_dashboard, name="monitoring_dashboard"),
     path("monitoring/data/", get_monitoring_data, name="get_monitoring_data"),
+    path("monitoring/services/", get_service_status, name="get_service_status"),
     path("monitoring/system/", get_system_metrics, name="get_system_metrics"),
     path("monitoring/alerts/", get_alerts, name="get_alerts"),
     path("monitoring/cache/", get_cache_stats, name="get_cache_stats"),

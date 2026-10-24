@@ -253,6 +253,64 @@
     background: rgba(255,255,255,0.3);
 }
 
+.service-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.service-card {
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #e53e3e;
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: #fff5f5;
+}
+
+.service-card.up {
+    border-left-color: #38a169;
+    background: #f0fff4;
+}
+
+.service-card-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.service-card-message {
+    margin-top: 7px;
+    color: #718096;
+    font-size: .9rem;
+}
+
+.service-badge {
+    color: white;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: .75rem;
+    background: #e53e3e;
+}
+
+.service-card.up .service-badge { background: #38a169; }
+
 @media (max-width: 768px) {
     .metrics-grid {
         grid-template-columns: 1fr;
@@ -375,6 +433,16 @@
         </div>
     </div>
 
+    <section class="service-section" aria-labelledby="service-status-title">
+        <div class="service-header">
+            <h3 class="alerts-title" id="service-status-title">🚦 部署服务状态</h3>
+            <span id="service-summary">检查中…</span>
+        </div>
+        <div id="service-status-grid" class="service-grid">
+            <div class="loading">正在检查服务…</div>
+        </div>
+    </section>
+
     <!-- 告警信息 -->
     <div class="alerts-section">
         <div class="alerts-header">
@@ -416,9 +484,30 @@ let refreshInterval;
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardData();
+    loadServiceStatus();
     // 每30秒自动刷新
     refreshInterval = setInterval(loadDashboardData, 30000);
+    setInterval(loadServiceStatus, 30000);
 });
+
+async function loadServiceStatus() {
+    const grid = document.getElementById('service-status-grid');
+    try {
+        const response = await fetch('/tools/monitoring/services/');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        document.getElementById('service-summary').textContent = `${data.summary.up}/${data.summary.total} 项正常`;
+        grid.innerHTML = data.services.map(service => `
+            <div class="service-card ${service.status}">
+                <div class="service-card-title"><span>${service.name}</span><span class="service-badge">${service.status === 'up' ? '正常' : '异常'}</span></div>
+                <div class="service-card-message">${service.message}</div>
+            </div>
+        `).join('');
+    } catch (error) {
+        document.getElementById('service-summary').textContent = '检查失败';
+        grid.innerHTML = `<div class="error">服务状态接口不可用：${error.message}</div>`;
+    }
+}
 
 // 加载仪表板数据
 async function loadDashboardData() {
@@ -503,6 +592,7 @@ function updateAlerts(alerts) {
 // 刷新数据
 function refreshData() {
     loadDashboardData();
+    loadServiceStatus();
 }
 
 // 清除缓存
