@@ -227,7 +227,12 @@ done
 echo "==> Starting the daily creator-watch scheduler"
 # A previous Compose project can leave the generated creator-watch container
 # name behind. Remove only containers tagged as this service before recreating it.
-creator_watch_ids=$("${docker_command[@]}" ps -aq --filter "label=com.docker.compose.service=creator_watch" || true)
+creator_watch_ids=$(
+  {
+    "${docker_command[@]}" ps -aq --filter "label=com.docker.compose.service=creator_watch"
+    "${docker_command[@]}" ps -aq --filter "name=creator_watch"
+  } | sort -u
+)
 if [[ -n "$creator_watch_ids" ]]; then
   while IFS= read -r creator_watch_id; do
     [[ -z "$creator_watch_id" ]] || "${docker_command[@]}" rm -f "$creator_watch_id"
