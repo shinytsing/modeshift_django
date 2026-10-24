@@ -73,7 +73,13 @@ def _check_mcp():
         request = Request(f"{base_url.rstrip('/')}/health", headers={"Accept": "application/json"})
         with urlopen(request, timeout=2) as response:
             healthy = 200 <= response.status < 300
-        return _service("小红书 MCP", "xiaohongshu_mcp", "up" if healthy else "down", "健康检查通过" if healthy else "健康检查失败", "integration")
+        return _service(
+            "小红书 MCP",
+            "xiaohongshu_mcp",
+            "up" if healthy else "down",
+            "健康检查通过" if healthy else "健康检查失败",
+            "integration",
+        )
     except (HTTPError, URLError, TimeoutError, OSError):
         return _service("小红书 MCP", "xiaohongshu_mcp", "down", "无法连接 MCP 健康检查", "integration")
 
@@ -83,7 +89,9 @@ def _check_celery():
         from config.celery import app as celery_app
 
         replies = celery_app.control.inspect(timeout=1).ping() or {}
-        return _service("定时任务 Worker", "scheduler", "up" if replies else "down", "Worker 已响应" if replies else "没有 Worker 响应")
+        return _service(
+            "定时任务 Worker", "scheduler", "up" if replies else "down", "Worker 已响应" if replies else "没有 Worker 响应"
+        )
     except Exception:
         return _service("定时任务 Worker", "scheduler", "down", "Worker 未响应")
 
@@ -95,8 +103,20 @@ def _check_configuration():
     ) and not str(getattr(settings, "EMAIL_BACKEND", "")).endswith("console.EmailBackend")
     deepseek_ready = bool(getattr(settings, "DEEPSEEK_API_KEY", "") or os.environ.get("DEEPSEEK_API_KEY"))
     return [
-        _service("邮件 SMTP", "email", "up" if smtp_ready else "down", "SMTP 已配置" if smtp_ready else "未配置 SMTP", "configuration"),
-        _service("DeepSeek AI", "deepseek", "up" if deepseek_ready else "down", "API key 已配置" if deepseek_ready else "未配置 API key", "configuration"),
+        _service(
+            "邮件 SMTP",
+            "email",
+            "up" if smtp_ready else "down",
+            "SMTP 已配置" if smtp_ready else "未配置 SMTP",
+            "configuration",
+        ),
+        _service(
+            "DeepSeek AI",
+            "deepseek",
+            "up" if deepseek_ready else "down",
+            "API key 已配置" if deepseek_ready else "未配置 API key",
+            "configuration",
+        ),
     ]
 
 
@@ -114,12 +134,14 @@ def get_service_status(request):
         *_check_configuration(),
     ]
     up = sum(item["status"] == "up" for item in services)
-    return JsonResponse({
-        "checked_at": time.time(),
-        "status": "up" if up == len(services) else "down",
-        "summary": {"up": up, "down": len(services) - up, "total": len(services)},
-        "services": services,
-    })
+    return JsonResponse(
+        {
+            "checked_at": time.time(),
+            "status": "up" if up == len(services) else "down",
+            "summary": {"up": up, "down": len(services) - up, "total": len(services)},
+            "services": services,
+        }
+    )
 
 
 @login_required
@@ -146,7 +168,9 @@ def get_monitoring_data(request):
                 },
                 "performance": {},
             },
-            "alerts": [{"level": "warning", "message": message, "timestamp": timezone.now().isoformat()} for message in alerts],
+            "alerts": [
+                {"level": "warning", "message": message, "timestamp": timezone.now().isoformat()} for message in alerts
+            ],
         }
         return JsonResponse({"success": True, "data": dashboard_data})
     except Exception as e:
