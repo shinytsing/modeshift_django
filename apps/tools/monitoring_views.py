@@ -14,15 +14,18 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from apps.tools.services.cache_service import CacheManager
-from apps.tools.services.monitoring_service import monitoring_service
+from apps.tools.models import SocialMediaNotification
+from apps.tools.services.monitoring_service import DatabaseMonitor, SystemMonitor, monitoring_service
 
 
 def is_admin(user):
@@ -124,7 +127,27 @@ def get_service_status(request):
 def get_monitoring_data(request):
     """获取监控数据API"""
     try:
-        dashboard_data = monitoring_service.get_dashboard_data()
+        system = SystemMonitor.get_system_metrics()
+        database = DatabaseMonitor.get_database_metrics()
+        alerts = SystemMonitor.check_system_health() + DatabaseMonitor.check_database_health()
+        today = timezone.localdate()
+        dashboard_data = {
+            "health_score": max(0, 100 - len(alerts) * 10),
+            "metrics": {
+                "system": {
+                    "cpu": {"percent": system["cpu_percent"]},
+                    "memory": {"percent": system["memory_percent"]},
+                    "disk": {"percent": system["disk_percent"]},
+                },
+                "database": database,
+                "application": {
+                    "active_users_today": User.objects.filter(last_login__date=today).count(),
+                    "messages_today": SocialMediaNotification.objects.filter(created_at__date=today).count(),
+                },
+                "performance": {},
+            },
+            "alerts": [{"level": "warning", "message": message, "timestamp": timezone.now().isoformat()} for message in alerts],
+        }
         return JsonResponse({"success": True, "data": dashboard_data})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
