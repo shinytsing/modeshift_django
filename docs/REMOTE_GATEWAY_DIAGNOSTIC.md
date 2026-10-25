@@ -70,3 +70,68 @@ curl -i --max-time 10 https://shenyiqing.xyz/health/
 ## 安全边界
 
 本文不包含任何登录 Cookie、CSRF 值、MCP Token、邮箱密码或 SSH 私钥。处理完成后应轮换曾经在聊天或终端中暴露过的会话 Cookie。
+
+
+## 2026-10-25：请远程 GPT 配置虚拟机 SSH 连接
+
+### 最新事实（覆盖前文旧的阻塞描述）
+
+- 用户已确认信任公网主机 `47.103.143.152` 的新指纹，本机 known_hosts 已更新。
+- 对该公网地址的 SSH 已通过主机校验，但现有密钥连接 root、ubuntu、shenshen 都返回 `Permission denied (publickey)`。
+- 不能据此认定 `47.103.143.152` 就是 VMware 虚拟机；其主机指纹也不能用来验证另一台虚拟机。
+- GitHub Runner `vmware-ubuntu` 刚检查为 online、空闲，标签为 self-hosted / Linux / X64 / vmware。
+- 历史虚拟机地址 `192.168.27.128` 从 Mac 访问 SSH 22 和 HTTP 8080 都超时，当前地址待确认。
+- 部署目录：`/home/shenshen/modeshift_django`。最近一次部署运行 `40066439568` 成功，公网 `/health/` 本次检查正常。
+- 用户明确表示已完成小红书登录，仍遇到“服务返回的数据无法解析”。未取得运行时证据，不能直接归因为登录过期；应记录请求状态码、Content-Type、耗时、错误类型并关联 Web/MCP/Nginx 日志。
+
+### 请在实际 VMware 虚拟机上核对并反馈
+
+```bash
+hostname
+whoami
+hostname -I
+ip -brief address
+ss -ltn | grep ':22 '
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256
+```
+
+反馈下面四项即可（不提供密码、私钥、Cookie 或 Token）：
+
+| 字段 | 远程填写 |
+| --- | --- |
+| Mac 实际可达的主机地址 / VPN 地址 | 待确认 |
+| SSH 端口 | 待确认 |
+| SSH 用户名 | 待确认 |
+| 该主机 ED25519 公钥指纹 | 待确认 |
+
+局域网地址只有在双方网络互通时才可用。若不互通，先确认现有 VPN 或端口映射，不要默认开放公网 root/密码登录，也不要把 SSH 私钥提交到仓库。
+
+### 授权此 Mac 的公钥
+
+仅在确认是目标虚拟机后，以准备授权的普通部署用户执行；不要在错误账号下执行：
+
+```bash
+install -d -m 700 "$HOME/.ssh"
+touch "$HOME/.ssh/authorized_keys"
+chmod 600 "$HOME/.ssh/authorized_keys"
+```
+
+将下面完整一行加入该用户的 `~/.ssh/authorized_keys`，已有相同 key 时不要重复加入。这是可公开的公钥，不是私钥：
+
+```text
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDznHxX4i3kiJTSErx298Uj5O1U6S6ZuSBmivLSYfTUooYd4pS4QtReCv3TfAeB3IYshOVKq04HdTEShR1HffoSmxK/2C8jnVIwWEza+KmFITAEsYJmjCiVOv0FMhJsyV5gtX01FoELY8TNjtMwGisWTcDOH0r+mPS75cVDKvdKQUdB4QrafRKIGzt/B6rOx96gvzdTwR0ooGXKqOmrRcgVghAFXEOpMk8DWKM/jviMCOIPor4BUFJTKtfhhK2z8VhCtmFHkUcBQtg5dVv8PADtShEvLsTnFZqxRWYvmpdKfET9ybVEhnFJX755DjWvCpOQ3t00dSJhzU5SHSXRfspZnLG13fU5R6v9y+UClrmjnKGmvU5ycTXZ6ejTk0L086gW2gehBXLRlkYuZleo0aQ9WelWd7ChBAfHoDzwsmHhPRf/6EniyG2A78cIKQ1tU3fj4y7EpDW4d4Q1ljSA06TW9Hz3cFaIpNlAEnEe8wj7SV5NirVoNXuY37jizowklmpXR8lBrNFmzoyeEGp5V96S2TVbbtrC9J2Ti+s715U74fsqI+YZNZsDyMnrJElmGB+RBTHuj65DreSxZ0ChkG0GpN7MTkNGSvGjye1V6mNYyU9Ex+3KMutCJB1S9KJO0Rwi/YVfx3vxmnTcFz5xMqh0HhAFBIEwifjdfWJESCwkYw== modeshift-mac-debug
+```
+
+公钥 SHA256 指纹（与服务器的主机指纹用途不同）：
+
+```text
+SHA256:RTj/fZr8z9DPB4LLSxJxKQQxjeFDJMEjvGGTVlYqLKA
+```
+
+完成后在仓库文档中反馈上述连接信息和授权结果，本机即可使用现有私钥连接并读取运行时日志。无需新增管理员账号、上传私钥、关闭主机校验或重建应用。
+
+### 应用日志检查注意
+
+MCP 在 Compose 私网中，宿主机未必发布 18060；宿主机访问该端口失败不等于 MCP 未启动。先执行 `docker ps` 确认真实容器名，再使用容器内 health 检查或从 web 容器调用已配置的 MCP 地址。不要打印环境变量全集、Cookie 文件或完整带签名的请求链接。
+
+上次部署日志（10 月 24 日）显示根盘已用 93%、可用约 5.8 GB；这是历史数据，请重新核对，不要直接清理数据库或持久化卷。
