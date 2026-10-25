@@ -152,3 +152,49 @@ MCP 在 Compose 私网中，宿主机未必发布 18060；宿主机访问该端�
 - VM 请求公网 https://shenyiqing.xyz/health/ 本次 10 秒超时，外部客户端可达性未验证。
 - 最近一小时未检出可关联的新 profile 请求，本次未重现短链问题，不能据此归因为登录过期；后续仍需关联状态码、Content-Type、耗时与 Web/MCP/Nginx 日志，禁止输出 Cookie、Token 或完整签名链接。
 - 根盘实测总量 79 GB、已用 69 GB、可用 5.8 GB、使用率 93%；未清理数据库或持久化卷。
+
+
+## 2026-10-25：Mac 到虚拟机的网络实测及下一步交接
+
+用户要求将本次网络诊断发到 Git，交给 Windows / 虚拟机侧 GPT 继续配置。
+
+### Mac 侧最新实测
+
+- Mac 活跃 IPv4：`192.168.0.100`，网卡 `en0`，默认网关 `192.168.0.1`。
+- `route -n get 192.168.27.132` 显示流量走 `en0 -> 192.168.0.1`，没有到 VMware NAT 网段的专用路由。
+- 系统当前路由表没有到 `192.168.27.0/24` 的 VPN 路由；未确认现有 VPN 提供设备间私网互通。
+- 到 `192.168.27.132:22` 的 TCP / SSH 连接超时；到 `192.168.27.132:8000` 的 HTTP 连接也超时。尚未进入 SSH 身份认证阶段，不能归因为公钥未授权。
+- 同一 Wi-Fi 或使用同一 VPN 产品，不自动意味着 Mac 可以访问 Windows 内部 VMware NAT 网络。
+- 局域网邻居 `192.168.0.102` 的 22、2222 端口拒绝连接；尚未确认该地址是否属于 Windows 宿主机，不要直接当作宿主机地址配置。
+
+### 请 Windows 侧 GPT 处理
+
+1. 在实际 Windows 宿主机上执行 `ipconfig`，确认活跃 Wi-Fi / 以太网的 IPv4 地址（不要使用 VMware VMnet 网卡地址），反馈该地址。
+2. 核对 Windows 能继续通过 `shenshen@192.168.27.132:22` 访问目标虚拟机。
+3. 优先复用已有可用的 VPN 路由或 SSH 转发；如果确实没有，配置 Windows 局域网端口转发：`Windows实际LAN地址:2222 -> 192.168.27.132:22`。先检查端口占用及现有转发，不覆盖其他规则。
+4. 可使用 VMware NAT 端口转发，或 Windows 自带 `netsh interface portproxy`；只选一种，不同时叠加。使用 portproxy 时核对 IP Helper 服务是否运行。
+5. 只绑定 Windows 实际局域网地址，防火墙入站仅允许 Mac 的 `192.168.0.100` 访问 TCP 2222；不要关闭整个防火墙，不要配置路由器公网映射，也不要开放 root / 密码登录。
+6. 完成后从 Mac 验证端口、核对下述虚拟机指纹，再进行公钥认证。转发不会改变 SSH 服务端主机密钥，不要使用公网服务器指纹代替。
+
+端口转发的目标 VM 主机指纹（来自上一节远程核验）：
+
+```text
+SHA256:CvKYaiePUs28jP0z3PRCniGx3uRT4lADza4RuZmx8yk
+```
+
+Mac 最终连接形式（Windows 实际地址待远程反馈）：
+
+```bash
+ssh -o IdentitiesOnly=yes -i ~/.ssh/qatoolbox_deploy -p 2222 shenshen@<Windows实际LAN地址>
+```
+
+### 请在本文反馈结果
+
+- Windows 实际 LAN IPv4：待填写
+- 端口转发方式、监听地址与端口：待填写
+- 转发目标：`192.168.27.132:22`（配置时重新确认 VM 地址未变化）
+- 防火墙来源限制：待填写
+- Windows 到 VM SSH 结果：待填写
+- Mac 到转发端口及 SSH 结果：需 Mac 实测后填写，不能仅凭转发创建成功就写已连通
+
+本次 Mac 侧仅做只读网络诊断，未修改本机路由、VPN、Windows 防火墙或虚拟机网络模式。VMware NAT 目标 IP、Mac 源 IP 和 Windows LAN IP 如因 DHCP 改变，应相应核对规则，不要为方便直接放开所有来源。
