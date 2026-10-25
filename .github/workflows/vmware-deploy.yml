@@ -139,6 +139,7 @@ jobs:
       creator_compose_bundle: ${{ steps.bundle.outputs.creator_compose }}
       nginx_bundle: ${{ steps.bundle.outputs.nginx }}
       deploy_script_bundle: ${{ steps.bundle.outputs.script }}
+      startup_script_bundle: ${{ steps.bundle.outputs.startup }}
 
     steps:
       - name: Check out the triggering revision in the persistent runner workspace
@@ -215,6 +216,7 @@ jobs:
           echo "creator_compose=$(base64 -w0 docker/docker-compose.creator-watch.yml)" >> "$GITHUB_OUTPUT"
           echo "nginx=$(base64 -w0 docker/nginx.prod.conf)" >> "$GITHUB_OUTPUT"
           echo "script=$(base64 -w0 scripts/deploy-public-vm.sh)" >> "$GITHUB_OUTPUT"
+          echo "startup=$(base64 -w0 scripts/start-production-stack.sh)" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Start locally built Docker application on VMware
@@ -240,6 +242,7 @@ jobs:
           CREATOR_COMPOSE_BUNDLE: ${{ needs.build_image.outputs.creator_compose_bundle }}
           NGINX_BUNDLE: ${{ needs.build_image.outputs.nginx_bundle }}
           DEPLOY_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.deploy_script_bundle }}
+          STARTUP_SCRIPT_BUNDLE: ${{ needs.build_image.outputs.startup_script_bundle }}
         run: |
           deploy_dir="${QATOOLBOX_DIR:-$HOME/modeshift_django}"
           mkdir -p "$deploy_dir/docker" "$deploy_dir/scripts"
@@ -247,7 +250,8 @@ jobs:
           printf '%s' "$CREATOR_COMPOSE_BUNDLE" | base64 --decode > "$deploy_dir/docker/docker-compose.creator-watch.yml"
           printf '%s' "$NGINX_BUNDLE" | base64 --decode > "$deploy_dir/docker/nginx.prod.conf"
           printf '%s' "$DEPLOY_SCRIPT_BUNDLE" | base64 --decode > "$deploy_dir/scripts/deploy-public-vm.sh"
-          chmod +x "$deploy_dir/scripts/deploy-public-vm.sh"
+          printf '%s' "$STARTUP_SCRIPT_BUNDLE" | base64 --decode > "$deploy_dir/scripts/start-production-stack.sh"
+          chmod +x "$deploy_dir/scripts/deploy-public-vm.sh" "$deploy_dir/scripts/start-production-stack.sh"
 
       - name: Deploy cached image to the public entrypoint
         env:

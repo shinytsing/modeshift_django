@@ -198,3 +198,25 @@ ssh -o IdentitiesOnly=yes -i ~/.ssh/qatoolbox_deploy -p 2222 shenshen@<Windows�
 - Mac 到转发端口及 SSH 结果：需 Mac 实测后填写，不能仅凭转发创建成功就写已连通
 
 本次 Mac 侧仅做只读网络诊断，未修改本机路由、VPN、Windows 防火墙或虚拟机网络模式。VMware NAT 目标 IP、Mac 源 IP 和 Windows LAN IP 如因 DHCP 改变，应相应核对规则，不要为方便直接放开所有来源。
+
+
+## 2026-10-25：统一启动的已验证修复（替代前文临时方案）
+
+Mac 已通过 Windows `192.168.0.103:2222` 成功连接 VMware，主机指纹与前述 VM 指纹一致。
+
+反复启动异常的根因：systemd 使用 `modeshift_deploy/.env.vm`，GitHub 发布使用
+`modeshift_django/.env`，Worker 使用独立 runtime JSON，导致镜像、凭据、网络互相覆盖。
+现在生产统一为 `/home/shenshen/modeshift_django/.env`、Compose 项目 `docker`、网络
+`modeshift_network`、入口 `scripts/start-production-stack.sh start`。
+
+- Web/Worker 共享同一镜像、环境变量和媒体卷。
+- GitHub 发布调用共享入口；开机服务 `modeshift-project.service` 也已覆盖为同一入口。
+- 旧 `.env.vm`、独立 Worker runtime JSON 仅保留作备份，不再启动它们。
+- 已实测共享入口重复启动及 systemd restart 成功，六个核心容器 healthy。
+- Web/Worker 实际镜像和环境完全一致，唯一 Worker/Beat 返回 pong；原有数据库、Redis、媒体和 MCP Cookie 卷名称均未改变。
+- Nginx 的 8080 健康请求已返回正常 JSON，不再使用旧 Web IP。
+- 配置回归测试 7 项通过；详细入口和 systemd 配置见 `docs/VMWARE_SINGLE_HOST_DEPLOYMENT.md` 最新章节。
+- 迁移前的私有备份位于服务器 `/home/shenshen/modeshift_django/.startup-unification-backup-20261025-192203`，不要上传备份中的凭据。
+
+尚未重启整台虚拟机，也未验证定时邮件真实送达；不要把服务重启验证当作这两项的证据。
+磁盘空间仍需单独处理，本次未清理数据或持久化卷。

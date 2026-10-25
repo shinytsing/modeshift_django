@@ -1,5 +1,72 @@
 # ModeShift Django：单 VMware 虚拟机部署手册
 
+## 2026-10-25：生产启动入口统一（优先于下方历史记录）
+
+本机已定位的反复异常原因：开机服务使用 `/home/shenshen/modeshift_deploy/.env.vm`，
+GitHub 发布使用 `/home/shenshen/modeshift_django/.env`，Worker 又由第三份 runtime JSON 单独创建。
+这些入口会覆盖镜像、数据库/Redis 配置和 Docker 网络；Nginx 还可能缓存重建前的 Web 地址。
+
+当前生产只使用：
+
+- 根目录 `/home/shenshen/modeshift_django`，私有环境文件 `.env`；
+- Compose 项目 `docker`，网络 `modeshift_network`；
+- 基础编排 `docker/docker-compose.prod.yml`，启用 MCP 时自动加载 `docker/docker-compose.creator-watch.yml`；
+- 启动入口 `scripts/start-production-stack.sh start`，GitHub 发布与 systemd 都调用它；
+- `.env` 中的 `QATOOLBOX_IMAGE` 为已验证的固定版本，Web 和 Worker 共用该镜像及环境；
+- `.env` 中的 `POSTGRES_PASSWORD`、`REDIS_PASSWORD` 为实际在用凭据，不能用旧 `.env.vm` 覆盖。
+
+在服务器上的常用操作：
+
+```bash
+cd /home/shenshen/modeshift_django
+bash scripts/start-production-stack.sh start
+bash scripts/start-production-stack.sh compose ps
+bash scripts/start-production-stack.sh compose logs --tail=100 creator_watch
+```
+
+`start` 先验证配置，等待数据库、Redis、MCP 和 Web 就绪，再重建 Nginx 刷新上游地址，
+移除旧 `modeshift-worker` 项目的 Worker，启动唯一 Worker + Beat，并从 Web 执行 Celery ping。
+共享锁避免两个启动过程同时重建容器；启动失败不会打印环境变量或清空持久卷。
+
+该服务器的开机服务是 `modeshift-project.service`，覆盖配置为
+`/etc/systemd/system/modeshift-project.service.d/90-production-stack.conf`：
+
+```ini
+[Unit]
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+User=shenshen
+WorkingDirectory=/home/shenshen/modeshift_django
+Environment=
+EnvironmentFile=
+ExecStart=
+ExecStart=/usr/bin/bash /home/shenshen/modeshift_django/scripts/start-production-stack.sh start
+ExecStop=
+ExecStop=/usr/bin/bash /home/shenshen/modeshift_django/scripts/start-production-stack.sh compose stop nginx creator_watch web
+ExecReload=
+ExecReload=/usr/bin/bash /home/shenshen/modeshift_django/scripts/start-production-stack.sh start
+TimeoutStartSec=600
+TimeoutStopSec=120
+```
+
+旧目录、`.env.vm` 和私有 runtime JSON 只作为历史备份，不再作为生产启动入口；
+不要再次手动启动旧 Worker，避免出现多个 Beat。更新 systemd 后执行 `daemon-reload`，
+再通过服务重启验证。迁移前必须备份私有配置，并保留 `docker_postgres_data`、
+`docker_redis_data`、`docker_media_volume` 和 `docker_xhs_mcp_data` 等原持久卷名称。
+禁止通过 `down -v`、删库、清空 Redis 或复制新密码来解决连接问题。
+
+配置回归验证（不会启动容器或发送邮件）：
+
+```bash
+python3 qa/scripts/test_production_stack.py
+bash -n scripts/start-production-stack.sh
+bash -n scripts/deploy-public-vm.sh
+```
+
+容器健康、Celery pong 和已加载的定时计划不等于已经验证真实邮件投递；邮件链路需要独立验收。
+
 记录日期：2026-10-04（北京时间）。本文描述当前实现，不把计划中的能力当作已实现能力。
 
 本文档记录当前已经验证过的生产部署方案。后续维护部署时，优先阅读本文档和以下实际执行文件：

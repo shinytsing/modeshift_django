@@ -133,12 +133,13 @@ uname -a
 df -h "$PROJECT_DIR" /var/lib/docker 2>/dev/null || df -h "$PROJECT_DIR"
 "${docker_command[@]}" info --format 'Docker server={{.ServerVersion}} storage={{.Driver}} root={{.DockerRootDir}}'
 
-compose_files=(-f "$COMPOSE_FILE")
-if [[ "$creator_watch_mcp_enabled" == true ]]; then
-  compose_files+=(-f "$CREATOR_COMPOSE_FILE")
+STACK_SCRIPT="$PROJECT_DIR/scripts/start-production-stack.sh"
+if [[ ! -f "$STACK_SCRIPT" ]]; then
+  echo "Shared production startup script missing: $STACK_SCRIPT" >&2
+  exit 1
 fi
 compose() {
-  "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" "$@"
+  QATOOLBOX_DIR="$PROJECT_DIR" bash "$STACK_SCRIPT" compose "$@"
 }
 
 export QATOOLBOX_IMAGE
@@ -164,17 +165,14 @@ if "${docker_command[@]}" container inspect modeshift_web >/dev/null 2>&1; then
   echo "==> Previous web image recorded for rollback: $previous_image"
 fi
 
-echo "==> Starting the public production stack on port $APP_PORT"
-start_started_at=$(date +%s)
-# Preserve the persistent database and Redis containers during web releases.
-# Recreating all four at once can race with the VM's boot/updater service and
-# briefly remove healthy dependencies from the live application.
-timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --wait --wait-timeout 120 --no-build db redis
-if [[ "$creator_watch_mcp_enabled" == true ]]; then
-  timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --wait --wait-timeout 120 --no-build xiaohongshu-mcp
+echo "==> Starting the shared production stack"
+if ! QATOOLBOX_DIR="$PROJECT_DIR" bash "$STACK_SCRIPT" start; then
+  if [[ -n "$previous_image" ]] && "${docker_command[@]}" image inspect "$previous_image" >/dev/null 2>&1; then
+    echo "==> Rolling back Web and Worker together to $previous_image" >&2
+    QATOOLBOX_DIR="$PROJECT_DIR" QATOOLBOX_IMAGE="$previous_image" bash "$STACK_SCRIPT" start >&2 || true
+  fi
+  exit 1
 fi
-timeout --foreground 10m "${docker_command[@]}" compose --env-file "$ENV_FILE" "${compose_files[@]}" up -d --no-build --no-deps web nginx
-echo "==> Compose start finished in $(( $(date +%s) - start_started_at ))s"
 
 if ! compose exec -T web sh -c 'test -f /app/media/vx.jpg'; then
   echo "==> Seeding missing default media asset media/vx.jpg"
@@ -204,46 +202,6 @@ compose exec -T -u 0 web sh -c \
    cp -a /app/static/resume-reports/. /app/staticfiles/resume-reports/ && \
    chmod -R a+rX /app/staticfiles/resume-reports'
 
-# Database migrations and the first Daphne boot can take several minutes on
-# the single VMware host. Keep polling through the expected startup window so
-# Nginx's temporary 502 during migration is not treated as a failed release.
-for attempt in {1..180}; do
-  if curl --noproxy '*' --connect-timeout 3 --max-time 10 -fsS "http://127.0.0.1:${APP_PORT}/health/" >/dev/null; then
-    break
-  fi
-  if [[ "$attempt" -eq 30 ]]; then
-    echo "Public production stack did not become healthy." >&2
-    compose logs --tail=100 web nginx >&2
-    if [[ -n "$previous_image" ]] && "${docker_command[@]}" image inspect "$previous_image" >/dev/null 2>&1; then
-      echo "==> Rolling back to previous web image: $previous_image" >&2
-      export QATOOLBOX_IMAGE="$previous_image"
-      compose up -d --no-build web nginx >&2 || true
-    fi
-    exit 1
-  fi
-  sleep 2
-done
-
-echo "==> Starting the daily creator-watch scheduler"
-# A previous Compose project can leave the generated creator-watch container
-# name behind. Remove only containers tagged as this service before recreating it.
-creator_watch_ids=$(
-  {
-    "${docker_command[@]}" ps -aq --filter "label=com.docker.compose.service=creator_watch"
-    "${docker_command[@]}" ps -aq --filter "name=creator_watch"
-  } | sort -u
-)
-if [[ -n "$creator_watch_ids" ]]; then
-  while IFS= read -r creator_watch_id; do
-    [[ -z "$creator_watch_id" ]] || "${docker_command[@]}" rm -f "$creator_watch_id"
-  done <<< "$creator_watch_ids"
-fi
-compose up -d --no-build --no-deps creator_watch
-if [[ "$("${docker_command[@]}" inspect -f '{{.State.Running}}' "$(compose ps -q creator_watch)")" != "true" ]]; then
-  echo "Creator-watch scheduler did not start." >&2
-  compose logs --tail=50 creator_watch >&2
-  exit 1
-fi
 
 if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
   if ! compose exec -T web sh -c 'test -n "${DEEPSEEK_API_KEY:-}"'; then
@@ -279,16 +237,14 @@ PY
   echo "DeepSeek API connectivity verified in the public web container"
 fi
 
-# Publish the release selection only after the application checks have passed.
-# The boot unit previously pinned an old SHA in Environment=QATOOLBOX_IMAGE;
-# an EnvironmentFile takes precedence over Environment= and survives reboot.
+# Keep a diagnostic release marker; every startup reads the canonical .env below.
 release_file="$PROJECT_DIR/.deployed-image.env"
 release_tmp="$(mktemp "$PROJECT_DIR/.deployed-image.XXXXXX")"
 printf 'QATOOLBOX_IMAGE=%s\n' "$QATOOLBOX_IMAGE" > "$release_tmp"
 chmod 600 "$release_tmp"
 mv "$release_tmp" "$release_file"
 
-# Also keep ordinary docker compose invocations on the successful release.
+# Publish the release selection only after the application checks have passed.
 env_tmp="$(mktemp "$PROJECT_DIR/.env.XXXXXX")"
 awk -v image="$QATOOLBOX_IMAGE" '
   /^QATOOLBOX_IMAGE=/ { next }
@@ -298,29 +254,17 @@ awk -v image="$QATOOLBOX_IMAGE" '
 chmod 600 "$env_tmp"
 mv "$env_tmp" "$ENV_FILE"
 
-if command -v systemctl >/dev/null && systemctl cat modeshift-django.service >/dev/null 2>&1; then
-  boot_compose_override="$HOME/.local/share/modeshift-updater/compose.success-image.override.yml"
-  boot_exec="$(systemctl show modeshift-django.service --property=ExecStart --value)"
-  boot_env="$(systemctl show modeshift-django.service --property=Environment --value)"
-  if [[ -f "$boot_compose_override" && "$boot_exec" == *"$boot_compose_override"* && "$boot_env" != *QATOOLBOX_IMAGE=* ]]; then
-    boot_image="$("${docker_command[@]}" compose --env-file "$ENV_FILE" \
-      -f "$COMPOSE_FILE" -f "$boot_compose_override" config --format json |
-      python3 -c 'import json,sys; print(json.load(sys.stdin)["services"]["web"]["image"])')"
-    if [[ "$boot_image" != "$QATOOLBOX_IMAGE" ]]; then
-      echo "Boot service resolves $boot_image instead of $QATOOLBOX_IMAGE" >&2
-      exit 1
+# The VM boot unit must call the same startup script and canonical .env.
+if command -v systemctl >/dev/null; then
+  for unit in modeshift-project.service modeshift-django.service; do
+    if systemctl cat "$unit" >/dev/null 2>&1; then
+      boot_exec="$(systemctl show "$unit" --property=ExecStart --value)"
+      if [[ "$boot_exec" != *"$STACK_SCRIPT"* ]]; then
+        echo "$unit still uses another deployment configuration; migrate its ExecStart to $STACK_SCRIPT start." >&2
+        exit 1
+      fi
     fi
-    echo "==> Boot service already resolves the successful image through its Compose override"
-  else
-    boot_override="$(mktemp "$PROJECT_DIR/.boot-image.XXXXXX")"
-    printf '[Service]\nEnvironmentFile="%s"\n' "$release_file" > "$boot_override"
-    boot_target=/etc/systemd/system/modeshift-django.service.d/90-deployed-image.conf
-    if ! cmp -s "$boot_override" "$boot_target"; then
-      "${SUDO[@]}" install -D -m 0644 "$boot_override" "$boot_target"
-      "${SUDO[@]}" systemctl daemon-reload
-    fi
-    echo "==> Boot service will reuse successful image $QATOOLBOX_IMAGE"
-  fi
+  done
 fi
 
 echo "Public deployment succeeded: http://127.0.0.1:${APP_PORT}/health/"
