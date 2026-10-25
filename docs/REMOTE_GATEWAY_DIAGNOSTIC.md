@@ -220,3 +220,17 @@ Mac 已通过 Windows `192.168.0.103:2222` 成功连接 VMware，主机指纹与
 
 尚未重启整台虚拟机，也未验证定时邮件真实送达；不要把服务重启验证当作这两项的证据。
 磁盘空间仍需单独处理，本次未清理数据或持久化卷。
+
+
+## 2026-10-25：磁盘告警处理与部署保护
+
+现场根盘约 98%、仅剩约 2 GiB。Docker 旧镜像和构建缓存是主要占用，业务卷合计约 510 MB。
+已保留所有容器引用的镜像、最近两个版本和回滚记录，清理无容器引用的更旧 ModeShift SHA 镜像及未用构建缓存。
+清理后 `df -h /` 约 70%、可用约 23 GiB，应用内 `disk_usage` 约 66%（文件系统预留空间导致两者口径不同）。
+Web、Worker、Nginx、PostgreSQL、Redis 和 MCP 仍全部 healthy；Worker 监控返回 up。
+数据库、Redis、媒体文件、MCP Cookie 和私有配置未清理。
+
+部署已增加 `scripts/maintenance/prepare_docker_disk.py`：Web/MCP 构建前、部署前和部署成功后共用磁盘门禁。
+不足 8 GiB 时仅按明确的保留规则回收镜像/缓存；清理后仍不足就失败，不继续写满根盘。
+`docs/VMWARE_SINGLE_HOST_DEPLOYMENT.md` 已记录统一启动入口、systemd 配置、空间门禁及手动维护命令。
+清理缓存后下一次构建会重新生成缓存，可能变慢。不能将这次容量记录当作长期实时数值。

@@ -67,6 +67,33 @@ bash -n scripts/deploy-public-vm.sh
 
 容器健康、Celery pong 和已加载的定时计划不等于已经验证真实邮件投递；邮件链路需要独立验收。
 
+### 磁盘维护与构建空间门禁
+
+生产发布已接入 `scripts/maintenance/prepare_docker_disk.py`，Web 构建前、MCP 构建前、
+部署前与部署成功后使用同一规则。可手动在服务器执行：
+
+```bash
+python3 /home/shenshen/modeshift_django/scripts/maintenance/prepare_docker_disk.py
+```
+
+根盘不足 8 GiB 可用空间时，脚本清理 24 小时以前的未用构建缓存，以及本项目无容器引用的旧 SHA 镜像。
+保留所有运行中或已停止容器引用的镜像、最新两个版本、当前指定镜像和 `.deployed-image.env` 记录的当前/上一成功版本。
+具有自定义标签或其他仓库标签的镜像不自动删除。仍不足时清理剩余未用构建缓存；
+如果最终还不足 8 GiB，构建/部署明确失败，不继续填满磁盘。
+
+该操作不执行 `docker system prune` 或卷清理，不删除数据库、Redis、媒体文件、MCP Cookie 或私有配置。
+被清理的构建缓存可重新生成，因此下一次构建可能变慢。脚本与启动入口共用锁，避免清理与服务重建同时执行。
+
+2026-10-25 现场处理：根盘约 98% / 剩余约 2 GiB，清理后约 70% / 剩余约 23 GiB。
+主要占用来自 Docker 的旧构建缓存，并非业务数据卷（当时合计约 510 MB）。
+数值仅为现场记录，后续以 `df -h /` 为准。
+
+清理策略回归测试：
+
+```bash
+python3 qa/scripts/test_docker_disk_policy.py
+```
+
 记录日期：2026-10-04（北京时间）。本文描述当前实现，不把计划中的能力当作已实现能力。
 
 本文档记录当前已经验证过的生产部署方案。后续维护部署时，优先阅读本文档和以下实际执行文件：
