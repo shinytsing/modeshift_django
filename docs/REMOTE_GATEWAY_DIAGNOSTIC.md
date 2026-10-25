@@ -135,3 +135,20 @@ SHA256:RTj/fZr8z9DPB4LLSxJxKQQxjeFDJMEjvGGTVlYqLKA
 MCP 在 Compose 私网中，宿主机未必发布 18060；宿主机访问该端口失败不等于 MCP 未启动。先执行 `docker ps` 确认真实容器名，再使用容器内 health 检查或从 web 容器调用已配置的 MCP 地址。不要打印环境变量全集、Cookie 文件或完整带签名的请求链接。
 
 上次部署日志（10 月 24 日）显示根盘已用 93%、可用约 5.8 GB；这是历史数据，请重新核对，不要直接清理数据库或持久化卷。
+
+## 2026-10-25 18:44 CST：虚拟机侧实测反馈
+
+用户已明确授权安装本文 Mac 公钥，并将以下连接与诊断信息提交到此仓库。
+
+- 实际主机：shenshen-VMware-Virtual-Platform。
+- SSH：shenshen@192.168.27.132，端口 22；ens33 为 192.168.27.132/24，VMware NAT 默认网关为 192.168.27.2。Windows 宿主机已成功登录。
+- VM ED25519 主机公钥指纹：SHA256:CvKYaiePUs28jP0z3PRCniGx3uRT4lADza4RuZmx8yk。
+- Mac 公钥 modeshift-mac-debug 已安装到 /home/shenshen/.ssh/authorized_keys；安装前后均核验 SHA256:RTj/fZr8z9DPB4LLSxJxKQQxjeFDJMEjvGGTVlYqLKA。所有者 shenshen，目录权限 700，文件权限 600；未读取私钥。
+- Mac 跨网连接未验证：虚拟机无运行中的 Tailscale / ZeroTier，未证实 47.103.143.152 与该 VM 的映射关系。需先确保 Mac 有到此 NAT 私网的路由、VPN 或已验证跳板，不能将公钥安装视为跨网已连通。
+- 同网或已有私网路由时，可使用 Mac 对应私钥连接 ssh shenshen@192.168.27.132，并核验上述 VM 主机指纹；不要使用公网主机指纹核验此 VM。
+- 当前 docker-web-1、docker-creator_watch-1、docker-xiaohongshu-mcp-1、PostgreSQL、Redis 均 healthy。Web/worker 镜像标签为 main，标签本身不足以确定构建提交。
+- VM 本机 http://127.0.0.1:8000/health/ 返回 HTTP 200、application/json，耗时约 0.012 秒。
+- Nginx 曾重启并报 host not found in upstream "web:8000"：其 modeshift_network 与 Web 的 docker_default 分离。已接入 docker_default 并启动，从 Nginx 内请求 http://127.0.0.1/health/ 返回 healthy JSON。后续部署文件应保持同网，避免重建复发。
+- VM 请求公网 https://shenyiqing.xyz/health/ 本次 10 秒超时，外部客户端可达性未验证。
+- 最近一小时未检出可关联的新 profile 请求，本次未重现短链问题，不能据此归因为登录过期；后续仍需关联状态码、Content-Type、耗时与 Web/MCP/Nginx 日志，禁止输出 Cookie、Token 或完整签名链接。
+- 根盘实测总量 79 GB、已用 69 GB、可用 5.8 GB、使用率 93%；未清理数据库或持久化卷。
