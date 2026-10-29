@@ -317,6 +317,7 @@ class UserModePreference(models.Model):
             print(f"记录模式点击失败: {e}")
             return False
 
+
 class WeChatMiniProgramIdentity(models.Model):
     """Bind one WeChat mini-program identity to one local Model Shift user."""
 

@@ -1387,18 +1387,22 @@ def google_auth_test_view(request):
     """Google Auth 代理测试页面"""
     return render(request, "users/google_auth_test.html")
 
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def wechat_mini_login_api(request):
     """Exchange wx.login code for a signed Peep token and local user."""
     try:
         from .wechat_auth import exchange_code, issue_token, login_or_create_user
+
         data = json.loads(request.body or b"{}")
         code = data.get("code", "")
         if not isinstance(code, str) or not code or len(code) > 512:
             return JsonResponse({"error": "微信登录 code 无效"}, status=400)
         appid, openid, unionid = exchange_code(code)
         user, created = login_or_create_user(appid, openid, unionid)
-        return JsonResponse({"token": issue_token(user), "created": created, "user": {"id": user.id, "username": user.username}})
+        return JsonResponse(
+            {"token": issue_token(user), "created": created, "user": {"id": user.id, "username": user.username}}
+        )
     except Exception as exc:
         return JsonResponse({"error": str(exc) if settings.DEBUG else "微信登录暂不可用"}, status=503)

@@ -14,8 +14,15 @@ class Migration(migrations.Migration):
                 ("unionid", models.CharField(blank=True, max_length=128)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("user", models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name="wechat_mini_identity", to="auth.user")),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="wechat_mini_identity", to="auth.user"
+                    ),
+                ),
             ],
-            options={"constraints": [models.UniqueConstraint(fields=("appid", "openid"), name="users_wechat_appid_openid_unique")]},
+            options={
+                "constraints": [models.UniqueConstraint(fields=("appid", "openid"), name="users_wechat_appid_openid_unique")]
+            },
         ),
     ]
