@@ -80,6 +80,30 @@ temporary.replace(path)
 PY
   echo "==> SMTP configuration supplied to public production environment"
 fi
+
+if [[ -n "${WECHAT_MINIPROGRAM_APPID:-}" && -n "${WECHAT_MINIPROGRAM_SECRET:-}" ]]; then
+  python3 - "$ENV_FILE" <<'PY'
+import os
+import pathlib
+import sys
+import tempfile
+
+path = pathlib.Path(sys.argv[1])
+keys = ("WECHAT_MINIPROGRAM_APPID", "WECHAT_MINIPROGRAM_SECRET")
+values = {key: os.environ.get(key, "") for key in keys}
+for key, value in values.items():
+    if any(char in value for char in ("\n", "\r", "\0", "'")):
+        raise SystemExit(f"{key} contains a character unsupported by the deployment env file")
+lines = [line for line in path.read_text().splitlines() if line.split("=", 1)[0] not in keys]
+lines.extend(f"{key}='{value}'" for key, value in values.items())
+with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, prefix=".env.wechat.", delete=False) as handle:
+    handle.write("\n".join(lines) + "\n")
+    temporary = pathlib.Path(handle.name)
+temporary.chmod(0o600)
+temporary.replace(path)
+PY
+  echo "==> WeChat mini program credentials supplied to public production environment"
+fi
 chmod 600 "$ENV_FILE"
 
 creator_watch_mcp_enabled=false

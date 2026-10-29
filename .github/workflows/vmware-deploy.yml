@@ -239,6 +239,8 @@ jobs:
       EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
       DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
       XHS_MCP_TOKEN: ${{ secrets.XHS_MCP_TOKEN }}
+      WECHAT_MINIPROGRAM_APPID: ${{ secrets.WECHAT_MINIPROGRAM_APPID }}
+      WECHAT_MINIPROGRAM_SECRET: ${{ secrets.WECHAT_MINIPROGRAM_SECRET }}
 
     steps:
       - name: Restore deployment configuration
