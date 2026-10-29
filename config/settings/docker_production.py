@@ -171,6 +171,10 @@ REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
 
+# Mini-program login credentials are injected by Compose/GitHub Actions.
+WECHAT_MINIPROGRAM_APPID = os.environ.get("WECHAT_MINIPROGRAM_APPID", "")
+WECHAT_MINIPROGRAM_SECRET = os.environ.get("WECHAT_MINIPROGRAM_SECRET", "")
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
