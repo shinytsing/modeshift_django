@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from urllib.parse import quote
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -100,6 +101,11 @@ def serialize_watch(subscription: SocialMediaSubscription) -> dict:
     history = state.get("history", [])
     latest = history[-1] if history else {}
     latest_update = state.get("latest_update") or None
+    recent_notes = [
+        _public_note(note)
+        for note in (latest.get("notes") or [])[:6]
+        if isinstance(note, dict) and note.get("id")
+    ]
     trend = [{"date": item.get("date"), "profile_counts": item.get("profile_counts") or {}} for item in history[-14:]]
     if latest_update:
         freshest_notes = {
@@ -121,11 +127,18 @@ def serialize_watch(subscription: SocialMediaSubscription) -> dict:
         "user_id": subscription.target_user_id,
         "nickname": subscription.target_user_name,
         "avatar": subscription.avatar_url or "",
+        "profile_url": (
+            f"https://www.xiaohongshu.com/user/profile/{subscription.target_user_id}"
+            f"?xsec_token={quote(str(state.get('xsec_token') or ''), safe='')}&xsec_source=pc_user"
+            if state.get("xsec_token")
+            else f"https://www.xiaohongshu.com/user/profile/{subscription.target_user_id}"
+        ),
         "status": subscription.status,
         "last_checked_at": latest.get("checked_at"),
         "last_visible_count": latest.get("visible_count"),
         "last_snapshot_date": latest.get("date"),
         "profile_counts": latest.get("profile_counts") or {},
+        "recent_notes": recent_notes,
         "alert_email": state.get("alert_email", ""),
         "latest_update": latest_update,
         "trend": trend,

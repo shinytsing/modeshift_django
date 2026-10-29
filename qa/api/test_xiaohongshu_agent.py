@@ -93,6 +93,22 @@ def test_upstream_profile_shape_and_note_link(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_watch_serializes_current_profile_and_recent_notes(monkeypatch):
+    user = User.objects.create_user(username="xhs-peep-detail", password="test-password")
+    current = profile(["recent-note"])
+    current["counts"] = {"fans": "1135", "follows": "264", "interaction": "7847"}
+    current["avatar"] = "https://example.com/avatar.jpg"
+    monkeypatch.setattr(profile_agent, "read_profile", lambda *_: current)
+
+    item, _ = watch_service.subscribe(user, "creator-id", "token")
+    serialized = watch_service.serialize_watch(item)
+
+    assert serialized["profile_url"].startswith("https://www.xiaohongshu.com/user/profile/creator-id?")
+    assert serialized["profile_counts"] == current["counts"]
+    assert serialized["recent_notes"][0]["id"] == "recent-note"
+
+
+@pytest.mark.django_db
 def test_xiaohongshu_snapshot_reports_profile_count_changes(monkeypatch):
     user = User.objects.create_user(username="xhs-counts", password="test-password")
     initial = profile(["old-note"])
