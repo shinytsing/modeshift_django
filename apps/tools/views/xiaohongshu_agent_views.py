@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import hashlib
+import os
 import re
 from functools import wraps
 from urllib.parse import urlparse
@@ -37,6 +38,18 @@ logger = logging.getLogger(__name__)
 def _api_user_required(view):
     @wraps(view)
     def wrapped(request, *args, **kwargs):
+        from apps.users.wechat_auth import user_from_token
+        from django.contrib.auth.models import User
+
+        token_user = user_from_token(request)
+        if token_user is not None:
+            request.user = token_user
+            return view(request, *args, **kwargs)
+        # shortcut: local DEBUG smoke tests only; enable with PEEP_DEBUG_AUTH_BYPASS=1, remove before production.
+        if settings.DEBUG and os.getenv("PEEP_DEBUG_AUTH_BYPASS") == "1":
+            debug_user, _ = User.objects.get_or_create(username="peep-debug")
+            request.user = debug_user
+            return view(request, *args, **kwargs)
         if not request.user.is_authenticated:
             return JsonResponse({"error": "请先登录 Model Shift"}, status=401)
         return view(request, *args, **kwargs)
@@ -150,6 +163,32 @@ def xiaohongshu_agent_watches_api(request):
 
 
 @require_GET
+def xiaohongshu_agent_public_watches_api(request):
+    """Read-only shared feed for the mini program; never exposes user settings."""
+    from django.contrib.auth.models import User
+
+    key = f"peep-public-watches:{request.META.get('REMOTE_ADDR', 'unknown')}"
+    if not cache.add(key, True, timeout=1):
+        return JsonResponse({"error": "请求太频繁，请稍后再试"}, status=429)
+    username = os.getenv("PEEP_PUBLIC_WATCH_USERNAME", "")
+    if not username and settings.DEBUG:
+        username = "peep-debug"
+    user = User.objects.filter(username=username, is_active=True).first() if username else None
+    if user is None and not settings.DEBUG:
+        # Production fallback keeps the public mini-program feed tied to the
+        # first active staff account until an explicit shared username is set.
+        user = User.objects.filter(is_active=True, is_staff=True).order_by("pk").first()
+    if user is None:
+        return JsonResponse({"error": "共享数据服务尚未配置"}, status=503)
+    items = []
+    for item in watches.list_watches(user):
+        data = watches.serialize_watch(item)
+        data.pop("alert_email", None)
+        items.append(data)
+    return JsonResponse({"watches": items})
+
+
+@require_GET
 @_api_user_required
 def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", note_id):
@@ -225,6 +264,7 @@ def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
     return result
 
 
+@csrf_exempt
 @require_POST
 @_api_user_required
 def xiaohongshu_agent_subscribe_api(request):
