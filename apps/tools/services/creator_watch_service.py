@@ -246,6 +246,14 @@ def serialize_watch(item: SocialMediaSubscription) -> dict:
     history = state.get("history") or []
     latest = history[-1] if history else {}
     latest_update = state.get("latest_update") or None
+    recent_notes = [
+        _public_note(note) for note in (latest.get("notes") or [])[:6] if isinstance(note, dict) and note.get("id")
+    ]
+    profile_url = ""
+    if item.platform == "xiaohongshu":
+        profile_url = f"https://www.xiaohongshu.com/user/profile/{item.target_user_id}"
+        if state.get("xsec_token"):
+            profile_url += f"?xsec_token={quote(str(state['xsec_token']), safe='')}&xsec_source=pc_user"
     trend = [{"date": entry.get("date"), "profile_counts": entry.get("profile_counts") or {}} for entry in history[-14:]]
     if latest_update:
         freshest_notes = {
@@ -269,10 +277,13 @@ def serialize_watch(item: SocialMediaSubscription) -> dict:
         "user_id": item.target_user_id,
         "nickname": item.target_user_name,
         "avatar": item.avatar_url or "",
+        "profile_url": profile_url,
         "status": item.status,
         "monitoring_enabled": bool(history),
         "last_checked_at": latest.get("checked_at"),
         "last_snapshot_date": latest.get("date"),
+        "profile_counts": latest.get("profile_counts") or {},
+        "recent_notes": recent_notes,
         "last_visible_count": latest.get("visible_count"),
         "alert_email": get_email(item.user_id),
         "latest_update": latest_update,

@@ -101,7 +101,7 @@ def test_watch_serializes_current_profile_and_recent_notes(monkeypatch):
     monkeypatch.setattr(profile_agent, "read_profile", lambda *_: current)
 
     item, _ = watch_service.subscribe(user, "creator-id", "token")
-    serialized = watch_service.serialize_watch(item)
+    serialized = creator_watch_service.serialize_watch(item)
 
     assert serialized["profile_url"].startswith("https://www.xiaohongshu.com/user/profile/creator-id?")
     assert serialized["profile_counts"] == current["counts"]
