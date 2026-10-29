@@ -14,7 +14,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
-from django.test import override_settings
+from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -106,6 +106,24 @@ def test_watch_serializes_current_profile_and_recent_notes(monkeypatch):
     assert serialized["profile_url"].startswith("https://www.xiaohongshu.com/user/profile/creator-id?")
     assert serialized["profile_counts"] == current["counts"]
     assert serialized["recent_notes"][0]["id"] == "recent-note"
+
+
+@pytest.mark.django_db
+def test_alert_email_api_accepts_mini_program_json_without_csrf(monkeypatch):
+    user = User.objects.create_user(username="xhs-alert-api", password="test-password")
+    monkeypatch.setattr(profile_agent, "read_profile", lambda *_: profile(["recent-note"]))
+    item, _ = watch_service.subscribe(user, "creator-id", "token")
+    client = Client(enforce_csrf_checks=True)
+    client.force_login(user)
+
+    response = client.post(
+        reverse("tools:xiaohongshu_agent_alert_email_api"),
+        data=json.dumps({"watch_id": item.pk, "email": "reader@example.com"}),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["watch"]["alert_email"] == "reader@example.com"
 
 
 @pytest.mark.django_db

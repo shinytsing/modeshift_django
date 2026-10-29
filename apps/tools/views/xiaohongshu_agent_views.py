@@ -280,6 +280,7 @@ def xiaohongshu_agent_unsubscribe_api(request):
     return JsonResponse({"deleted": True})
 
 
+@csrf_exempt
 @require_POST
 @_api_user_required
 def xiaohongshu_agent_alert_email_api(request):
