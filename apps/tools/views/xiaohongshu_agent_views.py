@@ -104,7 +104,9 @@ def xiaohongshu_agent_search_api(request):
     try:
         data = _input(request)
         keyword = data.get("keyword", "")
-        platform = data.get("platform", "xiaohongshu")
+        platform = {"小红书": "xiaohongshu", "B站": "bilibili", "B 站": "bilibili"}.get(
+            data.get("platform"), data.get("platform", "xiaohongshu")
+        )
         if not isinstance(keyword, str):
             raise agent.XhsInputError("请输入昵称或关键词")
         if _throttled(request, "search", seconds=20):
