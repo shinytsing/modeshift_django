@@ -247,6 +247,10 @@ SESSION_COOKIE_SECURE = False  # 开发环境设为False，生产环境设为Tru
 SESSION_COOKIE_HTTPONLY = False  # 开发环境允许JavaScript访问，便于调试
 SESSION_COOKIE_SAMESITE = None  # 允许跨站请求携带Cookie（开发环境）
 
+# WeChat mini-program login credentials stay in the deployment environment.
+WECHAT_MINIPROGRAM_APPID = os.environ.get("WECHAT_MINIPROGRAM_APPID", "")
+WECHAT_MINIPROGRAM_SECRET = os.environ.get("WECHAT_MINIPROGRAM_SECRET", "")
+
 # 会话序列化器
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 

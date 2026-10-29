@@ -316,3 +316,19 @@ class UserModePreference(models.Model):
         except Exception as e:
             print(f"记录模式点击失败: {e}")
             return False
+
+class WeChatMiniProgramIdentity(models.Model):
+    """Bind one WeChat mini-program identity to one local Model Shift user."""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wechat_mini_identity")
+    appid = models.CharField(max_length=64)
+    openid = models.CharField(max_length=128)
+    unionid = models.CharField(max_length=128, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["appid", "openid"], name="users_wechat_appid_openid_unique")]
+
+    def __str__(self):
+        return f"{self.appid}:{self.openid} -> {self.user.username}"
