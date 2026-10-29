@@ -181,8 +181,8 @@ def xiaohongshu_agent_public_watches_api(request):
     if user is None:
         return JsonResponse({"error": "共享数据服务尚未配置"}, status=503)
     items = []
-    for item in watches.list_watches(user):
-        data = watches.serialize_watch(item)
+    for item in creator_watch_service.list_watches(user):
+        data = creator_watch_service.serialize_watch(item)
         data.pop("alert_email", None)
         items.append(data)
     return JsonResponse({"watches": items})
@@ -205,9 +205,10 @@ def xiaohongshu_agent_public_subscribe_api(request):
         return JsonResponse({"error": "共享数据服务尚未配置"}, status=503)
     try:
         data = _input(request)
-        user_id, token = agent.parse_profile_link(data.get("profile_url", ""))
-        item, created = watches.subscribe(user, "xiaohongshu", user_id, token)
-        result = watches.serialize_watch(item)
+        platform = data.get("platform", "xiaohongshu")
+        user_id, token = creator_sources.parse_profile_link(platform, data.get("profile_url", ""))
+        item, created = creator_watch_service.subscribe(user, platform, user_id, token)
+        result = creator_watch_service.serialize_watch(item)
         result.pop("alert_email", None)
         return JsonResponse({"watch": result, "created": created})
     except agent.XhsInputError as exc:
