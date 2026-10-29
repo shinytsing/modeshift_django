@@ -163,61 +163,6 @@ def xiaohongshu_agent_watches_api(request):
 
 
 @require_GET
-def xiaohongshu_agent_public_watches_api(request):
-    """Read-only shared feed for the mini program; never exposes user settings."""
-    from django.contrib.auth.models import User
-
-    key = f"peep-public-watches:{request.META.get('REMOTE_ADDR', 'unknown')}"
-    if not cache.add(key, True, timeout=1):
-        return JsonResponse({"error": "请求太频繁，请稍后再试"}, status=429)
-    username = os.getenv("PEEP_PUBLIC_WATCH_USERNAME", "")
-    if not username and settings.DEBUG:
-        username = "peep-debug"
-    user = User.objects.filter(username=username, is_active=True).first() if username else None
-    if user is None and not settings.DEBUG:
-        # Production fallback keeps the public mini-program feed tied to the
-        # first active staff account until an explicit shared username is set.
-        user = User.objects.filter(is_active=True, is_staff=True).order_by("pk").first()
-    if user is None:
-        return JsonResponse({"error": "共享数据服务尚未配置"}, status=503)
-    items = []
-    for item in creator_watch_service.list_watches(user):
-        data = creator_watch_service.serialize_watch(item)
-        data.pop("alert_email", None)
-        items.append(data)
-    return JsonResponse({"watches": items})
-
-
-@csrf_exempt
-@require_POST
-def xiaohongshu_agent_public_subscribe_api(request):
-    """Add a creator to the shared feed without exposing the shared account."""
-    from django.contrib.auth.models import User
-
-    key = f"peep-public-subscribe:{request.META.get('REMOTE_ADDR', 'unknown')}"
-    if not cache.add(key, True, timeout=8):
-        return JsonResponse({"error": "操作太频繁，请稍后再试"}, status=429)
-    username = os.getenv("PEEP_PUBLIC_WATCH_USERNAME", "")
-    user = User.objects.filter(username=username, is_active=True).first() if username else None
-    if user is None:
-        user = User.objects.filter(is_active=True, is_staff=True).order_by("pk").first()
-    if user is None:
-        return JsonResponse({"error": "共享数据服务尚未配置"}, status=503)
-    try:
-        data = _input(request)
-        platform = data.get("platform", "xiaohongshu")
-        user_id, token = creator_sources.parse_profile_link(platform, data.get("profile_url", ""))
-        item, created = creator_watch_service.subscribe(user, platform, user_id, token)
-        result = creator_watch_service.serialize_watch(item)
-        result.pop("alert_email", None)
-        return JsonResponse({"watch": result, "created": created})
-    except agent.XhsInputError as exc:
-        return JsonResponse({"error": str(exc)}, status=400)
-    except agent.XhsServiceError as exc:
-        return JsonResponse({"error": str(exc)}, status=502)
-
-
-@require_GET
 @_api_user_required
 def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", note_id):
