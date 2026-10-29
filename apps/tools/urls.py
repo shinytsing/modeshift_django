@@ -160,6 +160,7 @@ from .views.xiaohongshu_agent_views import (
     xiaohongshu_agent_unsubscribe_api,
     xiaohongshu_agent_watches_api,
     xiaohongshu_agent_public_watches_api,
+    xiaohongshu_agent_public_subscribe_api,
     xiaohongshu_agent_wecom_callback,
 )
 from .guitar_training_views import (
@@ -814,6 +815,11 @@ urlpatterns = [
         "api/xiaohongshu-agent/public-watches/",
         xiaohongshu_agent_public_watches_api,
         name="xiaohongshu_agent_public_watches_api",
+    ),
+    path(
+        "api/xiaohongshu-agent/public-subscribe/",
+        xiaohongshu_agent_public_subscribe_api,
+        name="xiaohongshu_agent_public_subscribe_api",
     ),
     path(
         "api/xiaohongshu-agent/watches/<int:watch_id>/covers/<str:note_id>/",
