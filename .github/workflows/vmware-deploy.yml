@@ -199,6 +199,10 @@ jobs:
             echo "XHS_MCP_TOKEN is unset; skipping the optional MCP image."
             exit 0
           fi
+          if docker image inspect modeshift-xhs-mcp:patched-7797fd3 >/dev/null 2>&1; then
+            echo "Reusing the healthy pinned Xiaohongshu MCP image already on the VM."
+            exit 0
+          fi
           python3 scripts/maintenance/prepare_docker_disk.py
           source_dir="$(mktemp -d)"
           trap 'rm -rf "$source_dir"' EXIT
