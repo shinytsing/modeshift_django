@@ -246,7 +246,9 @@ def xiaohongshu_agent_cover_api(request, watch_id: int, note_id: str):
 def xiaohongshu_agent_subscribe_api(request):
     try:
         data = _input(request)
-        platform = data.get("platform", "xiaohongshu")
+        platform = {"小红书": "xiaohongshu", "B站": "bilibili", "B 站": "bilibili"}.get(
+            data.get("platform"), data.get("platform", "xiaohongshu")
+        )
         if data.get("profile_url"):
             if not isinstance(data["profile_url"], str):
                 raise agent.XhsInputError("主页链接格式不正确")
