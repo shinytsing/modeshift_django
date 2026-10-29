@@ -11,7 +11,7 @@ import subprocess
 
 REPOSITORY = "ghcr.io/shinytsing/modeshift_django"
 RELEASE_TAG = re.compile(re.escape(REPOSITORY) + r":[0-9a-f]{40}$")
-MIN_FREE = 8 * 1024**3
+MIN_FREE = 5 * 1024**3
 
 
 def removable_tags(images, protected):
