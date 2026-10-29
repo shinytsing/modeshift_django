@@ -102,9 +102,7 @@ def serialize_watch(subscription: SocialMediaSubscription) -> dict:
     latest = history[-1] if history else {}
     latest_update = state.get("latest_update") or None
     recent_notes = [
-        _public_note(note)
-        for note in (latest.get("notes") or [])[:6]
-        if isinstance(note, dict) and note.get("id")
+        _public_note(note) for note in (latest.get("notes") or [])[:6] if isinstance(note, dict) and note.get("id")
     ]
     trend = [{"date": item.get("date"), "profile_counts": item.get("profile_counts") or {}} for item in history[-14:]]
     if latest_update:
