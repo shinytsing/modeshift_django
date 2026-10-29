@@ -40,7 +40,11 @@ def prepare(project):
         return
     subprocess.run(["docker", "builder", "prune", "--force", "--filter", "until=24h"], check=True)
     container_ids = docker("ps", "-aq").split()
-    protected = set(docker("inspect", "--format", "{{.Image}}", *container_ids).split()) if container_ids else set()
+    protected = set()
+    for container_id in container_ids:
+        result = subprocess.run(["docker", "inspect", "--format", "{{.Image}}", container_id], capture_output=True, text=True)
+        if result.returncode == 0 and result.stdout.strip():
+            protected.add(result.stdout.strip())
     references = {os.environ.get("QATOOLBOX_IMAGE", "")}
     for name in (".env", ".deployed-image.env"):
         path = project / name
