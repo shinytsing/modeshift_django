@@ -199,7 +199,6 @@ ssh -o IdentitiesOnly=yes -i ~/.ssh/qatoolbox_deploy -p 2222 shenshen@<Windows�
 
 本次 Mac 侧仅做只读网络诊断，未修改本机路由、VPN、Windows 防火墙或虚拟机网络模式。VMware NAT 目标 IP、Mac 源 IP 和 Windows LAN IP 如因 DHCP 改变，应相应核对规则，不要为方便直接放开所有来源。
 
-
 ## 2026-10-25：统一启动的已验证修复（替代前文临时方案）
 
 Mac 已通过 Windows `192.168.0.103:2222` 成功连接 VMware，主机指纹与前述 VM 指纹一致。
@@ -234,3 +233,13 @@ Web、Worker、Nginx、PostgreSQL、Redis 和 MCP 仍全部 healthy；Worker 监
 不足 8 GiB 时仅按明确的保留规则回收镜像/缓存；清理后仍不足就失败，不继续写满根盘。
 `docs/VMWARE_SINGLE_HOST_DEPLOYMENT.md` 已记录统一启动入口、systemd 配置、空间门禁及手动维护命令。
 清理缓存后下一次构建会重新生成缓存，可能变慢。不能将这次容量记录当作长期实时数值。
+## 2026-10-29：Windows 宿主机最新状态，交给远程 Mac
+
+- Windows 宿主机 WLAN 地址：`192.168.0.103`。
+- VMware 虚拟机地址：`192.168.27.132`，SSH `22` 端口可达。
+- 端口转发目标规则仍记录为 `192.168.0.103:2222 -> 192.168.27.132:22`，但当前 `192.168.0.103:2222` 未监听；刷新规则需要管理员权限。
+- Mac 暂时可尝试直连：`ssh shenshen@192.168.27.132`（仅在 Mac 到 VMware NAT 网段有路由时可用）。
+- 端口转发恢复后，Mac 连接命令为：`ssh -p 2222 shenshen@192.168.0.103`。
+- Windows 总内存约 15.8 GB，当前可用约 0.8 GB；`vmware-vmx` 工作集约 5.8 GB，宿主机内存压力较高。
+
+请远程 Mac 先记录以上地址并测试端口；不要把 `192.168.27.132` 当作公网地址。Windows 侧需以管理员权限刷新 portproxy 与入站规则后，再验证 `192.168.0.103:2222`。
